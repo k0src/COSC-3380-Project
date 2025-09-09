@@ -12,7 +12,7 @@ const __dirname = path.resolve();
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = Number(process.env.PORT) || 8080;
 const NODE_ENV = process.env.NODE_ENV || "development";
 
 // CORS middleware
@@ -65,7 +65,7 @@ if (NODE_ENV === "production") {
 async function startServer() {
   try {
     await testConnection();
-    app.listen(PORT, () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`⚡ Server running on port: ${PORT}`);
       console.log("Environment: ", NODE_ENV);
       if (NODE_ENV !== "production") {
