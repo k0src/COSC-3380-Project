@@ -9,7 +9,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions: contents: read
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -34,7 +35,7 @@ jobs:
       - name: Install production dependencies in dist
         run: |
           cd server/dist
-          npm install 
+          npm install --production
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
