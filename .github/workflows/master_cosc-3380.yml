@@ -19,50 +19,21 @@ jobs:
         with:
           node-version: "22.x"
 
-      # Build frontend
-      - name: Install and build frontend
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Build server and client
+        run: npm run build
+
+      - name: Install production dependencies
         run: |
-          cd client
-          npm install --legacy-peer-deps
-          npm run build
-          cd ..
+          cd server/dist
+          npm install --production
 
-      # Build backend
-      - name: Install and build backend
-        run: |
-          cd server
-          npm install
-          npm run build
-          cd ..
-
-      # Create deployment package with
-      - name: Create deployment package
-        run: |
-          mkdir -p deployment
-          mkdir -p deployment/public
-
-          # Copy React build to public/ folder
-          cp -r client/dist/* deployment/public/
-
-          # Copy server.cjs from server build output
-          cp server/dist/server.cjs deployment/
-
-          # Copy package.json from server
-          cp server/package.json deployment/
-
-          # Create .nvmrc file to specify Node version
-          echo "22" > deployment/.nvmrc
-
-          # Install production dependencies to create node_modules
-          cd deployment
-          npm install 
-          cd ..
-
-      # Deploy to Azure
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: "cosc-3380"
           slot-name: "Production"
-          package: deployment
+          package: server/dist
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_48CEDE4FE3CF4F1F91BAFF928283B051 }}
