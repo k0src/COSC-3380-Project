@@ -33,6 +33,7 @@ const deployPkg = {
   scripts: { start: "node server.js" },
   dependencies: pkgContent.dependencies || {},
 };
+
 fs.writeFileSync(distPkg, JSON.stringify(deployPkg, null, 2));
 
 run("npm install --omit=dev", serverDist);
