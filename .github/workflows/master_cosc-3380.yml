@@ -39,7 +39,6 @@ jobs:
       - name: Create deployment package
         run: |
           mkdir -p deployment
-          # Copy built server files (all of them from dist)
           cp -r server/dist/* deployment/
           # Copy frontend build to public folder
           mkdir -p deployment/public
@@ -54,5 +53,4 @@ jobs:
           app-name: "cosc-3380"
           slot-name: "Production"
           package: deployment
-          startup-command: "node server.cjs"
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_48CEDE4FE3CF4F1F91BAFF928283B051 }}
