@@ -35,23 +35,24 @@ jobs:
           npm run build
           cd ..
 
-      # Create deployment package
+      # Create deployment package with EXACT structure
       - name: Create deployment package
         run: |
           mkdir -p deployment
+          mkdir -p deployment/public
 
-          # Copy React build to public/ folder (NOT dist/)
+          # Copy React build to public/ folder
           cp -r client/dist/* deployment/public/
 
           # Copy server.cjs from server build output
           cp server/dist/server.cjs deployment/
 
-          # Copy package.json from server (NOT package-lock.json)
+          # Copy package.json from server
           cp server/package.json deployment/
 
           # Install production dependencies to create node_modules
           cd deployment
-          npm install
+          npm install --production
           cd ..
 
       # Deploy to Azure
@@ -62,3 +63,5 @@ jobs:
           slot-name: "Production"
           package: deployment
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_48CEDE4FE3CF4F1F91BAFF928283B051 }}
+          # Force Node.js 22
+          startup-command: "node server.cjs"
