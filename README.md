@@ -31,6 +31,16 @@
   - `api` - axios api functions, call backend
   - `types`- typescript types for the client
     - `index.ts` - barrel export for all types.
+  - `.env.development`:
+  ```
+  VITE_MODE=development
+  VITE_API_URL=http://localhost:8080/api
+  ```
+  - `.env.production`:
+  ```
+  VITE_MODE=production
+  VITE_API_URL=https://cosc-3380.azurewebsites.net/api
+  ```
 
 ### database
 
