@@ -1,6 +1,6 @@
-## Project setup
+## project setup
 
-#### Files
+### files
 
 - root:
 
@@ -15,7 +15,7 @@
   - `.env` - environment variables for client and server
 
 - `server`:
-  - `config/database.ts` - mysql database config
+  - `config/database.ts` - database config
   - `middleware` - server middleware
   - `reposiories` - classes for different database tables, makes queries
     - `index.ts` - barrel export for all repositories. when you add a repository, add it here. you can import repositories using `import { repo } from "@repositories` anywhere in the server
@@ -26,8 +26,14 @@
       - for these barrel exports, make sure you export with `.js` not `.ts` or it will throw errors when you build
   - `server.ts` - main server file
 
-#### Database
+### database
 
-Go to https://portal.azure.com and log in with CougarNet email.
+- go to https://portal.azure.com and log in with cougarnet.
+- click "azure for students"
+- sign up with your school info
 
-#### Files
+- azure app service
+- azure tools
+- azure storage
+
+### uploading/getting uploaded files
