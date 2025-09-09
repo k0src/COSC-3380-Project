@@ -36,16 +36,17 @@ jobs:
           npm run build
           cd ..
 
-      # Copy frontend build into server/dist/public
-      - name: Copy frontend build to backend
+      # Create deployment package
+      - name: Create deployment package
         run: |
-          mkdir -p server/dist/public
-          cp -r client/dist/* server/dist/public/
-
-      # Create package.json for Azure deployment
-      - name: Copy package files to dist
-        run: |
-          cp server/package.json server/package-lock.json server/dist/
+          mkdir -p deployment
+          # Copy built server file
+          cp server/dist/server.js deployment/
+          # Copy frontend build to public folder
+          mkdir -p deployment/public
+          cp -r client/dist/* deployment/public/
+          # Copy package files for Azure to install dependencies
+          cp server/package.json server/package-lock.json deployment/
 
       # Deploy backend to Azure
       - name: Deploy to Azure Web App
