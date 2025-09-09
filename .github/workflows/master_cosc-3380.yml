@@ -1,0 +1,52 @@
+name: Build and deploy Node.js monorepo to Azure Web App
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repo
+      - uses: actions/checkout@v4
+
+      # Set Node.js version
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22.x"
+
+      # Build frontend
+      - name: Install and build frontend
+        run: |
+          cd client
+          npm install
+          npm run build
+          cd ..
+
+      # Build backend
+      - name: Install and build backend
+        run: |
+          cd server
+          npm install
+          npm run build
+          cd ..
+
+      # Copy frontend build into server/dist/public
+      - name: Copy frontend build to backend
+        run: |
+          mkdir -p server/dist/public
+          cp -r client/dist/* server/dist/public/
+
+      # Deploy backend to Azure
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: "cosc-3380"
+          slot-name: "Production"
+          package: server/dist
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_48CEDE4FE3CF4F1F91BAFF928283B051 }}
