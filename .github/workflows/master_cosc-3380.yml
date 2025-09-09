@@ -9,8 +9,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    permissions: contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -19,16 +18,23 @@ jobs:
         with:
           node-version: "22.x"
 
-      - name: Install root dependencies
-        run: npm install
+      - name: Install server dependencies for build
+        run: |
+          cd server
+          npm install
+
+      - name: Install client dependencies
+        run: |
+          cd client
+          npm install --legacy-peer-deps
 
       - name: Build server and client
         run: npm run build
 
-      - name: Install production dependencies
+      - name: Install production dependencies in dist
         run: |
           cd server/dist
-          npm install --production
+          npm install 
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
