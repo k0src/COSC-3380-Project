@@ -46,21 +46,22 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Serve static files
+const clientDistPath = path.join(__dirname, "public");
+app.use(express.static(clientDistPath));
+
 // Routes
 app.use("/api/songs", Routes.songRoutes);
 
-// Serve static files
-if (NODE_ENV === "production") {
-  const clientDistPath = path.join(__dirname, "public");
-  app.use(express.static(clientDistPath));
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(clientDistPath, "index.html"));
-  });
-} else {
-  app.use((req, res) => {
-    res.status(404).json({ error: "Not found" });
-  });
-}
+// React SPA routes
+app.get("/", (req, res) => {
+  res.sendFile(path.join(clientDistPath, "index.html"));
+});
+
+// Catch all 404
+app.use((req, res) => {
+  res.status(404).send("Not found");
+});
 
 async function startServer() {
   try {
