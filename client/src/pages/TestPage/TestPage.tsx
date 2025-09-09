@@ -50,10 +50,26 @@ const TestPage: React.FC = () => {
             {error && <span className={styles.errorText}>{error}</span>}
             {song && (
               <div className={styles.songDetails}>
+                <img
+                  src={song.image_url}
+                  alt={song.title}
+                  className={styles.songImage}
+                />
+                <audio
+                  controls
+                  src={song.audio_url}
+                  className={styles.audioPlayer}
+                ></audio>
                 <span className={styles.songInfoText}>ID: {song.id}</span>
                 <span className={styles.songInfoText}>Title: {song.title}</span>
                 <span className={styles.songInfoText}>
                   Release Year: {song.release_year}
+                </span>
+                <span className={styles.songInfoText}>
+                  Image URL: {song.image_url}
+                </span>
+                <span className={styles.songInfoText}>
+                  Audio URL: {song.audio_url}
                 </span>
                 <span className={styles.songInfoText}>
                   Created At: {new Date(song.created_at).toLocaleString()}

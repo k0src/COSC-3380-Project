@@ -31,6 +31,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@azure/storage-blob": "^12.28.0",
     "@dr.pogodin/csurf": "^1.16.5",
     "@express-rate-limit/tsconfig": "^1.0.2",
     "bcrypt": "^6.0.0",

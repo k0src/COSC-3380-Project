@@ -36,13 +36,6 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 1.2rem;
-  padding: 1.8rem;
-  width: 100%;
-  min-height: 12rem;
-  background-color: #ffffff;
-  border-radius: 0.4rem;
-  box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.05);
 }
 
 .testButton {
@@ -91,8 +84,24 @@
   align-items: flex-start;
 }
 
+.songImage {
+  width: 100%;
+  max-width: 24rem;
+  border-radius: 0.4rem;
+}
+
+.audioPlayer {
+  width: 100%;
+  margin: 0.8rem 0;
+  border-radius: 0.4rem;
+  background-color: #e9ecef;
+  outline: none;
+  cursor: pointer;
+  box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.1);
+}
+
 .songInfoText {
   font-family: "Courier New", Courier, monospace;
   font-size: 1.2rem;
-  color: #495057;
+  color: #232527;
 }
