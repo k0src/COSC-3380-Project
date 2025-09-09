@@ -6,10 +6,9 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "client": "cd client && npm run dev",
     "server": "cd server && npm run dev",
-    "build": "npm run build:server && npm run build:client && npm run build:final",
+    "build": "node scripts/build.js",
     "build:server": "cd server && npm run build",
     "build:client": "cd client && npm run build",
-    "build:final": "node scripts/build.js",
     "install-all": "npm install && cd client && npm install && cd ../server && npm install",
     "clean": "rm -rf client/dist server/dist client/node_modules server/node_modules node_modules",
     "clean-all": "rm -rf client/dist server/dist"
