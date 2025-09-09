@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
     steps:
       - uses: actions/checkout@v4
 
@@ -40,19 +39,20 @@ jobs:
       - name: Create deployment package
         run: |
           mkdir -p deployment
-          # Copy built server file
-          cp server/dist/server.js deployment/
+          # Copy built server files (all of them from dist)
+          cp -r server/dist/* deployment/
           # Copy frontend build to public folder
           mkdir -p deployment/public
           cp -r client/dist/* deployment/public/
-          # Copy package files for Azure to install dependencies
+          # Copy package files for dependency installation
           cp server/package.json server/package-lock.json deployment/
 
-      # Deploy backend to Azure
+      # Deploy to Azure
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: "cosc-3380"
           slot-name: "Production"
-          package: server/dist
+          package: deployment
+          startup-command: "node server.cjs"
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_48CEDE4FE3CF4F1F91BAFF928283B051 }}
