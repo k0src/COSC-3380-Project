@@ -7,7 +7,7 @@
     "dev": "tsx --watch -r tsconfig-paths/register src/server.ts",
     "dev:verbose": "tsx --watch -r tsconfig-paths/register --inspect src/server.ts",
     "build": "tsup src/server.ts --format cjs,esm --dts",
-    "start": "node dist/server.js",
+    "start": "node server.js",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },
