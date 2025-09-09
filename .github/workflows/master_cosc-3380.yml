@@ -52,7 +52,7 @@ jobs:
 
           # Install production dependencies to create node_modules
           cd deployment
-          npm install --production
+          npm install 
           cd ..
 
       # Deploy to Azure
@@ -63,5 +63,3 @@ jobs:
           slot-name: "Production"
           package: deployment
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_48CEDE4FE3CF4F1F91BAFF928283B051 }}
-          # Force Node.js 22
-          startup-command: "node server.cjs"
