@@ -7,7 +7,7 @@ import { testConnection } from "config/database";
 
 import * as Routes from "@routes";
 
-const __dirname = process.cwd();
+const __dirname = path.resolve();
 
 dotenv.config();
 

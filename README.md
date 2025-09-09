@@ -37,3 +37,15 @@
 - psql
 - datagrip/pgadmin
 - https://portal.azure.com
+
+#### building
+
+```
+dist/
+  server.js
+  public/
+    index.html
+    icon.svg
+    assets/
+      ...
+```

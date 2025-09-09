@@ -35,7 +35,7 @@ jobs:
           npm run build
           cd ..
 
-      # Create deployment package with EXACT structure
+      # Create deployment package with
       - name: Create deployment package
         run: |
           mkdir -p deployment
@@ -49,6 +49,9 @@ jobs:
 
           # Copy package.json from server
           cp server/package.json deployment/
+
+          # Create .nvmrc file to specify Node version
+          echo "22" > deployment/.nvmrc
 
           # Install production dependencies to create node_modules
           cd deployment
