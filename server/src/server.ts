@@ -1,11 +1,15 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-import chalk from "chalk";
 import { testConnection } from "config/database";
 
 import * as Routes from "@routes";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -13,6 +17,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 const NODE_ENV = process.env.NODE_ENV || "development";
+const STATIC_PATH = process.env.STATIC_PATH || "public";
 
 // CORS middleware
 app.use(
@@ -41,21 +46,29 @@ app.get("/api/health", (req, res) => {
 // Routes
 app.use("/api/songs", Routes.songRoutes);
 
-// Catch-all
-app.use((req, res) => {
-  res.status(404).json({ error: "Not found" });
-});
+// Serve static files
+if (NODE_ENV === "production") {
+  const clientDistPath = path.join(__dirname, STATIC_PATH);
+  app.use(express.static(clientDistPath));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(clientDistPath, "index.html"));
+  });
+} else {
+  app.use((req, res) => {
+    res.status(404).json({ error: "Not found" });
+  });
+}
 
 async function startServer() {
   try {
     await testConnection();
     app.listen(PORT, () => {
-      console.log(chalk.green.bold(`⚡ Server running on port: ${PORT}`));
-      console.log("Client URL: ", chalk.blue.underline(CLIENT_URL));
-      console.log("Environment: ", chalk.yellow(NODE_ENV));
+      console.log(`⚡ Server running on port: ${PORT}`);
+      console.log("Client URL: ", CLIENT_URL);
+      console.log("Environment: ", NODE_ENV);
     });
   } catch (error) {
-    console.error(chalk.red("Failed to start server:", error));
+    console.error("Failed to start server:", error);
     process.exit(1);
   }
 }
