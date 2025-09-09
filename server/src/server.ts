@@ -2,32 +2,33 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
-import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { testConnection } from "config/database";
 
 import * as Routes from "@routes";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = process.cwd();
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 const NODE_ENV = process.env.NODE_ENV || "development";
-const STATIC_PATH = process.env.STATIC_PATH || "public";
 
 // CORS middleware
-app.use(
-  cors({
-    origin: CLIENT_URL,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+const corsOptions = {
+  origin:
+    NODE_ENV === "production"
+      ? process.env.ALLOWED_ORIGINS
+        ? process.env.ALLOWED_ORIGINS.split(",")
+        : true
+      : process.env.CLIENT_URL || "http://localhost:5173",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
 
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
@@ -40,6 +41,8 @@ app.get("/api/health", (req, res) => {
     status: "ok",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
+    environment: NODE_ENV,
+    port: PORT,
   });
 });
 
@@ -48,7 +51,7 @@ app.use("/api/songs", Routes.songRoutes);
 
 // Serve static files
 if (NODE_ENV === "production") {
-  const clientDistPath = path.join(__dirname, STATIC_PATH);
+  const clientDistPath = path.join(__dirname, "public");
   app.use(express.static(clientDistPath));
   app.get("*", (req, res) => {
     res.sendFile(path.join(clientDistPath, "index.html"));
@@ -64,8 +67,10 @@ async function startServer() {
     await testConnection();
     app.listen(PORT, () => {
       console.log(`⚡ Server running on port: ${PORT}`);
-      console.log("Client URL: ", CLIENT_URL);
       console.log("Environment: ", NODE_ENV);
+      if (NODE_ENV !== "production") {
+        console.log("CORS Origin:", corsOptions.origin);
+      }
     });
   } catch (error) {
     console.error("Failed to start server:", error);
