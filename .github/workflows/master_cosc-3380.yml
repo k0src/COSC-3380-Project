@@ -43,23 +43,9 @@ jobs:
           cp -r client/dist/* server/dist/public/
 
       # Create package.json for Azure deployment
-      - name: Create production package.json
+      - name: Copy package files to dist
         run: |
-          cd server/dist
-          cat > package.json << EOF
-          {
-            "name": "cosc-3380-server",
-            "version": "1.0.0",
-            "type": "module",
-            "main": "server.js",
-            "scripts": {
-              "start": "node server.js"
-            },
-            "engines": {
-              "node": "22.x"
-            }
-          }
-          EOF
+          cp server/package.json server/package-lock.json server/dist/
 
       # Deploy backend to Azure
       - name: Deploy to Azure Web App
