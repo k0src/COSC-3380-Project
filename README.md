@@ -15,6 +15,7 @@
   - `.env` - environment variables for client and server
 
 - `server`:
+
   - `config/database.ts` - database config
   - `middleware` - server middleware
   - `reposiories` - classes for different database tables, makes queries
@@ -26,14 +27,13 @@
       - for these barrel exports, make sure you export with `.js` not `.ts` or it will throw errors when you build
   - `server.ts` - main server file
 
+- `client`:
+  - `api` - axios api functions, call backend
+  - `types`- typescript types for the client
+    - `index.ts` - barrel export for all types.
+
 ### database
 
-- go to https://portal.azure.com and log in with cougarnet.
-- click "azure for students"
-- sign up with your school info
-
-- azure app service
-- azure tools
-- azure storage
-
-### uploading/getting uploaded files
+- psql
+- datagrip/pgadmin
+- https://portal.azure.com
