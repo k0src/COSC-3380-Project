@@ -17,14 +17,27 @@ Represents a authenticated CoogMusic user with role-based permissions.
 ##### Attributes
 
 - `id` - Unique, auto-generated identifier
-- `username` - User’s chosen display name
-- `email` - User’s email address
+- `username` - Unique username
+- `email` - Unique email address
 - `password_hash` - Encrypted password
 - `authenticated_with` - Authentication provider (default: “CoogMusic”)
 - `role` - User permission level
-- `bio` - User profile bio (optional)
 - `profile_picture_url` - Profile image URL
+- `artist_id` - Associated artist profile (nullable)
 - `created_at` - Account creation timestamp
+- `updated_at` - Last profile update
+
+#### Artists
+
+Represents a CoogMusic artist.
+
+##### Attributes
+
+- `id` - Unique, auto-generated identifier
+- `display_name` - Optional display name for artists
+- `bio` - Artist profile bio (optional)
+- `user_id` - Associated user account
+- `created_at` - Artist profile creation timestamp
 - `updated_at` - Last profile update
 
 #### Songs
@@ -232,5 +245,3 @@ Stores user comments on songs.
 - Automatically delete rows from `user_history` older than 30 days whenever the table is updated.
 
 ### Schema
-
-![schema](https://i.imgur.com/rRsGZKB.png)
