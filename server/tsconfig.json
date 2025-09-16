@@ -4,8 +4,8 @@
     "paths": {
       "@types": ["types/index"],
       "@types/*": ["types/*"],
-      "@repositories": ["repositories/index"],
-      "@repositories/*": ["repositories/*"],
+      "@data": ["data/index"],
+      "@data/*": ["data/*"],
       "@routes": ["routes/index"],
       "@routes/*": ["routes/*"],
       "@middleware/*": ["middleware/*"]
