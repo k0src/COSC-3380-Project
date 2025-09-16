@@ -9,7 +9,7 @@
     "build": "node scripts/build.js",
     "build:server": "cd server && npm run build",
     "build:client": "cd client && npm run build",
-    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "install-all": "npm install && cd client && npm install --legacy-peer-deps && cd ../server && npm install",
     "clean": "rm -rf client/dist server/dist client/node_modules server/node_modules node_modules",
     "clean-all": "rm -rf client/dist server/dist"
   },
