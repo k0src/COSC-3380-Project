@@ -79,15 +79,12 @@ export default class SongQuery {
 
     if (this.includeLikes) {
       const likes = await query(
-        "SELECT user_id AS liked_by FROM user_likes WHERE song_id = $1 GROUP BY user_id",
+        "SELECT COUNT(*) AS likes FROM user_likes WHERE song_id = $1",
         [this.songId]
       );
 
       if (likes) {
-        song.likes = {
-          liked_by: likes.map((like: any) => like.liked_by),
-          total: likes.length,
-        };
+        song.likes = parseInt(likes[0].likes, 10);
       }
     }
 

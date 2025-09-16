@@ -12,10 +12,7 @@ export interface Song {
 
   album?: Album;
   artists?: Artist[];
-  likes?: {
-    liked_by: UUID[];
-    total: number;
-  };
+  likes?: number;
   comments?: {
     user_id: UUID;
     comment_text: string;
