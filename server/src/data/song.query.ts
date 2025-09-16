@@ -8,6 +8,7 @@ export default class SongQuery {
   private includeArtists = false;
   private includeAlbum = false;
   private includeLikes = false;
+  private includeComments = false;
 
   private constructor(songId: UUID) {
     this.songId = songId;
@@ -31,6 +32,11 @@ export default class SongQuery {
 
   withLikes(): this {
     this.includeLikes = true;
+    return this;
+  }
+
+  withComments(): this {
+    this.includeComments = true;
     return this;
   }
 
@@ -73,12 +79,34 @@ export default class SongQuery {
 
     if (this.includeLikes) {
       const likes = await query(
-        "SELECT COUNT(*) AS likes FROM user_likes WHERE song_id = $1",
+        "SELECT user_id AS liked_by FROM user_likes WHERE song_id = $1 GROUP BY user_id",
         [this.songId]
       );
 
       if (likes) {
-        song.likes = parseInt(likes[0].likes, 10);
+        song.likes = {
+          liked_by: likes.map((like: any) => like.liked_by),
+          total: likes.length,
+        };
+      }
+    }
+
+    if (this.includeComments) {
+      const comments = await query(
+        `SELECT 
+          user_id,
+          comment_text,
+          users.username, 
+          users.profile_picture_url 
+        FROM song_comments
+        JOIN users ON song_comments.user_id = users.id
+        WHERE song_id = $1
+        ORDER BY commented_at DESC`,
+        [this.songId]
+      );
+
+      if (comments) {
+        song.comments = comments;
       }
     }
 

@@ -12,5 +12,14 @@ export interface Song {
 
   album?: Album;
   artists?: Artist[];
-  likes?: number;
+  likes?: {
+    liked_by: UUID[];
+    total: number;
+  };
+  comments?: {
+    user_id: UUID;
+    comment_text: string;
+    username: string;
+    profile_picture_url?: string;
+  }[];
 }

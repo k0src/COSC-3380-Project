@@ -7,7 +7,7 @@ export interface User {
   password_hash?: string;
   authenticated_with: string;
   role: UserRole;
-  profile_image_url?: string;
+  profile_picture_url?: string;
   artist_id?: UUID;
   created_at: string;
 }

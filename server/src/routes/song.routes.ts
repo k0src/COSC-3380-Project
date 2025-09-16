@@ -43,6 +43,7 @@ router.get(
         .withAlbum()
         .withArtists()
         .withLikes()
+        .withComments()
         .exec();
 
       if (!song) {
