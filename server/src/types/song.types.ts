@@ -5,6 +5,7 @@ export interface Song {
   title: string;
   duration: number;
   album_id?: UUID;
+  genre: string;
   release_date: number;
   image_url?: string;
   audio_url: string;
@@ -13,10 +14,12 @@ export interface Song {
   album?: Album;
   artists?: Artist[];
   likes?: number;
-  comments?: {
-    user_id: UUID;
-    comment_text: string;
-    username: string;
-    profile_picture_url?: string;
-  }[];
+}
+
+export interface SongComment {
+  user_id: UUID;
+  username: string;
+  profile_picture_url: string;
+  comment_text: string;
+  commented_at: string;
 }

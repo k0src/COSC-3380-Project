@@ -1,12 +1,17 @@
 import express, { Request, Response } from "express";
-import { SongRepository, SongQuery } from "@data";
+import { SongRepository as Song } from "@data";
 
 const router = express.Router();
 
 // GET /api/songs
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const songs = await SongQuery.getAll().withAlbum().withArtists().exec();
+    const songs = await Song.getMany({
+      includeAlbum: true,
+      includeArtists: true,
+      includeLikes: true,
+    });
+
     res.status(200).json(songs);
   } catch (error) {
     console.error("Error in GET /songs/:", error);
@@ -24,7 +29,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const song = await SongQuery.getById(id).exec();
+    const song = await Song.getOne(id);
 
     if (!song) {
       res.status(404).json({ error: "Song not found" });
@@ -50,12 +55,11 @@ router.get(
     }
 
     try {
-      const song = await SongQuery.getById(id)
-        .withAlbum()
-        .withArtists()
-        .withLikes()
-        .withComments()
-        .exec();
+      const song = await Song.getOne(id, {
+        includeAlbum: true,
+        includeArtists: true,
+        includeLikes: true,
+      });
 
       if (!song) {
         res.status(404).json({ error: "Song not found" });
