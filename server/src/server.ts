@@ -52,6 +52,7 @@ app.use(express.static(clientDistPath));
 
 // Routes
 app.use("/api/songs", Routes.songRoutes);
+app.use("/api/albums", Routes.albumRoutes);
 
 // React SPA routes
 app.get("/", (req, res) => {
