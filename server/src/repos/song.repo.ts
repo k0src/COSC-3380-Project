@@ -28,7 +28,7 @@ export default class SongRepository {
       `SELECT a.*, sa.role 
        FROM artists a
        JOIN song_artists sa ON a.id = sa.artist_id
-       WHERE sa.song_id = $1`,
+       WHERE sa.song_id = $1`, 
       [song.id]
     );
 
