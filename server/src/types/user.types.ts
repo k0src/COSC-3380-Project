@@ -1,4 +1,4 @@
-import type { UUID, UserRole } from "./index.js";
+import type { UUID, UserRole, Playlist } from "./index.js";
 
 export interface User {
   id: UUID;
@@ -10,4 +10,11 @@ export interface User {
   profile_picture_url?: string;
   artist_id?: UUID;
   created_at: string;
+
+  playlists?: Playlist[];
+
+  following?: User[];
+  followers?: User[];
+  following_count?: number;
+  followers_count?: number;
 }

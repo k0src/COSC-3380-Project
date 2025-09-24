@@ -1,4 +1,4 @@
-import type { UUID, Song } from "./index.js";
+import type { UUID, Song, User } from "./index.js";
 
 export interface Playlist {
   id: UUID;
@@ -7,5 +7,7 @@ export interface Playlist {
   created_by: UUID;
   created_at: string;
 
-  songs?: Song[];
+  songs?: Array<{ song: Song; added_at: string }>;
+  user?: User;
+  likes?: number;
 }

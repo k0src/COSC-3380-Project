@@ -9,7 +9,8 @@ export interface Album {
   audio_url: string;
   created_at: string;
 
-  songs?: Song[];
-  artists?: Artist;
+  songs?: Array<{ song: Song; track_number: string }>;
+  artist?: Artist;
+  likes?: number;
   runtime?: number;
 }

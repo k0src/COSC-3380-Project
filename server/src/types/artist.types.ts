@@ -1,4 +1,4 @@
-import type { UUID } from "./index.js";
+import type { Album, Song, User, UUID } from "./index.js";
 
 export interface Artist {
   id: UUID;
@@ -6,4 +6,8 @@ export interface Artist {
   bio: string;
   user_id: UUID;
   created_at: string;
+
+  user?: User;
+  songs?: Array<{ song: Song; role: string }>;
+  albums?: Album[];
 }

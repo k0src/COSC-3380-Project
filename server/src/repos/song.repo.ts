@@ -8,36 +8,56 @@ import { getBlobUrl } from "../config/blobStorage.js";
 export default class SongRepository {
   /* ----------------------------- HELPER METHODS ----------------------------- */
 
-  private static async getAlbum(song: Song): Promise<void> {
-    if (!song.album_id) return;
+  /**
+   * Fetches the album for a song and attaches it to the song object.
+   * @param song - The song object.
+   * @throws Will throw an error if the database query fails.
+   */
+  private static async getAlbum(song: Song) {
+    const album = await query(
+      `SELECT a.* FROM albums a
+      JOIN album_songs als ON a.id = als.album_id
+      WHERE als.song_id = $1
+      LIMIT 1`,
+      [song.id]
+    );
 
-    const albums = await query("SELECT * FROM albums WHERE id = $1", [
-      song.album_id,
-    ]);
-
-    if (albums && albums.length > 0) {
-      song.album = albums[0];
+    if (album && album.length > 0) {
+      song.album = album[0];
       if (song.album?.image_url) {
         song.album.image_url = getBlobUrl(song.album.image_url);
       }
     }
   }
 
-  private static async getArtists(song: Song): Promise<void> {
+  /**
+   * Fetches the artists for a song and attaches them to the song object.
+   * @param song - The song object.
+   * @throws Will throw an error if the database query fails.
+   */
+  private static async getArtists(song: Song) {
     const artists = await query(
       `SELECT a.*, sa.role 
        FROM artists a
        JOIN song_artists sa ON a.id = sa.artist_id
-       WHERE sa.song_id = $1`, 
+       WHERE sa.song_id = $1`,
       [song.id]
     );
 
     if (artists) {
+      if (!song.artists) {
+        song.artists = [];
+      }
       song.artists = artists;
     }
   }
 
-  private static async getLikes(song: Song): Promise<void> {
+  /**
+   * Fetches the like count for a song and attaches it to the song object.
+   * @param song - The song object.
+   * @throws Will throw an error if the database query fails.
+   */
+  private static async getLikes(song: Song) {
     const likes = await query(
       "SELECT COUNT(*) AS likes FROM song_likes WHERE song_id = $1",
       [song.id]
@@ -48,7 +68,11 @@ export default class SongRepository {
     }
   }
 
-  private static getBlobUrls(song: Song): void {
+  /**
+   * Converts image and audio URLs to full blob URLs.
+   * @param song - The song object.
+   */
+  private static getBlobUrls(song: Song) {
     if (song.image_url) {
       song.image_url = getBlobUrl(song.image_url);
     }
@@ -59,11 +83,19 @@ export default class SongRepository {
 
   /* ------------------------------ MAIN METHODS ------------------------------ */
 
-  // Creates a new song and adds it to the database
+  /**
+   * Creates a new song.
+   * @param songData - The data for the new song.
+   * @param song.title - The title of the song.
+   * @param song.duration - The duration of the song in seconds.
+   * @param song.genre - The genre of the song.
+   * @param song.release_date - The release date of the song as an ISO string
+   * @returns The created song, or null if creation fails.
+   * @throws Will throw an error if the database query fails.
+   */
   static async create({
     title,
     duration,
-    album_id,
     genre,
     release_date,
     image_url,
@@ -71,35 +103,45 @@ export default class SongRepository {
   }: {
     title: string;
     duration: number;
-    album_id?: UUID;
     genre: string;
     release_date: number;
     image_url?: string;
     audio_url: string;
   }): Promise<Song | null> {
     try {
-      const result = await query(
+      const res = await query(
         `INSERT INTO songs 
-          (title, duration, album_id, genre, release_date, image_url, audio_url)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+          (title, duration, genre, release_date, image_url, audio_url)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *`,
-        [title, duration, album_id, genre, release_date, image_url, audio_url]
+        [title, duration, genre, release_date, image_url, audio_url]
       );
-      return result[0] ?? null;
+      return res[0] ?? null;
     } catch (error) {
       console.error("Error creating song:", error);
       throw error;
     }
   }
 
-  // Updates song details
+  /**
+   * Updates a song.
+   * @param id - The ID of the song to update.
+   * @param songData - The new data for the song.
+   * @param song.title - The new title of the song (optional).
+   * @param song.image_url - The new image URL of the song (optional).
+   * @param song.audio_url - The new audio URL of the song (optional).
+   * @param song.release_date - The new release date of the song as an ISO string (optional).
+   * @param song.duration - The new duration of the song in seconds (optional).
+   * @param song.genre - The new genre of the song (optional).
+   * @returns The updated song, or null if the update fails.
+   * @throws Error if no fields are provided to update or if the database query fails.
+   */
   static async update(
     id: UUID,
     {
       title,
       image_url,
       audio_url,
-      album_id,
       release_date,
       duration,
       genre,
@@ -107,7 +149,6 @@ export default class SongRepository {
       title?: string;
       image_url?: string;
       audio_url?: string;
-      album_id?: UUID;
       release_date?: number;
       duration?: number;
       genre?: string;
@@ -129,10 +170,6 @@ export default class SongRepository {
         fields.push(`audio_url = $${values.length + 1}`);
         values.push(audio_url);
       }
-      if (album_id !== undefined) {
-        fields.push(`album_id = $${values.length + 1}`);
-        values.push(album_id);
-      }
       if (release_date !== undefined) {
         fields.push(`release_date = $${values.length + 1}`);
         values.push(release_date);
@@ -151,7 +188,7 @@ export default class SongRepository {
 
       values.push(id);
 
-      const result = await withTransaction(async (client) => {
+      const res = await withTransaction(async (client) => {
         const sql = `UPDATE songs SET ${fields.join(", ")} WHERE id = $${
           values.length
         } RETURNING *`;
@@ -159,32 +196,46 @@ export default class SongRepository {
         return res.rows[0] ?? null;
       });
 
-      return result;
+      return res;
     } catch (error) {
       console.error("Error updating song:", error);
       throw error;
     }
   }
 
-  // Deletes song from DB
+  /**
+   * Deletes a song.
+   * @param id - The ID of the song to delete.
+   * @returns The deleted song, or null if the deletion fails.
+   * @throws Will throw an error if the database query fails.
+   */
   static async delete(id: UUID): Promise<Song | null> {
     try {
-      const result = await withTransaction(async (client) => {
-        const res = await client.query(
+      const res = await withTransaction(async (client) => {
+        const del = await client.query(
           "DELETE FROM songs WHERE id = $1 RETURNING *",
           [id]
         );
-        return res.rows[0] ?? null;
+        return del.rows[0] ?? null;
       });
 
-      return result;
+      return res;
     } catch (error) {
       console.error("Error deleting song:", error);
       throw error;
     }
   }
 
-  // Gets one song by ID, with optional related data
+  /**
+   * Gets a single song by ID.
+   * @param id - The ID of the song to get.
+   * @param options - Options for including related data.
+   * @param options.includeAlbum - Option to include the album data.
+   * @param options.includeArtists - Option to include the artists data.
+   * @param options.includeLikes - Option to include the like count.
+   * @returns The song, or null if not found.
+   * @throws Will throw an error if the database query fails.
+   */
   static async getOne(
     id: UUID,
     options?: {
@@ -194,13 +245,13 @@ export default class SongRepository {
     }
   ): Promise<Song | null> {
     try {
-      const songs = await query("SELECT * FROM songs WHERE id = $1", [id]);
+      const res = await query("SELECT * FROM songs WHERE id = $1", [id]);
 
-      if (!songs || songs.length === 0) {
+      if (!res || res.length === 0) {
         return null;
       }
 
-      let song = songs[0] as Song;
+      let song: Song = res[0];
 
       this.getBlobUrls(song);
 
@@ -221,7 +272,17 @@ export default class SongRepository {
     }
   }
 
-  // Gets multiple songs, with optional related data
+  /**
+   * Gets multiple songs.
+   * @param options - Options for pagination and including related data.
+   * @param options.includeAlbum - Option to include the album data.
+   * @param options.includeArtists - Option to include the artists data.
+   * @param options.includeLikes - Option to include the like count.
+   * @param options.limit - Maximum number of songs to return.
+   * @param options.offset - Number of songs to skip.
+   * @returns A list of songs.
+   * @throws Will throw an error if the database query fails.
+   */
   static async getMany(options?: {
     includeAlbum?: boolean;
     includeArtists?: boolean;
@@ -274,7 +335,15 @@ export default class SongRepository {
     }
   }
 
-  // Gets song comments
+  // MOVE TO COMMENT SERVICE with get comments by user, song
+  /**
+   * Gets comments for a song.
+   * @param id - The ID of the song.
+   * @param limit - The maximum number of comments to return.
+   * @param offset - The number of comments to skip.
+   * @returns List of comments, or null if fetching fails.
+   * @throws Error if the database query fails.
+   */
   static async getComments(
     id: UUID,
     limit: number,

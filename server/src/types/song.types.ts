@@ -4,7 +4,6 @@ export interface Song {
   id: UUID;
   title: string;
   duration: number;
-  album_id?: UUID;
   genre: string;
   release_date: number;
   image_url?: string;

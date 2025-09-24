@@ -8,6 +8,8 @@
       "@repositories/*": ["repos/*"],
       "@routes": ["routes/index"],
       "@routes/*": ["routes/*"],
+      "@services": ["services/index"],
+      "@services/*": ["services/*"],
       "@middleware/*": ["middleware/*"]
     },
     "target": "ES2022",
