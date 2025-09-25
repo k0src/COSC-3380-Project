@@ -1,39 +1,11 @@
-import { Playlist, UUID } from "@types";
-import { SongRepository as Song } from "@repositories";
+import { Playlist, PlaylistSong, UUID } from "@types";
+import { SongRepository } from "@repositories";
 import { query, withTransaction } from "../config/database";
 import { getBlobUrl } from "config/blobStorage";
+import { validatePlaylistId, validateMany } from "@validators";
 
 export default class PlaylistRepository {
   /* ----------------------------- HELPER METHODS ----------------------------- */
-
-  /**
-   * Fetches the songs on the playlist and attaches them to the playlist object.
-   * @param playlist - The playlist object.
-   * @throws Will throw an error if the database query fails.
-   */
-  private static async getSongs(playlist: Playlist) {
-    const songIds = await query(
-      `SELECT s.id, ps.added_at FROM songs s
-      JOIN playlist_songs ps ON s.id = ps.song_id
-      WHERE ps.playlist_id = $1`,
-      [playlist.id]
-    );
-
-    if (songIds && songIds.length > 0) {
-      for (const { id, added_at } of songIds) {
-        const song = await Song.getOne(id, {
-          includeAlbum: true,
-          includeArtists: true,
-        });
-        if (song) {
-          if (!playlist.songs) {
-            playlist.songs = [];
-          }
-          playlist.songs.push({ song, added_at });
-        }
-      }
-    }
-  }
 
   /**
    * Fetches the user who made the playlist and attaches it to the playlist object.
@@ -41,20 +13,25 @@ export default class PlaylistRepository {
    * @throws Will throw an error if the database query fails.
    */
   private static async getUser(playlist: Playlist) {
-    const user = await query(
-      `SELECT u.* FROM users u
+    try {
+      const user = await query(
+        `SELECT u.* FROM users u
       JOIN playlists p ON u.id = p.created_by
       WHERE p.id = $1`,
-      [playlist.id]
-    );
+        [playlist.id]
+      );
 
-    if (user && user.length > 0) {
-      playlist.user = user[0];
-      if (playlist.user && playlist.user.profile_picture_url) {
-        playlist.user.profile_picture_url = getBlobUrl(
-          playlist.user.profile_picture_url
-        );
+      if (user && user.length > 0) {
+        playlist.user = user[0];
+        if (playlist.user && playlist.user.profile_picture_url) {
+          playlist.user.profile_picture_url = getBlobUrl(
+            playlist.user.profile_picture_url
+          );
+        }
       }
+    } catch (error) {
+      console.error("Error fetching playlist user:", error);
+      throw error;
     }
   }
 
@@ -64,12 +41,17 @@ export default class PlaylistRepository {
    * @throws Will throw an error if the database query fails.
    */
   private static async getLikes(playlist: Playlist) {
-    const likes = await query(
-      `SELECT COUNT(*) AS likes FROM playlist_likes WHERE playlist_id = $1`,
-      [playlist.id]
-    );
-    if (likes && likes.length > 0) {
-      playlist.likes = parseInt(likes[0].likes, 10) || 0;
+    try {
+      const likes = await query(
+        `SELECT COUNT(*) AS likes FROM playlist_likes WHERE playlist_id = $1`,
+        [playlist.id]
+      );
+      if (likes && likes.length > 0) {
+        playlist.likes = parseInt(likes[0].likes, 10) || 0;
+      }
+    } catch (error) {
+      console.error("Error fetching playlist likes:", error);
+      throw error;
     }
   }
 
@@ -127,6 +109,10 @@ export default class PlaylistRepository {
     }: { title?: string; description?: string; created_by?: UUID }
   ): Promise<Playlist | null> {
     try {
+      if (!(await validatePlaylistId(id))) {
+        throw new Error("Invalid playlist ID");
+      }
+
       const fields: string[] = [];
       const values: any[] = [];
 
@@ -171,6 +157,10 @@ export default class PlaylistRepository {
    */
   static async delete(id: UUID): Promise<Playlist | null> {
     try {
+      if (!(await validatePlaylistId(id))) {
+        throw new Error("Invalid playlist ID");
+      }
+
       const res = await withTransaction(async (client) => {
         const del = await client.query(
           `DELETE FROM playlists WHERE id = $1 RETURNING *`,
@@ -190,7 +180,6 @@ export default class PlaylistRepository {
    * Gets a single playlist by ID.
    * @param id - The ID of the playlist to get.
    * @param options - Options for including related data.
-   * @param options.includeSongs - Option to include the songs in the playlist.
    * @param options.includeUser - Option to include the user who created the playlist.
    * @param options.includeLikes - Option to include the like count.
    * @returns The playlist, or null if not found.
@@ -199,12 +188,15 @@ export default class PlaylistRepository {
   static async getOne(
     id: UUID,
     options?: {
-      includeSongs?: boolean;
       includeUser?: boolean;
       includeLikes?: boolean;
     }
   ): Promise<Playlist | null> {
     try {
+      if (!(await validatePlaylistId(id))) {
+        throw new Error("Invalid playlist ID");
+      }
+
       const res = await query("SELECT * FROM playlists WHERE id = $1", [id]);
 
       if (!res || res.length === 0) {
@@ -213,9 +205,6 @@ export default class PlaylistRepository {
 
       let playlist: Playlist = res[0];
 
-      if (options?.includeSongs) {
-        await this.getSongs(playlist);
-      }
       if (options?.includeUser) {
         await this.getUser(playlist);
       }
@@ -233,7 +222,6 @@ export default class PlaylistRepository {
   /**
    * Gets multiple playlists.
    * @param options - Options for pagination and including related data.
-   * @param options.includeSongs - Option to include the songs in each playlist.
    * @param options.includeUser - Option to include the user who created each playlist.
    * @param options.includeLikes - Option to include the like count for each playlist.
    * @param options.limit - Maximum number of playlists to return.
@@ -242,7 +230,6 @@ export default class PlaylistRepository {
    * @throws Will throw an error if the database query fails.
    */
   static async getMany(options?: {
-    includeSongs?: boolean;
     includeUser?: boolean;
     includeLikes?: boolean;
     limit?: number;
@@ -270,9 +257,6 @@ export default class PlaylistRepository {
 
       const processedPlaylists = await Promise.all(
         playlists.map(async (playlist: Playlist) => {
-          if (options?.includeSongs) {
-            await this.getSongs(playlist);
-          }
           if (options?.includeUser) {
             await this.getUser(playlist);
           }
@@ -287,6 +271,40 @@ export default class PlaylistRepository {
       return processedPlaylists;
     } catch (error) {
       console.error("Error fetching playlists:", error);
+      throw error;
+    }
+  }
+
+  static async getSongs(playlistId: UUID): Promise<PlaylistSong[]> {
+    try {
+      if (!(await validatePlaylistId(playlistId))) {
+        throw new Error("Invalid playlist ID");
+      }
+
+      const songIds = await query(
+        `SELECT song_id, added_at FROM playlist_songs 
+        WHERE playlist_id = $1 ORDER BY added_at`,
+        [playlistId]
+      );
+
+      const playlistSongs: PlaylistSong[] = [];
+
+      if (songIds && songIds.length > 0) {
+        for (const { song_id, added_at } of songIds) {
+          const song = await SongRepository.getOne(song_id, {
+            includeAlbum: true,
+            includeArtists: true,
+          });
+          if (song) {
+            (song as PlaylistSong).added_at = added_at;
+            playlistSongs.push(song as PlaylistSong);
+          }
+        }
+      }
+
+      return playlistSongs;
+    } catch (error) {
+      console.error("Error fetching playlist songs:", error);
       throw error;
     }
   }

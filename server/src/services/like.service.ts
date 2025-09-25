@@ -1,16 +1,21 @@
-import type { Entity, UUID } from "@types";
+import type { UUID } from "@types";
 import { query } from "../config/database.js";
+import { validateMany } from "../validators/id.validator.js";
 
 // toggle like songs, playlists, albums, artists, comments
 // get likes by user
 
-const ENTITY_FUNCTIONS: Record<Entity, string | undefined> = {
-  songs: "toggle_song_like",
-  albums: "toggle_album_like",
-  playlists: "toggle_playlist_like",
-  artists: undefined,
+type Entity = "song" | "album" | "playlist";
+
+const LIKE_FUNCTIONS: Record<Entity, string> = {
+  song: "toggle_song_like",
+  album: "toggle_album_like",
+  playlist: "toggle_playlist_like",
 };
 
+/**
+ * Service for managing likes on songs, albums, and playlists.
+ */
 export default class LikeService {
   /**
    * Toggles a like for a given entity (song, album, playlist) by a user.
@@ -26,7 +31,16 @@ export default class LikeService {
     entity: Entity
   ): Promise<string | null> {
     try {
-      const table = ENTITY_FUNCTIONS[entity];
+      if (
+        !(await validateMany([
+          { id: userId, type: "user" },
+          { id: entityId, type: entity },
+        ]))
+      ) {
+        throw new Error("Invalid user ID or entity ID");
+      }
+
+      const table = LIKE_FUNCTIONS[entity];
 
       if (!table) {
         throw new Error("Invalid entity type");

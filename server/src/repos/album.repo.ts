@@ -1,6 +1,7 @@
 import { Album, UUID } from "@types";
 import { query, withTransaction } from "../config/database.js";
 import { getBlobUrl } from "config/blobStorage.js";
+import { validateAlbumId, validateMany } from "@validators";
 
 export default class AlbumRepository {
   /* ----------------------------- HELPER METHODS ----------------------------- */
@@ -11,16 +12,21 @@ export default class AlbumRepository {
    * @throws Will throw an error if the database query fails.
    */
   private static async getArtist(album: Album) {
-    const artist = await query(
-      `SELECT ar.* FROM artists ar
+    try {
+      const artist = await query(
+        `SELECT ar.* FROM artists ar
       JOIN albums a ON ar.id = a.created_by
       WHERE a.id = $1
       LIMIT 1`,
-      [album.id]
-    );
+        [album.id]
+      );
 
-    if (artist && artist.length > 0) {
-      album.artist = artist[0];
+      if (artist && artist.length > 0) {
+        album.artist = artist[0];
+      }
+    } catch (error) {
+      console.error("Error fetching album artist:", error);
+      throw error;
     }
   }
 
@@ -30,23 +36,28 @@ export default class AlbumRepository {
    * @throws Will throw an error if the database query fails.
    */
   private static async getSongs(album: Album) {
-    const songs = await query(
-      `SELECT s.*, als.track_number FROM songs s
+    try {
+      const songs = await query(
+        `SELECT s.*, als.track_number FROM songs s
       JOIN album_songs als ON s.id = als.song_id
       WHERE als.album_id = $1`,
-      [album.id]
-    );
+        [album.id]
+      );
 
-    if (songs && songs.length > 0) {
-      album.songs = songs;
-      for (const as of album.songs) {
-        if (as.song.image_url) {
-          as.song.image_url = getBlobUrl(as.song.image_url);
-        }
-        if (as.song.audio_url) {
-          as.song.audio_url = getBlobUrl(as.song.audio_url);
+      if (songs && songs.length > 0) {
+        album.songs = songs;
+        for (const as of album.songs) {
+          if (as.song.image_url) {
+            as.song.image_url = getBlobUrl(as.song.image_url);
+          }
+          if (as.song.audio_url) {
+            as.song.audio_url = getBlobUrl(as.song.audio_url);
+          }
         }
       }
+    } catch (error) {
+      console.error("Error fetching album songs:", error);
+      throw error;
     }
   }
 
@@ -56,13 +67,18 @@ export default class AlbumRepository {
    * @throws Will throw an error if the database query fails.
    */
   private static async getLikes(album: Album) {
-    const likes = await query(
-      `SELECT COUNT(*) AS likes FROM album_likes WHERE album_id = $1`,
-      [album.id]
-    );
+    try {
+      const likes = await query(
+        `SELECT COUNT(*) AS likes FROM album_likes WHERE album_id = $1`,
+        [album.id]
+      );
 
-    if (likes && likes.length > 0) {
-      album.likes = parseInt(likes[0].likes, 10) || 0;
+      if (likes && likes.length > 0) {
+        album.likes = parseInt(likes[0].likes, 10) || 0;
+      }
+    } catch (error) {
+      console.error("Error fetching album likes:", error);
+      throw error;
     }
   }
 
@@ -72,13 +88,18 @@ export default class AlbumRepository {
    * @throws Will throw an error if the database query fails.
    */
   private static async getRuntime(album: Album) {
-    const runtime = await query(
-      `SELECT SUM(duration) AS runtime FROM songs WHERE album_id = $1`,
-      [album.id]
-    );
+    try {
+      const runtime = await query(
+        `SELECT SUM(duration) AS runtime FROM songs WHERE album_id = $1`,
+        [album.id]
+      );
 
-    if (runtime && runtime.length > 0) {
-      album.runtime = parseInt(runtime[0].runtime, 10) || 0;
+      if (runtime && runtime.length > 0) {
+        album.runtime = parseInt(runtime[0].runtime, 10) || 0;
+      }
+    } catch (error) {
+      console.error("Error fetching album runtime:", error);
+      throw error;
     }
   }
 
@@ -145,6 +166,10 @@ export default class AlbumRepository {
     }
   ): Promise<Album | null> {
     try {
+      if (!(await validateAlbumId(id))) {
+        throw new Error("Invalid album ID");
+      }
+
       const fields: string[] = [];
       const values: any[] = [];
 
@@ -193,6 +218,10 @@ export default class AlbumRepository {
    */
   static async delete(id: UUID): Promise<Album | null> {
     try {
+      if (!(await validateAlbumId(id))) {
+        throw new Error("Invalid album ID");
+      }
+
       const res = await withTransaction(async (client) => {
         const del = await client.query(
           "DELETE FROM albums WHERE id = $1 RETURNING *",
@@ -229,6 +258,10 @@ export default class AlbumRepository {
     }
   ): Promise<Album | null> {
     try {
+      if (!(await validateAlbumId(id))) {
+        throw new Error("Invalid album ID");
+      }
+
       const res = await query("SELECT * FROM albums WHERE id = $1", [id]);
 
       if (!res || res.length === 0) {
@@ -339,6 +372,15 @@ export default class AlbumRepository {
    */
   static async addSong(albumId: UUID, songId: UUID, track_number: number) {
     try {
+      if (
+        !(await validateMany([
+          { id: albumId, type: "album" },
+          { id: songId, type: "song" },
+        ]))
+      ) {
+        throw new Error("Invalid album ID or song ID");
+      }
+
       await query(
         `INSERT INTO album_songs (album_id, song_id, track_number)
         VALUES ($1, $2, $3)
@@ -358,6 +400,15 @@ export default class AlbumRepository {
    */
   static async removeSong(albumId: UUID, songId: UUID) {
     try {
+      if (
+        !(await validateMany([
+          { id: albumId, type: "album" },
+          { id: songId, type: "song" },
+        ]))
+      ) {
+        throw new Error("Invalid album ID or song ID");
+      }
+
       await query(
         `DELETE FROM album_songs
         WHERE album_id = $1 AND song_id = $2`,

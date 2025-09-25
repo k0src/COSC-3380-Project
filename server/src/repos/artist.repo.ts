@@ -1,8 +1,8 @@
 import { Artist, UUID } from "@types";
 import { query, withTransaction } from "../config/database";
 import { SongRepository as Song } from "@repositories";
-import { FollowService } from "@services";
 import { getBlobUrl } from "config/blobStorage";
+import { validateArtistId, validateMany } from "@validators";
 
 export default class ArtistRepository {
   /* ----------------------------- HELPER METHODS ----------------------------- */
@@ -13,20 +13,25 @@ export default class ArtistRepository {
    * @throws Error if the database query fails.
    */
   private static async getUser(artist: Artist) {
-    const user = await query(
-      `SELECT u.* FROM users u
+    try {
+      const user = await query(
+        `SELECT u.* FROM users u
       JOIN artists a ON u.id = a.user_id
       WHERE a.id = $1`,
-      [artist.id]
-    );
+        [artist.id]
+      );
 
-    if (user && user.length > 0) {
-      artist.user = user[0];
-      if (artist.user && artist.user.profile_picture_url) {
-        artist.user.profile_picture_url = getBlobUrl(
-          artist.user.profile_picture_url
-        );
+      if (user && user.length > 0) {
+        artist.user = user[0];
+        if (artist.user && artist.user.profile_picture_url) {
+          artist.user.profile_picture_url = getBlobUrl(
+            artist.user.profile_picture_url
+          );
+        }
       }
+    } catch (error) {
+      console.error("Error fetching artist user:", error);
+      throw error;
     }
   }
 
@@ -36,26 +41,31 @@ export default class ArtistRepository {
    * @throws Error if the database query fails.
    */
   private static async getSongs(artist: Artist) {
-    const songIds = await query(
-      `SELECT s.id, sa.role FROM songs s
-      JOIN song_artists sa ON s.id = sa.song_id
-      WHERE sa.artist_id = $1`,
-      [artist.id]
-    );
+    try {
+      const songIds = await query(
+        `SELECT s.id, sa.role FROM songs s
+        JOIN song_artists sa ON s.id = sa.song_id
+        WHERE sa.artist_id = $1`,
+        [artist.id]
+      );
 
-    if (songIds && songIds.length > 0) {
-      for (const { id, role } of songIds) {
-        const song = await Song.getOne(id, {
-          includeAlbum: true,
-          includeArtists: true,
-        });
-        if (song) {
-          if (!artist.songs) {
-            artist.songs = [];
+      if (songIds && songIds.length > 0) {
+        for (const { id, role } of songIds) {
+          const song = await Song.getOne(id, {
+            includeAlbum: true,
+            includeArtists: true,
+          });
+          if (song) {
+            if (!artist.songs) {
+              artist.songs = [];
+            }
+            artist.songs.push({ song, role });
           }
-          artist.songs.push({ song, role });
         }
       }
+    } catch (error) {
+      console.error("Error fetching artist songs:", error);
+      throw error;
     }
   }
 
@@ -65,20 +75,25 @@ export default class ArtistRepository {
    * @throws Error if the database query fails.
    */
   private static async getAlbums(artist: Artist) {
-    const albums = await query(
-      `SELECT a.* FROM albums a
-      JOIN artist_albums aa ON a.id = aa.album_id
-      WHERE aa.artist_id = $1`,
-      [artist.id]
-    );
+    try {
+      const albums = await query(
+        `SELECT a.* FROM albums a
+        JOIN artists ar ON a.created_by = ar.id
+        WHERE ar.id = $1`,
+        [artist.id]
+      );
 
-    if (albums) {
-      artist.albums = albums;
-      for (const album of artist.albums) {
-        if (album && album.image_url) {
-          album.image_url = getBlobUrl(album.image_url);
+      if (albums) {
+        artist.albums = albums;
+        for (const album of artist.albums) {
+          if (album && album.image_url) {
+            album.image_url = getBlobUrl(album.image_url);
+          }
         }
       }
+    } catch (error) {
+      console.error("Error fetching artist albums:", error);
+      throw error;
     }
   }
 
@@ -136,6 +151,10 @@ export default class ArtistRepository {
     }: { display_name?: string; bio?: string; user_id?: UUID }
   ): Promise<Artist | null> {
     try {
+      if (!(await validateArtistId(id))) {
+        throw new Error("Invalid artist ID");
+      }
+
       const fields: string[] = [];
       const values: any[] = [];
 
@@ -180,6 +199,10 @@ export default class ArtistRepository {
    */
   static async delete(id: UUID): Promise<Artist | null> {
     try {
+      if (!(await validateArtistId(id))) {
+        throw new Error("Invalid artist ID");
+      }
+
       const res = await withTransaction(async (client) => {
         const del = await client.query(
           "DELETE FROM artists WHERE id = $1 RETURNING *",
@@ -204,6 +227,10 @@ export default class ArtistRepository {
     }
   ): Promise<Artist | null> {
     try {
+      if (!(await validateArtistId(id))) {
+        throw new Error("Invalid artist ID");
+      }
+
       const res = await query("SELECT * FROM artists WHERE id = $1", [id]);
 
       if (!res || res.length === 0) {
@@ -278,6 +305,63 @@ export default class ArtistRepository {
       throw error;
     }
   }
-}
 
-// followers + count
+  /**
+   * Adds an artist to a song with a specific role.
+   * @param artistId The ID of the artist.
+   * @param songId The ID of the song.
+   * @param role The role of the artist in the song
+   * @throws Error if the database query fails.
+   */
+  static async addToSong(artistId: UUID, songId: UUID, role: string) {
+    try {
+      if (
+        !(await validateMany([
+          { id: artistId, type: "artist" },
+          { id: songId, type: "song" },
+        ]))
+      ) {
+        throw new Error("Invalid artist ID or song ID");
+      }
+
+      await query(
+        `INSERT INTO song_artists (song_id, artist_id, role)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (song_id, artist_id) 
+        DO UPDATE SET role = EXCLUDED.role`,
+        [songId, artistId, role]
+      );
+    } catch (error) {
+      console.error("Error adding artist to song:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Removes an artist from a song.
+   * @param artistId The ID of the artist.
+   * @param songId The ID of the song.
+   * @throws Error if the database query fails.
+   */
+  static async removeFromSong(artistId: UUID, songId: UUID) {
+    try {
+      if (
+        !(await validateMany([
+          { id: artistId, type: "artist" },
+          { id: songId, type: "song" },
+        ]))
+      ) {
+        throw new Error("Invalid artist ID or song ID");
+      }
+
+      await query(
+        `DELETE FROM song_artists 
+        WHERE song_id = $1 AND artist_id = $2`,
+        [songId, artistId]
+      );
+    } catch (error) {
+      console.error("Error removing artist from song:", error);
+      throw error;
+    }
+  }
+}

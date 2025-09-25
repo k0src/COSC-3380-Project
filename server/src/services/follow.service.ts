@@ -1,6 +1,10 @@
 import type { User, UUID } from "@types";
 import { query } from "../config/database.js";
+import { validateUserId, validateMany } from "../validators/id.validator.js";
 
+/**
+ * Service for managing user followers.
+ */
 export default class FollowService {
   /**
    * Follow a user
@@ -10,6 +14,15 @@ export default class FollowService {
    */
   static async followUser(followerId: UUID, followingId: UUID) {
     try {
+      if (
+        !(await validateMany([
+          { id: followerId, type: "user" },
+          { id: followingId, type: "user" },
+        ]))
+      ) {
+        throw new Error("Invalid follower ID or following ID");
+      }
+
       await query(
         `INSERT INTO user_followers (follower_id, following_id) 
         VALUES ($1, $2) ON CONFLICT DO NOTHING`,
@@ -29,6 +42,15 @@ export default class FollowService {
    */
   static async unfollowUser(followerId: UUID, followingId: UUID) {
     try {
+      if (
+        !(await validateMany([
+          { id: followerId, type: "user" },
+          { id: followingId, type: "user" },
+        ]))
+      ) {
+        throw new Error("Invalid follower ID or following ID");
+      }
+
       await query(
         `DELETE FROM user_followers 
         WHERE follower_id = $1 AND following_id = $2`,
@@ -43,16 +65,28 @@ export default class FollowService {
   /**
    * Get a list of followers for a user
    * @param userId The ID of the user
+   * @param options Optional pagination options
+   * @param options.limit The maximum number of followers to return
+   * @param options.offset The number of followers to skip
    * @returns A list of users who follow the specified user
    * @throws Error if the operation fails
    */
-  static async getFollowers(userId: UUID): Promise<User[]> {
+  static async getFollowers(
+    userId: UUID,
+    options?: { limit?: number; offset?: number }
+  ): Promise<User[]> {
     try {
+      if (!(await validateUserId(userId))) {
+        throw new Error("Invalid user ID");
+      }
+
       const res = await query(
         `SELECT u.* FROM users u
         JOIN user_followers uf ON u.id = uf.follower_id
-        WHERE uf.following_id = $1`,
-        [userId]
+        WHERE uf.following_id = $1
+        ${options?.limit ? "LIMIT $2" : ""}
+        ${options?.offset ? "OFFSET $3" : ""}`,
+        [userId, options?.limit, options?.offset]
       );
       return res;
     } catch (error) {
@@ -64,16 +98,28 @@ export default class FollowService {
   /**
    * Get a list of users that a user is following
    * @param userId The ID of the user
+   * @param options Optional pagination options
+   * @param options.limit The maximum number of users to return
+   * @param options.offset The number of users to skip
    * @returns A list of users that the user is following
    * @throws Error if the operation fails
    */
-  static async getFollowing(userId: UUID): Promise<User[]> {
+  static async getFollowing(
+    userId: UUID,
+    options?: { limit?: number; offset?: number }
+  ): Promise<User[]> {
     try {
+      if (!(await validateUserId(userId))) {
+        throw new Error("Invalid user ID");
+      }
+
       const res = await query(
         `SELECT u.* FROM users u
         JOIN user_followers uf ON u.id = uf.following_id
-        WHERE uf.follower_id = $1`,
-        [userId]
+        WHERE uf.follower_id = $1
+        ${options?.limit ? "LIMIT $2" : ""}
+        ${options?.offset ? "OFFSET $3" : ""}`,
+        [userId, options?.limit, options?.offset]
       );
       return res;
     } catch (error) {
@@ -94,6 +140,15 @@ export default class FollowService {
     followingId: UUID
   ): Promise<boolean> {
     try {
+      if (
+        !(await validateMany([
+          { id: followerId, type: "user" },
+          { id: followingId, type: "user" },
+        ]))
+      ) {
+        throw new Error("Invalid follower ID or following ID");
+      }
+
       const res = await query(
         `SELECT 1 FROM user_followers 
         WHERE follower_id = $1 AND following_id = $2`,
@@ -114,6 +169,10 @@ export default class FollowService {
    */
   static async getFollowerCount(userId: UUID): Promise<number> {
     try {
+      if (!(await validateUserId(userId))) {
+        throw new Error("Invalid user ID");
+      }
+
       const res = await query(
         `SELECT COUNT(*) FROM user_followers 
         WHERE following_id = $1`,
@@ -134,6 +193,10 @@ export default class FollowService {
    */
   static async getFollowingCount(userId: UUID): Promise<number> {
     try {
+      if (!(await validateUserId(userId))) {
+        throw new Error("Invalid user ID");
+      }
+
       const res = await query(
         `SELECT COUNT(*) FROM user_followers 
         WHERE follower_id = $1`,
@@ -150,20 +213,35 @@ export default class FollowService {
    * Get mutual followers between two users
    * @param userId1 The ID of the first user
    * @param userId2 The ID of the second user
+   * @param options Optional pagination options
+   * @param options.limit The maximum number of users to return
+   * @param options.offset The number of users to skip
    * @return A list of users who follow both userId1 and userId2
    * @throws Error if the operation fails
    */
   static async getMutualFollowers(
     userId1: UUID,
-    userId2: UUID
+    userId2: UUID,
+    options?: { limit?: number; offset?: number }
   ): Promise<User[]> {
     try {
+      if (
+        !(await validateMany([
+          { id: userId1, type: "user" },
+          { id: userId2, type: "user" },
+        ]))
+      ) {
+        throw new Error("Invalid user IDs");
+      }
+
       const res = await query(
         `SELECT u.* FROM users u
         JOIN user_followers uf1 ON u.id = uf1.follower_id
         JOIN user_followers uf2 ON u.id = uf2.follower_id
-        WHERE uf1.following_id = $1 AND uf2.following_id = $2`,
-        [userId1, userId2]
+        WHERE uf1.following_id = $1 AND uf2.following_id = $2
+        ${options?.limit ? "LIMIT $3" : ""}
+        ${options?.offset ? "OFFSET $4" : ""}`,
+        [userId1, userId2, options?.limit, options?.offset]
       );
       return res;
     } catch (error) {

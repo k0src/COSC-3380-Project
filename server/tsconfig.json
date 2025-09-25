@@ -10,7 +10,10 @@
       "@routes/*": ["routes/*"],
       "@services": ["services/index"],
       "@services/*": ["services/*"],
-      "@middleware/*": ["middleware/*"]
+      "@validators": ["validators/index"],
+      "@validators/*": ["validators/*"]
+      // "@middleware": ["middleware/index"],
+      // "@middleware/*": ["middleware/*"]
     },
     "target": "ES2022",
     "module": "ESNext",

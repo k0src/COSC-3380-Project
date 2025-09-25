@@ -1,6 +1,7 @@
-import { Song, UUID, SongComment } from "@types";
+import { Song, UUID } from "@types";
 import { query, withTransaction } from "../config/database.js";
 import { getBlobUrl } from "../config/blobStorage.js";
+import { validateSongId, validateMany } from "../validators/id.validator.js";
 
 // before: backend parse, sanitize, validate, set release date = now if not provided, calc duration,
 // then call repo
@@ -14,19 +15,24 @@ export default class SongRepository {
    * @throws Will throw an error if the database query fails.
    */
   private static async getAlbum(song: Song) {
-    const album = await query(
-      `SELECT a.* FROM albums a
+    try {
+      const album = await query(
+        `SELECT a.* FROM albums a
       JOIN album_songs als ON a.id = als.album_id
       WHERE als.song_id = $1
       LIMIT 1`,
-      [song.id]
-    );
+        [song.id]
+      );
 
-    if (album && album.length > 0) {
-      song.album = album[0];
-      if (song.album?.image_url) {
-        song.album.image_url = getBlobUrl(song.album.image_url);
+      if (album && album.length > 0) {
+        song.album = album[0];
+        if (song.album?.image_url) {
+          song.album.image_url = getBlobUrl(song.album.image_url);
+        }
       }
+    } catch (error) {
+      console.error("Error fetching album for song:", error);
+      throw error;
     }
   }
 
@@ -36,19 +42,24 @@ export default class SongRepository {
    * @throws Will throw an error if the database query fails.
    */
   private static async getArtists(song: Song) {
-    const artists = await query(
-      `SELECT a.*, sa.role 
+    try {
+      const artists = await query(
+        `SELECT a.*, sa.role 
        FROM artists a
        JOIN song_artists sa ON a.id = sa.artist_id
        WHERE sa.song_id = $1`,
-      [song.id]
-    );
+        [song.id]
+      );
 
-    if (artists) {
-      if (!song.artists) {
-        song.artists = [];
+      if (artists) {
+        if (!song.artists) {
+          song.artists = [];
+        }
+        song.artists = artists;
       }
-      song.artists = artists;
+    } catch (error) {
+      console.error("Error fetching artists for song:", error);
+      throw error;
     }
   }
 
@@ -58,13 +69,18 @@ export default class SongRepository {
    * @throws Will throw an error if the database query fails.
    */
   private static async getLikes(song: Song) {
-    const likes = await query(
-      "SELECT COUNT(*) AS likes FROM song_likes WHERE song_id = $1",
-      [song.id]
-    );
+    try {
+      const likes = await query(
+        "SELECT COUNT(*) AS likes FROM song_likes WHERE song_id = $1",
+        [song.id]
+      );
 
-    if (likes && likes.length > 0) {
-      song.likes = parseInt(likes[0].likes, 10) || 0;
+      if (likes && likes.length > 0) {
+        song.likes = parseInt(likes[0].likes, 10) || 0;
+      }
+    } catch (error) {
+      console.error("Error fetching likes for song:", error);
+      throw error;
     }
   }
 
@@ -155,6 +171,10 @@ export default class SongRepository {
     }
   ): Promise<Song | null> {
     try {
+      if (!(await validateSongId(id))) {
+        throw new Error("Invalid song ID");
+      }
+
       const fields: string[] = [];
       const values: any[] = [];
 
@@ -211,6 +231,10 @@ export default class SongRepository {
    */
   static async delete(id: UUID): Promise<Song | null> {
     try {
+      if (!(await validateSongId(id))) {
+        throw new Error("Invalid song ID");
+      }
+
       const res = await withTransaction(async (client) => {
         const del = await client.query(
           "DELETE FROM songs WHERE id = $1 RETURNING *",
@@ -245,6 +269,10 @@ export default class SongRepository {
     }
   ): Promise<Song | null> {
     try {
+      if (!(await validateSongId(id))) {
+        throw new Error("Invalid song ID");
+      }
+
       const res = await query("SELECT * FROM songs WHERE id = $1", [id]);
 
       if (!res || res.length === 0) {
@@ -331,43 +359,6 @@ export default class SongRepository {
       return processedSongs;
     } catch (error) {
       console.error("Error fetching songs:", error);
-      throw error;
-    }
-  }
-
-  // MOVE TO COMMENT SERVICE with get comments by user, song
-  /**
-   * Gets comments for a song.
-   * @param id - The ID of the song.
-   * @param limit - The maximum number of comments to return.
-   * @param offset - The number of comments to skip.
-   * @returns List of comments, or null if fetching fails.
-   * @throws Error if the database query fails.
-   */
-  static async getComments(
-    id: UUID,
-    limit: number,
-    offset: number
-  ): Promise<SongComment[] | null> {
-    try {
-      const comments = await query(
-        `SELECT 
-          user_id, 
-          comment_text, 
-          users.username, 
-          users.profile_picture_url, 
-          commented_at
-        FROM song_comments 
-        JOIN users ON song_comments.user_id = users.id
-        WHERE song_id = $1 
-        ORDER BY commented_at DESC 
-        LIMIT $2 OFFSET $3`,
-        [id, limit, offset]
-      );
-
-      return comments ?? null;
-    } catch (error) {
-      console.error("Error fetching song comments:", error);
       throw error;
     }
   }

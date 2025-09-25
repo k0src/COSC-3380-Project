@@ -15,10 +15,6 @@ export interface Song {
   likes?: number;
 }
 
-export interface SongComment {
-  user_id: UUID;
-  username: string;
-  profile_picture_url: string;
-  comment_text: string;
-  commented_at: string;
+export interface PlaylistSong extends Song {
+  added_at: string;
 }
