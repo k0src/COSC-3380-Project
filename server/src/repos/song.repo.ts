@@ -3,9 +3,6 @@ import { query, withTransaction } from "../config/database.js";
 import { getBlobUrl } from "../config/blobStorage.js";
 import { validateSongId, validateMany } from "../validators/id.validator.js";
 
-// before: backend parse, sanitize, validate, set release date = now if not provided, calc duration,
-// then call repo
-
 export default class SongRepository {
   /* ----------------------------- HELPER METHODS ----------------------------- */
 
@@ -18,9 +15,9 @@ export default class SongRepository {
     try {
       const album = await query(
         `SELECT a.* FROM albums a
-      JOIN album_songs als ON a.id = als.album_id
-      WHERE als.song_id = $1
-      LIMIT 1`,
+        JOIN album_songs als ON a.id = als.album_id
+        WHERE als.song_id = $1
+        LIMIT 1`,
         [song.id]
       );
 
@@ -45,9 +42,9 @@ export default class SongRepository {
     try {
       const artists = await query(
         `SELECT a.*, sa.role 
-       FROM artists a
-       JOIN song_artists sa ON a.id = sa.artist_id
-       WHERE sa.song_id = $1`,
+        FROM artists a
+        JOIN song_artists sa ON a.id = sa.artist_id
+        WHERE sa.song_id = $1`,
         [song.id]
       );
 
@@ -127,7 +124,7 @@ export default class SongRepository {
     try {
       const res = await query(
         `INSERT INTO songs 
-          (title, duration, genre, release_date, image_url, audio_url)
+        (title, duration, genre, release_date, image_url, audio_url)
         VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *`,
         [title, duration, genre, release_date, image_url, audio_url]
@@ -372,12 +369,11 @@ export default class SongRepository {
    */
   static async addArtist(artistId: UUID, songId: UUID, role: string) {
     try {
-      if (
-        !(await validateMany([
-          { id: artistId, type: "artist" },
-          { id: songId, type: "song" },
-        ]))
-      ) {
+      const valid = await validateMany([
+        { id: artistId, type: "artist" },
+        { id: songId, type: "song" },
+      ]);
+      if (!valid) {
         throw new Error("Invalid artist ID or song ID");
       }
 
@@ -402,12 +398,11 @@ export default class SongRepository {
    */
   static async removeArtist(artistId: UUID, songId: UUID) {
     try {
-      if (
-        !(await validateMany([
-          { id: artistId, type: "artist" },
-          { id: songId, type: "song" },
-        ]))
-      ) {
+      const valid = await validateMany([
+        { id: artistId, type: "artist" },
+        { id: songId, type: "song" },
+      ]);
+      if (!valid) {
         throw new Error("Invalid artist ID or song ID");
       }
 
@@ -418,6 +413,28 @@ export default class SongRepository {
       );
     } catch (error) {
       console.error("Error removing artist from song:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Counts the total number of songs.
+   * @param songId - The ID of the song.
+   * @return The total number of songs.
+   * @throws Error if the operation fails.
+   */
+  static async count(songId: UUID): Promise<number> {
+    try {
+      if (!(await validateSongId(songId))) {
+        throw new Error("Invalid song ID");
+      }
+
+      const res = await query(`SELECT COUNT(*) FROM songs WHERE id = $1`, [
+        songId,
+      ]);
+      return parseInt(res[0]?.count ?? "0", 10);
+    } catch (error) {
+      console.error("Error counting songs:", error);
       throw error;
     }
   }

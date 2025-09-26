@@ -1,4 +1,4 @@
-import { Album, UUID } from "@types";
+import { Album, UUID, Song } from "@types";
 import { query, withTransaction } from "../config/database.js";
 import { getBlobUrl } from "config/blobStorage.js";
 import { validateAlbumId, validateMany } from "@validators";
@@ -15,9 +15,9 @@ export default class AlbumRepository {
     try {
       const artist = await query(
         `SELECT ar.* FROM artists ar
-      JOIN albums a ON ar.id = a.created_by
-      WHERE a.id = $1
-      LIMIT 1`,
+        JOIN albums a ON ar.id = a.created_by
+        WHERE a.id = $1
+        LIMIT 1`,
         [album.id]
       );
 
@@ -26,37 +26,6 @@ export default class AlbumRepository {
       }
     } catch (error) {
       console.error("Error fetching album artist:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Fetches the songs for an album and attaches them to the album object.
-   * @param album - The album object.
-   * @throws Error if the operation fails.
-   */
-  private static async getSongs(album: Album) {
-    try {
-      const songs = await query(
-        `SELECT s.*, als.track_number FROM songs s
-      JOIN album_songs als ON s.id = als.song_id
-      WHERE als.album_id = $1`,
-        [album.id]
-      );
-
-      if (songs && songs.length > 0) {
-        album.songs = songs;
-        for (const as of album.songs) {
-          if (as.song.image_url) {
-            as.song.image_url = getBlobUrl(as.song.image_url);
-          }
-          if (as.song.audio_url) {
-            as.song.audio_url = getBlobUrl(as.song.audio_url);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching album songs:", error);
       throw error;
     }
   }
@@ -241,7 +210,6 @@ export default class AlbumRepository {
    * Gets a single album by ID.
    * @param id - The ID of the album to get.
    * @param options - Options for including related data.
-   * @param options.includeSongs - Option to include the songs data.
    * @param options.includeArtist - Option to include the artist data.
    * @param options.includeLikes - Option to include the like count.
    * @param options.includeRuntime - Option to include the total runtime of the album.
@@ -251,7 +219,6 @@ export default class AlbumRepository {
   static async getOne(
     id: UUID,
     options?: {
-      includeSongs?: boolean;
       includeArtist?: boolean;
       includeLikes?: boolean;
       includeRuntime?: boolean;
@@ -274,9 +241,6 @@ export default class AlbumRepository {
         album.image_url = getBlobUrl(album.image_url);
       }
 
-      if (options?.includeSongs) {
-        await this.getSongs(album);
-      }
       if (options?.includeArtist) {
         await this.getArtist(album);
       }
@@ -297,7 +261,6 @@ export default class AlbumRepository {
   /**
    * Gets multiple albums.
    * @param options - Options for pagination and including related data.
-   * @param options.includeSongs - Option to include the songs data.
    * @param options.includeArtist - Option to include the artist data.
    * @param options.includeLikes - Option to include the like count.
    * @param options.includeRuntime - Option to include the total runtime of the album.
@@ -307,7 +270,6 @@ export default class AlbumRepository {
    * @throws Error if the operation fails.
    */
   static async getMany(options?: {
-    includeSongs?: boolean;
     includeArtist?: boolean;
     includeLikes?: boolean;
     includeRuntime?: boolean;
@@ -340,9 +302,6 @@ export default class AlbumRepository {
             album.image_url = getBlobUrl(album.image_url);
           }
 
-          if (options?.includeSongs) {
-            await this.getSongs(album);
-          }
           if (options?.includeArtist) {
             await this.getArtist(album);
           }
@@ -372,12 +331,11 @@ export default class AlbumRepository {
    */
   static async addSong(albumId: UUID, songId: UUID, track_number: number) {
     try {
-      if (
-        !(await validateMany([
-          { id: albumId, type: "album" },
-          { id: songId, type: "song" },
-        ]))
-      ) {
+      const valid = await validateMany([
+        { id: albumId, type: "album" },
+        { id: songId, type: "song" },
+      ]);
+      if (!valid) {
         throw new Error("Invalid album ID or song ID");
       }
 
@@ -400,12 +358,11 @@ export default class AlbumRepository {
    */
   static async removeSong(albumId: UUID, songId: UUID) {
     try {
-      if (
-        !(await validateMany([
-          { id: albumId, type: "album" },
-          { id: songId, type: "song" },
-        ]))
-      ) {
+      const valid = await validateMany([
+        { id: albumId, type: "album" },
+        { id: songId, type: "song" },
+      ]);
+      if (!valid) {
         throw new Error("Invalid album ID or song ID");
       }
 
@@ -416,6 +373,66 @@ export default class AlbumRepository {
       );
     } catch (error) {
       console.error("Error removing song:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetches songs for a given album.
+   * @param albumId - The ID of the album.
+   * @param options - Options for pagination.
+   * @param options.limit - Maximum number of songs to return.
+   * @param options.offset - Number of songs to skip.
+   * @returns A list of songs in the album.
+   * @throws Error if the operation fails.
+   */
+  static async getSongs(
+    albumId: UUID,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Song[]> {
+    try {
+      if (!(await validateAlbumId(albumId))) {
+        throw new Error("Invalid album ID");
+      }
+
+      const params = [albumId, options?.limit || 50, options?.offset || 0];
+      const sql = `
+        SELECT s.*, as.track_number FROM songs s
+        JOIN album_songs as ON s.id = as.song_id
+        WHERE as.album_id = $1
+        ORDER BY as.track_number ASC
+        LIMIT $2 OFFSET $3
+      `;
+
+      const res = await query(sql, params);
+      return res;
+    } catch (error) {
+      console.error("Error fetching album songs:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Counts the total number of albums.
+   * @param albumId - The ID of the album.
+   * @return The total number of albums.
+   * @throws Error if the operation fails.
+   */
+  static async count(albumId: UUID): Promise<number> {
+    try {
+      if (!(await validateAlbumId(albumId))) {
+        throw new Error("Invalid album ID");
+      }
+
+      const res = await query(`SELECT COUNT(*) FROM albums WHERE id = $1`, [
+        albumId,
+      ]);
+      return parseInt(res[0]?.count ?? "0", 10);
+    } catch (error) {
+      console.error("Error counting albums:", error);
       throw error;
     }
   }

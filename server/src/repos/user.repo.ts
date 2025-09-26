@@ -1,45 +1,9 @@
 import { User, Playlist, UUID } from "@types";
-import { PlaylistRepository } from "@repositories";
 import { query, withTransaction } from "../config/database.js";
 import { getBlobUrl } from "../config/blobStorage.js";
 import { validateUserId } from "@validators";
 
 export default class UserRepository {
-  /* ----------------------------- HELPER METHODS ----------------------------- */
-
-  /**
-   * Fetches the playlists created by the user and attaches them to the user object.
-   * @param user - The user object.
-   * @throws Error if the operation fails.
-   */
-  private static async _getPlaylists(user: User) {
-    try {
-      const playlistIds = await query(
-        `SELECT id FROM playlists WHERE created_by = $1 ORDER BY created_at DESC`,
-        [user.id]
-      );
-
-      if (playlistIds && playlistIds.length > 0) {
-        if (!user.playlists) {
-          user.playlists = [];
-        }
-        for (const { id } of playlistIds) {
-          const playlist = await PlaylistRepository.getOne(id, {
-            includeLikes: true,
-          });
-          if (playlist) {
-            user.playlists.push(playlist);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching user playlists:", error);
-      throw error;
-    }
-  }
-
-  /* ------------------------------ MAIN METHODS ------------------------------ */
-
   /**
    * Creates a new user.
    * @param userData - The data for the new song.
@@ -205,17 +169,10 @@ export default class UserRepository {
   /**
    * Gets a single user by ID.
    * @param id - The ID of the user to get.
-   * @param options - Options for including related data.
-   * @param options.includePlaylists - Option to include the user's playlists.
    * @returns The user, or null if not found.
    * @throws Error if the operation fails.
    */
-  static async getOne(
-    id: UUID,
-    options?: {
-      includePlaylists?: boolean;
-    }
-  ): Promise<User | null> {
+  static async getOne(id: UUID): Promise<User | null> {
     try {
       if (!(await validateUserId(id))) {
         throw new Error("Invalid user ID");
@@ -233,10 +190,6 @@ export default class UserRepository {
         user.profile_picture_url = getBlobUrl(user.profile_picture_url);
       }
 
-      if (options?.includePlaylists) {
-        await this._getPlaylists(user);
-      }
-
       return user;
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -246,15 +199,13 @@ export default class UserRepository {
 
   /**
    * Gets multiple users.
-   * @param options - Options for pagination and including related data.
-   * @param options.includePlaylists - Option to include the user's playlists.
+   * @param options - Options for pagination.
    * @param options.limit - Maximum number of users to return.
    * @param options.offset - Number of users to skip.
    * @returns A list of users.
    * @throws Error if the operation fails.
    */
   static async getMany(options?: {
-    includePlaylists?: boolean;
     limit?: number;
     offset?: number;
   }): Promise<User[]> {
@@ -284,11 +235,6 @@ export default class UserRepository {
             if (user.profile_picture_url) {
               user.profile_picture_url = getBlobUrl(user.profile_picture_url);
             }
-
-            if (options?.includePlaylists) {
-              await this._getPlaylists(user);
-            }
-
             return user;
           })
         );
@@ -358,39 +304,57 @@ export default class UserRepository {
   /**
    * Gets the playlists created by a user.
    * @param userId - The ID of the user.
+   * @param options - Options for pagination.
+   * @param options.limit - Maximum number of playlists to return.
+   * @param options.offset - Number of playlists to skip.
    * @return A list of playlists created by the user.
    * @throws Error if the operation fails.
    */
-  static async getPlaylists(userId: UUID): Promise<Playlist[]> {
+  static async getPlaylists(
+    userId: UUID,
+    options?: { limit?: number; offset?: number }
+  ): Promise<Playlist[]> {
     try {
       if (!(await validateUserId(userId))) {
         throw new Error("Invalid user ID");
       }
 
-      const playlistIds = await query(
-        `SELECT id FROM playlists WHERE created_by = $1 ORDER BY created_at DESC`,
-        [userId]
-      );
+      const params = [userId, options?.limit || 50, options?.offset || 0];
+      const sql = `
+        SELECT p.*, COUNT(*) AS likes FROM playlist_likes pl
+        RIGHT JOIN playlists p ON p.id = pl.playlist_id
+        WHERE p.created_by = $1
+        GROUP BY p.id, p.created_at
+        ORDER BY p.created_at DESC
+        LIMIT $2 OFFSET $3
+      `;
 
-      if (!playlistIds || playlistIds.length === 0) {
-        return [];
-      }
-
-      const playlists: Playlist[] = [];
-
-      for (const { id } of playlistIds) {
-        const playlist = await PlaylistRepository.getOne(id, {
-          includeLikes: true,
-        });
-
-        if (playlist) {
-          playlists.push(playlist);
-        }
-      }
-
-      return playlists;
+      const res = await query(sql, params);
+      return res;
     } catch (error) {
       console.error("Error fetching user playlists:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Counts the total number of users.
+   * @param userId - The ID of the user.
+   * @return The total number of users.
+   * @throws Error if the operation fails.
+   */
+  static async count(userId: UUID): Promise<number> {
+    try {
+      if (!(await validateUserId(userId))) {
+        throw new Error("Invalid user ID");
+      }
+
+      const res = await query(`SELECT COUNT(*) FROM users WHERE id = $1`, [
+        userId,
+      ]);
+      return parseInt(res[0]?.count ?? "0", 10);
+    } catch (error) {
+      console.error("Error counting users:", error);
       throw error;
     }
   }

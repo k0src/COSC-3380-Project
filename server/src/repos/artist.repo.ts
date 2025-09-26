@@ -1,8 +1,7 @@
-import { Artist, UUID } from "@types";
+import { Album, Artist, Song, UUID } from "@types";
 import { query, withTransaction } from "../config/database";
-import { SongRepository } from "@repositories";
 import { getBlobUrl } from "config/blobStorage";
-import { validateArtistId, validateMany } from "@validators";
+import { validateArtistId } from "@validators";
 
 export default class ArtistRepository {
   /* ----------------------------- HELPER METHODS ----------------------------- */
@@ -16,8 +15,8 @@ export default class ArtistRepository {
     try {
       const user = await query(
         `SELECT u.* FROM users u
-      JOIN artists a ON u.id = a.user_id
-      WHERE a.id = $1`,
+        JOIN artists a ON u.id = a.user_id
+        WHERE a.id = $1`,
         [artist.id]
       );
 
@@ -31,68 +30,6 @@ export default class ArtistRepository {
       }
     } catch (error) {
       console.error("Error fetching artist user:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Gets the songs for an artist.
-   * @param artist The artist object.
-   * @throws Error if the operation fails.
-   */
-  private static async getSongs(artist: Artist) {
-    try {
-      const songIds = await query(
-        `SELECT s.id, sa.role FROM songs s
-        JOIN song_artists sa ON s.id = sa.song_id
-        WHERE sa.artist_id = $1`,
-        [artist.id]
-      );
-
-      if (songIds && songIds.length > 0) {
-        for (const { id, role } of songIds) {
-          const song = await SongRepository.getOne(id, {
-            includeAlbum: true,
-            includeArtists: true,
-          });
-          if (song) {
-            if (!artist.songs) {
-              artist.songs = [];
-            }
-            artist.songs.push({ song, role });
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching artist songs:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Gets the albums for an artist.
-   * @param artist The artist object.
-   * @throws Error if the operation fails.
-   */
-  private static async getAlbums(artist: Artist) {
-    try {
-      const albums = await query(
-        `SELECT a.* FROM albums a
-        JOIN artists ar ON a.created_by = ar.id
-        WHERE ar.id = $1`,
-        [artist.id]
-      );
-
-      if (albums) {
-        artist.albums = albums;
-        for (const album of artist.albums) {
-          if (album && album.image_url) {
-            album.image_url = getBlobUrl(album.image_url);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching artist albums:", error);
       throw error;
     }
   }
@@ -218,12 +155,18 @@ export default class ArtistRepository {
     }
   }
 
+  /**
+   * Fetches a single artist by ID.
+   * @param id - The ID of the artist to fetch.
+   * @param options - Options to include related data.
+   * @param options.includeUser - Option to include the user who created the artist.
+   * @returns The artist with the specified ID, or null if not found.
+   * @throws Error if the operation fails.
+   */
   static async getOne(
     id: UUID,
     options?: {
       includeUser?: boolean;
-      includeSongs?: boolean;
-      includeAlbums?: boolean;
     }
   ): Promise<Artist | null> {
     try {
@@ -242,12 +185,6 @@ export default class ArtistRepository {
       if (options?.includeUser) {
         await this.getUser(artist);
       }
-      if (options?.includeSongs) {
-        await this.getSongs(artist);
-      }
-      if (options?.includeAlbums) {
-        await this.getAlbums(artist);
-      }
 
       return artist;
     } catch (error) {
@@ -256,10 +193,17 @@ export default class ArtistRepository {
     }
   }
 
+  /**
+   * Fetches multiple artists.
+   * @param options - Options for pagination and including related data.
+   * @param options.includeUser - Option to include the user who created each artist.
+   * @param options.limit - Maximum number of artists to return.
+   * @param options.offset - Number of artists to skip.
+   * @returns A list of artists.
+   * @throws Error if the operation fails.
+   */
   static async getMany(options?: {
     includeUser?: boolean;
-    includeSongs?: boolean;
-    includeAlbums?: boolean;
     limit?: number;
     offset?: number;
   }): Promise<Artist[]> {
@@ -288,13 +232,6 @@ export default class ArtistRepository {
           if (options?.includeUser) {
             await this.getUser(artist);
           }
-          if (options?.includeSongs) {
-            await this.getSongs(artist);
-          }
-          if (options?.includeAlbums) {
-            await this.getAlbums(artist);
-          }
-
           return artist;
         })
       );
@@ -302,6 +239,103 @@ export default class ArtistRepository {
       return processedArtists;
     } catch (error) {
       console.error("Error fetching artists:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetches songs for a given artist.
+   * @param artistId - The ID of the artist.
+   * @param options - Options for pagination.
+   * @param options.limit - Maximum number of songs to return.
+   * @param options.offset - Number of songs to skip.
+   * @returns A list of songs in the artist's catalog.
+   * @throws Error if the operation fails.
+   */
+  static async getSongs(
+    artistId: UUID,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Song[]> {
+    try {
+      if (!(await validateArtistId(artistId))) {
+        throw new Error("Invalid artist ID");
+      }
+
+      const params = [artistId, options?.limit || 50, options?.offset || 0];
+      const sql = `
+        SELECT s.*, sa.role FROM songs s
+        JOIN song_artists sa ON s.id = sa.song_id
+        WHERE sa.artist_id = $1
+        ORDER BY s.created_at DESC
+        LIMIT $2 OFFSET $3
+      `;
+
+      const res = await query(sql, params);
+      return res;
+    } catch (error) {
+      console.error("Error fetching songs for artist:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetches albums for a given artist.
+   * @param artistId - The ID of the artist.
+   * @param options - Options for pagination.
+   * @param options.limit - Maximum number of albums to return.
+   * @param options.offset - Number of albums to skip.
+   * @returns A list of albums by the artist.
+   * @throws Error if the operation fails.
+   */
+  static async getAlbums(
+    artistId: UUID,
+    options?: { limit?: number; offset?: number }
+  ): Promise<Album[]> {
+    try {
+      if (!(await validateArtistId(artistId))) {
+        throw new Error("Invalid artist ID");
+      }
+
+      const params = [artistId, options?.limit || 50, options?.offset || 0];
+      const sql = `
+        SELECT al.* FROM albums al
+        JOIN album_songs als ON al.id = als.album_id
+        JOIN song_artists sa ON als.song_id = sa.song_id
+        WHERE sa.artist_id = $1
+        GROUP BY al.id
+        ORDER BY al.created_at DESC
+        LIMIT $2 OFFSET $3
+      `;
+
+      const res = await query(sql, params);
+      return res;
+    } catch (error) {
+      console.error("Error fetching albums for artist:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Counts the total number of artists.
+   * @param artistId - The ID of the artist.
+   * @return The total number of artists.
+   * @throws Error if the operation fails.
+   */
+  static async count(artistId: UUID): Promise<number> {
+    try {
+      if (!(await validateArtistId(artistId))) {
+        throw new Error("Invalid artist ID");
+      }
+
+      const res = await query(`SELECT COUNT(*) FROM artists WHERE id = $1`, [
+        artistId,
+      ]);
+      return parseInt(res[0]?.count ?? "0", 10);
+    } catch (error) {
+      console.error("Error counting artists:", error);
       throw error;
     }
   }

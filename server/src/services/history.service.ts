@@ -2,7 +2,6 @@ import type { UUID, Song, Album, Playlist, Artist } from "@types";
 import { query } from "../config/database.js";
 import { validateUserId, validateMany } from "@validators";
 
-// move these to common
 type HistoryEntity = "song" | "album" | "playlist" | "artist";
 
 type HistoryEntityMap = {
