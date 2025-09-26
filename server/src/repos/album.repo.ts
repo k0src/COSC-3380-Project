@@ -39,7 +39,9 @@ export default class AlbumRepository {
   private static async getRuntime(album: Album) {
     try {
       const runtime = await query(
-        `SELECT SUM(duration) AS runtime FROM songs WHERE album_id = $1`,
+        `SELECT SUM(s.duration) AS runtime 
+        FROM songs s JOIN album_songs as ON s.id = as.song_id 
+        WHERE as.album_id = $1`,
         [album.id]
       );
 
