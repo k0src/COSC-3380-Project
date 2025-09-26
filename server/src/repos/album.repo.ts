@@ -1,61 +1,9 @@
 import { Album, UUID, Song } from "@types";
 import { query, withTransaction } from "../config/database.js";
-import { LikeService } from "@services";
 import { getBlobUrl } from "config/blobStorage.js";
 import { validateAlbumId, validateMany } from "@validators";
 
 export default class AlbumRepository {
-  /* ----------------------------- HELPER METHODS ----------------------------- */
-
-  /**
-   * Fetches the artist for an album and attaches it to the album object.
-   * @param album - The album object.
-   * @throws Error if the operation fails.
-   */
-  private static async getArtist(album: Album) {
-    try {
-      const artist = await query(
-        `SELECT ar.* FROM artists ar
-        JOIN albums a ON ar.id = a.created_by
-        WHERE a.id = $1
-        LIMIT 1`,
-        [album.id]
-      );
-
-      if (artist && artist.length > 0) {
-        album.artist = artist[0];
-      }
-    } catch (error) {
-      console.error("Error fetching album artist:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Fetches the total runtime for an album and attaches it to the album object.
-   * @param album - The album object.
-   * @throws Error if the operation fails.
-   */
-  private static async getRuntime(album: Album) {
-    try {
-      const runtime = await query(
-        `SELECT SUM(s.duration) AS runtime 
-        FROM songs s JOIN album_songs as ON s.id = as.song_id 
-        WHERE as.album_id = $1`,
-        [album.id]
-      );
-
-      if (runtime && runtime.length > 0) {
-        album.runtime = parseInt(runtime[0].runtime, 10) || 0;
-      }
-    } catch (error) {
-      console.error("Error fetching album runtime:", error);
-      throw error;
-    }
-  }
-
-  /* ------------------------------ MAIN METHODS ------------------------------ */
-
   /**
    * Creates a new album.
    * @param albumData - The data for the new album.
@@ -211,26 +159,38 @@ export default class AlbumRepository {
         throw new Error("Invalid album ID");
       }
 
-      const res = await query("SELECT * FROM albums WHERE id = $1", [id]);
+      const sql = `
+        SELECT
+          a.*,
+        CASE WHEN $1 THEN row_to_json(ar.*)
+        ELSE NULL END as artist,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al
+          WHERE al.album_id = a.id)
+        ELSE NULL END as likes,
+        CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s
+          JOIN album_songs als ON s.id = als.song_id WHERE als.album_id = a.id)
+        ELSE NULL END as runtime
+        FROM albums a
+        LEFT JOIN artists ar ON a.created_by = ar.id
+        WHERE a.id = $4
+        LIMIT 1
+      `;
 
+      const params = [
+        options?.includeArtist ?? false,
+        options?.includeLikes ?? false,
+        options?.includeRuntime ?? false,
+        id,
+      ];
+
+      const res = await query(sql, params);
       if (!res || res.length === 0) {
         return null;
       }
 
-      let album: Album = res[0];
-
+      const album: Album = res[0];
       if (album.image_url) {
         album.image_url = getBlobUrl(album.image_url);
-      }
-
-      if (options?.includeArtist) {
-        await this.getArtist(album);
-      }
-      if (options?.includeLikes) {
-        album.likes = await LikeService.getLikeCount(album.id, "album");
-      }
-      if (options?.includeRuntime) {
-        await this.getRuntime(album);
       }
 
       return album;
@@ -259,12 +219,33 @@ export default class AlbumRepository {
     offset?: number;
   }): Promise<Album[]> {
     try {
-      const params = [options?.limit || 50, options?.offset || 0];
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+
       const sql = `
-        SELECT * FROM albums
-        ORDER BY created_at DESC
-        LIMIT $1 OFFSET $2
+        SELECT
+          a.*,
+          CASE WHEN $1 THEN row_to_json(ar.*) 
+          ELSE NULL END as artist,
+          CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al 
+            WHERE al.album_id = a.id) 
+          ELSE NULL END as likes,
+          CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s 
+            JOIN album_songs als ON s.id = als.song_id WHERE als.album_id = a.id) 
+          ELSE NULL END as runtime
+        FROM albums a
+        LEFT JOIN artists ar ON a.created_by = ar.id
+        ORDER BY a.created_at DESC
+        LIMIT $4 OFFSET $5
       `;
+
+      const params = [
+        options?.includeArtist ?? false,
+        options?.includeLikes ?? false,
+        options?.includeRuntime ?? false,
+        limit,
+        offset,
+      ];
 
       const albums = await query(sql, params);
       if (!albums || albums.length === 0) {
@@ -276,17 +257,6 @@ export default class AlbumRepository {
           if (album.image_url) {
             album.image_url = getBlobUrl(album.image_url);
           }
-
-          if (options?.includeArtist) {
-            await this.getArtist(album);
-          }
-          if (options?.includeLikes) {
-            album.likes = await LikeService.getLikeCount(album.id, "album");
-          }
-          if (options?.includeRuntime) {
-            await this.getRuntime(album);
-          }
-
           return album;
         })
       );

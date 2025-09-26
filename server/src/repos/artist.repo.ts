@@ -4,38 +4,6 @@ import { getBlobUrl } from "config/blobStorage";
 import { validateArtistId } from "@validators";
 
 export default class ArtistRepository {
-  /* ----------------------------- HELPER METHODS ----------------------------- */
-
-  /**
-   * Fetches the user who made the artist and attaches it to the artist object.
-   * @param artist - The artist object.
-   * @throws Error if the operation fails.
-   */
-  private static async getUser(artist: Artist) {
-    try {
-      const user = await query(
-        `SELECT u.* FROM users u
-        JOIN artists a ON u.id = a.user_id
-        WHERE a.id = $1`,
-        [artist.id]
-      );
-
-      if (user && user.length > 0) {
-        artist.user = user[0];
-        if (artist.user && artist.user.profile_picture_url) {
-          artist.user.profile_picture_url = getBlobUrl(
-            artist.user.profile_picture_url
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching artist user:", error);
-      throw error;
-    }
-  }
-
-  /* ------------------------------ MAIN METHODS ------------------------------ */
-
   /**
    * Creates a new artist.
    * @param artistData - The data for the new artist.
@@ -96,15 +64,15 @@ export default class ArtistRepository {
       const values: any[] = [];
 
       if (display_name !== undefined) {
-        fields.push(`display_name = $${values.length}`);
+        fields.push(`display_name = $${values.length + 1}`);
         values.push(display_name);
       }
       if (bio !== undefined) {
-        fields.push(`bio = $${values.length}`);
+        fields.push(`bio = $${values.length + 1}`);
         values.push(bio);
       }
       if (user_id !== undefined) {
-        fields.push(`user_id = $${values.length}`);
+        fields.push(`user_id = $${values.length + 1}`);
         values.push(user_id);
       }
       if (fields.length === 0) {
@@ -174,16 +142,28 @@ export default class ArtistRepository {
         throw new Error("Invalid artist ID");
       }
 
-      const res = await query("SELECT * FROM artists WHERE id = $1", [id]);
+      const sql = `
+        SELECT a.*,
+        CASE WHEN $1 THEN row_to_json(u.*) 
+        ELSE NULL END as user
+        FROM artists a
+        LEFT JOIN users u ON a.user_id = u.id
+        WHERE a.id = $2`;
 
+      const params = [options?.includeUser ?? false, id];
+
+      const res = await query(sql, params);
       if (!res || res.length === 0) {
         return null;
       }
 
-      let artist: Artist = res[0];
-
-      if (options?.includeUser) {
-        await this.getUser(artist);
+      const artist: Artist = res[0];
+      if (options?.includeUser && artist.user) {
+        if (artist.user.profile_picture_url) {
+          artist.user.profile_picture_url = getBlobUrl(
+            artist.user.profile_picture_url
+          );
+        }
       }
 
       return artist;
@@ -208,22 +188,34 @@ export default class ArtistRepository {
     offset?: number;
   }): Promise<Artist[]> {
     try {
-      const params = [options?.limit || 50, options?.offset || 0];
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
+
       const sql = `
-        SELECT * FROM artists
-        ORDER BY created_at DESC
-        LIMIT $1 OFFSET $2
+        SELECT a.*,
+        CASE WHEN $1 THEN row_to_json(u.*)
+        ELSE NULL END as user
+        FROM artists a
+        LEFT JOIN users u ON a.user_id = u.id
+        ORDER BY a.created_at DESC
+        LIMIT $2 OFFSET $3
       `;
 
+      const params = [options?.includeUser ?? false, limit, offset];
       const artists = await query(sql, params);
+
       if (!artists || artists.length === 0) {
         return [];
       }
 
       const processedArtists = await Promise.all(
         artists.map(async (artist) => {
-          if (options?.includeUser) {
-            await this.getUser(artist);
+          if (options?.includeUser && artist.user) {
+            if (artist.user.profile_picture_url) {
+              artist.user.profile_picture_url = getBlobUrl(
+                artist.user.profile_picture_url
+              );
+            }
           }
           return artist;
         })
