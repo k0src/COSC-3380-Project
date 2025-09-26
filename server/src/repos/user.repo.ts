@@ -211,21 +211,14 @@ export default class UserRepository {
   }): Promise<User[]> {
     {
       try {
-        let baseQuery = "SELECT * FROM users ORDER BY created_at DESC";
-        const params: any[] = [];
+        const params = [options?.limit || 50, options?.offset || 0];
+        const sql = `
+          SELECT * FROM users
+          ORDER BY created_at DESC
+          LIMIT $1 OFFSET $2
+        `;
 
-        if (options?.limit) {
-          baseQuery += ` LIMIT $${params.length + 1}`;
-          params.push(options.limit);
-
-          if (options?.offset) {
-            baseQuery += ` OFFSET $${params.length + 1}`;
-            params.push(options.offset);
-          }
-        }
-
-        const users = await query(baseQuery, params);
-
+        const users = await query(sql, params);
         if (!users || users.length === 0) {
           return [];
         }

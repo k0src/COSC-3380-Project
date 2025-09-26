@@ -236,21 +236,14 @@ export default class PlaylistRepository {
     offset?: number;
   }): Promise<Playlist[]> {
     try {
-      let baseQuery = "SELECT * FROM playlists ORDER BY created_at DESC";
-      const params: any[] = [];
+      const params = [options?.limit || 50, options?.offset || 0];
+      const sql = `
+        SELECT * FROM playlists
+        ORDER BY created_at DESC
+        LIMIT $1 OFFSET $2
+      `;
 
-      if (options?.limit) {
-        baseQuery += ` LIMIT $${params.length + 1}`;
-        params.push(options.limit);
-
-        if (options?.offset) {
-          baseQuery += ` OFFSET $${params.length + 1}`;
-          params.push(options.offset);
-        }
-      }
-
-      const playlists = await query(baseQuery, params);
-
+      const playlists = await query(sql, params);
       if (!playlists || playlists.length === 0) {
         return [];
       }

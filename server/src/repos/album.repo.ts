@@ -277,21 +277,14 @@ export default class AlbumRepository {
     offset?: number;
   }): Promise<Album[]> {
     try {
-      let baseQuery = "SELECT * FROM albums ORDER BY created_at DESC";
-      const params: any[] = [];
+      const params = [options?.limit || 50, options?.offset || 0];
+      const sql = `
+        SELECT * FROM albums
+        ORDER BY created_at DESC
+        LIMIT $1 OFFSET $2
+      `;
 
-      if (options?.limit) {
-        baseQuery += ` LIMIT $${params.length + 1}`;
-        params.push(options.limit);
-
-        if (options?.offset) {
-          baseQuery += ` OFFSET $${params.length + 1}`;
-          params.push(options.offset);
-        }
-      }
-
-      const albums = await query(baseQuery, params);
-
+      const albums = await query(sql, params);
       if (!albums || albums.length === 0) {
         return [];
       }
