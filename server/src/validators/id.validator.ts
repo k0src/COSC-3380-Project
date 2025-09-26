@@ -5,7 +5,7 @@ import { query } from "../config/database.js";
  * Check if user ID exists in the database.
  * @param id The user ID to validate.
  * @return True if the user ID exists, false otherwise.
- * @throws Error if the database query fails.
+ * @throws Error if the operation fails.
  */
 export async function validateUserId(id: UUID): Promise<boolean> {
   try {
@@ -23,7 +23,7 @@ export async function validateUserId(id: UUID): Promise<boolean> {
  * Check if song ID exists in the database.
  * @param id The song ID to validate.
  * @return True if the song ID exists, false otherwise.
- * @throws Error if the database query fails.
+ * @throws Error if the operation fails.
  */
 export async function validateSongId(id: UUID): Promise<boolean> {
   try {
@@ -41,7 +41,7 @@ export async function validateSongId(id: UUID): Promise<boolean> {
  * Check if album ID exists in the database.
  * @param id The album ID to validate.
  * @return True if the album ID exists, false otherwise.
- * @throws Error if the database query fails.
+ * @throws Error if the operation fails.
  */
 export async function validateAlbumId(id: UUID): Promise<boolean> {
   try {
@@ -59,7 +59,7 @@ export async function validateAlbumId(id: UUID): Promise<boolean> {
  * Check if artist ID exists in the database.
  * @param id The artist ID to validate.
  * @return True if the artist ID exists, false otherwise.
- * @throws Error if the database query fails.
+ * @throws Error if the operation fails.
  */
 export async function validateArtistId(id: UUID): Promise<boolean> {
   try {
@@ -77,7 +77,7 @@ export async function validateArtistId(id: UUID): Promise<boolean> {
  * Check if playlist ID exists in the database.
  * @param id The playlist ID to validate.
  * @return True if the playlist ID exists, false otherwise.
- * @throws Error if the database query fails.
+ * @throws Error if the operation fails.
  */
 export async function validatePlaylistId(id: UUID): Promise<boolean> {
   try {
@@ -95,7 +95,7 @@ export async function validatePlaylistId(id: UUID): Promise<boolean> {
  * Check if comment ID exists in the database.
  * @param id The comment ID to validate.
  * @return True if the comment ID exists, false otherwise.
- * @throws Error if the database query fails.
+ * @throws Error if the operation fails.
  */
 export async function validateCommentId(id: UUID): Promise<boolean> {
   try {

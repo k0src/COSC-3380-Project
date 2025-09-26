@@ -2,7 +2,7 @@ import { Playlist, PlaylistSong, UUID } from "@types";
 import { SongRepository } from "@repositories";
 import { query, withTransaction } from "../config/database";
 import { getBlobUrl } from "config/blobStorage";
-import { validatePlaylistId, validateMany } from "@validators";
+import { validatePlaylistId, validateSongId } from "@validators";
 
 export default class PlaylistRepository {
   /* ----------------------------- HELPER METHODS ----------------------------- */
@@ -10,7 +10,7 @@ export default class PlaylistRepository {
   /**
    * Fetches the user who made the playlist and attaches it to the playlist object.
    * @param playlist - The playlist object.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getUser(playlist: Playlist) {
     try {
@@ -38,7 +38,7 @@ export default class PlaylistRepository {
   /**
    * Fetches the like count for a playlist and attaches it to the playlist object.
    * @param playlist - The playlist object.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getLikes(playlist: Playlist) {
     try {
@@ -64,7 +64,7 @@ export default class PlaylistRepository {
    * @param playlist.description - The description of the playlist.
    * @param playlist.created_by - The ID of the user who created the playlist.
    * @returns The created playlist, or null if creation fails.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async create({
     title,
@@ -98,7 +98,7 @@ export default class PlaylistRepository {
    * @param playlist.description - The new description of the playlist (optional).
    * @param playlist.created_by - The new ID of the user who created the playlist (optional).
    * @returns The updated playlist, or null if the update fails.
-   * @throws Error if no fields are provided to update or if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async update(
     id: UUID,
@@ -153,7 +153,7 @@ export default class PlaylistRepository {
    * Deletes a playlist.
    * @param id - The ID of the playlist to delete.
    * @returns The deleted playlist, or null if the deletion fails.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async delete(id: UUID): Promise<Playlist | null> {
     try {
@@ -183,7 +183,7 @@ export default class PlaylistRepository {
    * @param options.includeUser - Option to include the user who created the playlist.
    * @param options.includeLikes - Option to include the like count.
    * @returns The playlist, or null if not found.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async getOne(
     id: UUID,
@@ -227,7 +227,7 @@ export default class PlaylistRepository {
    * @param options.limit - Maximum number of playlists to return.
    * @param options.offset - Number of playlists to skip.
    * @returns A list of playlists.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async getMany(options?: {
     includeUser?: boolean;
@@ -275,6 +275,12 @@ export default class PlaylistRepository {
     }
   }
 
+  /**
+   * Fetches all songs in a specific playlist.
+   * @param playlistId The ID of the playlist.
+   * @returns An array of songs in the playlist, with added_at timestamp.
+   * @throws Error if the operation fails
+   */
   static async getSongs(playlistId: UUID): Promise<PlaylistSong[]> {
     try {
       if (!(await validatePlaylistId(playlistId))) {
@@ -305,6 +311,71 @@ export default class PlaylistRepository {
       return playlistSongs;
     } catch (error) {
       console.error("Error fetching playlist songs:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Adds songs to a playlist.
+   * @param playlistId The ID of the playlist.
+   * @param songIds An array of song IDs to add to the playlist.
+   * @throws Error if the operation fails.
+   */
+  static async addSongs(playlistId: UUID, songIds: UUID[]) {
+    try {
+      if (!(await validatePlaylistId(playlistId))) {
+        throw new Error("Invalid playlist ID");
+      }
+      for (const songId of songIds) {
+        if (!(await validateSongId(songId))) {
+          throw new Error(`Invalid song ID: ${songId}`);
+        }
+      }
+
+      await withTransaction(async (client) => {
+        for (const songId of songIds) {
+          await client.query(
+            `INSERT INTO playlist_songs (playlist_id, song_id)
+            VALUES ($1, $2)
+            ON CONFLICT (playlist_id, song_id) DO NOTHING`,
+            [playlistId, songId]
+          );
+        }
+      });
+    } catch (error) {
+      console.error("Error adding songs to playlist:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Removes songs from a playlist.
+   * @param playlistId The ID of the playlist.
+   * @param songIds An array of song IDs to remove from the playlist.
+   * @throws Error if the operation fails.
+   */
+  static async removeSongs(playlistId: UUID, songIds: UUID[]) {
+    try {
+      if (!(await validatePlaylistId(playlistId))) {
+        throw new Error("Invalid playlist ID");
+      }
+      for (const songId of songIds) {
+        if (!(await validateSongId(songId))) {
+          throw new Error(`Invalid song ID: ${songId}`);
+        }
+      }
+
+      await withTransaction(async (client) => {
+        for (const songId of songIds) {
+          await client.query(
+            `DELETE FROM playlist_songs 
+            WHERE playlist_id = $1 AND song_id = $2`,
+            [playlistId, songId]
+          );
+        }
+      });
+    } catch (error) {
+      console.error("Error removing songs from playlist:", error);
       throw error;
     }
   }

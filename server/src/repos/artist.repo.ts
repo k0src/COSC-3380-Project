@@ -1,6 +1,6 @@
 import { Artist, UUID } from "@types";
 import { query, withTransaction } from "../config/database";
-import { SongRepository as Song } from "@repositories";
+import { SongRepository } from "@repositories";
 import { getBlobUrl } from "config/blobStorage";
 import { validateArtistId, validateMany } from "@validators";
 
@@ -10,7 +10,7 @@ export default class ArtistRepository {
   /**
    * Fetches the user who made the artist and attaches it to the artist object.
    * @param artist - The artist object.
-   * @throws Error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getUser(artist: Artist) {
     try {
@@ -38,7 +38,7 @@ export default class ArtistRepository {
   /**
    * Gets the songs for an artist.
    * @param artist The artist object.
-   * @throws Error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getSongs(artist: Artist) {
     try {
@@ -51,7 +51,7 @@ export default class ArtistRepository {
 
       if (songIds && songIds.length > 0) {
         for (const { id, role } of songIds) {
-          const song = await Song.getOne(id, {
+          const song = await SongRepository.getOne(id, {
             includeAlbum: true,
             includeArtists: true,
           });
@@ -72,7 +72,7 @@ export default class ArtistRepository {
   /**
    * Gets the albums for an artist.
    * @param artist The artist object.
-   * @throws Error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getAlbums(artist: Artist) {
     try {
@@ -106,7 +106,7 @@ export default class ArtistRepository {
    * @param artist.bio - The bio of the artist.
    * @param artist.user_id - The user ID associated with the artist.
    * @returns The created artist, or null if creation fails.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async create({
     display_name,
@@ -140,7 +140,7 @@ export default class ArtistRepository {
    * @param artist.bio - The new bio of the artist (optional).
    * @param artist.user_id - The new user ID associated with the artist (optional).
    * @returns The updated artist, or null if the update fails.
-   * @throws Error if no fields are provided to update or if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async update(
     id: UUID,
@@ -195,7 +195,7 @@ export default class ArtistRepository {
    * Deletes a artist.
    * @param id - The ID of the artist to delete.
    * @returns The deleted artist, or null if the deletion fails.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async delete(id: UUID): Promise<Artist | null> {
     try {
@@ -302,65 +302,6 @@ export default class ArtistRepository {
       return processedArtists;
     } catch (error) {
       console.error("Error fetching artists:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Adds an artist to a song with a specific role.
-   * @param artistId The ID of the artist.
-   * @param songId The ID of the song.
-   * @param role The role of the artist in the song
-   * @throws Error if the database query fails.
-   */
-  static async addToSong(artistId: UUID, songId: UUID, role: string) {
-    try {
-      if (
-        !(await validateMany([
-          { id: artistId, type: "artist" },
-          { id: songId, type: "song" },
-        ]))
-      ) {
-        throw new Error("Invalid artist ID or song ID");
-      }
-
-      await query(
-        `INSERT INTO song_artists (song_id, artist_id, role)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (song_id, artist_id) 
-        DO UPDATE SET role = EXCLUDED.role`,
-        [songId, artistId, role]
-      );
-    } catch (error) {
-      console.error("Error adding artist to song:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Removes an artist from a song.
-   * @param artistId The ID of the artist.
-   * @param songId The ID of the song.
-   * @throws Error if the database query fails.
-   */
-  static async removeFromSong(artistId: UUID, songId: UUID) {
-    try {
-      if (
-        !(await validateMany([
-          { id: artistId, type: "artist" },
-          { id: songId, type: "song" },
-        ]))
-      ) {
-        throw new Error("Invalid artist ID or song ID");
-      }
-
-      await query(
-        `DELETE FROM song_artists 
-        WHERE song_id = $1 AND artist_id = $2`,
-        [songId, artistId]
-      );
-    } catch (error) {
-      console.error("Error removing artist from song:", error);
       throw error;
     }
   }

@@ -16,15 +16,14 @@ export default class CommentService {
    * @param userId The ID of the user making the comment.
    * @param songId The ID of the song being commented on.
    * @param commentText The text of the comment.
-   * @throws Error if the operation fails
+   * @throws Error if the operation fails.
    */
   static async addComment(userId: UUID, songId: UUID, commentText: string) {
-    if (
-      !(await validateMany([
-        { id: userId, type: "user" },
-        { id: songId, type: "song" },
-      ]))
-    ) {
+    const valid = await validateMany([
+      { id: userId, type: "user" },
+      { id: songId, type: "song" },
+    ]);
+    if (!valid) {
       throw new Error("Invalid user ID or song ID");
     }
 
@@ -42,7 +41,7 @@ export default class CommentService {
   /**
    * Deletes a comment by its ID.
    * @param commentId The ID of the comment to delete.
-   * @throws Error if the operation fails
+   * @throws Error if the operation fails.
    */
   static async deleteComment(commentId: UUID) {
     if (!(await validateCommentId(commentId))) {
@@ -59,7 +58,7 @@ export default class CommentService {
   /**
    * Clears all comments for a specific song.
    * @param songId The ID of the song whose comments are to be cleared.
-   * @throws Error if the operation fails
+   * @throws Error if the operation fails.
    */
   static async clearComments(songId: UUID) {
     try {
@@ -80,7 +79,7 @@ export default class CommentService {
    * @param options.limit Maximum number of comments to return.
    * @param options.offset Number of comments to skip.
    * @returns An array of comments with user details.
-   * @throws Error if the operation fails
+   * @throws Error if the operation fails.
    */
   static async getCommentsBySongId(
     songId: UUID,
@@ -91,17 +90,18 @@ export default class CommentService {
         throw new Error("Invalid song ID");
       }
 
-      const comments = await query(
-        `SELECT c.*, u.username, u.profile_picture_url 
+      const params = [songId, options?.limit || 50, options?.offset || 0];
+      const sql = `
+        SELECT c.*, u.username, u.id, u.profile_picture_url
         FROM comments c 
-        JOIN users u ON c.user_id = u.id 
+        JOIN users u ON c.user_id = u.id
         WHERE c.song_id = $1
         ORDER BY c.created_at DESC
-        ${options?.limit ? "LIMIT $2" : ""}
-        ${options?.offset ? "OFFSET $3" : ""}`,
-        [songId, options?.limit, options?.offset]
-      );
-      return comments;
+        LIMIT $2 OFFSET $3
+      `;
+
+      const res = await query(sql, params);
+      return res;
     } catch (error) {
       throw new Error("Error fetching comments");
     }
@@ -114,7 +114,7 @@ export default class CommentService {
    * @param options.limit Maximum number of comments to return.
    * @param options.offset Number of comments to skip.
    * @returns An array of comments with user details.
-   * @throws Error if the operation fails
+   * @throws Error if the operation fails.
    */
   static async getCommentsByUserId(
     userId: UUID,
@@ -125,17 +125,18 @@ export default class CommentService {
         throw new Error("Invalid user ID");
       }
 
-      const comments = await query(
-        `SELECT c.*, u.username, u.id, u.profile_picture_url
+      const params = [userId, options?.limit || 50, options?.offset || 0];
+      const sql = `
+        SELECT c.*, u.username, u.id, u.profile_picture_url
         FROM comments c 
-        JOIN users u ON c.user_id = u.id 
+        JOIN users u ON c.user_id = u.id
         WHERE c.user_id = $1
         ORDER BY c.created_at DESC
-        ${options?.limit ? "LIMIT $2" : ""}
-        ${options?.offset ? "OFFSET $3" : ""}`,
-        [userId, options?.limit, options?.offset]
-      );
-      return comments;
+        LIMIT $2 OFFSET $3
+      `;
+
+      const res = await query(sql, params);
+      return res;
     } catch (error) {
       throw new Error("Error fetching comments");
     }

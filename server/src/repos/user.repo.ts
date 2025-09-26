@@ -10,7 +10,7 @@ export default class UserRepository {
   /**
    * Fetches the playlists created by the user and attaches them to the user object.
    * @param user - The user object.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async _getPlaylists(user: User) {
     try {
@@ -50,7 +50,7 @@ export default class UserRepository {
    * @param userData.role - The role of the user.
    * @param userData.profile_picture_url - The profile picture URL of the user (optional).
    * @returns The created user, or null if creation fails.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async create({
     username,
@@ -102,7 +102,7 @@ export default class UserRepository {
    * @param userData.role - The new role of the user (optional).
    * @param userData.profile_picture_url - The new profile picture URL of the user (optional).
    * @returns The updated user, or null if the update fails.
-   * @throws Error if no fields are provided to update or if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async update(
     id: UUID,
@@ -179,7 +179,7 @@ export default class UserRepository {
    * Deletes a user.
    * @param id - The ID of the user to delete.
    * @returns The deleted user, or null if the deletion fails.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async delete(id: UUID): Promise<User | null> {
     try {
@@ -208,7 +208,7 @@ export default class UserRepository {
    * @param options - Options for including related data.
    * @param options.includePlaylists - Option to include the user's playlists.
    * @returns The user, or null if not found.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async getOne(
     id: UUID,
@@ -251,7 +251,7 @@ export default class UserRepository {
    * @param options.limit - Maximum number of users to return.
    * @param options.offset - Number of users to skip.
    * @returns A list of users.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async getMany(options?: {
     includePlaylists?: boolean;
@@ -305,7 +305,7 @@ export default class UserRepository {
    * Gets a user by their username.
    * @param username - The username of the user to fetch.
    * @returns The user, or null if not found.
-   * @throws Error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async getByUsername(username: string): Promise<User | null> {
     try {
@@ -333,7 +333,7 @@ export default class UserRepository {
    * Gets a user by their email.
    * @param email - The email of the user to fetch.
    * @return The user, or null if not found.
-   * @throws Error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async getByEmail(email: string): Promise<User | null> {
     try {
@@ -359,7 +359,7 @@ export default class UserRepository {
    * Gets the playlists created by a user.
    * @param userId - The ID of the user.
    * @return A list of playlists created by the user.
-   * @throws Error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async getPlaylists(userId: UUID): Promise<Playlist[]> {
     try {

@@ -1,12 +1,12 @@
 import express, { Request, Response } from "express";
-import { SongRepository as Song } from "@repositories";
+import { SongRepository } from "@repositories";
 
 const router = express.Router();
 
 // GET /api/songs
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const songs = await Song.getMany({
+    const songs = await SongRepository.getMany({
       includeAlbum: true,
       includeArtists: true,
       includeLikes: true,
@@ -29,7 +29,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const song = await Song.getOne(id);
+    const song = await SongRepository.getOne(id);
 
     if (!song) {
       res.status(404).json({ error: "Song not found" });
@@ -55,7 +55,7 @@ router.get(
     }
 
     try {
-      const song = await Song.getOne(id, {
+      const song = await SongRepository.getOne(id, {
         includeAlbum: true,
         includeArtists: true,
         includeLikes: true,

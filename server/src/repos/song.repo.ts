@@ -12,7 +12,7 @@ export default class SongRepository {
   /**
    * Fetches the album for a song and attaches it to the song object.
    * @param song - The song object.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getAlbum(song: Song) {
     try {
@@ -39,7 +39,7 @@ export default class SongRepository {
   /**
    * Fetches the artists for a song and attaches them to the song object.
    * @param song - The song object.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getArtists(song: Song) {
     try {
@@ -66,7 +66,7 @@ export default class SongRepository {
   /**
    * Fetches the like count for a song and attaches it to the song object.
    * @param song - The song object.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getLikes(song: Song) {
     try {
@@ -107,7 +107,7 @@ export default class SongRepository {
    * @param song.genre - The genre of the song.
    * @param song.release_date - The release date of the song as an ISO string
    * @returns The created song, or null if creation fails.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async create({
     title,
@@ -150,7 +150,7 @@ export default class SongRepository {
    * @param song.duration - The new duration of the song in seconds (optional).
    * @param song.genre - The new genre of the song (optional).
    * @returns The updated song, or null if the update fails.
-   * @throws Error if no fields are provided to update or if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async update(
     id: UUID,
@@ -227,7 +227,7 @@ export default class SongRepository {
    * Deletes a song.
    * @param id - The ID of the song to delete.
    * @returns The deleted song, or null if the deletion fails.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async delete(id: UUID): Promise<Song | null> {
     try {
@@ -258,7 +258,7 @@ export default class SongRepository {
    * @param options.includeArtists - Option to include the artists data.
    * @param options.includeLikes - Option to include the like count.
    * @returns The song, or null if not found.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async getOne(
     id: UUID,
@@ -309,7 +309,7 @@ export default class SongRepository {
    * @param options.limit - Maximum number of songs to return.
    * @param options.offset - Number of songs to skip.
    * @returns A list of songs.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async getMany(options?: {
     includeAlbum?: boolean;
@@ -359,6 +359,65 @@ export default class SongRepository {
       return processedSongs;
     } catch (error) {
       console.error("Error fetching songs:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Adds an artist to a song with a specific role.
+   * @param artistId - The ID of the artist to add.
+   * @param songId - The ID of the song to which the artist is added.
+   * @param role - The role of the artist in the song.
+   * @throws Error if the database query fails or if the IDs are invalid.
+   */
+  static async addArtist(artistId: UUID, songId: UUID, role: string) {
+    try {
+      if (
+        !(await validateMany([
+          { id: artistId, type: "artist" },
+          { id: songId, type: "song" },
+        ]))
+      ) {
+        throw new Error("Invalid artist ID or song ID");
+      }
+
+      await query(
+        `INSERT INTO song_artists (song_id, artist_id, role)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (artist_id, song_id)
+        DO UPDATE SET role = EXCLUDED.role`,
+        [songId, artistId, role]
+      );
+    } catch (error) {
+      console.error("Error adding artist to song:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Removes an artist from a song.
+   * @param artistId - The ID of the artist to remove.
+   * @param songId - The ID of the song from which the artist is removed.
+   * @throws Error if the database query fails or if the IDs are invalid.
+   */
+  static async removeArtist(artistId: UUID, songId: UUID) {
+    try {
+      if (
+        !(await validateMany([
+          { id: artistId, type: "artist" },
+          { id: songId, type: "song" },
+        ]))
+      ) {
+        throw new Error("Invalid artist ID or song ID");
+      }
+
+      await query(
+        `DELETE FROM song_artists
+        WHERE song_id = $1 AND artist_id = $2`,
+        [songId, artistId]
+      );
+    } catch (error) {
+      console.error("Error removing artist from song:", error);
       throw error;
     }
   }

@@ -9,7 +9,7 @@ export default class AlbumRepository {
   /**
    * Fetches the artist for an album and attaches it to the album object.
    * @param album - The album object.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getArtist(album: Album) {
     try {
@@ -33,7 +33,7 @@ export default class AlbumRepository {
   /**
    * Fetches the songs for an album and attaches them to the album object.
    * @param album - The album object.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getSongs(album: Album) {
     try {
@@ -64,7 +64,7 @@ export default class AlbumRepository {
   /**
    * Fetches the like count for an album and attaches it to the album object.
    * @param album - The album object.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getLikes(album: Album) {
     try {
@@ -85,7 +85,7 @@ export default class AlbumRepository {
   /**
    * Fetches the total runtime for an album and attaches it to the album object.
    * @param album - The album object.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   private static async getRuntime(album: Album) {
     try {
@@ -113,7 +113,7 @@ export default class AlbumRepository {
    * @param album.image_url - The image URL of the album (optional).
    * @param album.created_by - The ID of the user who created the album.
    * @returns The created album, or null if creation fails.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async create({
     title,
@@ -149,7 +149,7 @@ export default class AlbumRepository {
    * @param album.image_url - The new image URL of the album (optional).
    * @param album.created_by - The new user ID of the album artist (optional).
    * @returns The updated album, or null if the update fails.
-   * @throws Error if no fields are provided to update or if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async update(
     id: UUID,
@@ -214,7 +214,7 @@ export default class AlbumRepository {
    * Deletes an album.
    * @param id - The ID of the album to delete.
    * @returns The deleted album, or null if the deletion fails.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async delete(id: UUID): Promise<Album | null> {
     try {
@@ -246,7 +246,7 @@ export default class AlbumRepository {
    * @param options.includeLikes - Option to include the like count.
    * @param options.includeRuntime - Option to include the total runtime of the album.
    * @returns The album, or null if not found.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async getOne(
     id: UUID,
@@ -304,7 +304,7 @@ export default class AlbumRepository {
    * @param options.limit - Maximum number of albums to return.
    * @param options.offset - Number of albums to skip.
    * @returns A list of albums.
-   * @throws Will throw an error if the database query fails.
+   * @throws Error if the operation fails.
    */
   static async getMany(options?: {
     includeSongs?: boolean;
