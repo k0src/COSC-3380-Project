@@ -17,6 +17,7 @@ if (!PGHOST || !PGUSER || !PGPASSWORD || !PGDATABASE) {
   throw new Error("Missing required Postgres environment variables.");
 }
 
+// ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : { rejectUnauthorized: false },
 const pool = new Pool({
   host: PGHOST,
   port: PGPORT ? parseInt(PGPORT, 10) : 5432,

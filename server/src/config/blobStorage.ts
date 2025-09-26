@@ -40,7 +40,7 @@ export function getBlobUrl(filename: string, expiresInSeconds = 3600): string {
     return `${blobClient.url}?${sasToken}`;
   } catch (error) {
     console.error("Could not generate SAS token:", error);
-    return blobClient.url;
+    throw new Error("Could not generate SAS token");
   }
 }
 
