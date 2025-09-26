@@ -1,5 +1,6 @@
 import { Playlist, PlaylistSong, UUID } from "@types";
 import { SongRepository } from "@repositories";
+import { LikeService } from "@services";
 import { query, withTransaction } from "../config/database";
 import { getBlobUrl } from "config/blobStorage";
 import { validatePlaylistId, validateSongId } from "@validators";
@@ -16,8 +17,8 @@ export default class PlaylistRepository {
     try {
       const user = await query(
         `SELECT u.* FROM users u
-      JOIN playlists p ON u.id = p.created_by
-      WHERE p.id = $1`,
+        JOIN playlists p ON u.id = p.created_by
+        WHERE p.id = $1`,
         [playlist.id]
       );
 
@@ -31,26 +32,6 @@ export default class PlaylistRepository {
       }
     } catch (error) {
       console.error("Error fetching playlist user:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Fetches the like count for a playlist and attaches it to the playlist object.
-   * @param playlist - The playlist object.
-   * @throws Error if the operation fails.
-   */
-  private static async getLikes(playlist: Playlist) {
-    try {
-      const likes = await query(
-        `SELECT COUNT(*) AS likes FROM playlist_likes WHERE playlist_id = $1`,
-        [playlist.id]
-      );
-      if (likes && likes.length > 0) {
-        playlist.likes = parseInt(likes[0].likes, 10) || 0;
-      }
-    } catch (error) {
-      console.error("Error fetching playlist likes:", error);
       throw error;
     }
   }
@@ -209,7 +190,10 @@ export default class PlaylistRepository {
         await this.getUser(playlist);
       }
       if (options?.includeLikes) {
-        await this.getLikes(playlist);
+        playlist.likes = await LikeService.getLikeCount(
+          playlist.id,
+          "playlist"
+        );
       }
 
       return playlist;
@@ -254,7 +238,10 @@ export default class PlaylistRepository {
             await this.getUser(playlist);
           }
           if (options?.includeLikes) {
-            await this.getLikes(playlist);
+            playlist.likes = await LikeService.getLikeCount(
+              playlist.id,
+              "playlist"
+            );
           }
 
           return playlist;

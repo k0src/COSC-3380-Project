@@ -1,5 +1,6 @@
 import { Song, UUID } from "@types";
 import { query, withTransaction } from "../config/database.js";
+import { LikeService } from "@services";
 import { getBlobUrl } from "../config/blobStorage.js";
 import { validateSongId, validateMany } from "../validators/id.validator.js";
 
@@ -56,27 +57,6 @@ export default class SongRepository {
       }
     } catch (error) {
       console.error("Error fetching artists for song:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Fetches the like count for a song and attaches it to the song object.
-   * @param song - The song object.
-   * @throws Error if the operation fails.
-   */
-  private static async getLikes(song: Song) {
-    try {
-      const likes = await query(
-        "SELECT COUNT(*) AS likes FROM song_likes WHERE song_id = $1",
-        [song.id]
-      );
-
-      if (likes && likes.length > 0) {
-        song.likes = parseInt(likes[0].likes, 10) || 0;
-      }
-    } catch (error) {
-      console.error("Error fetching likes for song:", error);
       throw error;
     }
   }
@@ -287,7 +267,7 @@ export default class SongRepository {
         await this.getArtists(song);
       }
       if (options?.includeLikes) {
-        await this.getLikes(song);
+        song.likes = await LikeService.getLikeCount(song.id, "song");
       }
 
       return song;
@@ -339,7 +319,7 @@ export default class SongRepository {
             await this.getArtists(song);
           }
           if (options?.includeLikes) {
-            await this.getLikes(song);
+            song.likes = await LikeService.getLikeCount(song.id, "song");
           }
 
           return song;

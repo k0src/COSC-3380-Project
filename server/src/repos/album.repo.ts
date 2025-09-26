@@ -1,5 +1,6 @@
 import { Album, UUID, Song } from "@types";
 import { query, withTransaction } from "../config/database.js";
+import { LikeService } from "@services";
 import { getBlobUrl } from "config/blobStorage.js";
 import { validateAlbumId, validateMany } from "@validators";
 
@@ -26,27 +27,6 @@ export default class AlbumRepository {
       }
     } catch (error) {
       console.error("Error fetching album artist:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Fetches the like count for an album and attaches it to the album object.
-   * @param album - The album object.
-   * @throws Error if the operation fails.
-   */
-  private static async getLikes(album: Album) {
-    try {
-      const likes = await query(
-        `SELECT COUNT(*) AS likes FROM album_likes WHERE album_id = $1`,
-        [album.id]
-      );
-
-      if (likes && likes.length > 0) {
-        album.likes = parseInt(likes[0].likes, 10) || 0;
-      }
-    } catch (error) {
-      console.error("Error fetching album likes:", error);
       throw error;
     }
   }
@@ -245,7 +225,7 @@ export default class AlbumRepository {
         await this.getArtist(album);
       }
       if (options?.includeLikes) {
-        await this.getLikes(album);
+        album.likes = await LikeService.getLikeCount(album.id, "album");
       }
       if (options?.includeRuntime) {
         await this.getRuntime(album);
@@ -299,7 +279,7 @@ export default class AlbumRepository {
             await this.getArtist(album);
           }
           if (options?.includeLikes) {
-            await this.getLikes(album);
+            album.likes = await LikeService.getLikeCount(album.id, "album");
           }
           if (options?.includeRuntime) {
             await this.getRuntime(album);

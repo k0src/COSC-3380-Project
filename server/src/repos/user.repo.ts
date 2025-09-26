@@ -2,6 +2,7 @@ import { User, Playlist, UUID } from "@types";
 import { query, withTransaction } from "../config/database.js";
 import { getBlobUrl } from "../config/blobStorage.js";
 import { validateUserId } from "@validators";
+import { FollowService } from "@services";
 
 export default class UserRepository {
   /**
@@ -169,23 +170,37 @@ export default class UserRepository {
   /**
    * Gets a single user by ID.
    * @param id - The ID of the user to get.
+   * @param options - Options for including related data.
+   * @param options.includeFollowerCount - Option to include the follower count.
+   * @param options.includeFollowingCount - Option to include the following count.
    * @returns The user, or null if not found.
    * @throws Error if the operation fails.
    */
-  static async getOne(id: UUID): Promise<User | null> {
+  static async getOne(
+    id: UUID,
+    options?: {
+      includeFollowerCount?: boolean;
+      includeFollowingCount?: boolean;
+    }
+  ): Promise<User | null> {
     try {
       if (!(await validateUserId(id))) {
         throw new Error("Invalid user ID");
       }
 
       const res = await query(`SELECT * FROM users WHERE id = $1`, [id]);
-
       if (!res || res.length === 0) {
         return null;
       }
 
       let user: User = res[0];
 
+      if (options?.includeFollowerCount) {
+        user.follower_count = await FollowService.getFollowerCount(user.id);
+      }
+      if (options?.includeFollowingCount) {
+        user.following_count = await FollowService.getFollowingCount(user.id);
+      }
       if (user.profile_picture_url) {
         user.profile_picture_url = getBlobUrl(user.profile_picture_url);
       }
@@ -199,13 +214,15 @@ export default class UserRepository {
 
   /**
    * Gets multiple users.
-   * @param options - Options for pagination.
+   * @param options - Options for pagination and including related data.
    * @param options.limit - Maximum number of users to return.
    * @param options.offset - Number of users to skip.
    * @returns A list of users.
    * @throws Error if the operation fails.
    */
   static async getMany(options?: {
+    includeFollowerCount?: boolean;
+    includeFollowingCount?: boolean;
     limit?: number;
     offset?: number;
   }): Promise<User[]> {
@@ -225,6 +242,16 @@ export default class UserRepository {
 
         const processedUsers = await Promise.all(
           users.map(async (user) => {
+            if (options?.includeFollowerCount) {
+              user.follower_count = await FollowService.getFollowerCount(
+                user.id
+              );
+            }
+            if (options?.includeFollowingCount) {
+              user.following_count = await FollowService.getFollowingCount(
+                user.id
+              );
+            }
             if (user.profile_picture_url) {
               user.profile_picture_url = getBlobUrl(user.profile_picture_url);
             }

@@ -11,10 +11,6 @@ export interface User {
   artist_id?: UUID;
   created_at: string;
 
-  playlists?: Playlist[];
-
-  following?: User[];
-  followers?: User[];
   following_count?: number;
-  followers_count?: number;
+  follower_count?: number;
 }
