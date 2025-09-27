@@ -14,7 +14,7 @@ const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
 const containerName = process.env.AZURE_STORAGE_CONTAINER || "uploads";
 const accountName = process.env.AZURE_STORAGE_ACCOUNT!;
 const accountKey = process.env.AZURE_STORAGE_ACCOUNT_KEY!;
-const sasTokenDuration = process.env.SAS_TOKEN_DURATION || 3600;
+const sasTokenDuration = Number(process.env.SAS_TOKEN_DURATION) || 3600;
 
 if (!connectionString) {
   throw new Error("Missing Azure Storage connection string");
