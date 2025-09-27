@@ -319,15 +319,12 @@ export default class PlaylistRepository {
 
   /**
    * Counts the total number of playlists.
-   * @param playlistId - The ID of the playlist.
    * @return The total number of playlists.
    * @throws Error if the operation fails.
    */
-  static async count(playlistId: UUID): Promise<number> {
+  static async count(): Promise<number> {
     try {
-      const res = await query(`SELECT COUNT(*) FROM playlists WHERE id = $1`, [
-        playlistId,
-      ]);
+      const res = await query("SELECT COUNT(*) FROM playlists");
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting playlists:", error);

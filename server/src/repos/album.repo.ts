@@ -327,15 +327,12 @@ export default class AlbumRepository {
 
   /**
    * Counts the total number of albums.
-   * @param albumId - The ID of the album.
    * @return The total number of albums.
    * @throws Error if the operation fails.
    */
-  static async count(albumId: UUID): Promise<number> {
+  static async count(): Promise<number> {
     try {
-      const res = await query(`SELECT COUNT(*) FROM albums WHERE id = $1`, [
-        albumId,
-      ]);
+      const res = await query("SELECT COUNT(*) FROM albums");
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting albums:", error);

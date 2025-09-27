@@ -280,15 +280,12 @@ export default class ArtistRepository {
 
   /**
    * Counts the total number of artists.
-   * @param artistId - The ID of the artist.
    * @return The total number of artists.
    * @throws Error if the operation fails.
    */
-  static async count(artistId: UUID): Promise<number> {
+  static async count(): Promise<number> {
     try {
-      const res = await query(`SELECT COUNT(*) FROM artists WHERE id = $1`, [
-        artistId,
-      ]);
+      const res = await query("SELECT COUNT(*) FROM artists");
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting artists:", error);

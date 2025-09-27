@@ -328,15 +328,12 @@ export default class SongRepository {
 
   /**
    * Counts the total number of songs.
-   * @param songId - The ID of the song.
    * @return The total number of songs.
    * @throws Error if the operation fails.
    */
-  static async count(songId: UUID): Promise<number> {
+  static async count(): Promise<number> {
     try {
-      const res = await query(`SELECT COUNT(*) FROM songs WHERE id = $1`, [
-        songId,
-      ]);
+      const res = await query("SELECT COUNT(*) FROM songs");
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting songs:", error);

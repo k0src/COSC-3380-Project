@@ -356,15 +356,12 @@ export default class UserRepository {
 
   /**
    * Counts the total number of users.
-   * @param userId - The ID of the user.
    * @return The total number of users.
    * @throws Error if the operation fails.
    */
-  static async count(userId: UUID): Promise<number> {
+  static async count(): Promise<number> {
     try {
-      const res = await query(`SELECT COUNT(*) FROM users WHERE id = $1`, [
-        userId,
-      ]);
+      const res = await query("SELECT COUNT(*) FROM users");
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting users:", error);
