@@ -121,6 +121,7 @@ export default class PlaylistRepository {
    * @param options - Options for including related data.
    * @param options.includeUser - Option to include the user who created the playlist.
    * @param options.includeLikes - Option to include the like count.
+   * @param options.includeSongCount - Option to include the total number of songs on the playlist.
    * @returns The playlist, or null if not found.
    * @throws Error if the operation fails.
    */
@@ -129,6 +130,7 @@ export default class PlaylistRepository {
     options?: {
       includeUser?: boolean;
       includeLikes?: boolean;
+      includeSongCount?: boolean;
     }
   ): Promise<Playlist | null> {
     try {
@@ -138,16 +140,20 @@ export default class PlaylistRepository {
         ELSE NULL END as user,
         CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_likes pl 
           WHERE pl.playlist_id = p.id)
-        ELSE NULL END as likes
+        ELSE NULL END as likes,
+        CASE WHEN $3 THEN (SELECT COUNT(*) FROM playlist_songs ps
+          WHERE ps.playlist_id = p.id)
+        ELSE NULL END as song_count
         FROM playlists p
         LEFT JOIN users u ON p.created_by = u.id
-        WHERE p.id = $3
+        WHERE p.id = $4
         LIMIT 1
       `;
 
       const params = [
         options?.includeUser ?? false,
         options?.includeLikes ?? false,
+        options?.includeSongCount ?? false,
         id,
       ];
 
@@ -175,6 +181,7 @@ export default class PlaylistRepository {
    * @param options - Options for pagination and including related data.
    * @param options.includeUser - Option to include the user who created each playlist.
    * @param options.includeLikes - Option to include the like count for each playlist.
+   * @param options.includeSongCount - Option to include the total number of songs on each playlist.
    * @param options.limit - Maximum number of playlists to return.
    * @param options.offset - Number of playlists to skip.
    * @returns A list of playlists.
@@ -183,6 +190,7 @@ export default class PlaylistRepository {
   static async getMany(options?: {
     includeUser?: boolean;
     includeLikes?: boolean;
+    includeSongCount?: boolean;
     limit?: number;
     offset?: number;
   }): Promise<Playlist[]> {
@@ -196,16 +204,20 @@ export default class PlaylistRepository {
         ELSE NULL END as user,
         CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_likes pl 
           WHERE pl.playlist_id = p.id)
-        ELSE NULL END as likes
+        ELSE NULL END as likes,
+        CASE WHEN $3 THEN (SELECT COUNT(*) FROM playlist_songs ps
+          WHERE ps.playlist_id = p.id)
+        ELSE NULL END as song_count
         FROM playlists p
         LEFT JOIN users u ON p.created_by = u.id
         ORDER BY p.created_at DESC
-        LIMIT $3 OFFSET $4
+        LIMIT $4 OFFSET $5
       `;
 
       const params = [
         options?.includeUser ?? false,
         options?.includeLikes ?? false,
+        options?.includeSongCount ?? false,
         limit,
         offset,
       ];

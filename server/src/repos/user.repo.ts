@@ -340,7 +340,8 @@ export default class UserRepository {
       const sql = `
         SELECT 
           p.*,
-          (SELECT COUNT(*) FROM playlist_likes pl WHERE pl.playlist_id = p.id) AS likes
+          (SELECT COUNT(*) FROM playlist_likes pl 
+          WHERE pl.playlist_id = p.id) AS likes
         FROM playlists p
         WHERE p.created_by = $1
         ORDER BY p.created_at DESC

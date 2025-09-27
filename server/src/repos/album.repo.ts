@@ -134,6 +134,7 @@ export default class AlbumRepository {
    * @param options.includeArtist - Option to include the artist data.
    * @param options.includeLikes - Option to include the like count.
    * @param options.includeRuntime - Option to include the total runtime of the album.
+   * @param options.includeSongCount - Option to include the total number of songs on the album.
    * @returns The album, or null if not found.
    * @throws Error if the operation fails.
    */
@@ -143,6 +144,7 @@ export default class AlbumRepository {
       includeArtist?: boolean;
       includeLikes?: boolean;
       includeRuntime?: boolean;
+      includeSongCount?: boolean;
     }
   ): Promise<Album | null> {
     try {
@@ -155,10 +157,13 @@ export default class AlbumRepository {
         ELSE NULL END as likes,
         CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s
           JOIN album_songs als ON s.id = als.song_id WHERE als.album_id = a.id)
-        ELSE NULL END as runtime
+        ELSE NULL END as runtime,
+        CASE WHEN $4 THEN (SELECT COUNT(*) FROM album_songs als
+          WHERE als.album_id = a.id)
+        ELSE NULL END as song_count
         FROM albums a
         LEFT JOIN artists ar ON a.created_by = ar.id
-        WHERE a.id = $4
+        WHERE a.id = $5
         LIMIT 1
       `;
 
@@ -166,6 +171,7 @@ export default class AlbumRepository {
         options?.includeArtist ?? false,
         options?.includeLikes ?? false,
         options?.includeRuntime ?? false,
+        options?.includeSongCount ?? false,
         id,
       ];
 
@@ -192,6 +198,7 @@ export default class AlbumRepository {
    * @param options.includeArtist - Option to include the artist data.
    * @param options.includeLikes - Option to include the like count.
    * @param options.includeRuntime - Option to include the total runtime of the album.
+   * @param options.includeSongCount - Option to include the total number of songs on the album.
    * @param options.limit - Maximum number of albums to return.
    * @param options.offset - Number of albums to skip.
    * @returns A list of albums.
@@ -201,6 +208,7 @@ export default class AlbumRepository {
     includeArtist?: boolean;
     includeLikes?: boolean;
     includeRuntime?: boolean;
+    includeSongCount?: boolean;
     limit?: number;
     offset?: number;
   }): Promise<Album[]> {
@@ -217,17 +225,21 @@ export default class AlbumRepository {
         ELSE NULL END as likes,
         CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s 
           JOIN album_songs als ON s.id = als.song_id WHERE als.album_id = a.id) 
-        ELSE NULL END as runtime
+        ELSE NULL END as runtime,
+        CASE WHEN $4 THEN (SELECT COUNT(*) FROM album_songs als 
+          WHERE als.album_id = a.id)
+        ELSE NULL END as song_count
         FROM albums a
         LEFT JOIN artists ar ON a.created_by = ar.id
         ORDER BY a.created_at DESC
-        LIMIT $4 OFFSET $5
+        LIMIT $5 OFFSET $6
       `;
 
       const params = [
         options?.includeArtist ?? false,
         options?.includeLikes ?? false,
         options?.includeRuntime ?? false,
+        options?.includeSongCount ?? false,
         limit,
         offset,
       ];
