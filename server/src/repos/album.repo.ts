@@ -1,4 +1,4 @@
-import { Album, UUID, Song } from "@types";
+import { Album, UUID, AlbumSong } from "@types";
 import { query, withTransaction } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
 
@@ -224,7 +224,8 @@ export default class AlbumRepository {
           WHERE al.album_id = a.id) 
         ELSE NULL END as likes,
         CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s 
-          JOIN album_songs als ON s.id = als.song_id WHERE als.album_id = a.id) 
+          JOIN album_songs als ON s.id = als.song_id 
+          WHERE als.album_id = a.id) 
         ELSE NULL END as runtime,
         CASE WHEN $4 THEN (SELECT COUNT(*) FROM album_songs als 
           WHERE als.album_id = a.id)
@@ -307,6 +308,8 @@ export default class AlbumRepository {
    * Fetches songs for a given album.
    * @param albumId - The ID of the album.
    * @param options - Options for pagination.
+   * @param options.includeArtists - Option to include the artists data.
+   * @param options.includeLikes - Option to include the like count.
    * @param options.limit - Maximum number of songs to return.
    * @param options.offset - Number of songs to skip.
    * @returns A list of songs in the album.
@@ -315,22 +318,59 @@ export default class AlbumRepository {
   static async getSongs(
     albumId: UUID,
     options?: {
+      includeArtists?: boolean;
+      includeLikes?: boolean;
       limit?: number;
       offset?: number;
     }
-  ): Promise<Song[]> {
+  ): Promise<AlbumSong[]> {
     try {
-      const params = [albumId, options?.limit || 50, options?.offset || 0];
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
+
       const sql = `
-        SELECT s.*, as.track_number FROM songs s
-        JOIN album_songs as ON s.id = as.song_id
-        WHERE as.album_id = $1
-        ORDER BY as.track_number ASC
-        LIMIT $2 OFFSET $3
+        SELECT s.*, als.track_number,
+        CASE WHEN $1 THEN 
+          (SELECT json_agg(row_to_json(ar.*)) FROM artists ar
+          JOIN song_artists sa ON ar.id = sa.artist_id
+          WHERE sa.song_id = s.id)
+        ELSE NULL END as artists,
+        CASE WHEN $2 THEN
+          (SELECT COUNT(*) FROM song_likes sl WHERE sl.song_id = s.id)
+        ELSE NULL END as likes
+        FROM songs s
+        LEFT JOIN album_songs als ON s.id = als.song_id
+        WHERE als.album_id = $3
+        ORDER BY als.track_number ASC
+        LIMIT $4 OFFSET $5
       `;
 
-      const res = await query(sql, params);
-      return res;
+      const params = [
+        options?.includeArtists ?? false,
+        options?.includeLikes ?? false,
+        albumId,
+        limit,
+        offset,
+      ];
+
+      const songs = await query(sql, params);
+      if (!songs || songs.length === 0) {
+        return [];
+      }
+
+      const processedSongs = await Promise.all(
+        songs.map(async (song: AlbumSong) => {
+          if (song.image_url) {
+            song.image_url = getBlobUrl(song.image_url);
+          }
+          if (song.audio_url) {
+            song.audio_url = getBlobUrl(song.audio_url);
+          }
+          return song;
+        })
+      );
+
+      return processedSongs;
     } catch (error) {
       console.error("Error fetching album songs:", error);
       throw error;

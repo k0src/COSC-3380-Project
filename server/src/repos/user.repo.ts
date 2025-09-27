@@ -326,6 +326,8 @@ export default class UserRepository {
    * Gets the playlists created by a user.
    * @param userId - The ID of the user.
    * @param options - Options for pagination.
+   * @param options.includeLikes - Option to include the like count for each playlist.
+   * @param options.includeSongCount - Option to include the total number of songs on each playlist.
    * @param options.limit - Maximum number of playlists to return.
    * @param options.offset - Number of playlists to skip.
    * @return A list of playlists created by the user.
@@ -333,20 +335,38 @@ export default class UserRepository {
    */
   static async getPlaylists(
     userId: UUID,
-    options?: { limit?: number; offset?: number }
+    options?: {
+      includeLikes?: boolean;
+      includeSongCount?: boolean;
+      limit?: number;
+      offset?: number;
+    }
   ): Promise<Playlist[]> {
     try {
-      const params = [userId, options?.limit || 50, options?.offset || 0];
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
+
       const sql = `
-        SELECT 
-          p.*,
-          (SELECT COUNT(*) FROM playlist_likes pl 
-          WHERE pl.playlist_id = p.id) AS likes
+        SELECT p.*,
+        CASE WHEN $1 THEN (SELECT COUNT(*) FROM playlist_likes pl 
+          WHERE pl.playlist_id = p.id)
+        ELSE NULL END as likes,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_songs ps
+          WHERE ps.playlist_id = p.id)
+        ELSE NULL END as song_count
         FROM playlists p
-        WHERE p.created_by = $1
+        WHERE p.created_by = $3
         ORDER BY p.created_at DESC
-        LIMIT $2 OFFSET $3
+        LIMIT $4 OFFSET $5
       `;
+
+      const params = [
+        options?.includeLikes ?? false,
+        options?.includeSongCount ?? false,
+        userId,
+        limit,
+        offset,
+      ];
 
       const res = await query(sql, params);
       return res;

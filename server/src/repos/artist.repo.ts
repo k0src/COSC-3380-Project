@@ -1,4 +1,4 @@
-import { Album, Artist, Song, UUID } from "@types";
+import { Album, Artist, ArtistSong, UUID } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
 
@@ -187,8 +187,8 @@ export default class ArtistRepository {
       `;
 
       const params = [options?.includeUser ?? false, limit, offset];
-      const artists = await query(sql, params);
 
+      const artists = await query(sql, params);
       if (!artists || artists.length === 0) {
         return [];
       }
@@ -214,7 +214,9 @@ export default class ArtistRepository {
   /**
    * Fetches songs for a given artist.
    * @param artistId - The ID of the artist.
-   * @param options - Options for pagination.
+   * @param options - Options for pagination and related data.
+   * @param options.includeAlbum - Option to include the album data.
+   * @param options.includeLikes - Option to include the like count.
    * @param options.limit - Maximum number of songs to return.
    * @param options.offset - Number of songs to skip.
    * @returns A list of songs in the artist's catalog.
@@ -223,22 +225,62 @@ export default class ArtistRepository {
   static async getSongs(
     artistId: UUID,
     options?: {
+      includeAlbum?: boolean;
+      includeLikes?: boolean;
       limit?: number;
       offset?: number;
     }
-  ): Promise<Song[]> {
+  ): Promise<ArtistSong[]> {
     try {
-      const params = [artistId, options?.limit || 50, options?.offset || 0];
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+
       const sql = `
-        SELECT s.*, sa.role FROM songs s
-        JOIN song_artists sa ON s.id = sa.song_id
-        WHERE sa.artist_id = $1
-        ORDER BY s.created_at DESC
-        LIMIT $2 OFFSET $3
+        SELECT DISTINCT ON (s.id) s.*, sa.role,
+        CASE WHEN $1 THEN row_to_json(a.*) 
+        ELSE NULL END as album,
+        CASE WHEN $2 THEN 
+          (SELECT COUNT(*) FROM song_likes sl WHERE sl.song_id = s.id) 
+        ELSE NULL END as likes
+        FROM songs s
+        LEFT JOIN album_songs als ON als.song_id = s.id
+        LEFT JOIN albums a ON als.album_id = a.id
+        LEFT JOIN song_artists sa ON sa.song_id = s.id
+        WHERE sa.artist_id = $3
+        ORDER BY s.id, s.created_at DESC
+        LIMIT $4 OFFSET $5
       `;
 
-      const res = await query(sql, params);
-      return res;
+      const params = [
+        options?.includeAlbum ?? false,
+        options?.includeLikes ?? false,
+        artistId,
+        limit,
+        offset,
+      ];
+
+      const songs = await query(sql, params);
+      if (!songs || songs.length === 0) {
+        return [];
+      }
+
+      const processedSongs = await Promise.all(
+        songs.map(async (song) => {
+          if (song.image_url) {
+            song.image_url = getBlobUrl(song.image_url);
+          }
+          if (song.audio_url) {
+            song.audio_url = getBlobUrl(song.audio_url);
+          }
+
+          if (song.album && song.album.image_url) {
+            song.album.image_url = getBlobUrl(song.album.image_url);
+          }
+          return song;
+        })
+      );
+
+      return processedSongs;
     } catch (error) {
       console.error("Error fetching songs for artist:", error);
       throw error;
@@ -248,7 +290,10 @@ export default class ArtistRepository {
   /**
    * Fetches albums for a given artist.
    * @param artistId - The ID of the artist.
-   * @param options - Options for pagination.
+   * @param options - Options for pagination and related data.
+   * @param options.includeLikes - Option to include the like count.
+   * @param options.includeRuntime - Option to include the total runtime of the album.
+   * @param options.includeSongCount - Option to include the total number of songs on the album.
    * @param options.limit - Maximum number of albums to return.
    * @param options.offset - Number of albums to skip.
    * @returns A list of albums by the artist.
@@ -256,19 +301,61 @@ export default class ArtistRepository {
    */
   static async getAlbums(
     artistId: UUID,
-    options?: { limit?: number; offset?: number }
+    options?: {
+      includeLikes?: boolean;
+      includeRuntime?: boolean;
+      includeSongCount?: boolean;
+      limit?: number;
+      offset?: number;
+    }
   ): Promise<Album[]> {
     try {
-      const params = [artistId, options?.limit || 50, options?.offset || 0];
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+
       const sql = `
-        SELECT * FROM albums
-        WHERE created_by = $1
-        ORDER BY created_at DESC
-        LIMIT $2 OFFSET $3
+        SELECT a.*,
+        CASE WHEN $1 THEN (SELECT COUNT(*) FROM album_likes al 
+          WHERE al.album_id = a.id)
+        ELSE NULL END as likes,
+        CASE WHEN $2 THEN (SELECT SUM(s.duration) FROM songs s
+          JOIN album_songs als ON s.id = als.song_id 
+          WHERE als.album_id = a.id)
+        ELSE NULL END as runtime,
+        CASE WHEN $3 THEN (SELECT COUNT(*) FROM album_songs als 
+          WHERE als.album_id = a.id)
+        ELSE NULL END as song_count
+        FROM albums a
+        LEFT JOIN artists ar ON a.created_by = ar.id
+        WHERE ar.id = $4
+        ORDER BY a.created_at DESC
+        LIMIT $5 OFFSET $6
       `;
 
-      const res = await query(sql, params);
-      return res;
+      const params = [
+        options?.includeLikes ?? false,
+        options?.includeRuntime ?? false,
+        options?.includeSongCount ?? false,
+        artistId,
+        limit,
+        offset,
+      ];
+
+      const albums = await query(sql, params);
+      if (!albums || albums.length === 0) {
+        return [];
+      }
+
+      const processedAlbums = await Promise.all(
+        albums.map(async (album) => {
+          if (album.image_url) {
+            album.image_url = getBlobUrl(album.image_url);
+          }
+          return album;
+        })
+      );
+
+      return processedAlbums;
     } catch (error) {
       console.error("Error fetching albums for artist:", error);
       throw error;

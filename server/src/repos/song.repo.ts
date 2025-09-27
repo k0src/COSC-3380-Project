@@ -344,19 +344,53 @@ export default class SongRepository {
   /**
    * Fetches the album for a given song.
    * @param songId - The ID of the song.
+   * @param options - Options for pagination and including related data.
+   * @param options.includeArtist - Option to include the artist data.
+   * @param options.includeLikes - Option to include the like count.
+   * @param options.includeRuntime - Option to include the total runtime of the album.
+   * @param options.includeSongCount - Option to include the total number of songs on the album.
    * @returns The album of the song, or null if not found.
    * @throws Error if the operation fails.
    */
-  static async getAlbum(songId: UUID): Promise<Album | null> {
+  static async getAlbum(
+    songId: UUID,
+    options?: {
+      includeArtist?: boolean;
+      includeLikes?: boolean;
+      includeRuntime?: boolean;
+      includeSongCount?: boolean;
+    }
+  ): Promise<Album | null> {
     try {
       const sql = `
-        SELECT a.* FROM albums a
-        JOIN album_songs als ON a.id = als.album_id
-        WHERE als.song_id = $1
-        LIMIT 1
+        SELECT a.*,
+        CASE WHEN $1 THEN row_to_json(ar.*)
+        ELSE NULL END AS artist,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al
+          WHERE al.album_id = a.id)
+        ELSE NULL END AS likes,
+        CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s
+          JOIN album_songs als ON als.song_id = s.id
+          WHERE als.album_id = a.id)
+        ELSE NULL END AS runtime,
+        CASE WHEN $4 THEN (SELECT COUNT(*) FROM album_songs als
+          WHERE als.album_id = a.id)
+        ELSE NULL END AS song_count
+        FROM albums a
+        LEFT JOIN artists ar ON a.created_by = ar.id
+        LEFT JOIN album_songs als ON als.album_id = a.id
+        WHERE als.song_id = $5
       `;
 
-      const res = await query(sql, [songId]);
+      const params = [
+        options?.includeArtist ?? false,
+        options?.includeLikes ?? false,
+        options?.includeRuntime ?? false,
+        options?.includeSongCount ?? false,
+        songId,
+      ];
+
+      const res = await query(sql, params);
       return res[0] ?? null;
     } catch (error) {
       console.error("Error fetching album:", error);
@@ -367,20 +401,54 @@ export default class SongRepository {
   /**
    * Fetches artists for a given song.
    * @param songId - The ID of the song.
+   * @param options.includeUser - Option to include the user who created each artist.
+   * @param options.limit - Maximum number of artists to return.
+   * @param options.offset - Number of artists to skip.
    * @returns A list of artists associated with the song.
    * @throws Error if the operation fails.
    */
-  static async getArtists(songId: UUID): Promise<SongArtist[]> {
+  static async getArtists(
+    songId: UUID,
+    options?: {
+      includeUser?: boolean;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<SongArtist[]> {
     try {
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+
       const sql = `
-        SELECT ar.*, sa.role FROM artists ar
-        JOIN song_artists sa ON ar.id = sa.artist_id
-        WHERE sa.song_id = $1
-        ORDER BY ar.name ASC
+        SELECT sa.role, a.*,
+        CASE WHEN $1 THEN row_to_json(u.*)
+        ELSE NULL END AS user
+        FROM artists a
+        JOIN song_artists sa ON sa.artist_id = a.id
+        LEFT JOIN users u ON a.user_id = u.id
+        WHERE sa.song_id = $2
+        LIMIT $3 OFFSET $4
       `;
 
-      const res = await query(sql, [songId]);
-      return res;
+      const params = [options?.includeUser ?? false, songId, limit, offset];
+
+      const artists = await query(sql, params);
+      if (!artists || artists.length === 0) {
+        return [];
+      }
+
+      const processedArtists = await Promise.all(
+        artists.map(async (artist) => {
+          if (artist.user && artist.user.profile_picture_url) {
+            artist.user.profile_picture_url = getBlobUrl(
+              artist.user.profile_picture_url
+            );
+          }
+          return artist;
+        })
+      );
+
+      return processedArtists;
     } catch (error) {
       console.error("Error fetching artists for song:", error);
       throw error;

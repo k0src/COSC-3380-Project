@@ -18,3 +18,11 @@ export interface Song {
 export interface PlaylistSong extends Song {
   added_at: string;
 }
+
+export interface AlbumSong extends Song {
+  track_number: number;
+}
+
+export interface ArtistSong extends Song {
+  role: string;
+}

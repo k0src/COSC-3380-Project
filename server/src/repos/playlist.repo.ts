@@ -248,34 +248,81 @@ export default class PlaylistRepository {
   /**
    * Fetches all songs in a specific playlist.
    * @param playlistId The ID of the playlist.
+   * @param options - Options for pagination and including related data.
+   * @param options.includeAlbum - Option to include the album data.
+   * @param options.includeArtists - Option to include the artists data.
+   * @param options.includeLikes - Option to include the like count.
+   * @param options.limit - Maximum number of songs to return.
+   * @param options.offset - Number of songs to skip.
    * @returns An array of songs in the playlist, with added_at timestamp.
    * @throws Error if the operation fails
    */
-  static async getSongs(playlistId: UUID): Promise<PlaylistSong[]> {
+  static async getSongs(
+    playlistId: UUID,
+    options?: {
+      includeAlbum?: boolean;
+      includeArtists?: boolean;
+      includeLikes?: boolean;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<PlaylistSong[]> {
     try {
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
+
       const sql = `
-        SELECT s.*, ps.added_at
+        SELECT s.*, ps.added_at,
+        CASE WHEN $1 THEN row_to_json(a.*)
+        ELSE NULL END as album,
+        CASE WHEN $2 THEN
+          (SELECT json_agg(row_to_json(ar.*)) FROM artists ar
+          JOIN song_artists sa ON sa.artist_id = ar.id
+          WHERE sa.song_id = s.id)
+        ELSE NULL END as artists,
+        CASE WHEN $3 THEN 
+          (SELECT COUNT(*) FROM song_likes sl
+          WHERE sl.song_id = s.id)
+        ELSE NULL END as likes
         FROM songs s
-        JOIN playlist_songs ps ON s.id = ps.song_id
-        WHERE ps.playlist_id = $1
+        LEFT JOIN album_songs als ON als.song_id = s.id
+        LEFT JOIN albums a ON als.album_id = a.id
+        LEFT JOIN playlist_songs ps ON s.id = ps.song_id
+        WHERE ps.playlist_id = $4
         ORDER BY ps.added_at
+        LIMIT $5 OFFSET $6
       `;
 
-      const songs = await query(sql, [playlistId]);
+      const params = [
+        options?.includeAlbum ?? false,
+        options?.includeArtists ?? false,
+        options?.includeLikes ?? false,
+        playlistId,
+        limit,
+        offset,
+      ];
 
-      const playlistSongs = await Promise.all(
-        songs.map(async (song) => {
-          const artists = await SongRepository.getArtists(song.id);
-          const album = await SongRepository.getAlbum(song.id);
-          return {
-            ...song,
-            artists,
-            album,
-          } as PlaylistSong;
+      const songs = await query(sql, params);
+      if (!songs || songs.length === 0) {
+        return [];
+      }
+
+      const processedSongs = await Promise.all(
+        songs.map(async (song: PlaylistSong) => {
+          if (song.image_url) {
+            song.image_url = getBlobUrl(song.image_url);
+          }
+          if (song.audio_url) {
+            song.audio_url = getBlobUrl(song.audio_url);
+          }
+          if (song.album && song.album.image_url) {
+            song.album.image_url = getBlobUrl(song.album.image_url);
+          }
+          return song;
         })
       );
 
-      return playlistSongs;
+      return processedSongs;
     } catch (error) {
       console.error("Error fetching playlist songs:", error);
       throw error;
