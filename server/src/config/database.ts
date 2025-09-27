@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -17,7 +17,7 @@ if (!PGHOST || !PGUSER || !PGPASSWORD || !PGDATABASE) {
   throw new Error("Missing required Postgres environment variables.");
 }
 
-// ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : { rejectUnauthorized: false },
+// ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : { rejectUnauthorized: false }, not working idek fix later
 const pool = new Pool({
   host: PGHOST,
   port: PGPORT ? parseInt(PGPORT, 10) : 5432,
@@ -39,7 +39,7 @@ export async function query<T = any>(
 }
 
 export async function withTransaction<T>(
-  callback: (client: any) => Promise<T>
+  callback: (client: PoolClient) => Promise<T>
 ): Promise<T> {
   const client = await pool.connect();
   try {
