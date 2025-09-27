@@ -261,12 +261,9 @@ export default class ArtistRepository {
     try {
       const params = [artistId, options?.limit || 50, options?.offset || 0];
       const sql = `
-        SELECT al.* FROM albums al
-        JOIN album_songs als ON al.id = als.album_id
-        JOIN song_artists sa ON als.song_id = sa.song_id
-        WHERE sa.artist_id = $1
-        GROUP BY al.id
-        ORDER BY al.created_at DESC
+        SELECT * FROM albums
+        WHERE created_by = $1
+        ORDER BY created_at DESC
         LIMIT $2 OFFSET $3
       `;
 

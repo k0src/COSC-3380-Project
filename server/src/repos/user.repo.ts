@@ -338,10 +338,11 @@ export default class UserRepository {
     try {
       const params = [userId, options?.limit || 50, options?.offset || 0];
       const sql = `
-        SELECT p.*, COUNT(*) AS likes FROM playlist_likes pl
-        RIGHT JOIN playlists p ON p.id = pl.playlist_id
+        SELECT 
+          p.*,
+          (SELECT COUNT(*) FROM playlist_likes pl WHERE pl.playlist_id = p.id) AS likes
+        FROM playlists p
         WHERE p.created_by = $1
-        GROUP BY p.id, p.created_at
         ORDER BY p.created_at DESC
         LIMIT $2 OFFSET $3
       `;

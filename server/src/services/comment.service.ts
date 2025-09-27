@@ -20,7 +20,8 @@ export default class CommentService {
         [userId, songId, commentText]
       );
     } catch (error) {
-      throw new Error("Error adding comment");
+      console.error("Error adding comment:", error);
+      throw error;
     }
   }
 
@@ -33,7 +34,8 @@ export default class CommentService {
     try {
       await query("DELETE FROM comments WHERE id = $1", [commentId]);
     } catch (error) {
-      throw new Error("Error deleting comment");
+      console.error("Error deleting comment:", error);
+      throw error;
     }
   }
 
@@ -46,7 +48,8 @@ export default class CommentService {
     try {
       await query("DELETE FROM comments WHERE song_id = $1", [songId]);
     } catch (error) {
-      throw new Error("Error clearing comments");
+      console.error("Error clearing comments:", error);
+      throw error;
     }
   }
 
@@ -77,7 +80,8 @@ export default class CommentService {
       const res = await query(sql, params);
       return res;
     } catch (error) {
-      throw new Error("Error fetching comments");
+      console.error("Error fetching comments:", error);
+      throw error;
     }
   }
 
@@ -108,7 +112,8 @@ export default class CommentService {
       const res = await query(sql, params);
       return res;
     } catch (error) {
-      throw new Error("Error fetching comments");
+      console.error("Error fetching comments:", error);
+      throw error;
     }
   }
 }
