@@ -1,11 +1,5 @@
 import type { UUID, Comment } from "@types";
 import { query } from "../config/database.js";
-import {
-  validateUserId,
-  validateSongId,
-  validateMany,
-  validateCommentId,
-} from "../validators/id.validator.js";
 
 /**
  * Service for managing song comments.
@@ -19,14 +13,6 @@ export default class CommentService {
    * @throws Error if the operation fails.
    */
   static async addComment(userId: UUID, songId: UUID, commentText: string) {
-    const valid = await validateMany([
-      { id: userId, type: "user" },
-      { id: songId, type: "song" },
-    ]);
-    if (!valid) {
-      throw new Error("Invalid user ID or song ID");
-    }
-
     try {
       await query(
         `INSERT INTO comments (user_id, song_id, comment_text) 
@@ -44,10 +30,6 @@ export default class CommentService {
    * @throws Error if the operation fails.
    */
   static async deleteComment(commentId: UUID) {
-    if (!(await validateCommentId(commentId))) {
-      throw new Error("Invalid comment ID");
-    }
-
     try {
       await query("DELETE FROM comments WHERE id = $1", [commentId]);
     } catch (error) {
@@ -62,10 +44,6 @@ export default class CommentService {
    */
   static async clearComments(songId: UUID) {
     try {
-      if (!(await validateSongId(songId))) {
-        throw new Error("Invalid song ID");
-      }
-
       await query("DELETE FROM comments WHERE song_id = $1", [songId]);
     } catch (error) {
       throw new Error("Error clearing comments");
@@ -86,10 +64,6 @@ export default class CommentService {
     options?: { limit?: number; offset?: number }
   ): Promise<Comment[]> {
     try {
-      if (!(await validateSongId(songId))) {
-        throw new Error("Invalid song ID");
-      }
-
       const params = [songId, options?.limit || 50, options?.offset || 0];
       const sql = `
         SELECT c.*, u.username, u.id, u.profile_picture_url
@@ -121,10 +95,6 @@ export default class CommentService {
     options?: { limit?: number; offset?: number }
   ): Promise<Comment[]> {
     try {
-      if (!(await validateUserId(userId))) {
-        throw new Error("Invalid user ID");
-      }
-
       const params = [userId, options?.limit || 50, options?.offset || 0];
       const sql = `
         SELECT c.*, u.username, u.id, u.profile_picture_url

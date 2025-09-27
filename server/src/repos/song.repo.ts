@@ -1,7 +1,6 @@
 import { Song, UUID, Album, SongArtist } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
-import { validateSongId, validateMany } from "../validators/id.validator.js";
 
 export default class SongRepository {
   /**
@@ -76,10 +75,6 @@ export default class SongRepository {
     }
   ): Promise<Song | null> {
     try {
-      if (!(await validateSongId(id))) {
-        throw new Error("Invalid song ID");
-      }
-
       const fields: string[] = [];
       const values: any[] = [];
 
@@ -136,10 +131,6 @@ export default class SongRepository {
    */
   static async delete(id: UUID): Promise<Song | null> {
     try {
-      if (!(await validateSongId(id))) {
-        throw new Error("Invalid song ID");
-      }
-
       const res = await withTransaction(async (client) => {
         const del = await client.query(
           "DELETE FROM songs WHERE id = $1 RETURNING *",
@@ -174,10 +165,6 @@ export default class SongRepository {
     }
   ): Promise<Song | null> {
     try {
-      if (!(await validateSongId(id))) {
-        throw new Error("Invalid song ID");
-      }
-
       const sql = `
         SELECT s.*,
         CASE WHEN $1 THEN row_to_json(a.*)
@@ -307,14 +294,6 @@ export default class SongRepository {
    */
   static async addArtist(artistId: UUID, songId: UUID, role: string) {
     try {
-      const valid = await validateMany([
-        { id: artistId, type: "artist" },
-        { id: songId, type: "song" },
-      ]);
-      if (!valid) {
-        throw new Error("Invalid artist ID or song ID");
-      }
-
       await query(
         `INSERT INTO song_artists (song_id, artist_id, role)
         VALUES ($1, $2, $3)
@@ -336,14 +315,6 @@ export default class SongRepository {
    */
   static async removeArtist(artistId: UUID, songId: UUID) {
     try {
-      const valid = await validateMany([
-        { id: artistId, type: "artist" },
-        { id: songId, type: "song" },
-      ]);
-      if (!valid) {
-        throw new Error("Invalid artist ID or song ID");
-      }
-
       await query(
         `DELETE FROM song_artists
         WHERE song_id = $1 AND artist_id = $2`,
@@ -363,10 +334,6 @@ export default class SongRepository {
    */
   static async count(songId: UUID): Promise<number> {
     try {
-      if (!(await validateSongId(songId))) {
-        throw new Error("Invalid song ID");
-      }
-
       const res = await query(`SELECT COUNT(*) FROM songs WHERE id = $1`, [
         songId,
       ]);
@@ -385,10 +352,6 @@ export default class SongRepository {
    */
   static async getAlbum(songId: UUID): Promise<Album | null> {
     try {
-      if (!(await validateSongId(songId))) {
-        throw new Error("Invalid song ID");
-      }
-
       const sql = `
         SELECT a.* FROM albums a
         JOIN album_songs als ON a.id = als.album_id
@@ -412,10 +375,6 @@ export default class SongRepository {
    */
   static async getArtists(songId: UUID): Promise<SongArtist[]> {
     try {
-      if (!(await validateSongId(songId))) {
-        throw new Error("Invalid song ID");
-      }
-
       const sql = `
         SELECT ar.*, sa.role FROM artists ar
         JOIN song_artists sa ON ar.id = sa.artist_id

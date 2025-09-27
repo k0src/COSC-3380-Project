@@ -1,7 +1,6 @@
 import { User, Playlist, UUID } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
-import { validateUserId } from "@validators";
 
 export default class UserRepository {
   /**
@@ -87,10 +86,6 @@ export default class UserRepository {
     }
   ): Promise<User | null> {
     try {
-      if (!(await validateUserId(id))) {
-        throw new Error("Invalid user ID");
-      }
-
       const fields: string[] = [];
       const values: any[] = [];
 
@@ -147,10 +142,6 @@ export default class UserRepository {
    */
   static async delete(id: UUID): Promise<User | null> {
     try {
-      if (!(await validateUserId(id))) {
-        throw new Error("Invalid user ID");
-      }
-
       const res = await withTransaction(async (client) => {
         const del = await client.query(
           `DELETE FROM users WHERE id = $1 RETURNING *`,
@@ -183,10 +174,6 @@ export default class UserRepository {
     }
   ): Promise<User | null> {
     try {
-      if (!(await validateUserId(id))) {
-        throw new Error("Invalid user ID");
-      }
-
       const sql = `
         SELECT u.*,
         CASE WHEN $1 THEN (SELECT COUNT(*) FROM user_followers uf
@@ -349,10 +336,6 @@ export default class UserRepository {
     options?: { limit?: number; offset?: number }
   ): Promise<Playlist[]> {
     try {
-      if (!(await validateUserId(userId))) {
-        throw new Error("Invalid user ID");
-      }
-
       const params = [userId, options?.limit || 50, options?.offset || 0];
       const sql = `
         SELECT p.*, COUNT(*) AS likes FROM playlist_likes pl
@@ -379,10 +362,6 @@ export default class UserRepository {
    */
   static async count(userId: UUID): Promise<number> {
     try {
-      if (!(await validateUserId(userId))) {
-        throw new Error("Invalid user ID");
-      }
-
       const res = await query(`SELECT COUNT(*) FROM users WHERE id = $1`, [
         userId,
       ]);

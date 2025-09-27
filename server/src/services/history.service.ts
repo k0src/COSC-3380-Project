@@ -1,6 +1,5 @@
 import type { UUID, Song, Album, Playlist, Artist } from "@types";
 import { query } from "@config/database.js";
-import { validateUserId, validateMany } from "@validators";
 
 type HistoryEntity = "song" | "album" | "playlist" | "artist";
 
@@ -36,10 +35,6 @@ export default class HistoryService {
     options?: { limit?: number; offset?: number }
   ): Promise<HistoryEntityMap[K][]> {
     try {
-      if (!(await validateUserId(userId))) {
-        throw new Error("Invalid user ID");
-      }
-
       const table = HISTORY_TABLES[entity];
       if (!table) {
         throw new Error("Invalid entity type");
@@ -69,10 +64,6 @@ export default class HistoryService {
    */
   static async clearHistory(userId: UUID): Promise<void> {
     try {
-      if (!(await validateUserId(userId))) {
-        throw new Error("Invalid user ID");
-      }
-
       await query("DELETE FROM song_history WHERE user_id = $1", [userId]);
       await query("DELETE FROM album_history WHERE user_id = $1", [userId]);
       await query("DELETE FROM playlist_history WHERE user_id = $1", [userId]);
@@ -96,14 +87,6 @@ export default class HistoryService {
     entity: K
   ) {
     try {
-      const valid = await validateMany([
-        { id: userId, type: "user" },
-        { id: entityId, type: entity },
-      ]);
-      if (!valid) {
-        throw new Error("Invalid user ID or entity ID");
-      }
-
       const table = HISTORY_TABLES[entity];
       if (!table) {
         throw new Error("Invalid entity type");

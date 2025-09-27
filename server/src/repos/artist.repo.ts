@@ -1,7 +1,6 @@
 import { Album, Artist, Song, UUID } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
-import { validateArtistId } from "@validators";
 
 export default class ArtistRepository {
   /**
@@ -56,10 +55,6 @@ export default class ArtistRepository {
     }: { display_name?: string; bio?: string; user_id?: UUID }
   ): Promise<Artist | null> {
     try {
-      if (!(await validateArtistId(id))) {
-        throw new Error("Invalid artist ID");
-      }
-
       const fields: string[] = [];
       const values: any[] = [];
 
@@ -104,10 +99,6 @@ export default class ArtistRepository {
    */
   static async delete(id: UUID): Promise<Artist | null> {
     try {
-      if (!(await validateArtistId(id))) {
-        throw new Error("Invalid artist ID");
-      }
-
       const res = await withTransaction(async (client) => {
         const del = await client.query(
           "DELETE FROM artists WHERE id = $1 RETURNING *",
@@ -138,10 +129,6 @@ export default class ArtistRepository {
     }
   ): Promise<Artist | null> {
     try {
-      if (!(await validateArtistId(id))) {
-        throw new Error("Invalid artist ID");
-      }
-
       const sql = `
         SELECT a.*,
         CASE WHEN $1 THEN row_to_json(u.*) 
@@ -241,10 +228,6 @@ export default class ArtistRepository {
     }
   ): Promise<Song[]> {
     try {
-      if (!(await validateArtistId(artistId))) {
-        throw new Error("Invalid artist ID");
-      }
-
       const params = [artistId, options?.limit || 50, options?.offset || 0];
       const sql = `
         SELECT s.*, sa.role FROM songs s
@@ -276,10 +259,6 @@ export default class ArtistRepository {
     options?: { limit?: number; offset?: number }
   ): Promise<Album[]> {
     try {
-      if (!(await validateArtistId(artistId))) {
-        throw new Error("Invalid artist ID");
-      }
-
       const params = [artistId, options?.limit || 50, options?.offset || 0];
       const sql = `
         SELECT al.* FROM albums al
@@ -307,10 +286,6 @@ export default class ArtistRepository {
    */
   static async count(artistId: UUID): Promise<number> {
     try {
-      if (!(await validateArtistId(artistId))) {
-        throw new Error("Invalid artist ID");
-      }
-
       const res = await query(`SELECT COUNT(*) FROM artists WHERE id = $1`, [
         artistId,
       ]);

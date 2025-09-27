@@ -1,6 +1,5 @@
 import type { UUID, Song, Album, Playlist, User } from "@types";
 import { query } from "@config/database.js";
-import { validateUserId, validateMany } from "../validators/id.validator.js";
 
 type LikeableEntity = "song" | "album" | "playlist";
 
@@ -46,14 +45,6 @@ export default class LikeService {
     entity: LikeableEntity
   ): Promise<string> {
     try {
-      const valid = await validateMany([
-        { id: userId, type: "user" },
-        { id: entityId, type: entity },
-      ]);
-      if (!valid) {
-        throw new Error("Invalid user ID or entity ID");
-      }
-
       const fn = LIKE_FUNCTIONS[entity];
       if (!fn) {
         throw new Error("Invalid entity type");
@@ -85,10 +76,6 @@ export default class LikeService {
     entity: LikeableEntity
   ): Promise<number> {
     try {
-      if (!(await validateMany([{ id: entityId, type: entity }]))) {
-        throw new Error("Invalid entity ID");
-      }
-
       const table = LIKE_TABLES[entity];
       if (!table) {
         throw new Error("Invalid entity type");
@@ -116,10 +103,6 @@ export default class LikeService {
     userId: UUID,
     entity: K
   ): Promise<LikeableEntitiesMap[K][]> {
-    if (!(await validateUserId(userId))) {
-      throw new Error("Invalid user ID");
-    }
-
     const table = LIKEABLE_ENTITY_TABLES[entity];
     const likeTable = LIKE_TABLES[entity];
 
@@ -148,10 +131,6 @@ export default class LikeService {
     entity: K,
     options?: { limit?: number; offset?: number }
   ): Promise<User[]> {
-    if (!(await validateMany([{ id: entityId, type: entity }]))) {
-      throw new Error("Invalid entity ID");
-    }
-
     const likeTable = LIKE_TABLES[entity];
     if (!likeTable) {
       throw new Error("Invalid entity type");
@@ -183,14 +162,6 @@ export default class LikeService {
     entity: K
   ): Promise<boolean> {
     try {
-      const valid = await validateMany([
-        { id: userId, type: "user" },
-        { id: entityId, type: entity },
-      ]);
-      if (!valid) {
-        throw new Error("Invalid user ID or entity ID");
-      }
-
       const table = LIKE_TABLES[entity];
       if (!table) {
         throw new Error("Invalid entity type");

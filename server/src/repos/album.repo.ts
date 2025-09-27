@@ -1,7 +1,6 @@
 import { Album, UUID, Song } from "@types";
 import { query, withTransaction } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
-import { validateAlbumId, validateMany } from "@validators";
 
 export default class AlbumRepository {
   /**
@@ -65,10 +64,6 @@ export default class AlbumRepository {
     }
   ): Promise<Album | null> {
     try {
-      if (!(await validateAlbumId(id))) {
-        throw new Error("Invalid album ID");
-      }
-
       const fields: string[] = [];
       const values: any[] = [];
 
@@ -117,10 +112,6 @@ export default class AlbumRepository {
    */
   static async delete(id: UUID): Promise<Album | null> {
     try {
-      if (!(await validateAlbumId(id))) {
-        throw new Error("Invalid album ID");
-      }
-
       const res = await withTransaction(async (client) => {
         const del = await client.query(
           "DELETE FROM albums WHERE id = $1 RETURNING *",
@@ -155,13 +146,8 @@ export default class AlbumRepository {
     }
   ): Promise<Album | null> {
     try {
-      if (!(await validateAlbumId(id))) {
-        throw new Error("Invalid album ID");
-      }
-
       const sql = `
-        SELECT
-          a.*,
+        SELECT a.*,
         CASE WHEN $1 THEN row_to_json(ar.*)
         ELSE NULL END as artist,
         CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al
@@ -223,16 +209,15 @@ export default class AlbumRepository {
       const offset = options?.offset || 0;
 
       const sql = `
-        SELECT
-          a.*,
-          CASE WHEN $1 THEN row_to_json(ar.*) 
-          ELSE NULL END as artist,
-          CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al 
-            WHERE al.album_id = a.id) 
-          ELSE NULL END as likes,
-          CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s 
-            JOIN album_songs als ON s.id = als.song_id WHERE als.album_id = a.id) 
-          ELSE NULL END as runtime
+        SELECT a.*,
+        CASE WHEN $1 THEN row_to_json(ar.*) 
+        ELSE NULL END as artist,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al 
+          WHERE al.album_id = a.id) 
+        ELSE NULL END as likes,
+        CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s 
+          JOIN album_songs als ON s.id = als.song_id WHERE als.album_id = a.id) 
+        ELSE NULL END as runtime
         FROM albums a
         LEFT JOIN artists ar ON a.created_by = ar.id
         ORDER BY a.created_at DESC
@@ -276,14 +261,6 @@ export default class AlbumRepository {
    */
   static async addSong(albumId: UUID, songId: UUID, track_number: number) {
     try {
-      const valid = await validateMany([
-        { id: albumId, type: "album" },
-        { id: songId, type: "song" },
-      ]);
-      if (!valid) {
-        throw new Error("Invalid album ID or song ID");
-      }
-
       await query(
         `INSERT INTO album_songs (album_id, song_id, track_number)
         VALUES ($1, $2, $3)
@@ -303,14 +280,6 @@ export default class AlbumRepository {
    */
   static async removeSong(albumId: UUID, songId: UUID) {
     try {
-      const valid = await validateMany([
-        { id: albumId, type: "album" },
-        { id: songId, type: "song" },
-      ]);
-      if (!valid) {
-        throw new Error("Invalid album ID or song ID");
-      }
-
       await query(
         `DELETE FROM album_songs
         WHERE album_id = $1 AND song_id = $2`,
@@ -339,10 +308,6 @@ export default class AlbumRepository {
     }
   ): Promise<Song[]> {
     try {
-      if (!(await validateAlbumId(albumId))) {
-        throw new Error("Invalid album ID");
-      }
-
       const params = [albumId, options?.limit || 50, options?.offset || 0];
       const sql = `
         SELECT s.*, as.track_number FROM songs s
@@ -368,10 +333,6 @@ export default class AlbumRepository {
    */
   static async count(albumId: UUID): Promise<number> {
     try {
-      if (!(await validateAlbumId(albumId))) {
-        throw new Error("Invalid album ID");
-      }
-
       const res = await query(`SELECT COUNT(*) FROM albums WHERE id = $1`, [
         albumId,
       ]);

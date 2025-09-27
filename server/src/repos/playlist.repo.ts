@@ -2,7 +2,6 @@ import { Playlist, PlaylistSong, UUID } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
 import { SongRepository } from "@repositories";
-import { validatePlaylistId, validateSongId } from "@validators";
 
 export default class PlaylistRepository {
   /**
@@ -57,10 +56,6 @@ export default class PlaylistRepository {
     }: { title?: string; description?: string; created_by?: UUID }
   ): Promise<Playlist | null> {
     try {
-      if (!(await validatePlaylistId(id))) {
-        throw new Error("Invalid playlist ID");
-      }
-
       const fields: string[] = [];
       const values: any[] = [];
 
@@ -105,10 +100,6 @@ export default class PlaylistRepository {
    */
   static async delete(id: UUID): Promise<Playlist | null> {
     try {
-      if (!(await validatePlaylistId(id))) {
-        throw new Error("Invalid playlist ID");
-      }
-
       const res = await withTransaction(async (client) => {
         const del = await client.query(
           `DELETE FROM playlists WHERE id = $1 RETURNING *`,
@@ -141,10 +132,6 @@ export default class PlaylistRepository {
     }
   ): Promise<Playlist | null> {
     try {
-      if (!(await validatePlaylistId(id))) {
-        throw new Error("Invalid playlist ID");
-      }
-
       const sql = `
         SELECT p.*,
         CASE WHEN $1 THEN row_to_json(u.*)
@@ -254,10 +241,6 @@ export default class PlaylistRepository {
    */
   static async getSongs(playlistId: UUID): Promise<PlaylistSong[]> {
     try {
-      if (!(await validatePlaylistId(playlistId))) {
-        throw new Error("Invalid playlist ID");
-      }
-
       const sql = `
         SELECT s.*, ps.added_at
         FROM songs s
@@ -295,15 +278,6 @@ export default class PlaylistRepository {
    */
   static async addSongs(playlistId: UUID, songIds: UUID[]) {
     try {
-      if (!(await validatePlaylistId(playlistId))) {
-        throw new Error("Invalid playlist ID");
-      }
-      for (const songId of songIds) {
-        if (!(await validateSongId(songId))) {
-          throw new Error(`Invalid song ID: ${songId}`);
-        }
-      }
-
       await withTransaction(async (client) => {
         for (const songId of songIds) {
           await client.query(
@@ -328,15 +302,6 @@ export default class PlaylistRepository {
    */
   static async removeSongs(playlistId: UUID, songIds: UUID[]) {
     try {
-      if (!(await validatePlaylistId(playlistId))) {
-        throw new Error("Invalid playlist ID");
-      }
-      for (const songId of songIds) {
-        if (!(await validateSongId(songId))) {
-          throw new Error(`Invalid song ID: ${songId}`);
-        }
-      }
-
       await withTransaction(async (client) => {
         for (const songId of songIds) {
           await client.query(
@@ -360,10 +325,6 @@ export default class PlaylistRepository {
    */
   static async count(playlistId: UUID): Promise<number> {
     try {
-      if (!(await validatePlaylistId(playlistId))) {
-        throw new Error("Invalid playlist ID");
-      }
-
       const res = await query(`SELECT COUNT(*) FROM playlists WHERE id = $1`, [
         playlistId,
       ]);
