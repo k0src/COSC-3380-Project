@@ -1,43 +1,10 @@
 import { Playlist, PlaylistSong, UUID } from "@types";
-import { SongRepository } from "@repositories";
-import { LikeService } from "@services";
 import { query, withTransaction } from "../config/database";
 import { getBlobUrl } from "config/blobStorage";
+import { SongRepository } from "@repositories";
 import { validatePlaylistId, validateSongId } from "@validators";
 
 export default class PlaylistRepository {
-  /* ----------------------------- HELPER METHODS ----------------------------- */
-
-  /**
-   * Fetches the user who made the playlist and attaches it to the playlist object.
-   * @param playlist - The playlist object.
-   * @throws Error if the operation fails.
-   */
-  private static async getUser(playlist: Playlist) {
-    try {
-      const user = await query(
-        `SELECT u.* FROM users u
-        JOIN playlists p ON u.id = p.created_by
-        WHERE p.id = $1`,
-        [playlist.id]
-      );
-
-      if (user && user.length > 0) {
-        playlist.user = user[0];
-        if (playlist.user && playlist.user.profile_picture_url) {
-          playlist.user.profile_picture_url = getBlobUrl(
-            playlist.user.profile_picture_url
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching playlist user:", error);
-      throw error;
-    }
-  }
-
-  /* ------------------------------ MAIN METHODS ------------------------------ */
-
   /**
    * Creates a new playlist.
    * @param playlistData - The data for the new playlist.
@@ -178,21 +145,34 @@ export default class PlaylistRepository {
         throw new Error("Invalid playlist ID");
       }
 
-      const res = await query("SELECT * FROM playlists WHERE id = $1", [id]);
+      const sql = `
+        SELECT p.*,
+        CASE WHEN $1 THEN row_to_json(u.*)
+        ELSE NULL END as user,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_likes pl 
+          WHERE pl.playlist_id = p.id)
+        ELSE NULL END as likes
+        FROM playlists p
+        LEFT JOIN users u ON p.created_by = u.id
+        WHERE p.id = $3
+        LIMIT 1
+      `;
 
+      const params = [
+        options?.includeUser ?? false,
+        options?.includeLikes ?? false,
+        id,
+      ];
+
+      const res = await query(sql, params);
       if (!res || res.length === 0) {
         return null;
       }
 
-      let playlist: Playlist = res[0];
-
-      if (options?.includeUser) {
-        await this.getUser(playlist);
-      }
-      if (options?.includeLikes) {
-        playlist.likes = await LikeService.getLikeCount(
-          playlist.id,
-          "playlist"
+      const playlist: Playlist = res[0];
+      if (playlist.user && playlist.user.profile_picture_url) {
+        playlist.user.profile_picture_url = getBlobUrl(
+          playlist.user.profile_picture_url
         );
       }
 
@@ -220,12 +200,28 @@ export default class PlaylistRepository {
     offset?: number;
   }): Promise<Playlist[]> {
     try {
-      const params = [options?.limit || 50, options?.offset || 0];
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
+
       const sql = `
-        SELECT * FROM playlists
-        ORDER BY created_at DESC
-        LIMIT $1 OFFSET $2
+        SELECT p.*,
+        CASE WHEN $1 THEN row_to_json(u.*)
+        ELSE NULL END as user,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_likes pl 
+          WHERE pl.playlist_id = p.id)
+        ELSE NULL END as likes
+        FROM playlists p
+        LEFT JOIN users u ON p.created_by = u.id
+        ORDER BY p.created_at DESC
+        LIMIT $3 OFFSET $4
       `;
+
+      const params = [
+        options?.includeUser ?? false,
+        options?.includeLikes ?? false,
+        limit,
+        offset,
+      ];
 
       const playlists = await query(sql, params);
       if (!playlists || playlists.length === 0) {
@@ -234,16 +230,11 @@ export default class PlaylistRepository {
 
       const processedPlaylists = await Promise.all(
         playlists.map(async (playlist: Playlist) => {
-          if (options?.includeUser) {
-            await this.getUser(playlist);
-          }
-          if (options?.includeLikes) {
-            playlist.likes = await LikeService.getLikeCount(
-              playlist.id,
-              "playlist"
+          if (playlist.user && playlist.user.profile_picture_url) {
+            playlist.user.profile_picture_url = getBlobUrl(
+              playlist.user.profile_picture_url
             );
           }
-
           return playlist;
         })
       );
@@ -267,26 +258,27 @@ export default class PlaylistRepository {
         throw new Error("Invalid playlist ID");
       }
 
-      const songIds = await query(
-        `SELECT song_id, added_at FROM playlist_songs 
-        WHERE playlist_id = $1 ORDER BY added_at`,
-        [playlistId]
+      const sql = `
+        SELECT s.*, ps.added_at
+        FROM songs s
+        JOIN playlist_songs ps ON s.id = ps.song_id
+        WHERE ps.playlist_id = $1
+        ORDER BY ps.added_at
+      `;
+
+      const songs = await query(sql, [playlistId]);
+
+      const playlistSongs = await Promise.all(
+        songs.map(async (song) => {
+          const artists = await SongRepository.getArtists(song.id);
+          const album = await SongRepository.getAlbum(song.id);
+          return {
+            ...song,
+            artists,
+            album,
+          } as PlaylistSong;
+        })
       );
-
-      const playlistSongs: PlaylistSong[] = [];
-
-      if (songIds && songIds.length > 0) {
-        for (const { song_id, added_at } of songIds) {
-          const song = await SongRepository.getOne(song_id, {
-            includeAlbum: true,
-            includeArtists: true,
-          });
-          if (song) {
-            (song as PlaylistSong).added_at = added_at;
-            playlistSongs.push(song as PlaylistSong);
-          }
-        }
-      }
 
       return playlistSongs;
     } catch (error) {

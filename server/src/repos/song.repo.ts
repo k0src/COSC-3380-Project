@@ -1,81 +1,9 @@
-import { Song, UUID } from "@types";
+import { Song, UUID, Album, SongArtist } from "@types";
 import { query, withTransaction } from "../config/database.js";
-import { LikeService } from "@services";
 import { getBlobUrl } from "../config/blobStorage.js";
 import { validateSongId, validateMany } from "../validators/id.validator.js";
 
 export default class SongRepository {
-  /* ----------------------------- HELPER METHODS ----------------------------- */
-
-  /**
-   * Fetches the album for a song and attaches it to the song object.
-   * @param song - The song object.
-   * @throws Error if the operation fails.
-   */
-  private static async getAlbum(song: Song) {
-    try {
-      const album = await query(
-        `SELECT a.* FROM albums a
-        JOIN album_songs als ON a.id = als.album_id
-        WHERE als.song_id = $1
-        LIMIT 1`,
-        [song.id]
-      );
-
-      if (album && album.length > 0) {
-        song.album = album[0];
-        if (song.album?.image_url) {
-          song.album.image_url = getBlobUrl(song.album.image_url);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching album for song:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Fetches the artists for a song and attaches them to the song object.
-   * @param song - The song object.
-   * @throws Error if the operation fails.
-   */
-  private static async getArtists(song: Song) {
-    try {
-      const artists = await query(
-        `SELECT a.*, sa.role 
-        FROM artists a
-        JOIN song_artists sa ON a.id = sa.artist_id
-        WHERE sa.song_id = $1`,
-        [song.id]
-      );
-
-      if (artists) {
-        if (!song.artists) {
-          song.artists = [];
-        }
-        song.artists = artists;
-      }
-    } catch (error) {
-      console.error("Error fetching artists for song:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Converts image and audio URLs to full blob URLs.
-   * @param song - The song object.
-   */
-  private static getBlobUrls(song: Song) {
-    if (song.image_url) {
-      song.image_url = getBlobUrl(song.image_url);
-    }
-    if (song.audio_url) {
-      song.audio_url = getBlobUrl(song.audio_url);
-    }
-  }
-
-  /* ------------------------------ MAIN METHODS ------------------------------ */
-
   /**
    * Creates a new song.
    * @param songData - The data for the new song.
@@ -250,24 +178,43 @@ export default class SongRepository {
         throw new Error("Invalid song ID");
       }
 
-      const res = await query("SELECT * FROM songs WHERE id = $1", [id]);
+      const sql = `
+        SELECT s.*,
+        CASE WHEN $1 THEN row_to_json(a.*)
+        ELSE NULL END AS album,
+        CASE WHEN $2 THEN
+          (SELECT json_agg(row_to_json(ar.*)) FROM artists ar
+          JOIN song_artists sa ON sa.artist_id = ar.id
+          WHERE sa.song_id = s.id)
+        ELSE NULL END AS artists,
+        CASE WHEN $3 THEN
+          (SELECT COUNT(*) FROM song_likes sl
+          WHERE sl.song_id = s.id)
+        ELSE NULL END AS likes
+        FROM songs s
+        LEFT JOIN album_songs als ON als.song_id = s.id
+        LEFT JOIN albums a ON als.album_id = a.id
+        WHERE s.id = $4
+      `;
 
+      const params = [
+        options?.includeAlbum ?? false,
+        options?.includeArtists ?? false,
+        options?.includeLikes ?? false,
+        id,
+      ];
+
+      const res = await query(sql, params);
       if (!res || res.length === 0) {
         return null;
       }
 
       let song: Song = res[0];
-
-      this.getBlobUrls(song);
-
-      if (options?.includeAlbum) {
-        await this.getAlbum(song);
+      if (song.image_url) {
+        song.image_url = getBlobUrl(song.image_url);
       }
-      if (options?.includeArtists) {
-        await this.getArtists(song);
-      }
-      if (options?.includeLikes) {
-        song.likes = await LikeService.getLikeCount(song.id, "song");
+      if (song.audio_url) {
+        song.audio_url = getBlobUrl(song.audio_url);
       }
 
       return song;
@@ -296,12 +243,36 @@ export default class SongRepository {
     offset?: number;
   }): Promise<Song[]> {
     try {
-      const params = [options?.limit || 50, options?.offset || 0];
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
+
       const sql = `
-        SELECT * FROM songs
-        ORDER BY created_at DESC
-        LIMIT $1 OFFSET $2
+        SELECT s.*,
+        CASE WHEN $1 THEN row_to_json(a.*)
+        ELSE NULL END AS album,
+        CASE WHEN $2 THEN
+          (SELECT json_agg(row_to_json(ar.*)) FROM artists ar
+          JOIN song_artists sa ON sa.artist_id = ar.id
+          WHERE sa.song_id = s.id)
+        ELSE NULL END AS artists,
+        CASE WHEN $3 THEN
+          (SELECT COUNT(*) FROM song_likes sl
+          WHERE sl.song_id = s.id)
+        ELSE NULL END AS likes
+        FROM songs s
+        LEFT JOIN album_songs als ON als.song_id = s.id
+        LEFT JOIN albums a ON als.album_id = a.id
+        ORDER BY s.created_at DESC
+        LIMIT $4 OFFSET $5
       `;
+
+      const params = [
+        options?.includeAlbum ?? false,
+        options?.includeArtists ?? false,
+        options?.includeLikes ?? false,
+        limit,
+        offset,
+      ];
 
       const songs = await query(sql, params);
       if (!songs || songs.length === 0) {
@@ -309,19 +280,13 @@ export default class SongRepository {
       }
 
       const processedSongs = await Promise.all(
-        songs.map(async (song: Song) => {
-          this.getBlobUrls(song);
-
-          if (options?.includeAlbum) {
-            await this.getAlbum(song);
+        songs.map(async (song) => {
+          if (song.image_url) {
+            song.image_url = getBlobUrl(song.image_url);
           }
-          if (options?.includeArtists) {
-            await this.getArtists(song);
+          if (song.audio_url) {
+            song.audio_url = getBlobUrl(song.audio_url);
           }
-          if (options?.includeLikes) {
-            song.likes = await LikeService.getLikeCount(song.id, "song");
-          }
-
           return song;
         })
       );
@@ -408,6 +373,60 @@ export default class SongRepository {
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting songs:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetches the album for a given song.
+   * @param songId - The ID of the song.
+   * @returns The album of the song, or null if not found.
+   * @throws Error if the operation fails.
+   */
+  static async getAlbum(songId: UUID): Promise<Album | null> {
+    try {
+      if (!(await validateSongId(songId))) {
+        throw new Error("Invalid song ID");
+      }
+
+      const sql = `
+        SELECT a.* FROM albums a
+        JOIN album_songs als ON a.id = als.album_id
+        WHERE als.song_id = $1
+        LIMIT 1
+      `;
+
+      const res = await query(sql, [songId]);
+      return res[0] ?? null;
+    } catch (error) {
+      console.error("Error fetching album:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetches artists for a given song.
+   * @param songId - The ID of the song.
+   * @returns A list of artists associated with the song.
+   * @throws Error if the operation fails.
+   */
+  static async getArtists(songId: UUID): Promise<SongArtist[]> {
+    try {
+      if (!(await validateSongId(songId))) {
+        throw new Error("Invalid song ID");
+      }
+
+      const sql = `
+        SELECT ar.*, sa.role FROM artists ar
+        JOIN song_artists sa ON ar.id = sa.artist_id
+        WHERE sa.song_id = $1
+        ORDER BY ar.name ASC
+      `;
+
+      const res = await query(sql, [songId]);
+      return res;
+    } catch (error) {
+      console.error("Error fetching artists for song:", error);
       throw error;
     }
   }

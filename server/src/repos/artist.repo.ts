@@ -158,12 +158,10 @@ export default class ArtistRepository {
       }
 
       const artist: Artist = res[0];
-      if (options?.includeUser && artist.user) {
-        if (artist.user.profile_picture_url) {
-          artist.user.profile_picture_url = getBlobUrl(
-            artist.user.profile_picture_url
-          );
-        }
+      if (artist.user && artist.user.profile_picture_url) {
+        artist.user.profile_picture_url = getBlobUrl(
+          artist.user.profile_picture_url
+        );
       }
 
       return artist;
@@ -210,12 +208,10 @@ export default class ArtistRepository {
 
       const processedArtists = await Promise.all(
         artists.map(async (artist) => {
-          if (options?.includeUser && artist.user) {
-            if (artist.user.profile_picture_url) {
-              artist.user.profile_picture_url = getBlobUrl(
-                artist.user.profile_picture_url
-              );
-            }
+          if (artist.user && artist.user.profile_picture_url) {
+            artist.user.profile_picture_url = getBlobUrl(
+              artist.user.profile_picture_url
+            );
           }
           return artist;
         })

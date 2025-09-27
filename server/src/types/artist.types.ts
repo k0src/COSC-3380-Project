@@ -11,3 +11,7 @@ export interface Artist {
   songs?: Array<{ song: Song; role: string }>;
   albums?: Album[];
 }
+
+export interface SongArtist extends Artist {
+  role: string;
+}
