@@ -2,7 +2,6 @@ import { User, Playlist, UUID } from "@types";
 import { query, withTransaction } from "../config/database.js";
 import { getBlobUrl } from "../config/blobStorage.js";
 import { validateUserId } from "@validators";
-import { FollowService } from "@services";
 
 export default class UserRepository {
   /**
@@ -188,19 +187,30 @@ export default class UserRepository {
         throw new Error("Invalid user ID");
       }
 
-      const res = await query(`SELECT * FROM users WHERE id = $1`, [id]);
+      const sql = `
+        SELECT u.*,
+        CASE WHEN $1 THEN (SELECT COUNT(*) FROM user_followers uf
+          WHERE uf.following_id = u.id) 
+        ELSE NULL END AS follower_count,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM user_followers uf
+          WHERE uf.follower_id = u.id)
+        ELSE NULL END AS following_count
+        FROM users u
+        WHERE u.id = $3
+      `;
+
+      const params = [
+        options?.includeFollowerCount ?? false,
+        options?.includeFollowingCount ?? false,
+        id,
+      ];
+
+      const res = await query(sql, params);
       if (!res || res.length === 0) {
         return null;
       }
 
-      let user: User = res[0];
-
-      if (options?.includeFollowerCount) {
-        user.follower_count = await FollowService.getFollowerCount(user.id);
-      }
-      if (options?.includeFollowingCount) {
-        user.following_count = await FollowService.getFollowingCount(user.id);
-      }
+      const user: User = res[0];
       if (user.profile_picture_url) {
         user.profile_picture_url = getBlobUrl(user.profile_picture_url);
       }
@@ -226,44 +236,48 @@ export default class UserRepository {
     limit?: number;
     offset?: number;
   }): Promise<User[]> {
-    {
-      try {
-        const params = [options?.limit || 50, options?.offset || 0];
-        const sql = `
-          SELECT * FROM users
-          ORDER BY created_at DESC
-          LIMIT $1 OFFSET $2
-        `;
+    try {
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
 
-        const users = await query(sql, params);
-        if (!users || users.length === 0) {
-          return [];
-        }
+      const sql = `
+        SELECT u.*,
+        CASE WHEN $1 THEN (SELECT COUNT(*) FROM user_followers uf
+          WHERE uf.following_id = u.id) 
+        ELSE NULL END AS follower_count,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM user_followers uf
+          WHERE uf.follower_id = u.id)
+        ELSE NULL END AS following_count
+        FROM users u
+        ORDER BY u.created_at DESC
+        LIMIT $3 OFFSET $4
+      `;
 
-        const processedUsers = await Promise.all(
-          users.map(async (user) => {
-            if (options?.includeFollowerCount) {
-              user.follower_count = await FollowService.getFollowerCount(
-                user.id
-              );
-            }
-            if (options?.includeFollowingCount) {
-              user.following_count = await FollowService.getFollowingCount(
-                user.id
-              );
-            }
-            if (user.profile_picture_url) {
-              user.profile_picture_url = getBlobUrl(user.profile_picture_url);
-            }
-            return user;
-          })
-        );
+      const params = [
+        options?.includeFollowerCount ?? false,
+        options?.includeFollowingCount ?? false,
+        limit,
+        offset,
+      ];
 
-        return processedUsers;
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        throw error;
+      const users = await query(sql, params);
+      if (!users || users.length === 0) {
+        return [];
       }
+
+      const processedUsers = await Promise.all(
+        users.map(async (user: User) => {
+          if (user.profile_picture_url) {
+            user.profile_picture_url = getBlobUrl(user.profile_picture_url);
+          }
+          return user;
+        })
+      );
+
+      return processedUsers;
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      throw error;
     }
   }
 
