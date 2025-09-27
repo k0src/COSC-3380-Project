@@ -1,5 +1,5 @@
 import type { UUID, Song, Album, Playlist, Artist } from "@types";
-import { query } from "../config/database.js";
+import { query } from "@config/database.js";
 import { validateUserId, validateMany } from "@validators";
 
 type HistoryEntity = "song" | "album" | "playlist" | "artist";

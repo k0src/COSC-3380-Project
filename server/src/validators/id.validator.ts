@@ -1,5 +1,5 @@
 import type { UUID } from "@types";
-import { query } from "../config/database.js";
+import { query } from "@config/database.js";
 
 /**
  * Check if user ID exists in the database.

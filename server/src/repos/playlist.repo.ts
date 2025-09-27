@@ -1,6 +1,6 @@
 import { Playlist, PlaylistSong, UUID } from "@types";
-import { query, withTransaction } from "../config/database";
-import { getBlobUrl } from "config/blobStorage";
+import { query, withTransaction } from "@config/database";
+import { getBlobUrl } from "@config/blobStorage";
 import { SongRepository } from "@repositories";
 import { validatePlaylistId, validateSongId } from "@validators";
 

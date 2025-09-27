@@ -11,7 +11,8 @@
       "@services": ["services/index"],
       "@services/*": ["services/*"],
       "@validators": ["validators/index"],
-      "@validators/*": ["validators/*"]
+      "@validators/*": ["validators/*"],
+      "@config/*": ["config/*"]
       // "@middleware": ["middleware/index"],
       // "@middleware/*": ["middleware/*"]
     },

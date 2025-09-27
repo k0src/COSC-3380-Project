@@ -1,5 +1,5 @@
 import type { UUID, Song, Album, Playlist, User } from "@types";
-import { query } from "../config/database.js";
+import { query } from "@config/database.js";
 import { validateUserId, validateMany } from "../validators/id.validator.js";
 
 type LikeableEntity = "song" | "album" | "playlist";

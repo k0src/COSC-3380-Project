@@ -1,6 +1,6 @@
 import { Album, UUID, Song } from "@types";
-import { query, withTransaction } from "../config/database.js";
-import { getBlobUrl } from "config/blobStorage.js";
+import { query, withTransaction } from "@config/database.js";
+import { getBlobUrl } from "@config/blobStorage.js";
 import { validateAlbumId, validateMany } from "@validators";
 
 export default class AlbumRepository {

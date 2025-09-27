@@ -1,6 +1,6 @@
 import { User, Playlist, UUID } from "@types";
-import { query, withTransaction } from "../config/database.js";
-import { getBlobUrl } from "../config/blobStorage.js";
+import { query, withTransaction } from "@config/database";
+import { getBlobUrl } from "@config/blobStorage";
 import { validateUserId } from "@validators";
 
 export default class UserRepository {

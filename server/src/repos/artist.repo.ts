@@ -1,6 +1,6 @@
 import { Album, Artist, Song, UUID } from "@types";
-import { query, withTransaction } from "../config/database";
-import { getBlobUrl } from "config/blobStorage";
+import { query, withTransaction } from "@config/database";
+import { getBlobUrl } from "@config/blobStorage";
 import { validateArtistId } from "@validators";
 
 export default class ArtistRepository {
