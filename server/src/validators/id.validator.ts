@@ -1,163 +1,41 @@
 import type { UUID } from "@types";
 import { query } from "@config/database.js";
 
+const VALID_TABLES = [
+  "users",
+  "songs",
+  "albums",
+  "artists",
+  "playlists",
+  "comments",
+];
+
 /**
- * Check if user ID exists in the database.
- * @param id The user ID to validate.
- * @return True if the user ID exists, false otherwise.
- * @throws Error if the operation fails.
+ * Validates if a given ID exists in the specified table.
+ * @param table - The name of the table to check.
+ * @param id - The UUID to validate.
+ * @return True if the ID exists, false otherwise.
+ * @throws Error if the table name is invalid or the query fails.
  */
-export async function validateUserId(id: UUID): Promise<boolean> {
+async function validateId(table: string, id: UUID): Promise<boolean> {
   try {
+    if (!VALID_TABLES.includes(table)) {
+      throw new Error("Invalid table name");
+    }
+
     const res = await query(
-      "SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)",
+      `SELECT EXISTS(SELECT 1 FROM ${table} WHERE id = $1)`,
       [id]
     );
     return Boolean(res[0]?.exists);
   } catch (error) {
-    throw new Error("Error validating user ID");
+    throw new Error(`Error validating ${table} ID`);
   }
 }
 
-/**
- * Check if song ID exists in the database.
- * @param id The song ID to validate.
- * @return True if the song ID exists, false otherwise.
- * @throws Error if the operation fails.
- */
-export async function validateSongId(id: UUID): Promise<boolean> {
-  try {
-    const res = await query(
-      "SELECT EXISTS(SELECT 1 FROM songs WHERE id = $1)",
-      [id]
-    );
-    return Boolean(res[0]?.exists);
-  } catch (error) {
-    throw new Error("Error validating song ID");
-  }
-}
-
-/**
- * Check if album ID exists in the database.
- * @param id The album ID to validate.
- * @return True if the album ID exists, false otherwise.
- * @throws Error if the operation fails.
- */
-export async function validateAlbumId(id: UUID): Promise<boolean> {
-  try {
-    const res = await query(
-      "SELECT EXISTS(SELECT 1 FROM albums WHERE id = $1)",
-      [id]
-    );
-    return Boolean(res[0]?.exists);
-  } catch (error) {
-    throw new Error("Error validating album ID");
-  }
-}
-
-/**
- * Check if artist ID exists in the database.
- * @param id The artist ID to validate.
- * @return True if the artist ID exists, false otherwise.
- * @throws Error if the operation fails.
- */
-export async function validateArtistId(id: UUID): Promise<boolean> {
-  try {
-    const res = await query(
-      "SELECT EXISTS(SELECT 1 FROM artists WHERE id = $1)",
-      [id]
-    );
-    return Boolean(res[0]?.exists);
-  } catch (error) {
-    throw new Error("Error validating artist ID");
-  }
-}
-
-/**
- * Check if playlist ID exists in the database.
- * @param id The playlist ID to validate.
- * @return True if the playlist ID exists, false otherwise.
- * @throws Error if the operation fails.
- */
-export async function validatePlaylistId(id: UUID): Promise<boolean> {
-  try {
-    const res = await query(
-      "SELECT EXISTS(SELECT 1 FROM playlists WHERE id = $1)",
-      [id]
-    );
-    return Boolean(res[0]?.exists);
-  } catch (error) {
-    throw new Error("Error validating playlist ID");
-  }
-}
-
-/**
- * Check if comment ID exists in the database.
- * @param id The comment ID to validate.
- * @return True if the comment ID exists, false otherwise.
- * @throws Error if the operation fails.
- */
-export async function validateCommentId(id: UUID): Promise<boolean> {
-  try {
-    const res = await query(
-      "SELECT EXISTS(SELECT 1 FROM comments WHERE id = $1)",
-      [id]
-    );
-    return Boolean(res[0]?.exists);
-  } catch (error) {
-    throw new Error("Error validating comment ID");
-  }
-}
-
-// Helper types and functions for validateMany
-type ValidatorFn = (id: UUID) => Promise<boolean>;
-type Entity = "user" | "song" | "album" | "artist" | "playlist" | "comment";
-interface Validatable {
-  id: UUID;
-  type: Entity;
-}
-
-const getValidator = (type: Entity): ValidatorFn | null => {
-  switch (type) {
-    case "user":
-      return validateUserId;
-    case "song":
-      return validateSongId;
-    case "album":
-      return validateAlbumId;
-    case "artist":
-      return validateArtistId;
-    case "playlist":
-      return validatePlaylistId;
-    case "comment":
-      return validateCommentId;
-    default:
-      return null;
-  }
-};
-
-/**
- * Validate multiple IDs of different types.
- * @param ids An array of objects containing the ID and its type.
- * @return False if any ID is invalid, true if all are valid.
- * @throws Error if any database query fails.
- */
-export async function validateMany(ids: Validatable[]): Promise<boolean> {
-  const results = await Promise.all(
-    ids.map((id) => {
-      const validator = getValidator(id.type);
-      return validator ? validator(id.id) : Promise.resolve(false);
-    })
-  );
-  return results.every(Boolean);
-}
-
-export default {
-  validateUserId,
-  validateSongId,
-  validateAlbumId,
-  validateArtistId,
-  validatePlaylistId,
-  validateCommentId,
-  validateMany,
-};
+export const validateUserId = (id: UUID) => validateId("users", id);
+export const validateSongId = (id: UUID) => validateId("songs", id);
+export const validateAlbumId = (id: UUID) => validateId("albums", id);
+export const validateArtistId = (id: UUID) => validateId("artists", id);
+export const validatePlaylistId = (id: UUID) => validateId("playlists", id);
+export const validateCommentId = (id: UUID) => validateId("comments", id);
