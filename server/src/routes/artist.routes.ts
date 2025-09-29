@@ -1,0 +1,55 @@
+import express, { Request, Response } from "express";
+import { ArtistRepository } from "@repositories";
+
+const router = express.Router();
+
+// GET /api/artists
+// Example:
+// /api/artists?includeUser=true&limit=50&offset=0
+router.get("/", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { includeUser, limit, offset } = req.query;
+
+    const artists = await ArtistRepository.getMany({
+      includeUser: includeUser === "true",
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      offset: offset ? parseInt(offset as string, 10) : undefined,
+    });
+
+    res.status(200).json(artists);
+  } catch (error) {
+    console.error("Error in GET /artists/:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET /api/artists/:id
+// Example:
+// /api/artist/:id?includeUser=true
+router.get("/:id", async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { includeUser } = req.query;
+
+  if (!id) {
+    res.status(400).json({ error: "Artist ID is required" });
+    return;
+  }
+
+  try {
+    const artist = await ArtistRepository.getOne(id, {
+      includeUser: includeUser === "true",
+    });
+
+    if (!artist) {
+      res.status(404).json({ error: "Artist not found" });
+      return;
+    }
+
+    res.status(200).json(artist);
+  } catch (error) {
+    console.error("Error in GET /artists/:id:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+export default router;

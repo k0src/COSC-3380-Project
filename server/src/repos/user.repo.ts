@@ -212,6 +212,8 @@ export default class UserRepository {
   /**
    * Gets multiple users.
    * @param options - Options for pagination and including related data.
+   * @param options.includeFollowerCount - Option to include the follower count.
+   * @param options.includeFollowingCount - Option to include the following count.
    * @param options.limit - Maximum number of users to return.
    * @param options.offset - Number of users to skip.
    * @returns A list of users.

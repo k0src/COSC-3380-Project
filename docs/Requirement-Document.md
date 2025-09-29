@@ -6,6 +6,14 @@
 
 **CoogMusic** is an online music library, where users (primarily UH students and alumni) can upload tracks and listen to tracks by other artists. Users can choose to browse and listen to music without an account, however users must be registered (as artists) to post songs. The application has a community aspect as well — users can follow artists, “like” uploads, comment on uploads, and create playlists of songs that can be shared with other users.
 
+- Each song may be INCLUDED ON an album.
+- Each playlist may CONTAIN many songs.
+- Each user may BE an artist. Each user may BE an admin. Admins may NOT BE artists.
+- Each users may FOLLOW artists.
+- Each user may LIKE many songs. Each user may LIKE many albums. Each user may LIKE many playlists.
+- Each user COMMENT ON many songs.
+- Each artist may be FEATURED ON many songs. Many artists may be FEATURED on one songs.
+
 ## Entities
 
 ### Core Entities

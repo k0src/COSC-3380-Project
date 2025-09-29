@@ -4,12 +4,19 @@ import { SongRepository } from "@repositories";
 const router = express.Router();
 
 // GET /api/songs
+// Example:
+// /api/songs?includeAlbum=true&includeArtists=true&includeLikes=true&limit=50&offset=0
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
+    const { includeAlbum, includeArtists, includeLikes, limit, offset } =
+      req.query;
+
     const songs = await SongRepository.getMany({
-      includeAlbum: true,
-      includeArtists: true,
-      includeLikes: true,
+      includeAlbum: includeAlbum === "true",
+      includeArtists: includeArtists === "true",
+      includeLikes: includeLikes === "true",
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      offset: offset ? parseInt(offset as string, 10) : undefined,
     });
 
     res.status(200).json(songs);
@@ -20,8 +27,11 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 });
 
 // GET /api/songs/:id
+// Example:
+// /api/songs/:id?includeAlbum=true&includeArtists=true&includeLikes=true
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
+  const { includeAlbum, includeArtists, includeLikes } = req.query;
 
   if (!id) {
     res.status(400).json({ error: "Song ID is required" });
@@ -29,7 +39,11 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const song = await SongRepository.getOne(id);
+    const song = await SongRepository.getOne(id, {
+      includeAlbum: includeAlbum === "true",
+      includeArtists: includeArtists === "true",
+      includeLikes: includeLikes === "true",
+    });
 
     if (!song) {
       res.status(404).json({ error: "Song not found" });
@@ -42,36 +56,5 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-// GET /api/songs/:id/details
-router.get(
-  "/:id/details",
-  async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-
-    if (!id) {
-      res.status(400).json({ error: "Song ID is required" });
-      return;
-    }
-
-    try {
-      const song = await SongRepository.getOne(id, {
-        includeAlbum: true,
-        includeArtists: true,
-        includeLikes: true,
-      });
-
-      if (!song) {
-        res.status(404).json({ error: "Song not found" });
-        return;
-      }
-
-      res.status(200).json(song);
-    } catch (error) {
-      console.error("Error in GET /songs/:id/details:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
 
 export default router;
