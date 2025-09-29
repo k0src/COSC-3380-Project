@@ -1,10 +1,17 @@
-import { Song, UUID, Album, SongArtist } from "@types";
+import { Song, UUID, Album, SongArtist, SongData } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
 
+// move this
+
 export default class SongRepository {
+  static async create(data: SongData, files: any) {
+    // first, santize
+    const { title, genre, release_date } = data;
+  }
+
   /**
-   * Creates a new song.
+   * Inserts a song into the database.
    * @param songData - The data for the new song.
    * @param song.title - The title of the song.
    * @param song.duration - The duration of the song in seconds.
@@ -13,7 +20,7 @@ export default class SongRepository {
    * @returns The created song, or null if creation fails.
    * @throws Error if the operation fails.
    */
-  static async create({
+  private static async insert({
     title,
     duration,
     genre,

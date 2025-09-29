@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { SongRepository } from "@repositories";
+import { SongData } from "@types";
 
 const router = express.Router();
 
@@ -56,5 +57,49 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// POST /api/songs/ -> create new song
+// admin protection
+//
+router.post("/", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const data = req.body as SongData;
+
+    /*
+      in MW
+
+      const fields = [ 
+        { name: "image", maxCount: 1 }, 
+        { name: "audio", maxCount: 1 } 
+      ]
+
+
+      .fields(fields)
+    */
+
+    // if (!req.files.audio) {
+    //   res.status(400).json({ error: "Audio file is required" });
+    // }
+
+    // await SongRepository.create(data, files);
+  } catch (error) {
+    console.error("Error in POST /songs/:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// PUT /api/songs/:id -> update song
+
+// DELETE /api/songs/:id -> delete song
+
+// PUT /api/songs/:id/artist -> add artist to song
+
+// DELETE /api/songs/:id/artist -> remove artist from song
+
+// GET /api/songs/count
+
+// GET /api/songs/album
+
+// GET /api/songs/artists
 
 export default router;
