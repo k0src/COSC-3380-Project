@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
-import { SongRepository } from "@repositories";
-import { SongData } from "@types";
+import { SongRepository as SongRepo } from "@repositories";
+import { getBlobUrl } from "@config/blobStorage";
+import { parseSongForm } from "@infra/form-parser";
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     const { includeAlbum, includeArtists, includeLikes, limit, offset } =
       req.query;
 
-    const songs = await SongRepository.getMany({
+    const songs = await SongRepo.getMany({
       includeAlbum: includeAlbum === "true",
       includeArtists: includeArtists === "true",
       includeLikes: includeLikes === "true",
@@ -40,7 +41,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const song = await SongRepository.getOne(id, {
+    const song = await SongRepo.getOne(id, {
       includeAlbum: includeAlbum === "true",
       includeArtists: includeArtists === "true",
       includeLikes: includeLikes === "true",
@@ -59,29 +60,17 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 });
 
 // POST /api/songs/ -> create new song
-// admin protection
-//
+// NEED auth protection
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const data = req.body as SongData;
+    const songData = await parseSongForm(req);
+    const song = await SongRepo.create(songData);
 
-    /*
-      in MW
-
-      const fields = [ 
-        { name: "image", maxCount: 1 }, 
-        { name: "audio", maxCount: 1 } 
-      ]
-
-
-      .fields(fields)
-    */
-
-    // if (!req.files.audio) {
-    //   res.status(400).json({ error: "Audio file is required" });
-    // }
-
-    // await SongRepository.create(data, files);
+    res.status.apply(201).json({
+      ...song,
+      image_url: song.image_url ? getBlobUrl(song.image_url) : null,
+      audio_url: getBlobUrl(song.audio_url),
+    });
   } catch (error) {
     console.error("Error in POST /songs/:", error);
     res.status(500).json({ error: "Internal server error" });

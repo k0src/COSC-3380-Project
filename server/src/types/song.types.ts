@@ -6,7 +6,7 @@ export interface Song {
   title: string;
   duration: number;
   genre: string;
-  release_date: number;
+  release_date: string;
   image_url?: string;
   audio_url: string;
   created_at: string;
@@ -31,19 +31,11 @@ export interface ArtistSong extends Song {
 }
 
 // Form data from client
-// Release date is optional - [now] if not included
-// Seems like not enough, but all the other fields are generated
-// or files
 export interface SongData {
   title: string;
   genre: string;
-  release_date?: string;
-}
-
-// Files from client
-// Sent to backend via form & Multer
-// Image is optional, but audio is REQUIRED
-export interface SongFiles {
-  image?: Express.Multer.File;
-  audio: Express.Multer.File;
+  duration: number;
+  release_date: string;
+  image_url?: string; // file in blob storage (i.e., [uuid]-cover.jpg)
+  audio_url: string; // file in to blob storage (i.e., [uuid]-audio.mp3)
 }

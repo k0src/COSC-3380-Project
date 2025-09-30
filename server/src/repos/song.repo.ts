@@ -2,12 +2,34 @@ import { Song, UUID, Album, SongArtist, SongData } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
 
-// move this
-
 export default class SongRepository {
-  static async create(data: SongData, files: any) {
-    // first, santize
-    const { title, genre, release_date } = data;
+  /**
+   * Creates a new song. Wraps the insert method.
+   * @param songData - The data for the new song.
+   * @returns The created song.
+   * @throws Error if the operation fails.
+   */
+  static async create(songData: SongData): Promise<Song> {
+    const { title, genre, duration, release_date, image_url, audio_url } =
+      songData;
+    try {
+      const song = await this.insert({
+        title,
+        genre,
+        duration,
+        release_date,
+        image_url,
+        audio_url,
+      });
+      if (!song) {
+        throw new Error("Failed to create song");
+      }
+
+      return song;
+    } catch (error) {
+      console.error("Error creating song:", error);
+      throw error;
+    }
   }
 
   /**
@@ -31,7 +53,7 @@ export default class SongRepository {
     title: string;
     duration: number;
     genre: string;
-    release_date: number;
+    release_date: string;
     image_url?: string;
     audio_url: string;
   }): Promise<Song | null> {
@@ -45,7 +67,7 @@ export default class SongRepository {
       );
       return res[0] ?? null;
     } catch (error) {
-      console.error("Error creating song:", error);
+      console.error("Error inserting song:", error);
       throw error;
     }
   }
@@ -76,7 +98,7 @@ export default class SongRepository {
       title?: string;
       image_url?: string;
       audio_url?: string;
-      release_date?: number;
+      release_date?: string;
       duration?: number;
       genre?: string;
     }
