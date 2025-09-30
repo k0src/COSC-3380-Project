@@ -66,7 +66,7 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
     const songData = await parseSongForm(req);
     const song = await SongRepo.create(songData);
 
-    res.status.apply(201).json({
+    res.status(201).json({
       ...song,
       image_url: song.image_url ? getBlobUrl(song.image_url) : null,
       audio_url: getBlobUrl(song.audio_url),
