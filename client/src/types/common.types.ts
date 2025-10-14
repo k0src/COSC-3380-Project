@@ -1,1 +1,12 @@
 export type UUID = string;
+export type UserRole = "USER" | "ARTIST" | "ADMIN";
+
+export interface Comment {
+  id: UUID;
+  comment_text: string;
+  user_id: UUID;
+  song_id: UUID;
+  username: string;
+  profile_picture_url: string;
+  commented_at: string;
+}

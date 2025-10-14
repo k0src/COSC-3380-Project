@@ -1,4 +1,4 @@
-import type { UUID, Album, Artist } from "./index.js";
+import type { UUID, Album, SongArtist } from "./index.js";
 
 // Main Song type
 export interface Song {
@@ -13,7 +13,7 @@ export interface Song {
 
   // Related fields
   album?: Album;
-  artists?: Artist[];
+  artists?: SongArtist[];
   likes?: number;
 }
 
@@ -30,6 +30,7 @@ export interface ArtistSong extends Song {
   role: string;
 }
 
+// THIS NEEDS TO INCLUDE ARTISTS AND ALBUM!!!
 // Form data from client
 export interface SongData {
   title?: string;

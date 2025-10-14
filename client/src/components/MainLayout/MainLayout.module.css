@@ -1,59 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
-:root {
-  /* Colors */
-  --color-panel-gray: #181818;
-  --color-panel-border: #1c1c1c;
-  --color-red: #d53131;
-  --color-text-gray: #6d6d6d;
-  --color-white: #f6f6f6;
-  --color-black: #000000;
-
-  /* Layout Dimensions */
-  --sidebar-width: 6.4rem;
-  --header-height: 6.4rem;
-  --now-playing-height: 9.6rem;
-
-  /* Spacing */
-  --spacing-xs: 0.4rem;
-  --spacing-sm: 0.8rem;
-  --spacing-md: 1.6rem;
-  --spacing-lg: 2.4rem;
-  --spacing-xl: 3.2rem;
-  --spacing-2xl: 4.8rem;
-  --spacing-3xl: 6.4rem;
-  --spacing-4xl: 8rem;
-  --spacing-5xl: 9.6rem;
-
-  /* Border Radius */
-  --border-radius-sm: 0.4rem;
-  --border-radius-md: 0.8rem;
-  --border-radius-lg: 1.2rem;
-  --border-radius-xl: 1.4rem;
-
-  /* Font Sizes */
-  --font-size-xs: 1.2rem;
-  --font-size-sm: 1.4rem;
-  --font-size-md: 1.6rem;
-  --font-size-lg: 1.8rem;
-  --font-size-xl: 2.4rem;
-
-  /* Icon Sizes */
-  --icon-size-sm: 1.8rem;
-  --icon-size-md: 2rem;
-  --icon-size-lg: 2.4rem;
-  --icon-size-xl: 3.2rem;
-  --icon-size-2xl: 4rem;
-
-  /* Transition */
-  --transition-speed: 0.1s;
-
-  /* Opacity Values */
-  --opacity-low: 0.05;
-  --opacity-medium: 0.08;
-  --opacity-high: 0.1;
-}
-
 body {
   font-family: "Inter", sans-serif;
   background-color: var(--color-black);

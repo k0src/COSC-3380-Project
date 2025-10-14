@@ -166,9 +166,15 @@ export default class SongRepository {
         CASE WHEN $1 THEN row_to_json(a)
         ELSE NULL END AS album,
         CASE WHEN $2 THEN
-          (SELECT json_agg(row_to_json(ar)) FROM artists ar
-          JOIN song_artists sa ON sa.artist_id = ar.id
-          WHERE sa.song_id = s.id)
+          (SELECT json_agg(row_to_json(ar_with_role))
+          FROM (
+            SELECT
+              ar.*,
+              sa.role
+            FROM artists ar
+            JOIN song_artists sa ON sa.artist_id = ar.id
+            WHERE sa.song_id = s.id
+          ) AS ar_with_role)
         ELSE NULL END AS artists,
         CASE WHEN $3 THEN
           (SELECT COUNT(*) FROM song_likes sl
@@ -237,9 +243,15 @@ export default class SongRepository {
         CASE WHEN $1 THEN row_to_json(a)
         ELSE NULL END AS album,
         CASE WHEN $2 THEN
-          (SELECT json_agg(row_to_json(ar)) FROM artists ar
-          JOIN song_artists sa ON sa.artist_id = ar.id
-          WHERE sa.song_id = s.id)
+          (SELECT json_agg(row_to_json(ar_with_role))
+          FROM (
+            SELECT
+              ar.*,
+              sa.role
+            FROM artists ar
+            JOIN song_artists sa ON sa.artist_id = ar.id
+            WHERE sa.song_id = s.id
+          ) AS ar_with_role)
         ELSE NULL END AS artists,
         CASE WHEN $3 THEN
           (SELECT COUNT(*) FROM song_likes sl
