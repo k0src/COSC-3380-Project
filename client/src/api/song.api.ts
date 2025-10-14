@@ -1,11 +1,23 @@
 import api from "./api";
 import type { Song, UUID } from "../types";
 
-// const API_BASE_URL = import.meta.env.VITE_API_URL;
-
 export const songApi = {
-  async getSongById(id: UUID) {
-    const response = await api.get<Song>(`/songs/${id}`);
+  async getSongById(
+    id: UUID,
+    options?: {
+      includeAlbum?: boolean;
+      includeArtists?: boolean;
+      includeLikes?: boolean;
+    }
+  ) {
+    const response = await api.get<Song>(
+      `/songs/${id}?` +
+        new URLSearchParams({
+          includeAlbum: options?.includeAlbum ? "true" : "false",
+          includeArtists: options?.includeArtists ? "true" : "false",
+          includeLikes: options?.includeLikes ? "true" : "false",
+        })
+    );
     return response.data;
   },
 };
