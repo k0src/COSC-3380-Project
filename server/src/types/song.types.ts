@@ -32,10 +32,10 @@ export interface ArtistSong extends Song {
 
 // Form data from client
 export interface SongData {
-  title: string;
-  genre: string;
-  duration: number;
-  release_date: string;
+  title?: string;
+  genre?: string;
+  duration?: number;
+  release_date?: string;
   image_url?: string; // file in blob storage (i.e., [uuid]-cover.jpg)
-  audio_url: string; // file in to blob storage (i.e., [uuid]-audio.mp3)
+  audio_url?: string; // file in to blob storage (i.e., [uuid]-audio.mp3)
 }

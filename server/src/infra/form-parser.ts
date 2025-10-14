@@ -3,8 +3,8 @@ import Busboy from "busboy";
 import { uploadBlob } from "@config/blobStorage";
 import { v4 as uuidv4 } from "uuid";
 import type { SongData } from "@types";
-
 import { parseBuffer } from "music-metadata";
+import { Readable } from "stream";
 
 /**
  * Parses multipart/form-data request for song data and files.
@@ -13,7 +13,10 @@ import { parseBuffer } from "music-metadata";
  * @returns Promise resolving to SongData.
  * @throws Error if required fields are missing or file upload fails.
  */
-export function parseSongForm(req: Request): Promise<SongData> {
+export function parseSongForm(
+  req: Request,
+  mode: "upload" | "update"
+): Promise<SongData> {
   return new Promise((resolve, reject) => {
     const busboy = Busboy({ headers: req.headers });
 
@@ -41,10 +44,10 @@ export function parseSongForm(req: Request): Promise<SongData> {
         return reject(new Error("Invalid image file type"));
       }
 
-      // Give audio file a unique name
-      const ext = filename.split(".").pop();
-      const blobName = `${uuidv4()}-${fieldname}.${ext}`;
+      // Give file a unique name
+      const blobName = `${uuidv4()}-${filename}`;
 
+      // For audio files calculate duration and upload
       if (fieldname === "audio_url") {
         const uploadPromise = (async () => {
           try {
@@ -67,18 +70,17 @@ export function parseSongForm(req: Request): Promise<SongData> {
             songData.duration = duration;
 
             // Upload buffer to blob storage
-            const { Readable } = await import("stream");
             const bufferStream = Readable.from(buffer);
             await uploadBlob(blobName, bufferStream);
             songData.audio_url = blobName;
           } catch (error) {
-            throw error;
+            return reject(error);
           }
         })();
 
         uploadPromises.push(uploadPromise);
       } else {
-        // For image files: just upload directly
+        // For image files just upload directly
         uploadPromises.push(
           uploadBlob(blobName, file).then(() => {
             if (fieldname === "image_url") {
@@ -90,7 +92,6 @@ export function parseSongForm(req: Request): Promise<SongData> {
     });
 
     busboy.on("error", (error) => reject(error));
-
     busboy.on("finish", async () => {
       try {
         await Promise.all(uploadPromises);
@@ -100,19 +101,21 @@ export function parseSongForm(req: Request): Promise<SongData> {
           songData.release_date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
         }
 
-        // Validate required fields
+        // Validate required fields if upload
         if (
-          !songData.title ||
-          !songData.genre ||
-          !songData.audio_url ||
-          !songData.duration
+          mode === "upload" &&
+          (!songData.title ||
+            !songData.genre ||
+            !songData.duration ||
+            !songData.release_date ||
+            !songData.audio_url)
         ) {
-          throw new Error("Missing required song fields");
+          return reject(new Error("Missing required song fields"));
         }
 
         resolve(songData as SongData);
       } catch (error) {
-        reject(error);
+        return reject(error);
       }
     });
 

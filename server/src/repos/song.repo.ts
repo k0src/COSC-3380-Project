@@ -4,35 +4,6 @@ import { getBlobUrl } from "@config/blobStorage";
 
 export default class SongRepository {
   /**
-   * Creates a new song. Wraps the insert method.
-   * @param songData - The data for the new song.
-   * @returns The created song.
-   * @throws Error if the operation fails.
-   */
-  static async create(songData: SongData): Promise<Song> {
-    const { title, genre, duration, release_date, image_url, audio_url } =
-      songData;
-    try {
-      const song = await this.insert({
-        title,
-        genre,
-        duration,
-        release_date,
-        image_url,
-        audio_url,
-      });
-      if (!song) {
-        throw new Error("Failed to create song");
-      }
-
-      return song;
-    } catch (error) {
-      console.error("Error creating song:", error);
-      throw error;
-    }
-  }
-
-  /**
    * Inserts a song into the database.
    * @param songData - The data for the new song.
    * @param song.title - The title of the song.
@@ -42,7 +13,7 @@ export default class SongRepository {
    * @returns The created song, or null if creation fails.
    * @throws Error if the operation fails.
    */
-  private static async insert({
+  static async insert({
     title,
     duration,
     genre,
@@ -56,16 +27,15 @@ export default class SongRepository {
     release_date: string;
     image_url?: string;
     audio_url: string;
-  }): Promise<Song | null> {
+  }): Promise<boolean> {
     try {
-      const res = await query(
+      await query(
         `INSERT INTO songs 
         (title, duration, genre, release_date, image_url, audio_url)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING *`,
+        VALUES ($1, $2, $3, $4, $5, $6)`,
         [title, duration, genre, release_date, image_url, audio_url]
       );
-      return res[0] ?? null;
+      return true;
     } catch (error) {
       console.error("Error inserting song:", error);
       throw error;
@@ -102,7 +72,7 @@ export default class SongRepository {
       duration?: number;
       genre?: string;
     }
-  ): Promise<Song | null> {
+  ): Promise<boolean> {
     try {
       const fields: string[] = [];
       const values: any[] = [];
@@ -137,15 +107,14 @@ export default class SongRepository {
 
       values.push(id);
 
-      const res = await withTransaction(async (client) => {
+      await withTransaction(async (client) => {
         const sql = `UPDATE songs SET ${fields.join(", ")} WHERE id = $${
           values.length
-        } RETURNING *`;
-        const res = await client.query(sql, values);
-        return res.rows[0] ?? null;
+        }`;
+        await client.query(sql, values);
       });
 
-      return res;
+      return true;
     } catch (error) {
       console.error("Error updating song:", error);
       throw error;
@@ -158,17 +127,15 @@ export default class SongRepository {
    * @returns The deleted song, or null if the deletion fails.
    * @throws Error if the operation fails.
    */
-  static async delete(id: UUID): Promise<Song | null> {
+  static async delete(id: UUID): Promise<boolean> {
     try {
-      const res = await withTransaction(async (client) => {
-        const del = await client.query(
-          "DELETE FROM songs WHERE id = $1 RETURNING *",
-          [id]
-        );
-        return del.rows[0] ?? null;
-      });
+      await query(
+        `UPDATE songs SET deleted_at = NOW()
+        WHERE id = $1`,
+        [id]
+      );
 
-      return res;
+      return true;
     } catch (error) {
       console.error("Error deleting song:", error);
       throw error;
@@ -196,10 +163,10 @@ export default class SongRepository {
     try {
       const sql = `
         SELECT s.*,
-        CASE WHEN $1 THEN row_to_json(a.*)
+        CASE WHEN $1 THEN row_to_json(a)
         ELSE NULL END AS album,
         CASE WHEN $2 THEN
-          (SELECT json_agg(row_to_json(ar.*)) FROM artists ar
+          (SELECT json_agg(row_to_json(ar)) FROM artists ar
           JOIN song_artists sa ON sa.artist_id = ar.id
           WHERE sa.song_id = s.id)
         ELSE NULL END AS artists,
@@ -231,6 +198,9 @@ export default class SongRepository {
       }
       if (song.audio_url) {
         song.audio_url = getBlobUrl(song.audio_url);
+      }
+      if (song.album && song.album.image_url) {
+        song.album.image_url = getBlobUrl(song.album.image_url);
       }
 
       return song;
@@ -264,10 +234,10 @@ export default class SongRepository {
 
       const sql = `
         SELECT s.*,
-        CASE WHEN $1 THEN row_to_json(a.*)
+        CASE WHEN $1 THEN row_to_json(a)
         ELSE NULL END AS album,
         CASE WHEN $2 THEN
-          (SELECT json_agg(row_to_json(ar.*)) FROM artists ar
+          (SELECT json_agg(row_to_json(ar)) FROM artists ar
           JOIN song_artists sa ON sa.artist_id = ar.id
           WHERE sa.song_id = s.id)
         ELSE NULL END AS artists,
@@ -303,6 +273,9 @@ export default class SongRepository {
           if (song.audio_url) {
             song.audio_url = getBlobUrl(song.audio_url);
           }
+          if (song.album && song.album.image_url) {
+            song.album.image_url = getBlobUrl(song.album.image_url);
+          }
           return song;
         })
       );
@@ -321,7 +294,11 @@ export default class SongRepository {
    * @param role - The role of the artist in the song.
    * @throws Error if the database query fails or if the IDs are invalid.
    */
-  static async addArtist(artistId: UUID, songId: UUID, role: string) {
+  static async addArtist(
+    songId: UUID,
+    artistId: UUID,
+    role: string
+  ): Promise<boolean> {
     try {
       await query(
         `INSERT INTO song_artists (song_id, artist_id, role)
@@ -330,6 +307,8 @@ export default class SongRepository {
         DO UPDATE SET role = EXCLUDED.role`,
         [songId, artistId, role]
       );
+
+      return true;
     } catch (error) {
       console.error("Error adding artist to song:", error);
       throw error;
@@ -342,13 +321,17 @@ export default class SongRepository {
    * @param songId - The ID of the song from which the artist is removed.
    * @throws Error if the database query fails or if the IDs are invalid.
    */
-  static async removeArtist(artistId: UUID, songId: UUID) {
+  static async removeArtist(artistId: UUID, songId: UUID): Promise<boolean> {
     try {
-      await query(
+      const res = await query(
         `DELETE FROM song_artists
         WHERE song_id = $1 AND artist_id = $2`,
         [songId, artistId]
       );
+
+      if (res.length === 0) return false;
+
+      return true;
     } catch (error) {
       console.error("Error removing artist from song:", error);
       throw error;
@@ -393,7 +376,7 @@ export default class SongRepository {
     try {
       const sql = `
         SELECT a.*,
-        CASE WHEN $1 THEN row_to_json(ar.*)
+        CASE WHEN $1 THEN row_to_json(ar)
         ELSE NULL END AS artist,
         CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al
           WHERE al.album_id = a.id)
@@ -420,7 +403,16 @@ export default class SongRepository {
       ];
 
       const res = await query(sql, params);
-      return res[0] ?? null;
+      if (!res || res.length === 0) {
+        return null;
+      }
+
+      let album: Album = res[0];
+      if (album.image_url) {
+        album.image_url = getBlobUrl(album.image_url);
+      }
+
+      return album;
     } catch (error) {
       console.error("Error fetching album:", error);
       throw error;
@@ -450,7 +442,7 @@ export default class SongRepository {
 
       const sql = `
         SELECT sa.role, a.*,
-        CASE WHEN $1 THEN row_to_json(u.*)
+        CASE WHEN $1 THEN row_to_json(u)
         ELSE NULL END AS user
         FROM artists a
         JOIN song_artists sa ON sa.artist_id = a.id
