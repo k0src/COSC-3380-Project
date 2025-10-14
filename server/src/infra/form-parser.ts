@@ -96,18 +96,12 @@ export function parseSongForm(
       try {
         await Promise.all(uploadPromises);
 
-        // If we didn't get a release_date, set it to today
-        if (!songData.release_date) {
-          songData.release_date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-        }
-
         // Validate required fields if upload
         if (
           mode === "upload" &&
           (!songData.title ||
             !songData.genre ||
             !songData.duration ||
-            !songData.release_date ||
             !songData.audio_url)
         ) {
           return reject(new Error("Missing required song fields"));

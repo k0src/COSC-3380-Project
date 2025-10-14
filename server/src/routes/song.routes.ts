@@ -62,13 +62,18 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   try {
     const songData = await parseSongForm(req, "upload");
-    const { title, duration, genre, release_date, audio_url, image_url } =
+    let { title, duration, genre, release_date, audio_url, image_url } =
       songData;
-    if (!title || !genre || !duration || !release_date || !audio_url) {
+    if (!title || !genre || !duration || !audio_url) {
       res
         .status(400)
         .json({ error: "Missing or invalid required song fields." });
       return;
+    }
+
+    // If we didn't get a release_date, set it to today
+    if (!release_date) {
+      release_date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
     }
 
     const success = await SongRepo.insert({
