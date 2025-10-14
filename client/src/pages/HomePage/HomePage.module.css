@@ -1,0 +1,158 @@
+/* Reset and variables */
+:root {
+  --sidebar-width: 80px;
+  --topbar-height: 64px;
+  --player-height: 90px;
+  --content-padding: 32px;
+  --background-dark: #0d0d0d;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+}
+
+/* Main content area */
+.contentArea {
+  position: fixed;
+  top: var(--topbar-height);
+  left: var(--sidebar-width);
+  right: 0;
+  bottom: var(--player-height);
+  overflow-y: auto;
+  background: var(--background-dark);
+  color: var(--text-primary);
+}
+
+/* Content wrapper with padding */
+.contentWrapper {
+  padding: var(--content-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+/* Section styling */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Section header row */
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 8px;
+}
+
+.sectionTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.viewMore {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.viewMore:hover {
+  color: var(--text-primary);
+}
+
+/* Horizontal scrollable container */
+.cardsContainer {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding: 4px 0;
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cardsContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.topGrid {
+  display: grid;
+  grid-template-columns: 65% 35%;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+
+/* Featured section adjustments */
+.featuredSection {
+  height: 100%;
+  min-height: 400px;
+  padding: 40px;
+  background: linear-gradient(90deg, #ff3b30 0%, #ff6a4a 100%);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Recently played column */
+.recentlyPlayedColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+}
+
+/* Vertical scrollable list for recently played */
+.verticalCardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  height: calc(400px - 48px); /* Match featured height minus header */
+  padding-right: 16px;
+}
+
+/* Compact song card style for sidebar */
+.compactCard {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.compactCard:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.compactCard img {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.compactCard .songInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.compactCard .songTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compactCard .artistName {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 4px 0 0;
+}

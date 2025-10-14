@@ -1,0 +1,150 @@
+.homeGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  padding: 24px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionHeader h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.viewMore {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.viewMore:hover {
+  color: #fff;
+}
+
+.featuredSection {
+  display: flex;
+  background: linear-gradient(to right, #7a1c1c, #c42b2b);
+  padding: 24px;
+  border-radius: 12px;
+  height: 400px;
+  color: #fff;
+  align-items: center;
+}
+
+.featuredLeft {
+  flex: 1;
+}
+
+.featuredSubtitle {
+  font-size: 0.8rem;
+  color: #eee;
+  text-transform: uppercase;
+}
+
+.featuredTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 8px 0;
+}
+
+.featuredDescription {
+  color: #ddd;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.featuredMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #eee;
+}
+
+.featuredRight {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.featuredImageContainer {
+  position: relative;
+}
+
+.featuredImage {
+  width: 320px;
+  max-width: 40%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.playButton {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.featuredImageContainer:hover .playButton {
+  opacity: 1;
+}
+
+.songGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.newSongsRow {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.newSongCard {
+  flex-shrink: 0;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.newSongImage {
+  width: 100%;
+  height: 180px;
+  border-radius: 8px;
+  object-fit: cover;
+  transition: opacity 0.2s;
+}
+
+.newSongImage:hover {
+  opacity: 0.8;
+}
+
+.newSongTitle {
+  margin-top: 8px;
+  color: #ccc;
+  font-size: 0.9rem;
+}
