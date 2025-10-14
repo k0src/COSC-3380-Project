@@ -280,6 +280,7 @@ body {
   border-radius: var(--border-radius-md);
   border: 2px solid var(--color-panel-border);
   display: flex;
+  gap: var(--spacing-sm);
   align-items: center;
   padding: 0 var(--spacing-lg);
   z-index: 50;
@@ -291,6 +292,7 @@ body {
   align-items: center;
   gap: var(--spacing-md);
   min-width: 0;
+  width: 30rem;
 }
 
 .albumArt {
@@ -307,7 +309,6 @@ body {
   flex-direction: column;
   gap: var(--spacing-xs);
   min-width: 0;
-  width: 32rem;
 }
 
 .songTitle {
@@ -421,7 +422,6 @@ body {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  min-width: 25rem;
   justify-content: flex-end;
 }
 
@@ -437,7 +437,7 @@ body {
 }
 
 .volumeSlider {
-  width: 10rem;
+  width: 12rem;
   height: 0.4rem;
   -webkit-appearance: none;
   appearance: none;
@@ -467,30 +467,31 @@ body {
 }
 
 /* Media Queries */
-@media (max-width: 1200px) {
-  .nowPlayingInfo,
-  .rightControls {
-    min-width: 20rem;
+@media (max-width: 1400px) {
+  .nowPlayingInfo {
+    max-width: 20rem;
   }
 
   .progressContainer {
-    max-width: 40rem;
-  }
-}
-
-@media (max-width: 968px) {
-  .header {
-    padding: 0 var(--spacing-md);
+    max-width: 50rem;
   }
 
   .nowPlayingBar {
     padding: 0 var(--spacing-md);
   }
+}
 
-  .searchContainer {
-    max-width: 40rem;
+@media (max-width: 1200px) {
+  .volumeSlider {
+    max-width: 8rem;
   }
 
+  .shareButton {
+    display: none;
+  }
+}
+
+@media (max-width: 968px) {
   .volumeControl {
     display: none;
   }
@@ -501,16 +502,17 @@ body {
     --sidebar-width: 0;
   }
 
-  .sidebar {
+  .nowPlayingInfo {
+    max-width: 16rem;
+  }
+
+  .sidebar,
+  .playlistButton {
     display: none;
   }
 
-  .nowPlayingBar {
-    left: 0;
-  }
-
-  .headerNav {
-    gap: var(--spacing-sm);
+  .progressContainer {
+    max-width: 40rem;
   }
 
   .navbarLink span,
@@ -518,42 +520,26 @@ body {
     display: none;
   }
 
-  .contentArea {
-    padding: var(--spacing-md);
+  .mainContent {
+    padding-left: 0;
   }
 
-  .nowPlayingInfo {
-    min-width: auto;
+  .nowPlayingBar {
+    left: var(--spacing-sm);
   }
+}
 
-  .rightControls {
-    min-width: auto;
-  }
-
-  .searchContainer {
-    max-width: 30rem;
+@media (max-width: 560px) {
+  .shuffleButton,
+  .repeatButton {
+    display: none;
   }
 }
 
 @media (max-width: 480px) {
-  .searchContainer {
-    display: none;
-  }
-
-  .nowPlayingInfo .artistName {
-    display: none;
-  }
-
-  .albumArt {
-    width: 4.8rem;
-    height: 4.8rem;
-  }
-
-  .controlButtons {
-    gap: var(--spacing-sm);
-  }
-
-  .rightControls button:last-of-type {
+  .headerActions,
+  .progressContainer,
+  .rightControls {
     display: none;
   }
 }

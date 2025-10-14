@@ -47,15 +47,19 @@ const SongPage: React.FC = () => {
         <title>{song ? `${song.title} - Music App` : "Loading..."}</title>
       </Helmet>
       <MainLayout>
-        <div>
-          {song.title}
-          <img src={song.image_url!} alt={song.title} />
-          <audio
-            controls
-            src={song.audio_url}
-            className={styles.audioPlayer}
-          ></audio>
-        </div>
+        {loading ? (
+          <div>Loading..</div>
+        ) : (
+          <div>
+            {song.title}
+            <img src={song.image_url!} alt={song.title} />
+            <audio
+              controls
+              src={song.audio_url}
+              className={styles.audioPlayer}
+            ></audio>
+          </div>
+        )}
       </MainLayout>
     </>
   );

@@ -24,6 +24,7 @@ import {
   LuThumbsUp,
   LuListPlus,
   LuLogOut,
+  LuShare,
 } from "react-icons/lu";
 
 const Sidebar: React.FC = () => {
@@ -133,14 +134,19 @@ const NowPlayingBar: React.FC = () => {
         />
         <div className={styles.songInfo}>
           <div className={styles.artistName}>Artist Name</div>
-          <div className={styles.songTitle}>Song Title</div>
+          <div className={styles.songTitle}>
+            Song Title Lorem ipsum dolor sit amet consectetur adipisicing elit.
+            Unde ea esse amet voluptate quam quod, sunt harum, facilis officia
+            laborum dolore hic corrupti iure vel, mollitia labore nemo eum
+            cupiditate.
+          </div>
         </div>
       </div>
 
       <div className={styles.playerControls}>
         <div className={styles.controlButtons}>
           <button
-            className={classNames(styles.controlButton, {
+            className={classNames(styles.controlButton, styles.shuffleButton, {
               [styles.controlButtonActive]: isShuffle,
             })}
             onClick={() => setIsShuffle(!isShuffle)}
@@ -160,7 +166,7 @@ const NowPlayingBar: React.FC = () => {
             <LuSkipForward />
           </button>
           <button
-            className={classNames(styles.controlButton, {
+            className={classNames(styles.controlButton, styles.repeatButton, {
               [styles.controlButtonActive]: isRepeat,
             })}
             onClick={() => setIsRepeat(!isRepeat)}
@@ -197,7 +203,9 @@ const NowPlayingBar: React.FC = () => {
         >
           <LuThumbsUp />
         </button>
-        <button className={styles.controlButton}>
+        <button
+          className={classNames(styles.controlButton, styles.playlistButton)}
+        >
           <LuListPlus />
         </button>
         <div className={styles.volumeControl}>
@@ -212,6 +220,11 @@ const NowPlayingBar: React.FC = () => {
             style={{ "--volume-percent": `${volume}%` } as React.CSSProperties}
           />
         </div>
+        <button
+          className={classNames(styles.controlButton, styles.shareButton)}
+        >
+          <LuShare />
+        </button>
       </div>
     </div>
   );
