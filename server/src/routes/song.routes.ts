@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { SongRepository as SongRepo } from "@repositories";
-import { getBlobUrl } from "@config/blobStorage";
 import { parseSongForm } from "@infra/form-parser";
+import getCoverGradient from "@util/colors.util";
 
 const router = express.Router();
 
@@ -56,6 +56,38 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+router.get(
+  "/:id/cover-gradient",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Song ID is required!" });
+        return;
+      }
+
+      const song = await SongRepo.getOne(id);
+      if (!song) {
+        res.status(404).json({ error: "Song not found" });
+        return;
+      }
+      if (!song.image_url) {
+        res.status(200).json({
+          color1: { r: 8, g: 8, b: 8 },
+          color2: { r: 213, g: 49, b: 49 },
+        });
+        return;
+      }
+
+      const gradient = await getCoverGradient(song.image_url);
+      res.status(200).json(gradient);
+    } catch (error) {
+      console.error("Error in GET /songs/:id/cover-gradient:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
 
 // POST /api/songs/ -> create new song
 // NEED auth protection

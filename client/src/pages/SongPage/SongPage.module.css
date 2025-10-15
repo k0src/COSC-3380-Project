@@ -30,8 +30,8 @@
   height: 100%;
   background: linear-gradient(
     65deg,
-    rgba(239, 17, 72, 0.2) 0%,
-    rgba(43, 8, 106, 0.2) 15%,
+    var(--cover-gradient-color1) 0%,
+    var(--cover-gradient-color2) 15%,
     transparent 35%
   );
   pointer-events: none;
@@ -53,7 +53,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: var(--spacing-sm) 0;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
   flex: 1;
 }
 
@@ -199,52 +199,52 @@
   color: var(--color-red);
 }
 
-.genreContainer {
+.detailsContainer {
   background-color: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
   border: 2px solid var(--color-panel-border);
   color: var(--color-white);
   padding: var(--spacing-md);
-  gap: var(--spacing-sm);
-  display: flex;
-  flex-direction: column;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: flex-start;
+  flex: 1;
 }
 
-.genreLabel {
+.detailLabel {
   color: var(--color-text-gray);
-  font-weight: 500;
   text-align: center;
 }
 
-.genreIcon {
-  font-size: var(--font-size-md);
-  color: var(--color-text-gray);
-}
-
-.genreRow {
+.detailsColumn {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: flex-start;
 }
 
-.genreTrendContainer {
+.detailWrapper {
   display: flex;
   gap: var(--spacing-sm);
   align-items: center;
 }
 
-.genreName {
+.detailIcon {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-gray);
+}
+
+.detailName {
   font-size: var(--font-size-lg);
   font-weight: 600;
-  cursor: pointer;
+}
+
+.genreName {
   transition: color var(--transition-speed) ease-in-out;
+  cursor: pointer;
 }
 
 .genreName:hover {
   color: var(--color-red);
-}
-
-.genreTrend {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-gray);
 }

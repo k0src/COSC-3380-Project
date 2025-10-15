@@ -13,7 +13,8 @@
       "@validators": ["validators/index"],
       "@validators/*": ["validators/*"],
       "@config/*": ["config/*"],
-      "@infra/*": ["infra/*"]
+      "@infra/*": ["infra/*"],
+      "@util/*": ["util/*"]
       // "@middleware": ["middleware/index"],
       // "@middleware/*": ["middleware/*"]
     },

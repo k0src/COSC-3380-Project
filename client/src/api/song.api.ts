@@ -1,5 +1,5 @@
 import api from "./api";
-import type { Song, UUID } from "../types";
+import type { Song, UUID, CoverGradient } from "../types";
 
 export const songApi = {
   async getSongById(
@@ -17,6 +17,13 @@ export const songApi = {
           includeArtists: options?.includeArtists ? "true" : "false",
           includeLikes: options?.includeLikes ? "true" : "false",
         })
+    );
+    return response.data;
+  },
+
+  async getCoverGradient(id: UUID) {
+    const response = await api.get<CoverGradient>(
+      `/songs/${id}/cover-gradient`
     );
     return response.data;
   },

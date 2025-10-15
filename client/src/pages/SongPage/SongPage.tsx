@@ -2,7 +2,15 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { songApi } from "../../api/song.api.js";
-import type { Song, Artist, Album, SongArtist, UUID } from "../../types";
+import type {
+  Song,
+  Artist,
+  Album,
+  SongArtist,
+  UUID,
+  CoverGradient,
+  RGB,
+} from "../../types";
 import styles from "./SongPage.module.css";
 import { MainLayout } from "../../components/index.js";
 import { useAsyncData } from "../../hooks/useAsyncData";
@@ -18,6 +26,7 @@ import {
   LuCircleAlert,
   LuMusic,
   LuChartLine,
+  LuCalendar,
 } from "react-icons/lu";
 import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
 import WaveSurfer from "wavesurfer.js";
@@ -29,6 +38,8 @@ import {
   lineElementClasses,
 } from "@mui/x-charts/LineChart";
 import { chartsAxisHighlightClasses } from "@mui/x-charts/ChartsAxisHighlight";
+
+const formatDate = (dateString: string): string => dateString.split("T")[0];
 
 const DUMMY_PLAYS = [
   2, 4, 5, 10, 21, 24, 19, 28, 40, 48, 55, 60, 62, 61, 61, 60, 59, 60, 67, 34,
@@ -111,12 +122,14 @@ const SongPage: React.FC = () => {
           includeArtists: true,
           includeLikes: true,
         }),
+      coverGradient: () => songApi.getCoverGradient(id),
     },
     [id],
     { cacheKey: `song_${id}`, hasBlobUrl: true }
   );
 
   const song = data?.song;
+  const coverGradient = data?.coverGradient;
 
   const { mainArtist, otherArtists } = useMemo(() => {
     if (!song || !song?.artists || song.artists.length === 0) {
@@ -176,7 +189,7 @@ const SongPage: React.FC = () => {
     // f8a9a9
     const ws = WaveSurfer.create({
       container: waveformRef.current,
-      height: 100,
+      height: 80,
       waveColor: "#F6F6F6",
       progressColor: "#d53131",
       barWidth: 4,
@@ -235,7 +248,15 @@ const SongPage: React.FC = () => {
         ) : (
           <div className={styles.songLayout}>
             <div className={styles.songLayoutTop}>
-              <div className={styles.songContainer}>
+              <div
+                className={styles.songContainer}
+                style={
+                  {
+                    "--cover-gradient-color1": `rgba(${coverGradient.color1.r}, ${coverGradient.color1.g}, ${coverGradient.color1.b}, 0.2)`,
+                    "--cover-gradient-color2": `rgba(${coverGradient.color2.r}, ${coverGradient.color2.g}, ${coverGradient.color2.b}, 0.2)`,
+                  } as React.CSSProperties
+                }
+              >
                 <img
                   src={song.image_url!}
                   alt={`${song.title} Cover`}
@@ -293,13 +314,28 @@ const SongPage: React.FC = () => {
                     {...sparkLineSettings}
                   />
                 </div>
-                <div className={styles.genreContainer}>
-                  <span className={styles.genreLabel}>Genre</span>
-                  <div className={styles.genreRow}>
-                    <span className={styles.genreName}>{song.genre}</span>
-                    <div className={styles.genreTrendContainer}>
-                      <span className={styles.genreTrend}>+8% this week</span>
-                      <LuChartLine className={styles.genreIcon} />
+                <div className={styles.detailsContainer}>
+                  <div className={styles.detailsColumn}>
+                    <span className={styles.detailLabel}>Genre</span>
+                    <div className={styles.detailWrapper}>
+                      <LuMusic className={styles.detailIcon} />
+                      <span
+                        className={classNames(
+                          styles.detailName,
+                          styles.genreName
+                        )}
+                      >
+                        {song.genre}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={styles.detailsColumn}>
+                    <span className={styles.detailLabel}>Release Date</span>
+                    <div className={styles.detailWrapper}>
+                      <LuCalendar className={styles.detailIcon} />
+                      <span className={styles.detailName}>
+                        {formatDate(song.release_date)}
+                      </span>
                     </div>
                   </div>
                 </div>
