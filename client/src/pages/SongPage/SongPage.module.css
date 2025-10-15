@@ -10,22 +10,31 @@
 }
 
 .songContainer {
+  position: relative;
   display: flex;
   gap: var(--spacing-lg);
   flex: 1;
   padding: var(--spacing-lg);
-  /* background: radial-gradient(
-    ellipse at 30% 40%,
-    #d53131 0%,
-    #8b1f1f 25%,
-    #4a0e0e 50%,
-    #020202 100%
-  );
-  box-shadow: inset 0 0 200px rgba(213, 49, 49, 0.3); */
-  /* background-color: var(--color-panel-gray); */
   background: linear-gradient(to bottom, #181818, #0f0f0f);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
 
+.songContainer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    65deg,
+    rgba(239, 17, 72, 0.2) 0%,
+    rgba(43, 8, 106, 0.2) 15%,
+    transparent 35%
+  );
+  pointer-events: none;
   border-radius: var(--border-radius-md);
 }
 
@@ -36,7 +45,7 @@
   object-fit: cover;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
 
 .songRight {
