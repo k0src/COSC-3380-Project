@@ -13,13 +13,90 @@ import {
   LuMessageSquareText,
   LuCirclePlay,
   LuCirclePause,
+  LuListPlus,
+  LuShare,
+  LuCircleAlert,
+  LuMusic,
+  LuChartLine,
 } from "react-icons/lu";
-import WavesurferPlayer from "@wavesurfer/react";
 import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
 import WaveSurfer from "wavesurfer.js";
+import classNames from "classnames";
+import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
+import type { SparkLineChartProps } from "@mui/x-charts/SparkLineChart";
+import {
+  areaElementClasses,
+  lineElementClasses,
+} from "@mui/x-charts/LineChart";
+import { chartsAxisHighlightClasses } from "@mui/x-charts/ChartsAxisHighlight";
+
+const DUMMY_PLAYS = [
+  2, 4, 5, 10, 21, 24, 19, 28, 40, 48, 55, 60, 62, 61, 61, 60, 59, 60, 67, 34,
+  57, 59, 67, 76, 78, 65, 89, 91, 121, 123,
+];
+const DUMMY_WEEKS = [
+  "1/1",
+  "1/8",
+  "1/15",
+  "1/22",
+  "1/29",
+  "2/5",
+  "2/12",
+  "2/19",
+  "2/26",
+  "3/5",
+  "3/12",
+  "3/19",
+  "3/26",
+  "4/2",
+  "4/9",
+  "4/16",
+  "4/23",
+  "4/30",
+  "5/7",
+  "5/14",
+  "5/21",
+  "5/28",
+  "6/4",
+  "6/11",
+  "6/18",
+  "6/25",
+  "7/2",
+  "7/9",
+  "7/16",
+  "7/23",
+];
+
+const sparkLineSettings: SparkLineChartProps = {
+  data: DUMMY_PLAYS,
+  baseline: "min",
+  xAxis: { id: "week-axis", data: DUMMY_WEEKS },
+  yAxis: {
+    domainLimit: (_, maxValue: number) => ({
+      min: -maxValue / 6,
+      max: maxValue,
+    }),
+  },
+  sx: {
+    [`& .${areaElementClasses.root}`]: { opacity: 0.2 },
+    [`& .${lineElementClasses.root}`]: { strokeWidth: 3 },
+    [`& .${chartsAxisHighlightClasses.root}`]: {
+      stroke: "rgb(213, 49, 49)",
+      strokeDasharray: "none",
+      strokeWidth: 2,
+    },
+  },
+  slotProps: {
+    lineHighlight: { r: 4 },
+  },
+  clipAreaOffset: { top: 2, bottom: 2 },
+  axisHighlight: { x: "line" },
+};
 
 const SongPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
+
+  const [isLiked, setIsLiked] = useState(false);
 
   // FIX LATER
   if (!id) {
@@ -96,15 +173,18 @@ const SongPage: React.FC = () => {
 
   useEffect(() => {
     if (!waveformRef.current || !song.audio_url) return;
-
+    // f8a9a9
     const ws = WaveSurfer.create({
       container: waveformRef.current,
-      height: 180,
+      height: 100,
       waveColor: "#F6F6F6",
       progressColor: "#d53131",
       barWidth: 4,
       barRadius: 6,
-      barGap: 4,
+      barGap: 6,
+      normalize: true,
+      backend: "MediaElement",
+      sampleRate: 44100,
       url: song.audio_url,
       autoplay: false,
       plugins: [
@@ -169,19 +249,17 @@ const SongPage: React.FC = () => {
                     <span className={styles.songTitle}>{song.title}</span>
                     <div className={styles.interactionsContainer}>
                       <div className={styles.interactionStat}>
-                        <LuPlay className={styles.interactionIcon} />
+                        <LuPlay />
                         <span className={styles.interactionText}>1,219</span>
                       </div>
                       <div className={styles.interactionStat}>
-                        <LuThumbsUp className={styles.interactionIcon} />
+                        <LuThumbsUp />
                         <span className={styles.interactionText}>
                           {song?.likes}
                         </span>
                       </div>
                       <div className={styles.interactionStat}>
-                        <LuMessageSquareText
-                          className={styles.interactionIcon}
-                        />
+                        <LuMessageSquareText />
                         <span className={styles.interactionText}>100</span>
                       </div>
                     </div>
@@ -189,13 +267,11 @@ const SongPage: React.FC = () => {
                   <div className={styles.playerContainer}>
                     <button
                       onClick={togglePlay}
-                      className={styles.playerPlayBtn}
+                      className={classNames(styles.playerPlayBtn, {
+                        [styles.playerPlayBtnActive]: isPlaying,
+                      })}
                     >
-                      {isPlaying ? (
-                        <LuCirclePause className={styles.playerPlayBtnIcon} />
-                      ) : (
-                        <LuCirclePlay className={styles.playerPlayBtnIcon} />
-                      )}
+                      {isPlaying ? <LuCirclePause /> : <LuCirclePlay />}
                     </button>
                     <div
                       ref={waveformRef}
@@ -204,15 +280,60 @@ const SongPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className={styles.songActionsContainer}></div>
+              <div className={styles.songLayoutTopRight}>
+                <div className={styles.songStatsContainer}>
+                  <span className={styles.statsText}>Weekly Plays</span>
+                  <SparkLineChart
+                    height={80}
+                    width={290}
+                    area
+                    showHighlight
+                    color="rgb(213, 49, 49)"
+                    className={styles.playsChart}
+                    {...sparkLineSettings}
+                  />
+                </div>
+                <div className={styles.genreContainer}>
+                  <span className={styles.genreLabel}>Genre</span>
+                  <div className={styles.genreRow}>
+                    <span className={styles.genreName}>{song.genre}</span>
+                    <div className={styles.genreTrendContainer}>
+                      <span className={styles.genreTrend}>+8% this week</span>
+                      <LuChartLine className={styles.genreIcon} />
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.songActionsContainer}>
+                  <button
+                    className={classNames(styles.actionButton, {
+                      [styles.actionButtonActive]: isLiked,
+                    })}
+                    onClick={() => setIsLiked(!isLiked)}
+                  >
+                    <LuThumbsUp />
+                  </button>
+                  <button className={styles.actionButton}>
+                    <LuListPlus />
+                  </button>
+                  <button className={styles.actionButton}>
+                    <LuShare />
+                  </button>
+                  <button className={styles.actionButton}>
+                    <LuCircleAlert />
+                  </button>
+                </div>
+              </div>
             </div>
             <div className={styles.songLayoutBottom}>
-              <div className={styles.artistInfoContainer}></div>
-              <div className={styles.commentsContainer}></div>
+              <div className={styles.songBottomLeft}>
+                <div className={styles.songBottomTop}>
+                  <div className={styles.artistInfoContainer}></div>
+                  <div className={styles.albumInfoContainer}></div>
+                </div>
+                <div className={styles.commentsContainer}></div>
+              </div>
               <div className={styles.suggestionsContainer}>
-                <div className={styles.songStatsContainer}></div>
                 <div className={styles.relatedSongsContainer}></div>
-                <div className={styles.albumInfoContainer}></div>
                 <div className={styles.inPlaylistsContainer}></div>
               </div>
             </div>

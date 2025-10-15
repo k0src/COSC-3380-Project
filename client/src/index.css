@@ -1,3 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap");
+
 * {
   margin: 0;
   padding: 0;
@@ -16,10 +19,19 @@ html {
   /* Colors */
   --color-panel-gray: #181818;
   --color-panel-border: #1c1c1c;
+  --color-red-950: #430c0c;
+  --color-red-900: #7b2121;
+  --color-red-800: #942020;
+  --color-red-700: #b22323;
   --color-red: #d53131;
+  --color-red-500: #e84b4b;
+  --color-red-400: #f27777;
+  --color-red-300: #f8a9a9;
+  --color-red-200: #fccccc;
   --color-text-gray: #6d6d6d;
+  --color-text-gray-light: #a1a1a1;
   --color-white: #f6f6f6;
-  --color-black: #000000;
+  --color-black: #080808;
 
   /* Layout Dimensions */
   --sidebar-width: 6.4rem;

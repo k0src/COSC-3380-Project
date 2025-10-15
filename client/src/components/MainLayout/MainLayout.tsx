@@ -157,7 +157,9 @@ const NowPlayingBar: React.FC = () => {
             <LuSkipBack />
           </button>
           <button
-            className={classNames(styles.controlButton, styles.playButton)}
+            className={classNames(styles.controlButton, styles.playButton, {
+              [styles.playButtonActive]: isPlaying,
+            })}
             onClick={() => setIsPlaying(!isPlaying)}
           >
             {isPlaying ? <LuCirclePause /> : <LuCirclePlay />}
