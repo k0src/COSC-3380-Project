@@ -3,7 +3,7 @@
   --sidebar-width: 80px;
   --topbar-height: 64px;
   --player-height: 90px;
-  --content-padding: 32px;
+  --content-padding: 16px;
   --background-dark: #0d0d0d;
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
@@ -26,7 +26,7 @@
   padding: var(--content-padding);
   display: flex;
   flex-direction: column;
-  gap: 48px;
+  gap: 16px;
   max-width: 1800px;
   margin: 0 auto;
 }

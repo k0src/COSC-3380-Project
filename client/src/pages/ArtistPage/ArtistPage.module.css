@@ -1,9 +1,9 @@
-/* Reset and variables */
+Reset and variables
 :root {
   --sidebar-width: 80px;
   --topbar-height: 64px;
   --player-height: 90px;
-  --content-padding: 32px;
+  --content-padding: 16px;
   --background-dark: #0d0d0d;
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
@@ -14,7 +14,7 @@
   position: fixed;
   top: var(--topbar-height);
   left: var(--sidebar-width);
-  right: 0;
+  right: 0; 
   bottom: var(--player-height);
   overflow-y: auto;
   background: var(--background-dark);
@@ -22,14 +22,7 @@
 }
 
 /* Content wrapper with padding */
-.contentWrapper {
-  padding: var(--content-padding);
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
-  max-width: 1800px;
-  margin: 0 auto;
-}
+
 
 /* Section styling */
 .section {
@@ -78,24 +71,10 @@
   display: none;
 }
 
-.topGrid {
-  display: grid;
-  grid-template-columns: 65% 35%;
-  gap: 40px;
-  margin-bottom: 48px;
-}
+
 
 /* Featured section adjustments */
-.featuredSection {
-  height: 100%;
-  min-height: 400px;
-  padding: 40px;
-  background: linear-gradient(90deg, #ff3b30 0%, #ff6a4a 100%);
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
+
 
 /* Recently played column */
 .recentlyPlayedColumn {
@@ -155,4 +134,101 @@
   font-size: 12px;
   color: var(--text-secondary);
   margin: 4px 0 0;
+}
+
+/*--------------------------------------------------------
+ArtistPage custom CSS - Will fix later*/
+
+.contentWrapper {
+  padding: var(--content-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.bioContent{
+  font-size: 16px;
+  margin: 12px;
+}
+
+.bioHeader{
+  margin: 12px;
+}
+
+.bannerSection {
+  height: 100%;
+  width: 100%;
+  min-height: 20vh;
+  max-height: 40vh;
+  padding: 1em;
+  background: linear-gradient(90deg, #ff3b30 0%, #ff6a4a 100%);
+  border-radius: 8px;
+  display: grid;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+      grid-template-columns: 30% 70%;
+
+
+}
+
+.artistStats{
+  background: rgba(255, 255, 255, 0.05);
+  margin: 16px;
+}
+
+.topGrid {
+  display: grid;
+  grid-template-columns: 100%;
+  gap: 40px;
+  margin-bottom: 16px;
+}
+
+.artistName{
+  font-size: 10em;
+}
+
+.locationName{
+  font-size: 3em;
+}
+
+.artistInfo{
+  display: grid;
+  grid-template-columns: 50% 50%;
+}
+
+.interHeading1 {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 800; /*Extra Bold for Important Titles*/
+  font-style: normal;
+}
+
+.interHeading2 {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500; /*Medium for subheadings ig*/
+  font-style: normal;
+}
+
+.instrumentSansContent {
+  font-family: "Instrument Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+}
+
+.artistPFPDiv{
+  width: fit-content;
+  display: flex ;
+  justify-content: center;
+}
+
+.artistPFP{
+  max-width: 50%;
+  clip-path: circle();
 }
