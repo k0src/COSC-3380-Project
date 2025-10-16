@@ -333,6 +333,7 @@ const SongPage: React.FC = () => {
                       </span>
                     </div>
                   </div>
+                  <div className={styles.verticalRule}></div>
                   <div className={styles.detailsColumn}>
                     <span className={styles.detailLabel}>Release Date</span>
                     <div className={styles.detailWrapper}>
@@ -375,7 +376,11 @@ const SongPage: React.FC = () => {
                             ? mainArtist?.user?.profile_picture_url
                             : userPlaceholder
                         }
-                        alt={`${mainArtist?.display_name} Image`}
+                        alt={`${
+                          mainArtist?.display_name
+                            ? mainArtist.display_name
+                            : mainArtist?.user?.username
+                        } Image`}
                         className={styles.artistImage}
                       />
                       <button
@@ -397,22 +402,18 @@ const SongPage: React.FC = () => {
                     </div>
                     <div className={styles.artistInfoRight}>
                       <span className={styles.artistInfoName}>
-                        {mainArtist?.display_name}
+                        {mainArtist?.display_name
+                          ? mainArtist.display_name
+                          : mainArtist?.user?.username}
                       </span>
-                      {mainArtist?.bio ? (
-                        <div className={styles.artistBio}>
-                          {mainArtist?.bio}
-                        </div>
-                      ) : (
-                        <div
-                          className={classNames(
-                            styles.artistBio,
-                            styles.artistBioNone
-                          )}
-                        >
-                          {mainArtist?.display_name} has no bio yet...
-                        </div>
-                      )}
+                      <div className={styles.horizontalRule}></div>
+                      <div className={styles.artistBio}>
+                        {mainArtist?.bio
+                          ? mainArtist.bio
+                          : `${
+                              mainArtist?.display_name ?? ""
+                            } has no bio yet...`}
+                      </div>
                     </div>
                   </div>
                   <div className={styles.albumInfoContainer}></div>

@@ -150,6 +150,7 @@
   flex-direction: column;
   gap: var(--spacing-sm);
   justify-content: space-between;
+  width: 32rem;
 }
 
 .songStatsContainer {
@@ -174,7 +175,7 @@
   flex: 0;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  justify-content: space-between;
 }
 
 .actionButton {
@@ -206,14 +207,17 @@
   color: var(--color-white);
   padding: var(--spacing-md);
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: flex-start;
+  grid-template-columns: 1fr 2rem 1fr;
+  align-items: center;
   flex: 1;
 }
 
-.detailLabel {
-  color: var(--color-text-gray);
-  text-align: center;
+.verticalRule {
+  width: 1.25px;
+  height: 100%;
+  background-color: var(--color-text-gray);
+  opacity: 0.25;
+  border-radius: 1px;
 }
 
 .detailsColumn {
@@ -221,6 +225,10 @@
   flex-direction: column;
   gap: var(--spacing-sm);
   align-items: flex-start;
+}
+
+.detailLabel {
+  color: var(--color-text-gray);
 }
 
 .detailWrapper {
@@ -268,15 +276,19 @@
 
 .artistInfoContainer {
   display: flex;
-  gap: var(--spacing-sm);
-  align-items: flex-start;
+  gap: var(--spacing-md);
+  align-items: center;
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-md);
+  border: 2px solid var(--color-panel-border);
+  padding: var(--spacing-md);
 }
 
 .artistInfoLeft {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: 1.2rem;
 }
 
 .artistImage {
@@ -286,6 +298,7 @@
   object-fit: cover;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
 
 .artistFollowButton {
@@ -293,10 +306,10 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  background: var(--color-panel-gray);
+  background: var(--color-red);
   border-radius: var(--border-radius-sm);
-  border: 2px solid var(--color-panel-border);
-  color: var(--color-white);
+  border: none;
+  color: var(--color-red-200);
   cursor: pointer;
   font-size: var(--font-size-sm);
   padding: var(--spacing-sm) var(--spacing-md);
@@ -304,11 +317,20 @@
 }
 
 .artistFollowButton:hover {
-  color: var(--color-red);
+  color: var(--color-red-950);
 }
 
 .artistFollowButtonActive {
-  color: var(--color-red);
+  color: var(--color-red-950);
+}
+
+.horizontalRule {
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-text-gray);
+  opacity: 0.25;
+  border-radius: 1px;
+  margin: 0.2rem 0;
 }
 
 .artistInfoRight {
@@ -316,13 +338,27 @@
   flex-direction: column;
   gap: var(--spacing-sm);
   min-width: 0;
-  background: var(--color-panel-gray);
-  border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-panel-border);
   font-size: var(--font-size-sm);
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
   height: 100%;
-  width: 36rem;
+  width: 32rem;
+}
+
+.artistBio {
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  hyphens: auto;
+  width: 100%;
+  max-width: 100%;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  min-width: 0;
 }
 
 .artistInfoName {
@@ -334,14 +370,6 @@
   overflow: hidden;
   width: 100%;
   max-width: 100%;
-}
-
-.artistBio {
-  color: var(--color-text-gray);
-  font-size: var(--font-size-sm);
-}
-
-.artistBioNone {
 }
 
 .albumInfoContainer {
