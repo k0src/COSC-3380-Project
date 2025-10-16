@@ -170,8 +170,10 @@ export default class SongRepository {
           FROM (
             SELECT
               ar.*,
-              sa.role
+              sa.role,
+              row_to_json(u) AS user
             FROM artists ar
+            JOIN users u ON u.artist_id = ar.id
             JOIN song_artists sa ON sa.artist_id = ar.id
             WHERE sa.song_id = s.id
           ) AS ar_with_role)
@@ -207,6 +209,16 @@ export default class SongRepository {
       }
       if (song.album && song.album.image_url) {
         song.album.image_url = getBlobUrl(song.album.image_url);
+      }
+      if (song.artists && song.artists?.length > 0) {
+        song.artists.map(async (artist) => {
+          if (artist.user && artist.user.profile_picture_url) {
+            artist.user.profile_picture_url = getBlobUrl(
+              artist.user.profile_picture_url
+            );
+          }
+          return artist;
+        });
       }
 
       return song;
@@ -247,8 +259,10 @@ export default class SongRepository {
           FROM (
             SELECT
               ar.*,
-              sa.role
+              sa.role,
+              row_to_json(u) AS user
             FROM artists ar
+            JOIN users u ON u.artist_id = ar.id
             JOIN song_artists sa ON sa.artist_id = ar.id
             WHERE sa.song_id = s.id
           ) AS ar_with_role)
@@ -276,7 +290,7 @@ export default class SongRepository {
       if (!songs || songs.length === 0) {
         return [];
       }
-
+      // GET ARTIST PFP HERE
       const processedSongs = await Promise.all(
         songs.map(async (song) => {
           if (song.image_url) {

@@ -27,6 +27,8 @@ import {
   LuMusic,
   LuChartLine,
   LuCalendar,
+  LuUserRoundPlus,
+  LuUserRoundCheck,
 } from "react-icons/lu";
 import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
 import WaveSurfer from "wavesurfer.js";
@@ -38,6 +40,7 @@ import {
   lineElementClasses,
 } from "@mui/x-charts/LineChart";
 import { chartsAxisHighlightClasses } from "@mui/x-charts/ChartsAxisHighlight";
+import userPlaceholder from "../../../assets/user-placeholder.png";
 
 const formatDate = (dateString: string): string => dateString.split("T")[0];
 
@@ -108,6 +111,7 @@ const SongPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
 
   const [isLiked, setIsLiked] = useState(false);
+  const [isFollowed, setIsFollowed] = useState(false);
 
   // FIX LATER
   if (!id) {
@@ -363,7 +367,54 @@ const SongPage: React.FC = () => {
             <div className={styles.songLayoutBottom}>
               <div className={styles.songBottomLeft}>
                 <div className={styles.songBottomTop}>
-                  <div className={styles.artistInfoContainer}></div>
+                  <div className={styles.artistInfoContainer}>
+                    <div className={styles.artistInfoLeft}>
+                      <img
+                        src={
+                          mainArtist?.user?.profile_picture_url
+                            ? mainArtist?.user?.profile_picture_url
+                            : userPlaceholder
+                        }
+                        alt={`${mainArtist?.display_name} Image`}
+                        className={styles.artistImage}
+                      />
+                      <button
+                        className={classNames(styles.artistFollowButton, {
+                          [styles.artistFollowButtonActive]: isFollowed,
+                        })}
+                        onClick={() => setIsFollowed(!isFollowed)}
+                      >
+                        {isFollowed ? (
+                          <>
+                            Followed <LuUserRoundCheck />
+                          </>
+                        ) : (
+                          <>
+                            Follow <LuUserRoundPlus />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div className={styles.artistInfoRight}>
+                      <span className={styles.artistInfoName}>
+                        {mainArtist?.display_name}
+                      </span>
+                      {mainArtist?.bio ? (
+                        <div className={styles.artistBio}>
+                          {mainArtist?.bio}
+                        </div>
+                      ) : (
+                        <div
+                          className={classNames(
+                            styles.artistBio,
+                            styles.artistBioNone
+                          )}
+                        >
+                          {mainArtist?.display_name} has no bio yet...
+                        </div>
+                      )}
+                    </div>
+                  </div>
                   <div className={styles.albumInfoContainer}></div>
                 </div>
                 <div className={styles.commentsContainer}></div>
