@@ -42,6 +42,9 @@
 .navButton:hover .navIcon {
   opacity: 1;
 }
+.navText{
+  color: #ffffff;
+}
 
 .searchContainer {
   flex: 1;

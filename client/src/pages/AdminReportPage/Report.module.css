@@ -1,0 +1,68 @@
+/* Reset and variables */
+:root {
+  --sidebar-width: 80px;
+  --topbar-height: 64px;
+  --player-height: 90px;
+  --content-padding: 16px;
+  --background-dark: #0d0d0d;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+}
+
+/* Main content area */
+.contentArea {
+  position: fixed;
+  top: var(--topbar-height);
+  left: var(--sidebar-width);
+  right: 0;
+  bottom: var(--player-height);
+  overflow-y: auto;
+  background: var(--background-dark);
+  color: var(--text-primary);
+}
+
+/* Content wrapper with padding */
+.contentWrapper {
+  padding: var(--content-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+/* Dropdown container styling */
+.reportDropdownContainer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+/* Reports list section styling */
+.reportListSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .contentWrapper {
+    padding: 12px;
+    gap: 24px;
+  }
+
+  .reportDropdownContainer {
+    padding: 12px;
+  }
+
+  .reportListSection {
+    padding: 12px;
+  }
+}

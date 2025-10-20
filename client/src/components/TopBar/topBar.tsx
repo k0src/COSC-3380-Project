@@ -15,12 +15,12 @@ const TopBar: React.FC = () => {
       <div className={styles.topBarNav}>
         <button className={styles.navButton}>
           <img src={HomeButton} alt="Home" className={styles.navIcon} />
-          <span className={styles.navText}>Home</span>
+          <span className={styles.navText}> Home</span>
         </button>
 
         <button className={styles.navButton}>
           <img src={FeedButton} alt="Feed" className={styles.navIcon} />
-          <span className={styles.navText}>Feed</span>
+          <span className={styles.navText}> Feed</span>
         </button>
       </div>
 
