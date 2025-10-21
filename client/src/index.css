@@ -30,6 +30,7 @@ html {
   --color-text-gray: #6d6d6d;
   --color-text-gray-light: #a1a1a1;
   --color-white: #f6f6f6;
+  --color-white-hover: #cccccc;
   --color-black: #080808;
 
   /* Layout Dimensions */

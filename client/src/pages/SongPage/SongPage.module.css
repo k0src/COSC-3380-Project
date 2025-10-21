@@ -188,7 +188,7 @@
   color: var(--color-white);
   cursor: pointer;
   font-size: var(--icon-size-md);
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-md) calc(var(--spacing-lg) + 0.1rem);
   transition: color var(--transition-speed) ease-in-out;
 }
 
@@ -361,6 +361,13 @@
   min-width: 0;
 }
 
+.artistNameContainer {
+  min-width: 0;
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
 .artistInfoName {
   font-size: var(--font-size-lg);
   color: var(--color-white);
@@ -372,7 +379,66 @@
   max-width: 100%;
 }
 
+.badgeWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + var(--spacing-sm));
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(246, 246, 246, 0.8);
+  color: var(--color-black);
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  animation: tooltipFadeIn 0.15s ease-out forwards;
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(246, 246, 246, 0.75);
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.verifiedBadge {
+  font-size: var(--icon-size-sm);
+  flex-shrink: 0;
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.verifiedBadge:hover {
+  color: var(--color-white-hover);
+}
+
 .albumInfoContainer {
+  width: 82rem;
+  /* flex: 1; */
+  background-color: red;
 }
 
 .commentsContainer {

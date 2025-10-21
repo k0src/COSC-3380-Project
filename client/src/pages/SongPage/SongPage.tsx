@@ -29,6 +29,7 @@ import {
   LuCalendar,
   LuUserRoundPlus,
   LuUserRoundCheck,
+  LuBadgeCheck,
 } from "react-icons/lu";
 import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
 import WaveSurfer from "wavesurfer.js";
@@ -112,6 +113,7 @@ const SongPage: React.FC = () => {
 
   const [isLiked, setIsLiked] = useState(false);
   const [isFollowed, setIsFollowed] = useState(false);
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
 
   // FIX LATER
   if (!id) {
@@ -196,9 +198,9 @@ const SongPage: React.FC = () => {
       height: 80,
       waveColor: "#F6F6F6",
       progressColor: "#d53131",
-      barWidth: 4,
+      barWidth: 3,
       barRadius: 6,
-      barGap: 6,
+      barGap: 5,
       normalize: true,
       backend: "MediaElement",
       sampleRate: 44100,
@@ -401,11 +403,26 @@ const SongPage: React.FC = () => {
                       </button>
                     </div>
                     <div className={styles.artistInfoRight}>
-                      <span className={styles.artistInfoName}>
-                        {mainArtist?.display_name
-                          ? mainArtist.display_name
-                          : mainArtist?.user?.username}
-                      </span>
+                      <div className={styles.artistNameContainer}>
+                        <span className={styles.artistInfoName}>
+                          {mainArtist?.display_name
+                            ? mainArtist.display_name
+                            : mainArtist?.user?.username}
+                        </span>
+                        {/* ! ADD IS VERIFIED!! */}
+                        <div
+                          className={styles.badgeWrapper}
+                          onMouseEnter={() => setIsTooltipVisible(true)}
+                          onMouseLeave={() => setIsTooltipVisible(false)}
+                        >
+                          <LuBadgeCheck className={styles.verifiedBadge} />
+                          {isTooltipVisible && (
+                            <div className={styles.tooltip}>
+                              Verified by CoogMusic
+                            </div>
+                          )}
+                        </div>
+                      </div>
                       <div className={styles.horizontalRule}></div>
                       <div className={styles.artistBio}>
                         {mainArtist?.bio
