@@ -30,6 +30,7 @@ import {
   LuUserRoundPlus,
   LuUserRoundCheck,
   LuBadgeCheck,
+  LuSend,
 } from "react-icons/lu";
 import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
 import WaveSurfer from "wavesurfer.js";
@@ -368,79 +369,92 @@ const SongPage: React.FC = () => {
               </div>
             </div>
             <div className={styles.songLayoutBottom}>
-              <div className={styles.songBottomLeft}>
-                <div className={styles.songBottomTop}>
-                  <div className={styles.artistInfoContainer}>
-                    <div className={styles.artistInfoLeft}>
-                      <img
-                        src={
-                          mainArtist?.user?.profile_picture_url
-                            ? mainArtist?.user?.profile_picture_url
-                            : userPlaceholder
-                        }
-                        alt={`${
-                          mainArtist?.display_name
-                            ? mainArtist.display_name
-                            : mainArtist?.user?.username
-                        } Image`}
-                        className={styles.artistImage}
-                      />
-                      <button
-                        className={classNames(styles.artistFollowButton, {
-                          [styles.artistFollowButtonActive]: isFollowed,
-                        })}
-                        onClick={() => setIsFollowed(!isFollowed)}
-                      >
-                        {isFollowed ? (
-                          <>
-                            Followed <LuUserRoundCheck />
-                          </>
-                        ) : (
-                          <>
-                            Follow <LuUserRoundPlus />
-                          </>
-                        )}
-                      </button>
-                    </div>
-                    <div className={styles.artistInfoRight}>
-                      <div className={styles.artistNameContainer}>
-                        <span className={styles.artistInfoName}>
-                          {mainArtist?.display_name
-                            ? mainArtist.display_name
-                            : mainArtist?.user?.username}
-                        </span>
-                        {/* ! ADD IS VERIFIED!! */}
-                        <div
-                          className={styles.badgeWrapper}
-                          onMouseEnter={() => setIsTooltipVisible(true)}
-                          onMouseLeave={() => setIsTooltipVisible(false)}
-                        >
-                          <LuBadgeCheck className={styles.verifiedBadge} />
-                          {isTooltipVisible && (
-                            <div className={styles.tooltip}>
-                              Verified by CoogMusic
-                            </div>
-                          )}
+              <div className={styles.artistInfoContainer}>
+                <div className={styles.artistInfoLeft}>
+                  <img
+                    src={
+                      mainArtist?.user?.profile_picture_url
+                        ? mainArtist?.user?.profile_picture_url
+                        : userPlaceholder
+                    }
+                    alt={`${
+                      mainArtist?.display_name
+                        ? mainArtist.display_name
+                        : mainArtist?.user?.username
+                    } Image`}
+                    className={styles.artistImage}
+                  />
+                  <button
+                    className={classNames(styles.artistFollowButton, {
+                      [styles.artistFollowButtonActive]: isFollowed,
+                    })}
+                    onClick={() => setIsFollowed(!isFollowed)}
+                  >
+                    {isFollowed ? (
+                      <>
+                        Followed <LuUserRoundCheck />
+                      </>
+                    ) : (
+                      <>
+                        Follow <LuUserRoundPlus />
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className={styles.artistInfoRight}>
+                  <div className={styles.artistNameContainer}>
+                    <span className={styles.artistInfoName}>
+                      {mainArtist?.display_name
+                        ? mainArtist.display_name
+                        : mainArtist?.user?.username}
+                    </span>
+                    {/* ! ADD IS VERIFIED!! */}
+                    <div
+                      className={styles.badgeWrapper}
+                      onMouseEnter={() => setIsTooltipVisible(true)}
+                      onMouseLeave={() => setIsTooltipVisible(false)}
+                    >
+                      <LuBadgeCheck className={styles.verifiedBadge} />
+                      {isTooltipVisible && (
+                        <div className={styles.tooltip}>
+                          Verified by CoogMusic
                         </div>
-                      </div>
-                      <div className={styles.horizontalRule}></div>
-                      <div className={styles.artistBio}>
-                        {mainArtist?.bio
-                          ? mainArtist.bio
-                          : `${
-                              mainArtist?.display_name ?? ""
-                            } has no bio yet...`}
-                      </div>
+                      )}
                     </div>
                   </div>
-                  <div className={styles.albumInfoContainer}></div>
+                  <div className={styles.horizontalRule}></div>
+                  <div className={styles.artistBio}>
+                    {mainArtist?.bio
+                      ? mainArtist.bio
+                      : `${mainArtist?.display_name ?? ""} has no bio yet...`}
+                  </div>
                 </div>
-                <div className={styles.commentsContainer}></div>
               </div>
-              <div className={styles.suggestionsContainer}>
-                <div className={styles.relatedSongsContainer}></div>
-                <div className={styles.inPlaylistsContainer}></div>
+
+              <div className={styles.commentsContainer}>
+                <div className={styles.commentsContainerTop}>
+                  <img
+                    src={userPlaceholder}
+                    alt="username"
+                    className={styles.commentUserPfp}
+                  />
+
+                  <div className={styles.commentInputContainer}>
+                    <input
+                      type="text"
+                      placeholder="Leave a comment..."
+                      className={styles.commentInput}
+                    />
+                    <button className={styles.commentButton}>
+                      <LuSend />
+                    </button>
+                  </div>
+                </div>
               </div>
+            </div>
+            <div className={styles.suggestionsContainer}>
+              <div className={styles.relatedSongsContainer}></div>
+              <div className={styles.inPlaylistsContainer}></div>
             </div>
           </div>
         )}

@@ -148,7 +148,7 @@
 .songLayoutTopRight {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
   justify-content: space-between;
   width: 32rem;
 }
@@ -188,7 +188,7 @@
   color: var(--color-white);
   cursor: pointer;
   font-size: var(--icon-size-md);
-  padding: var(--spacing-md) calc(var(--spacing-lg) + 0.1rem);
+  padding: var(--spacing-md) calc(var(--spacing-lg) + 0.2rem);
   transition: color var(--transition-speed) ease-in-out;
 }
 
@@ -257,21 +257,8 @@
 }
 
 .songLayoutBottom {
-  /* display: grid;
-  grid-template-columns: 0.75fr 0.25fr; */
   display: flex;
-  gap: var(--spacing-sm);
-}
-
-.songBottomLeft {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.songBottomTop {
-  display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
 }
 
 .artistInfoContainer {
@@ -435,13 +422,74 @@
   color: var(--color-white-hover);
 }
 
-.albumInfoContainer {
-  width: 82rem;
-  /* flex: 1; */
-  background-color: red;
+.commentsContainer {
+  /* background-color: red; */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
 }
 
-.commentsContainer {
+.commentsContainerTop {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.commentUserPfp {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+}
+
+.commentInputContainer {
+  background-color: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  border: 2px solid var(--color-panel-border);
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.commentInput {
+  font-family: "Inter", sans-serif;
+  width: 100%;
+  padding: var(--spacing-md);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border-radius-lg);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+.commentInput::placeholder {
+  color: var(--color-text-gray);
+}
+
+.commentButton {
+  position: absolute;
+  right: var(--spacing-sm);
+  font-size: var(--icon-size-md);
+  color: var(--color-text-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-red);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: var(--color-red-200);
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.commentButton:hover {
+  color: var(--color-red-950) !important;
 }
 
 .suggestionsContainer {
