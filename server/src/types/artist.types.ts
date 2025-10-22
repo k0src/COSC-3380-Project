@@ -6,6 +6,7 @@ export interface Artist {
   bio: string;
   user_id: UUID;
   created_at: string;
+  verified: boolean;
 
   user?: User;
   songs?: Array<{ song: Song; role: string }>;

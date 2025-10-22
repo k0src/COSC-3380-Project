@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { songApi } from "../../api/song.api.js";
 import { commentApi } from "../../api/comment.api.js";
@@ -52,6 +52,7 @@ import { chartsAxisHighlightClasses } from "@mui/x-charts/ChartsAxisHighlight";
 import userPlaceholder from "../../../assets/user-placeholder.png";
 import { useStreamTracking } from "../../hooks";
 import musicPlaceholder from "../../../assets/music-placeholder.png";
+import { useAuth } from "../../contexts/AuthContext.js";
 
 const formatDate = (dateString: string): string => dateString.split("T")[0];
 
@@ -152,6 +153,9 @@ const SongPage: React.FC = () => {
   const [isFollowed, setIsFollowed] = useState(false);
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
 
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
   // FIX LATER
   if (!id) {
     return <div>Invalid song ID</div>;
@@ -169,7 +173,7 @@ const SongPage: React.FC = () => {
       comments: () =>
         commentApi.getCommentsBySongId(id, {
           includeLikes: true,
-          currentUserId: "029b4dcb-47f7-4518-b3f7-b153506ae002", // test
+          currentUserId: isAuthenticated && user ? user.id : undefined,
           limit: 25,
         }),
       moreSongsByArtist: async () =>
@@ -179,7 +183,7 @@ const SongPage: React.FC = () => {
         ),
       suggestedSongs: () =>
         songApi.getSuggestedSongs(id, {
-          userId: "029b4dcb-47f7-4518-b3f7-b153506ae002",
+          userId: isAuthenticated && user ? user.id : undefined,
           limit: 5,
         }),
     },
@@ -290,14 +294,97 @@ const SongPage: React.FC = () => {
   useStreamTracking({
     songId: id,
     wavesurferRef,
-    onStream: (songId) => songApi.incrementSongStreams(songId),
+    onStream: (songId) => {
+      if (isAuthenticated) {
+        songApi.incrementSongStreams(songId);
+      }
+    },
   });
+
+  const handleToggleSongLike = async () => {
+    try {
+      if (isAuthenticated) {
+        // send request here
+        setIsLiked((prev) => !prev);
+      } else {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Toggling song like failed:", error);
+    }
+  };
+
+  const handleAddToPlaylist = async () => {
+    try {
+      if (isAuthenticated) {
+        // send request here
+        console.log("added to playlist: " + song.id);
+      } else {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Adding to playlist failed:", error);
+    }
+  };
+
+  const handleAddToQueue = async () => {
+    try {
+      if (isAuthenticated) {
+        // send request here
+        console.log("added to queue: " + song.id);
+      } else {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Adding to queue failed:", error);
+    }
+  };
+
+  const handleShare = () => {
+    // open share modal...
+  };
+
+  const handleReport = () => {
+    // open report modal...
+  };
+
+  const handleFollowArtist = async () => {
+    try {
+      if (isAuthenticated) {
+        // send request here
+        setIsFollowed((prev) => !prev);
+      } else {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Toggling follow artist failed:", error);
+    }
+  };
+
+  const handleAddComment = async () => {
+    try {
+      if (isAuthenticated) {
+        // send request here
+        console.log("added comment to song: " + song.id);
+      } else {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Adding comment failed:", error);
+    }
+  };
 
   const CommentItem: React.FC<{ comment: Comment }> = ({ comment }) => {
     const [isLiked, setIsLiked] = useState(comment.user_liked ?? false);
     const [likeCount, setLikeCount] = useState(Number(comment.likes) || 0);
 
+    const navigate = useNavigate();
+
+    // send request here too
     const toggleCommentLike = () => {
+      if (!isAuthenticated) {
+        navigate("/login");
+      }
       if (isLiked) {
         setLikeCount(likeCount - 1);
         setIsLiked(false);
@@ -341,11 +428,13 @@ const SongPage: React.FC = () => {
     return (
       <div key={comment.id} className={styles.comment}>
         <img
-          src={comment.profile_picture_url}
-          alt={comment.username}
-          className={
-            styles.commentListUserPfp ? styles.commentUserPfp : userPlaceholder
+          src={
+            comment.profile_picture_url
+              ? comment.profile_picture_url
+              : userPlaceholder
           }
+          alt={comment.username}
+          className={styles.commentListUserPfp}
         />
         <div className={styles.commentContentWrapper}>
           <div className={styles.commentContent}>
@@ -501,20 +590,26 @@ const SongPage: React.FC = () => {
                   className={classNames(styles.actionButton, {
                     [styles.actionButtonActive]: isLiked,
                   })}
-                  onClick={() => setIsLiked(!isLiked)}
+                  onClick={handleToggleSongLike}
                 >
                   <LuThumbsUp />
                 </button>
-                <button className={styles.actionButton}>
+                <button
+                  className={styles.actionButton}
+                  onClick={handleAddToPlaylist}
+                >
                   <LuListPlus />
                 </button>
-                <button className={styles.actionButton}>
+                <button
+                  className={styles.actionButton}
+                  onClick={handleAddToQueue}
+                >
                   <LuListEnd />
                 </button>
-                <button className={styles.actionButton}>
+                <button className={styles.actionButton} onClick={handleShare}>
                   <LuShare />
                 </button>
-                <button className={styles.actionButton}>
+                <button className={styles.actionButton} onClick={handleReport}>
                   <LuCircleAlert />
                 </button>
               </div>
@@ -541,7 +636,7 @@ const SongPage: React.FC = () => {
                     className={classNames(styles.artistFollowButton, {
                       [styles.artistFollowButtonActive]: isFollowed,
                     })}
-                    onClick={() => setIsFollowed(!isFollowed)}
+                    onClick={handleFollowArtist}
                   >
                     {isFollowed ? (
                       <>
@@ -564,19 +659,20 @@ const SongPage: React.FC = () => {
                         ? mainArtist.display_name
                         : mainArtist?.user?.username}
                     </Link>
-                    {/* ! ADD IS VERIFIED!! */}
-                    <div
-                      className={styles.badgeWrapper}
-                      onMouseEnter={() => setIsTooltipVisible(true)}
-                      onMouseLeave={() => setIsTooltipVisible(false)}
-                    >
-                      <LuBadgeCheck className={styles.verifiedBadge} />
-                      {isTooltipVisible && (
-                        <div className={styles.tooltip}>
-                          Verified by CoogMusic
-                        </div>
-                      )}
-                    </div>
+                    {mainArtist?.verified && (
+                      <div
+                        className={styles.badgeWrapper}
+                        onMouseEnter={() => setIsTooltipVisible(true)}
+                        onMouseLeave={() => setIsTooltipVisible(false)}
+                      >
+                        <LuBadgeCheck className={styles.verifiedBadge} />
+                        {isTooltipVisible && (
+                          <div className={styles.tooltip}>
+                            Verified by CoogMusic
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className={styles.horizontalRule}></div>
                   <div className={styles.artistBio}>
@@ -628,7 +724,10 @@ const SongPage: React.FC = () => {
                     placeholder="Leave a comment..."
                     className={styles.commentInput}
                   />
-                  <button className={styles.commentButton}>
+                  <button
+                    className={styles.commentButton}
+                    onClick={handleAddComment}
+                  >
                     <LuSend />
                   </button>
                 </div>

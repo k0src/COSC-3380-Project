@@ -279,7 +279,15 @@ body {
 
 .artistName {
   font-size: var(--font-size-sm);
-  color: var(--color-text-gray);
+  color: var(--color-text-gray) !important;
+}
+
+.songTitle:hover {
+  color: var(--color-red);
+}
+
+.artistName:hover {
+  color: var(--color-white) !important;
 }
 
 .songTitle,
@@ -289,6 +297,7 @@ body {
   overflow: hidden;
   width: 100%;
   max-width: 100%;
+  transition: color var(--transition-speed) ease-in-out;
 }
 
 /* Player Controls */

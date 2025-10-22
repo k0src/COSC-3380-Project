@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import classNames from "classnames";
 import { useAuth } from "../../contexts";
 import styles from "./MainLayout.module.css";
@@ -149,10 +149,37 @@ const NowPlayingBar: React.FC = () => {
   const [currentTime] = useState(38);
   const [duration] = useState(181);
 
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleToggleLike = async () => {
+    try {
+      if (isAuthenticated) {
+        setIsLiked((prev) => !prev);
+      } else {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Toggling like failed:", error);
+    }
+  };
+
+  const handleAddToPlaylist = async () => {
+    try {
+      if (isAuthenticated) {
+        console.log("added to playlist");
+      } else {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Adding to playlist failed:", error);
+    }
   };
 
   return (
@@ -164,8 +191,12 @@ const NowPlayingBar: React.FC = () => {
           className={styles.albumArt}
         />
         <div className={styles.songInfo}>
-          <div className={styles.artistName}>Artist Name</div>
-          <div className={styles.songTitle}>Song Title</div>
+          <Link to="/artist/123" className={styles.artistName}>
+            Artist Name
+          </Link>
+          <Link to="/song/123" className={styles.songTitle}>
+            Song Title
+          </Link>
         </div>
       </div>
 
@@ -227,12 +258,13 @@ const NowPlayingBar: React.FC = () => {
           className={classNames(styles.controlButton, {
             [styles.controlButtonActive]: isLiked,
           })}
-          onClick={() => setIsLiked(!isLiked)}
+          onClick={handleToggleLike}
         >
           <LuThumbsUp />
         </button>
         <button
           className={classNames(styles.controlButton, styles.playlistButton)}
+          onClick={handleAddToPlaylist}
         >
           <LuListPlus />
         </button>

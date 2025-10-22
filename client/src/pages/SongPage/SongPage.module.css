@@ -271,14 +271,14 @@
 .otherArtistsContainer {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-md);
   border: 2px solid var(--color-panel-border);
   padding: var(--spacing-md);
   min-width: 0;
   width: 100%;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
 }
 
 .otherArtistItem {
@@ -303,10 +303,10 @@
 
 .otherArtistName {
   color: var(--color-white);
-  font-weight: 500;
   transition: color var(--transition-speed) ease-in-out;
   cursor: pointer;
   min-width: 0;
+  width: fit-content;
 }
 
 .otherArtistName:hover {
@@ -343,6 +343,7 @@
   flex-direction: column;
   align-items: center;
   gap: 1.2rem;
+  width: 11rem;
 }
 
 .artistImage {
@@ -509,8 +510,16 @@
   align-items: center;
 }
 
-.commentListUserPfp,
 .commentUserPfp {
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+}
+
+.commentListUserPfp {
   width: 4rem;
   height: 4rem;
   border-radius: 50%;
