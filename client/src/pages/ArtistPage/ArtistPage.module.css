@@ -43,6 +43,8 @@ Reset and variables
   font-size: 24px;
   font-weight: 700;
   margin: 0;
+  padding-left: 12px;
+  
 }
 
 .viewMore {
@@ -91,7 +93,6 @@ Reset and variables
   gap: 16px;
   overflow-y: auto;
   height: calc(400px - 48px); /* Match featured height minus header */
-  padding-right: 16px;
 }
 
 /* Compact song card style for sidebar */
@@ -139,6 +140,17 @@ Reset and variables
 /*--------------------------------------------------------
 ArtistPage custom CSS - Will fix later*/
 
+.trackListSection,
+.horizontalScrollSection,
+.aboutSection {
+  margin-top: 2.5rem;
+}
+
+.aboutSection {
+  background-color: #282828;
+  border-radius: 8px
+}
+
 .contentWrapper {
   padding: var(--content-padding);
   display: flex;
@@ -160,7 +172,7 @@ ArtistPage custom CSS - Will fix later*/
 .bannerSection {
   height: 100%;
   width: 100%;
-  min-height: 20vh;
+  min-height: 30vh;
   max-height: 40vh;
   padding: 1em;
   background: linear-gradient(90deg, #ff3b30 0%, #ff6a4a 100%);
@@ -169,7 +181,7 @@ ArtistPage custom CSS - Will fix later*/
   flex-direction: column;
   justify-content: center;
   align-items: center;
-      grid-template-columns: 30% 70%;
+  grid-template-columns: 30% 70%;
 
 
 }
@@ -230,4 +242,97 @@ ArtistPage custom CSS - Will fix later*/
 .artistPFP{
   max-width: 50%;
   clip-path: circle();
+}
+
+.horizontalCardList {
+  display: flex;
+  flex-wrap: nowrap; /* Ensures items stay in a single line */
+  overflow-x: auto;  /* Enables horizontal scrolling */
+  overflow-y: hidden; /* Hides vertical scrollbar */
+  padding-bottom: 1rem; /* Adds space for the scrollbar */
+  gap: 1.5rem; /* Space between cards */
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Hide scrollbar for a cleaner look (Chrome, Safari, Edge) */
+.horizontalCardList::-webkit-scrollbar {
+  height: 8px;
+}
+
+.horizontalCardList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.horizontalCardList::-webkit-scrollbar-thumb {
+  background: #d53131;
+
+  border-radius: 4px;
+}
+
+.horizontalCardList::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* ::-webkit-scrollbar-thumb {
+  background: #ff3b30;
+} */
+
+/* Card style for Albums and Singles */
+.albumCard {
+  flex: 0 0 auto; /* Prevents cards from shrinking */
+  width: 180px;
+  background-color: transparent; /* Dark card background */
+  padding: 1rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.albumCard:hover {
+  background-color: #282828;
+}
+
+.albumCard img {
+  width: 100%;
+  height: 180px; /* Make image square */
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.albumTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0.5rem 0 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.songArtist{
+  font-size: 1rem;
+}
+
+.verticalSongArtist{
+  font-size: 8rem;
 }

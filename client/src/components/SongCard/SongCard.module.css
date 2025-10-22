@@ -1,35 +1,41 @@
+/* --- Refactored SongCard (to match AlbumCard) --- */
+
 .songCard {
-  background-color: #181818;
-  border-radius: 12px;
-  padding: 12px;
+  flex: 0 0 auto; /* For horizontal scrolling */
+  max-width: 180px;
+  min-width: 60px;
+  background-color: transparent;
+  border-radius: 8px;
+  padding: 1rem; /* 16px */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  /* align-items: flex-start; */ /* Text is aligned in .songInfo */
+  transition: background-color 0.2s ease;
   cursor: pointer;
 }
 
 .songCard:hover {
-  background-color: #202020;
-  transform: translateY(-4px);
+  background-color: #282828;
+  /* Removed transform: translateY */
 }
 
 .imageContainer {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 8px;
+  height: 180px; /* Matched albumCard img height */
+  border-radius: 4px; /* Matched albumCard img radius */
   overflow: hidden;
+  margin-bottom: 0.75rem; /* Matched albumCard img margin */
 }
 
 .songImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
+  /* Removed border-radius, it's on the container now */
 }
 
+/* --- Overlay & Play Button (Kept as-is) --- */
 .overlay {
   position: absolute;
   inset: 0;
@@ -62,25 +68,42 @@
   background-color: #ff4d5a;
 }
 
+/* --- Refactored Text & Stats --- */
 .songInfo {
-  text-align: center;
+  text-align: left; /* Matched albumCard (default) */
+  width: 100%;
+}
+
+.songMainInfo{
+  display: grid;
+  grid-template-columns: 30% 30% 60%;
 }
 
 .songTitle {
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 4px;
-  font-size: 0.95rem;
+  font-size: 1.5em; /* Matched albumTitle */
+  font-weight: 700; /* Matched albumTitle */
+  color: #FFFFFF;
+  margin: 0.5rem 0 0.25rem; /* Matched albumTitle */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .songArtist {
-  font-size: 0.8rem;
-  color: #aaa;
+  display: flex;
+  justify-content: left;
+  font-size: 1rem; /* Matched .artistName from previous TSX */
+  color: #b3b3b3; /* Matched .artistName color */
+  margin: 0;
+  /* white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; */
 }
 
 .songStats {
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-start; /* Changed from space-around */
+  gap: 1rem; /* Added gap */
   width: 100%;
   margin-top: 8px;
 }
@@ -102,4 +125,13 @@
   width: 14px;
   height: 14px;
   fill: currentColor;
+}
+
+.instrumentSansContent {
+  font-family: "Instrument Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
 }

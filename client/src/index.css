@@ -28,3 +28,59 @@ input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
   appearance: none;
 }
+
+/* Variables */
+:root {
+  --color-panel-gray: #181818;
+  --color-panel-border: #1c1c1c;
+  --color-red-950: #430c0c;
+  --color-red-900: #7b2121;
+  --color-red-800: #942020;
+  --color-red-700: #b22323;
+  --color-red: #d53131;
+  --color-red-500: #e84b4b;
+  --color-red-400: #f27777;
+  --color-red-300: #f8a9a9;
+  --color-red-200: #fccccc;
+  --color-text-gray: #6d6d6d;
+  --color-text-gray-light: #a1a1a1;
+  --color-white: #f6f6f6;
+  --color-black: #080808;
+
+  --sidebar-width: 6.4rem;
+  --header-height: 6.4rem;
+  --now-playing-height: 9.6rem;
+
+  --spacing-xs: 0.4rem;
+  --spacing-sm: 0.8rem;
+  --spacing-md: 1.6rem;
+  --spacing-lg: 2.4rem;
+  --spacing-xl: 3.2rem;
+  --spacing-2xl: 4.8rem;
+  --spacing-3xl: 6.4rem;
+  --spacing-4xl: 8rem;
+  --spacing-5xl: 9.6rem;
+
+  --border-radius-sm: 0.4rem;
+  --border-radius-md: 0.8rem;
+  --border-radius-lg: 1.2rem;
+  --border-radius-xl: 1.4rem;
+
+  --font-size-xs: 1.2rem;
+  --font-size-sm: 1.4rem;
+  --font-size-md: 1.6rem;
+  --font-size-lg: 1.8rem;
+  --font-size-xl: 2.4rem;
+
+  --icon-size-sm: 1.8rem;
+  --icon-size-md: 2rem;
+  --icon-size-lg: 2.4rem;
+  --icon-size-xl: 3.2rem;
+  --icon-size-2xl: 4rem;
+
+  --transition-speed: 0.1s;
+
+  --opacity-low: 0.05;
+  --opacity-medium: 0.08;
+  --opacity-high: 0.1;
+}

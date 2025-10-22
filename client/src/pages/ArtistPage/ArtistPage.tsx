@@ -6,25 +6,50 @@ import PlayerBar from "../../components/PlayerBar/playerBar";
 import ArtistBanner from "./sections/ArtistBanner";
 import ArtistBio from "./sections/ArtistBio";
 import SongCard from "../../components/SongCard/SongCard";
+import ArtistCard from "../../components/ArtistCard/ArtistCard";
 
 const ArtistPage: React.FC = () => {
   // Mock data
-  const recentSongs = Array(8).fill({
+  const popularSongs = Array(10).fill({ // Renamed and shortened to Top 5
     title: "Song Title",
-    artist: "Artist Name",
+    artist: "Drake",
     image: "/PlayerBar/Mask group.png",
-    plays: 1234,
-    likes: 234,
-    comments: 12,
+    plays: Math.random()*100000,
+    likes: Math.random()*1000,
+    comments: Math.random()*100,
   });
 
-  const newSongs = Array(5).fill({
+  const albums = [
+    { title: 'Certified Lover Boy', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/7/79/Drake_-_Certified_Lover_Boy.png' },
+    { title: 'Scorpion', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/9/90/Scorpion_by_Drake.jpg' },
+    { title: 'Views', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/a/af/Drake_-_Views_cover.jpg' },
+    { title: 'Take Care', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/a/ae/Drake_-_Take_Care_cover.jpg' },
+    { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' },
+        { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' },
+
+            { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' },
+
+                { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' },
+
+  ];
+
+  const singles = Array(8).fill({ // Using your original 'newSongs' data
     title: "New Release",
-    artist: "Artist Name",
+    artist: "Drake",
     image: "/PlayerBar/Mask group.png",
+    year: 2008
   });
 
-  const sampleBio = "Aubrey Drake Graham, known professionally as  Drake, is a Canadian rapper, singer, and actor who has won multiple  Grammys and Billboard Music Awards. His signature sound combines singing and rapping, and juxtaposes vulnerability with braggadocio. Drake's 2010 debut album, Thank Me Later, debuted at number one, and he's won Grammys for best rap album for Take Care in 2013, and best rap song for \"Hotline Bling\" in 2017 and \"God's Plan\" in 2019."
+  const relatedArtists = [
+     { name: 'Diddy', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSESUJJt24KBJL4V0TqWT1qSE5tDZ1tawD14Q&s' },
+     { name: 'The Weeknd', image: 'https://placehold.co/600x400' },
+     { name: 'Future', image: 'https://placehold.co/600x400' },
+     { name: 'Lil Wayne', image: 'https://placehold.co/600x400' },
+     { name: 'Rihanna', image: 'https://placehold.co/600x400' },
+     { name: 'Travis Scott', image: 'https://placehold.co/600x400' },
+  ];
+
+  const sampleBio = "Aubrey Drake Graham, known professionally as Drake, is a Canadian rapper, singer, and actor who has won multiple Grammys and Billboard Music Awards. His signature sound combines singing and rapping, and juxtaposes vulnerability with braggadocio. Drake's 2010 debut album, Thank Me Later, debuted at number one, and he's won Grammys for best rap album for Take Care in 2013, and best rap song for \"Hotline Bling\" in 2017 and \"God's Plan\" in 2019."
 
   return (
     <>
@@ -33,32 +58,76 @@ const ArtistPage: React.FC = () => {
       
       <main className={styles.contentArea}>
         <div className={styles.contentWrapper}>
-          {/* Top Grid Layout */}
-          <div className={styles.topGrid}>
-            <ArtistBanner artistName="Drake" location="Toronto" imageURL="https://i2.wp.com/www.passionweiss.com/wp-content/uploads/2024/07/Drake_POW-ezgif.com-webp-to-jpg-converter-1.jpg?resize=1000%2C1000&ssl=1"/>
+          
+          <ArtistBanner 
+            artistName="Drake" 
+            location="Toronto" 
+            imageURL="https://i2.wp.com/www.passionweiss.com/wp-content/uploads/2024/07/Drake_POW-ezgif.com-webp-to-jpg-converter-1.jpg?resize=1000%2C1000&ssl=1"
+          />
+
+          {/* Popular Tracks Section */}
+          <section className={styles.trackListSection}>
+            <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>Popular</h2>
+            <div className={styles.verticalCardsList}>
+              {popularSongs.map((song, index) => (
+                <div key={index} className={styles.compactCard}>
+                  <span className={styles.trackNumber}>{index + 1}</span>
+                  <img src={song.image} alt={song.title} />
+                  <div className={styles.songInfo}>
+                    <h3 className={[styles.instrumentSansContent, styles.verticalSongTitle].join(' ')}>{song.title}</h3>
+                    {/* <p className={[styles.instrumentSansContent, styles.artistName].join(' ')}>{song.artist}</p> */}
+                  </div>
+                  <span className={styles.songPlays}>{song.plays.toLocaleString()}</span>
+                </div>
+              ))}
             </div>
-                          <section className={styles.recentlyPlayedColumn}>
-                <div className={styles.sectionHeader}>
-                  {/* <h2 className={styles.sectionTitle}>Recently Played</h2>  */}
-                  {/* <a href="#" className={styles.viewMore}>View More</a> */}
+          </section>
+
+          {/* Albums Section */}
+          <section className={styles.horizontalScrollSection}>
+            <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>Albums</h2>
+            <div className={styles.horizontalCardList}>
+              {albums.map((album, index) => (
+                <div key={index} className={styles.albumCard}>
+                  <img src={album.image} alt={album.title} />
+                  <h3 className={[styles.instrumentSansContent, styles.songTitle].join(' ')}>{album.title}</h3>
+                  <p className={[styles.instrumentSansContent, styles.songArtist].join(' ')}>{album.artist}</p>
                 </div>
-                <div className={styles.verticalCardsList}>
-                  {recentSongs.map((song, index) => (
-                    <div key={index} className={styles.compactCard}>
-                      <img src={song.image} alt={song.title} />
-                      <div className={styles.songInfo}>
-                        <h3 className={styles.songTitle}>{song.title}</h3>
-                        <p className={styles.artistName}>{song.artist}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            <section className={styles.artistInfo}>
-              <section className={styles.artistStats}>
-                  <ArtistBio bio={sampleBio} followerCount={250}/>
-              </section>
-            </section>
+              ))}
+            </div>
+          </section>
+
+          {/* Singles Section */}
+          <section className={styles.horizontalScrollSection}>
+            <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>Singles</h2>
+            <div className={styles.horizontalCardList}>
+              {singles.map((song, index) => (
+                // <div key={index} className={styles.albumCard}> {/* Reusing albumCard style */}
+                //   <img src={song.image} alt={song.title} />
+                //   <h3 className={styles.albumTitle}>{song.title}</h3>
+                //   <p className={styles.artistName}>{song.artist}</p>
+                // </div>
+                <SongCard key={index} {...song} />
+              ))}
+            </div>
+          </section>
+
+          {/* Fans Also Like Section */}
+          <section className={styles.horizontalScrollSection}>
+            <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>Fans Also Like</h2>
+            <div className={styles.horizontalCardList}>
+              {relatedArtists.map((artist, index) => (
+                <ArtistCard index={index} artist={artist} />
+              ))}
+            </div>
+          </section>
+
+          {/* About Section */}
+          <section className={styles.aboutSection}>
+            <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>About</h2>
+            <ArtistBio bio={sampleBio} followerCount={250}/>
+          </section>
+
         </div>
       </main>
 

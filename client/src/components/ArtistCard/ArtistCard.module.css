@@ -1,0 +1,23 @@
+.artistCircleCard {
+  flex: 0 0 auto; /* Prevents cards from shrinking */
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.artistCircleCard:hover {
+  background-color: #282828;
+}
+
+.artistImage {
+  width: 130px;
+  height: 130px;
+  object-fit: cover;
+  clip-path: circle();
+}
