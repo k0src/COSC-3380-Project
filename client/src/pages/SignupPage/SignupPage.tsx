@@ -35,6 +35,14 @@ const SignupPage: React.FC = () => {
     }
   }, [error]);
 
+  useEffect(() => {
+    return () => {
+      if (error) {
+        clearError();
+      }
+    };
+  }, []);
+
   const validateForm = (): boolean => {
     const errors = validateSignupForm({
       ...formData,
@@ -140,7 +148,7 @@ const SignupPage: React.FC = () => {
                 placeholder="Enter your email"
                 disabled={isSubmitting}
               />
-              {!validationErrors.email && (
+              {validationErrors.email && (
                 <span className={styles.inputErrorText}>
                   {validationErrors.email}
                 </span>

@@ -88,6 +88,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   padding-left: var(--spacing-sm);
+  position: relative;
 }
 
 /* Header */

@@ -30,10 +30,12 @@ import {
 
 const Sidebar: React.FC = () => {
   const { logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await logout();
+      navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }

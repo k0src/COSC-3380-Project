@@ -33,6 +33,14 @@ const LoginPage: React.FC = () => {
     }
   }, [error]);
 
+  useEffect(() => {
+    return () => {
+      if (error) {
+        clearError();
+      }
+    };
+  }, []);
+
   const validateForm = (): boolean => {
     const errors = validateLoginForm(formData);
     setValidationErrors(errors);

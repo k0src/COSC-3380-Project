@@ -29,9 +29,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    const isAuthEndpoint = originalRequest.url?.includes("/auth/");
+
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
+      !isAuthEndpoint &&
       refreshTokenFunction &&
       clearTokensFunction
     ) {
