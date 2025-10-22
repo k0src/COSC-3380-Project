@@ -1,3 +1,4 @@
+export * from "./auth.types.js";
 export * from "./common.types.js";
 export * from "./song.types.js";
 export * from "./album.types.js";
