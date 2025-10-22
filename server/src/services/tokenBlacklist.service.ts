@@ -44,12 +44,11 @@ export default class TokenBlacklistManager {
     try {
       const result = await query(
         `DELETE FROM jwt_blacklist 
-         WHERE blacklisted_at < NOW() - INTERVAL '7 days'
+         WHERE expires_at < NOW()
          RETURNING id`
       );
 
-      const cleanedCount = result.length;
-      return cleanedCount;
+      return result.length;
     } catch (err) {
       console.error("Failed to cleanup expired blacklist entries:", err);
       return 0;
@@ -60,14 +59,20 @@ export default class TokenBlacklistManager {
    * Adds multiple token JTIs to the blacklist
    * @param jtis Array of JWT IDs to blacklist
    */
-  static async addMultipleToBlacklist(jtis: string[]): Promise<void> {
+  static async addMultipleToBlacklist(
+    jtis: string[],
+    expiresAt: Date
+  ): Promise<void> {
     if (jtis.length === 0) return;
 
     try {
-      const values = jtis.map((_, index) => `($${index + 1})`).join(", ");
+      const values = jtis
+        .map((_, index) => `($${index * 2 + 1}, $${index * 2 + 2})`)
+        .join(", ");
+      const params = jtis.flatMap((jti) => [jti, expiresAt]);
       await query(
-        `INSERT INTO jwt_blacklist (token) VALUES ${values} ON CONFLICT (token) DO NOTHING`,
-        jtis
+        `INSERT INTO jwt_blacklist (token, expires_at) VALUES ${values} ON CONFLICT (token) DO NOTHING`,
+        params
       );
     } catch (err) {
       console.error("Failed to add multiple tokens to blacklist:", err);

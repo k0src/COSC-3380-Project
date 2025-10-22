@@ -1,6 +1,7 @@
 import { User, Playlist, UUID } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
+import bcrypt from "bcrypt";
 
 export default class UserRepository {
   /**
@@ -18,33 +19,26 @@ export default class UserRepository {
   static async create({
     username,
     email,
-    password_hash,
-    authenticated_with,
-    role,
+    password,
+    role = "USER",
     profile_picture_url,
   }: {
     username: string;
     email: string;
-    password_hash?: string;
-    authenticated_with: string;
-    role: string;
+    password: string;
+    role?: string;
     profile_picture_url?: string;
   }): Promise<User | null> {
     try {
+      const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || "12", 10);
+      const password_hash = await bcrypt.hash(password, saltRounds);
+
       const result = await query(
         `INSERT INTO users 
-          (username, email, password_hash, authenticated_with, 
-          role, profile_picture_url)
+          (username, email, password_hash, authenticated_with, role, profile_picture_url)
         VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *`,
-        [
-          username,
-          email,
-          password_hash,
-          authenticated_with,
-          role,
-          profile_picture_url,
-        ]
+        [username, email, password_hash, "CoogMusic", role, profile_picture_url]
       );
 
       return result[0] ?? null;
@@ -389,6 +383,41 @@ export default class UserRepository {
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting users:", error);
+      throw error;
+    }
+  }
+
+  static async validateCredentials(
+    email: string,
+    password: string
+  ): Promise<User | null> {
+    try {
+      const result = await query(
+        `SELECT * FROM users WHERE email = $1 AND authenticated_with = 'CoogMusic'`,
+        [email]
+      );
+
+      if (!result || result.length === 0) {
+        return null;
+      }
+
+      const user: User = result[0];
+      if (!user.password_hash) {
+        return null;
+      }
+
+      const isValid = await bcrypt.compare(password, user.password_hash);
+      if (!isValid) {
+        return null;
+      }
+
+      if (user.profile_picture_url) {
+        user.profile_picture_url = getBlobUrl(user.profile_picture_url);
+      }
+
+      return user;
+    } catch (error) {
+      console.error("Error validating credentials:", error);
       throw error;
     }
   }
