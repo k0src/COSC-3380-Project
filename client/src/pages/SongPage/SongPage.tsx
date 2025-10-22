@@ -18,7 +18,7 @@ import type {
 } from "../../types";
 import styles from "./SongPage.module.css";
 import { MainLayout } from "../../components/index.js";
-import { useAsyncData } from "../../hooks/useAsyncData";
+import { useAsyncData } from "../../hooks";
 import { PageLoader } from "../../components/index.js";
 import {
   LuThumbsUp,
@@ -50,7 +50,7 @@ import {
 } from "@mui/x-charts/LineChart";
 import { chartsAxisHighlightClasses } from "@mui/x-charts/ChartsAxisHighlight";
 import userPlaceholder from "../../../assets/user-placeholder.png";
-import { useStreamTracking } from "../../hooks/useStreamTracking.js";
+import { useStreamTracking } from "../../hooks";
 import musicPlaceholder from "../../../assets/music-placeholder.png";
 
 const formatDate = (dateString: string): string => dateString.split("T")[0];

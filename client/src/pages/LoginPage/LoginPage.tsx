@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts";
 import type { LoginData } from "../../types";
+import { validateLoginForm, type ValidationErrors } from "../../validators";
 import styles from "./LoginPage.module.css";
 import { PageLoader } from "../../components";
 import classNames from "classnames";
@@ -13,10 +14,9 @@ const LoginPage: React.FC = () => {
     password: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{
-    email?: string;
-    password?: string;
-  }>({});
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
+    {}
+  );
 
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
@@ -34,18 +34,7 @@ const LoginPage: React.FC = () => {
   }, [error]);
 
   const validateForm = (): boolean => {
-    const errors: { email?: string; password?: string } = {};
-
-    if (!formData.email) {
-      errors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Please enter a valid email address";
-    }
-
-    if (!formData.password) {
-      errors.password = "Password is required";
-    }
-
+    const errors = validateLoginForm(formData);
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -54,7 +43,7 @@ const LoginPage: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    if (validationErrors[name as keyof typeof validationErrors]) {
+    if (validationErrors[name]) {
       setValidationErrors((prev) => ({ ...prev, [name]: undefined }));
     }
 

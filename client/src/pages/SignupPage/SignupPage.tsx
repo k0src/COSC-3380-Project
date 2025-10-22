@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts";
 import type { SignupData } from "../../types";
+import { validateSignupForm, type ValidationErrors } from "../../validators";
 import styles from "./SignupPage.module.css";
 import { PageLoader } from "../../components";
 import classNames from "classnames";
@@ -15,12 +16,9 @@ const SignupPage: React.FC = () => {
   });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{
-    username?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-  }>({});
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
+    {}
+  );
 
   const { signup, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
@@ -38,42 +36,10 @@ const SignupPage: React.FC = () => {
   }, [error]);
 
   const validateForm = (): boolean => {
-    const errors: {
-      username?: string;
-      email?: string;
-      password?: string;
-      confirmPassword?: string;
-    } = {};
-
-    if (!formData.username) {
-      errors.username = "Username is required";
-    } else if (formData.username.length < 3) {
-      errors.username = "Username must be at least 3 characters";
-    } else if (formData.username.length > 50) {
-      errors.username = "Username must be less than 50 characters";
-    }
-
-    if (!formData.email) {
-      errors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Please enter a valid email address";
-    }
-
-    if (!formData.password) {
-      errors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      errors.password = "Password must be at least 8 characters";
-    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      errors.password =
-        "Password must contain uppercase, lowercase, and number";
-    }
-
-    if (!confirmPassword) {
-      errors.confirmPassword = "Please confirm your password";
-    } else if (formData.password !== confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
-    }
-
+    const errors = validateSignupForm({
+      ...formData,
+      confirmPassword,
+    });
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -87,7 +53,7 @@ const SignupPage: React.FC = () => {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
 
-    if (validationErrors[name as keyof typeof validationErrors]) {
+    if (validationErrors[name]) {
       setValidationErrors((prev) => ({ ...prev, [name]: undefined }));
     }
 
