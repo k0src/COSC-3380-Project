@@ -208,9 +208,9 @@ body {
 .contentArea {
   flex: 1;
   overflow-y: auto;
-  padding: var(--spacing-lg) calc(var(--spacing-lg) - var(--spacing-sm))
-    calc(var(--now-playing-height) + var(--spacing-lg))
-    calc(var(--spacing-lg) - var(--spacing-sm));
+  padding: var(--spacing-xl) calc(var(--spacing-xl) - var(--spacing-sm))
+    calc(var(--now-playing-height) + var(--spacing-xl))
+    calc(var(--spacing-xl) - var(--spacing-sm));
 }
 
 /* Now Playing Bar */

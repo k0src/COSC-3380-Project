@@ -1,4 +1,4 @@
-import { Song, UUID, Album, SongArtist, SongData } from "@types";
+import { Song, UUID, Album, SongArtist, SongData, SuggestedSong } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
 
@@ -146,7 +146,7 @@ export default class SongRepository {
    * Gets a single song by ID.
    * @param id - The ID of the song to get.
    * @param options - Options for including related data.
-   * @param options.includeAlbum - Option to include the album data.
+   * @param options.includeAlbums - Option to include the albums data.
    * @param options.includeArtists - Option to include the artists data.
    * @param options.includeLikes - Option to include the like count.
    * @returns The song, or null if not found.
@@ -155,7 +155,7 @@ export default class SongRepository {
   static async getOne(
     id: UUID,
     options?: {
-      includeAlbum?: boolean;
+      includeAlbums?: boolean;
       includeArtists?: boolean;
       includeLikes?: boolean;
     }
@@ -163,33 +163,41 @@ export default class SongRepository {
     try {
       const sql = `
         SELECT s.*,
-        CASE WHEN $1 THEN row_to_json(a)
-        ELSE NULL END AS album,
-        CASE WHEN $2 THEN
-          (SELECT json_agg(row_to_json(ar_with_role))
-          FROM (
-            SELECT
-              ar.*,
-              sa.role,
-              row_to_json(u) AS user
-            FROM artists ar
-            JOIN users u ON u.artist_id = ar.id
-            JOIN song_artists sa ON sa.artist_id = ar.id
-            WHERE sa.song_id = s.id
-          ) AS ar_with_role)
-        ELSE NULL END AS artists,
-        CASE WHEN $3 THEN
-          (SELECT COUNT(*) FROM song_likes sl
-          WHERE sl.song_id = s.id)
-        ELSE NULL END AS likes
+          CASE WHEN $1 THEN
+            (SELECT json_agg(row_to_json(album_with_artist))
+            FROM (
+              SELECT a.*,
+                CASE WHEN $1 THEN row_to_json(ar.*)
+                ELSE NULL END as artist
+              FROM albums a
+              JOIN album_songs als ON als.album_id = a.id
+              LEFT JOIN artists ar ON ar.id = a.created_by
+              WHERE als.song_id = s.id
+            ) AS album_with_artist)
+          ELSE NULL END AS albums,
+          CASE WHEN $2 THEN
+            (SELECT json_agg(row_to_json(ar_with_role))
+            FROM (
+              SELECT
+                ar.*,
+                sa.role,
+                row_to_json(u) AS user
+              FROM artists ar
+              JOIN users u ON u.artist_id = ar.id
+              JOIN song_artists sa ON sa.artist_id = ar.id
+              WHERE sa.song_id = s.id
+            ) AS ar_with_role)
+          ELSE NULL END AS artists,
+          CASE WHEN $3 THEN
+            (SELECT COUNT(*) FROM song_likes sl
+            WHERE sl.song_id = s.id)
+          ELSE NULL END AS likes
         FROM songs s
-        LEFT JOIN album_songs als ON als.song_id = s.id
-        LEFT JOIN albums a ON als.album_id = a.id
         WHERE s.id = $4
       `;
 
       const params = [
-        options?.includeAlbum ?? false,
+        options?.includeAlbums ?? false,
         options?.includeArtists ?? false,
         options?.includeLikes ?? false,
         id,
@@ -207,8 +215,13 @@ export default class SongRepository {
       if (song.audio_url) {
         song.audio_url = getBlobUrl(song.audio_url);
       }
-      if (song.album && song.album.image_url) {
-        song.album.image_url = getBlobUrl(song.album.image_url);
+      if (song.albums && song.albums?.length > 0) {
+        song.albums.map(async (album) => {
+          if (album.image_url) {
+            album.image_url = getBlobUrl(album.image_url);
+          }
+          return album;
+        });
       }
       if (song.artists && song.artists?.length > 0) {
         song.artists.map(async (artist) => {
@@ -231,7 +244,7 @@ export default class SongRepository {
   /**
    * Gets multiple songs.
    * @param options - Options for pagination and including related data.
-   * @param options.includeAlbum - Option to include the album data.
+   * @param options.includeAlbums - Option to include the albums data.
    * @param options.includeArtists - Option to include the artists data.
    * @param options.includeLikes - Option to include the like count.
    * @param options.limit - Maximum number of songs to return.
@@ -240,7 +253,7 @@ export default class SongRepository {
    * @throws Error if the operation fails.
    */
   static async getMany(options?: {
-    includeAlbum?: boolean;
+    includeAlbums?: boolean;
     includeArtists?: boolean;
     includeLikes?: boolean;
     limit?: number;
@@ -279,7 +292,7 @@ export default class SongRepository {
       `;
 
       const params = [
-        options?.includeAlbum ?? false,
+        options?.includeAlbums ?? false,
         options?.includeArtists ?? false,
         options?.includeLikes ?? false,
         limit,
@@ -498,6 +511,55 @@ export default class SongRepository {
       return processedArtists;
     } catch (error) {
       console.error("Error fetching artists for song:", error);
+      throw error;
+    }
+  }
+
+  static async getSuggestedSongs(
+    songId: UUID,
+    options?: { userId?: UUID; limit?: number }
+  ): Promise<SuggestedSong[]> {
+    try {
+      const suggestions = await query(
+        "SELECT * FROM get_song_recommendations($1, $2, $3)",
+        [songId, options?.userId || null, options?.limit || null]
+      );
+
+      if (!suggestions || suggestions.length === 0) {
+        return [];
+      }
+
+      const processedSongs = await Promise.all(
+        suggestions.map(async (song) => {
+          if (song.image_url) {
+            song.image_url = getBlobUrl(song.image_url);
+          }
+          if (song.audio_url) {
+            song.audio_url = getBlobUrl(song.audio_url);
+          }
+          return song;
+        })
+      );
+
+      return processedSongs;
+    } catch (error) {
+      console.error("Error fetching suggested songs:", error);
+      throw error;
+    }
+  }
+
+  static async incrementStreams(songId: UUID): Promise<boolean> {
+    try {
+      await query(
+        `UPDATE songs
+        SET streams = streams + 1
+        WHERE id = $1`,
+        [songId]
+      );
+
+      return true;
+    } catch (error) {
+      console.error("Error incrementing song streams:", error);
       throw error;
     }
   }

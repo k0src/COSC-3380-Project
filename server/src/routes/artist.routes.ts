@@ -52,4 +52,30 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Artist ID is required" });
+      return;
+    }
+
+    const songs = await ArtistRepository.getSongs(id, {
+      includeAlbum: req.query.includeAlbum === "true",
+      includeLikes: req.query.includeLikes === "true",
+      limit: req.query.limit
+        ? parseInt(req.query.limit as string, 10)
+        : undefined,
+      offset: req.query.offset
+        ? parseInt(req.query.offset as string, 10)
+        : undefined,
+    });
+
+    res.status(200).json(songs);
+  } catch (error) {
+    console.error("Error in GET /artists/:id/songs:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export default router;

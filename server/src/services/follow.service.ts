@@ -1,6 +1,5 @@
 import type { User, UUID } from "@types";
 import { query } from "../config/database.js";
-import { validateUserId, validateMany } from "../validators/id.validator.js";
 
 /**
  * Service for managing user followers.
@@ -14,14 +13,6 @@ export default class FollowService {
    */
   static async followUser(followerId: UUID, followingId: UUID) {
     try {
-      const valid = await validateMany([
-        { id: followerId, type: "user" },
-        { id: followingId, type: "user" },
-      ]);
-      if (!valid) {
-        throw new Error("Invalid follower ID or following ID");
-      }
-
       await query(
         `INSERT INTO user_followers (follower_id, following_id) 
         VALUES ($1, $2) ON CONFLICT DO NOTHING`,
@@ -41,14 +32,6 @@ export default class FollowService {
    */
   static async unfollowUser(followerId: UUID, followingId: UUID) {
     try {
-      const valid = await validateMany([
-        { id: followerId, type: "user" },
-        { id: followingId, type: "user" },
-      ]);
-      if (!valid) {
-        throw new Error("Invalid follower ID or following ID");
-      }
-
       await query(
         `DELETE FROM user_followers 
         WHERE follower_id = $1 AND following_id = $2`,
@@ -74,10 +57,6 @@ export default class FollowService {
     options?: { limit?: number; offset?: number }
   ): Promise<User[]> {
     try {
-      if (!(await validateUserId(userId))) {
-        throw new Error("Invalid user ID");
-      }
-
       const params = [userId, options?.limit || 50, options?.offset || 0];
       const sql = `
         SELECT u.* FROM users u
@@ -108,10 +87,6 @@ export default class FollowService {
     options?: { limit?: number; offset?: number }
   ): Promise<User[]> {
     try {
-      if (!(await validateUserId(userId))) {
-        throw new Error("Invalid user ID");
-      }
-
       const params = [userId, options?.limit || 50, options?.offset || 0];
       const sql = `
         SELECT u.* FROM users u
@@ -140,14 +115,6 @@ export default class FollowService {
     followingId: UUID
   ): Promise<boolean> {
     try {
-      const valid = await validateMany([
-        { id: followerId, type: "user" },
-        { id: followingId, type: "user" },
-      ]);
-      if (!valid) {
-        throw new Error("Invalid follower ID or following ID");
-      }
-
       const res = await query(
         `SELECT 1 FROM user_followers 
         WHERE follower_id = $1 AND following_id = $2`,
@@ -168,10 +135,6 @@ export default class FollowService {
    */
   static async getFollowerCount(userId: UUID): Promise<number> {
     try {
-      if (!(await validateUserId(userId))) {
-        throw new Error("Invalid user ID");
-      }
-
       const res = await query(
         `SELECT COUNT(*) FROM user_followers 
         WHERE following_id = $1`,
@@ -192,10 +155,6 @@ export default class FollowService {
    */
   static async getFollowingCount(userId: UUID): Promise<number> {
     try {
-      if (!(await validateUserId(userId))) {
-        throw new Error("Invalid user ID");
-      }
-
       const res = await query(
         `SELECT COUNT(*) FROM user_followers 
         WHERE follower_id = $1`,
@@ -224,14 +183,6 @@ export default class FollowService {
     options?: { limit?: number; offset?: number }
   ): Promise<User[]> {
     try {
-      const valid = await validateMany([
-        { id: userId1, type: "user" },
-        { id: userId2, type: "user" },
-      ]);
-      if (!valid) {
-        throw new Error("Invalid user ID");
-      }
-
       const params = [
         userId1,
         userId2,

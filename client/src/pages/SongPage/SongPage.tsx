@@ -1,15 +1,20 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { songApi } from "../../api/song.api.js";
+import { commentApi } from "../../api/comment.api.js";
+import { artistApi } from "../../api/artist.api.js";
 import type {
   Song,
   Artist,
+  Comment,
   Album,
   SongArtist,
   UUID,
   CoverGradient,
   RGB,
+  ArtistSong,
+  SuggestedSong,
 } from "../../types";
 import styles from "./SongPage.module.css";
 import { MainLayout } from "../../components/index.js";
@@ -31,6 +36,8 @@ import {
   LuUserRoundCheck,
   LuBadgeCheck,
   LuSend,
+  LuUserRoundPen,
+  LuListEnd,
 } from "react-icons/lu";
 import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
 import WaveSurfer from "wavesurfer.js";
@@ -43,8 +50,37 @@ import {
 } from "@mui/x-charts/LineChart";
 import { chartsAxisHighlightClasses } from "@mui/x-charts/ChartsAxisHighlight";
 import userPlaceholder from "../../../assets/user-placeholder.png";
+import { useStreamTracking } from "../../hooks/useStreamTracking.js";
+import musicPlaceholder from "../../../assets/music-placeholder.png";
 
 const formatDate = (dateString: string): string => dateString.split("T")[0];
+
+const formatRelativeDate = (dateString: string): string => {
+  const now = new Date();
+  const date = new Date(dateString);
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (seconds < 60) return "Just now";
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60)
+    return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} ${days === 1 ? "day" : "days"} ago`;
+
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) return `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`;
+
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} ${months === 1 ? "month" : "months"} ago`;
+
+  const years = Math.floor(days / 365);
+  return `${years} ${years === 1 ? "year" : "years"} ago`;
+};
 
 const DUMMY_PLAYS = [
   2, 4, 5, 10, 21, 24, 19, 28, 40, 48, 55, 60, 62, 61, 61, 60, 59, 60, 67, 34,
@@ -125,11 +161,27 @@ const SongPage: React.FC = () => {
     {
       song: () =>
         songApi.getSongById(id, {
-          includeAlbum: true,
+          includeAlbums: true,
           includeArtists: true,
           includeLikes: true,
         }),
       coverGradient: () => songApi.getCoverGradient(id),
+      comments: () =>
+        commentApi.getCommentsBySongId(id, {
+          includeLikes: true,
+          currentUserId: "029b4dcb-47f7-4518-b3f7-b153506ae002", // test
+          limit: 25,
+        }),
+      moreSongsByArtist: async () =>
+        artistApi.getSongs(
+          "84a51edc-a38f-4659-974b-405b3e40f432", // test - pass artist as prop
+          { limit: 5 }
+        ),
+      suggestedSongs: () =>
+        songApi.getSuggestedSongs(id, {
+          userId: "029b4dcb-47f7-4518-b3f7-b153506ae002",
+          limit: 5,
+        }),
     },
     [id],
     { cacheKey: `song_${id}`, hasBlobUrl: true }
@@ -137,6 +189,9 @@ const SongPage: React.FC = () => {
 
   const song = data?.song;
   const coverGradient = data?.coverGradient;
+  const comments = data?.comments;
+  const moreSongsByArtist = data?.moreSongsByArtist;
+  const suggestedSongs = data?.suggestedSongs;
 
   const { mainArtist, otherArtists } = useMemo(() => {
     if (!song || !song?.artists || song.artists.length === 0) {
@@ -193,7 +248,6 @@ const SongPage: React.FC = () => {
 
   useEffect(() => {
     if (!waveformRef.current || !song.audio_url) return;
-    // f8a9a9
     const ws = WaveSurfer.create({
       container: waveformRef.current,
       height: 80,
@@ -233,6 +287,97 @@ const SongPage: React.FC = () => {
     };
   }, [song?.audio_url]);
 
+  useStreamTracking({
+    songId: id,
+    wavesurferRef,
+    onStream: (songId) => songApi.incrementSongStreams(songId),
+  });
+
+  const CommentItem: React.FC<{ comment: Comment }> = ({ comment }) => {
+    const [isLiked, setIsLiked] = useState(comment.user_liked ?? false);
+    const [likeCount, setLikeCount] = useState(Number(comment.likes) || 0);
+
+    const toggleCommentLike = () => {
+      if (isLiked) {
+        setLikeCount(likeCount - 1);
+        setIsLiked(false);
+      } else {
+        setLikeCount(likeCount + 1);
+        setIsLiked(true);
+      }
+    };
+
+    const { comment_text, tags } = comment;
+
+    const segments: React.ReactNode[] = [];
+    let lastIndex = 0;
+
+    if (tags && tags.length > 0) {
+      const sortedTags = [...tags].sort((a, b) => a.start - b.start);
+
+      for (const tag of sortedTags) {
+        if (tag.start > lastIndex) {
+          segments.push(comment_text.slice(lastIndex, tag.start));
+        }
+
+        segments.push(
+          <Link
+            key={tag.user_id + tag.start}
+            to={`/users/${tag.user_id}`}
+            className={styles.commentTag}
+          >
+            {comment_text.slice(tag.start, tag.end)}
+          </Link>
+        );
+
+        lastIndex = tag.end;
+      }
+    }
+
+    if (lastIndex < comment_text.length) {
+      segments.push(comment_text.slice(lastIndex));
+    }
+
+    return (
+      <div key={comment.id} className={styles.comment}>
+        <img
+          src={comment.profile_picture_url}
+          alt={comment.username}
+          className={
+            styles.commentListUserPfp ? styles.commentUserPfp : userPlaceholder
+          }
+        />
+        <div className={styles.commentContentWrapper}>
+          <div className={styles.commentContent}>
+            <div className={styles.commentHeader}>
+              <span className={styles.commentUsername}>{comment.username}</span>
+              <span className={styles.commentSeparator}>&bull;</span>
+              <span className={styles.commentTimestamp}>
+                {formatRelativeDate(comment.commented_at)}
+              </span>
+            </div>
+            <span className={styles.commentText}>{segments}</span>
+          </div>
+          <div
+            className={classNames(styles.commentLikesContainer, {
+              [styles.commentLikesContainerActive]: isLiked,
+            })}
+          >
+            <span className={styles.commentLikeCount}>{likeCount}</span>
+            <button
+              className={classNames(styles.commentLikeButton, {
+                [styles.commentLikeButtonActive]: isLiked,
+              })}
+              onClick={toggleCommentLike}
+            >
+              <LuThumbsUp />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (error) {
     return (
       <>
@@ -265,7 +410,7 @@ const SongPage: React.FC = () => {
                 }
               >
                 <img
-                  src={song.image_url!}
+                  src={song.image_url ? song.image_url : musicPlaceholder}
                   alt={`${song.title} Cover`}
                   className={styles.coverImage}
                 />
@@ -278,17 +423,21 @@ const SongPage: React.FC = () => {
                     <div className={styles.interactionsContainer}>
                       <div className={styles.interactionStat}>
                         <LuPlay />
-                        <span className={styles.interactionText}>1,219</span>
+                        <span className={styles.interactionText}>
+                          {song?.streams ?? 0}
+                        </span>
                       </div>
                       <div className={styles.interactionStat}>
                         <LuThumbsUp />
                         <span className={styles.interactionText}>
-                          {song?.likes}
+                          {song?.likes ?? 0}
                         </span>
                       </div>
                       <div className={styles.interactionStat}>
                         <LuMessageSquareText />
-                        <span className={styles.interactionText}>100</span>
+                        <span className={styles.interactionText}>
+                          {comments ? comments.length : 0}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -313,7 +462,7 @@ const SongPage: React.FC = () => {
                   <span className={styles.statsText}>Weekly Plays</span>
                   <SparkLineChart
                     height={80}
-                    width={290}
+                    width={330}
                     area
                     showHighlight
                     color="rgb(213, 49, 49)"
@@ -360,6 +509,9 @@ const SongPage: React.FC = () => {
                     <LuListPlus />
                   </button>
                   <button className={styles.actionButton}>
+                    <LuListEnd />
+                  </button>
+                  <button className={styles.actionButton}>
                     <LuShare />
                   </button>
                   <button className={styles.actionButton}>
@@ -369,66 +521,92 @@ const SongPage: React.FC = () => {
               </div>
             </div>
             <div className={styles.songLayoutBottom}>
-              <div className={styles.artistInfoContainer}>
-                <div className={styles.artistInfoLeft}>
-                  <img
-                    src={
-                      mainArtist?.user?.profile_picture_url
-                        ? mainArtist?.user?.profile_picture_url
-                        : userPlaceholder
-                    }
-                    alt={`${
-                      mainArtist?.display_name
-                        ? mainArtist.display_name
-                        : mainArtist?.user?.username
-                    } Image`}
-                    className={styles.artistImage}
-                  />
-                  <button
-                    className={classNames(styles.artistFollowButton, {
-                      [styles.artistFollowButtonActive]: isFollowed,
-                    })}
-                    onClick={() => setIsFollowed(!isFollowed)}
-                  >
-                    {isFollowed ? (
-                      <>
-                        Followed <LuUserRoundCheck />
-                      </>
-                    ) : (
-                      <>
-                        Follow <LuUserRoundPlus />
-                      </>
-                    )}
-                  </button>
-                </div>
-                <div className={styles.artistInfoRight}>
-                  <div className={styles.artistNameContainer}>
-                    <span className={styles.artistInfoName}>
-                      {mainArtist?.display_name
-                        ? mainArtist.display_name
-                        : mainArtist?.user?.username}
-                    </span>
-                    {/* ! ADD IS VERIFIED!! */}
-                    <div
-                      className={styles.badgeWrapper}
-                      onMouseEnter={() => setIsTooltipVisible(true)}
-                      onMouseLeave={() => setIsTooltipVisible(false)}
+              <div className={styles.songLayoutBottomLeft}>
+                <div className={styles.artistInfoContainer}>
+                  <div className={styles.artistInfoLeft}>
+                    <img
+                      src={
+                        mainArtist?.user?.profile_picture_url
+                          ? mainArtist?.user?.profile_picture_url
+                          : userPlaceholder
+                      }
+                      alt={`${
+                        mainArtist?.display_name
+                          ? mainArtist.display_name
+                          : mainArtist?.user?.username
+                      } Image`}
+                      className={styles.artistImage}
+                    />
+                    <button
+                      className={classNames(styles.artistFollowButton, {
+                        [styles.artistFollowButtonActive]: isFollowed,
+                      })}
+                      onClick={() => setIsFollowed(!isFollowed)}
                     >
-                      <LuBadgeCheck className={styles.verifiedBadge} />
-                      {isTooltipVisible && (
-                        <div className={styles.tooltip}>
-                          Verified by CoogMusic
-                        </div>
+                      {isFollowed ? (
+                        <>
+                          Followed <LuUserRoundCheck />
+                        </>
+                      ) : (
+                        <>
+                          Follow <LuUserRoundPlus />
+                        </>
                       )}
+                    </button>
+                  </div>
+                  <div className={styles.artistInfoRight}>
+                    <div className={styles.artistNameContainer}>
+                      <Link
+                        className={styles.artistInfoName}
+                        to={`/artists/${mainArtist?.id}`}
+                      >
+                        {mainArtist?.display_name
+                          ? mainArtist.display_name
+                          : mainArtist?.user?.username}
+                      </Link>
+                      {/* ! ADD IS VERIFIED!! */}
+                      <div
+                        className={styles.badgeWrapper}
+                        onMouseEnter={() => setIsTooltipVisible(true)}
+                        onMouseLeave={() => setIsTooltipVisible(false)}
+                      >
+                        <LuBadgeCheck className={styles.verifiedBadge} />
+                        {isTooltipVisible && (
+                          <div className={styles.tooltip}>
+                            Verified by CoogMusic
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className={styles.horizontalRule}></div>
+                    <div className={styles.artistBio}>
+                      {mainArtist?.bio
+                        ? mainArtist.bio
+                        : `${mainArtist?.display_name ?? ""} has no bio yet...`}
                     </div>
                   </div>
-                  <div className={styles.horizontalRule}></div>
-                  <div className={styles.artistBio}>
-                    {mainArtist?.bio
-                      ? mainArtist.bio
-                      : `${mainArtist?.display_name ?? ""} has no bio yet...`}
-                  </div>
                 </div>
+
+                {otherArtists.length > 0 && (
+                  <div className={styles.otherArtistsContainer}>
+                    {otherArtists.map((artist: SongArtist) => (
+                      <div key={artist.id} className={styles.otherArtistItem}>
+                        <LuUserRoundPen className={styles.otherArtistIcon} />
+                        <div className={styles.otherArtistInfo}>
+                          <Link
+                            className={styles.otherArtistName}
+                            to={`/artists/${artist.id}`}
+                          >
+                            {artist.display_name}
+                          </Link>
+                          <span className={styles.otherArtistRole}>
+                            {artist.role}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className={styles.commentsContainer}>
@@ -450,11 +628,137 @@ const SongPage: React.FC = () => {
                     </button>
                   </div>
                 </div>
+
+                {comments && comments.length > 0 && (
+                  <>
+                    <div className={styles.horizontalRule}></div>
+                    <div className={styles.commentsList}>
+                      {comments.map((comment) => (
+                        <CommentItem key={comment.id} comment={comment} />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
-            <div className={styles.suggestionsContainer}>
-              <div className={styles.relatedSongsContainer}></div>
-              <div className={styles.inPlaylistsContainer}></div>
+              <div className={styles.suggestionsContainer}>
+                {song.albums && song.albums.length > 0 && (
+                  <div className={styles.suggestionsWrapper}>
+                    {/* add links */}
+                    <span className={styles.suggestionLabel}>On Albums</span>
+                    <div className={styles.suggestionsSection}>
+                      {song.albums.map((album: Album) => (
+                        <div key={album.id} className={styles.suggestionItem}>
+                          <img
+                            src={
+                              album.image_url
+                                ? album.image_url
+                                : musicPlaceholder
+                            }
+                            alt={`${album.title} Cover`}
+                            className={styles.suggestionImage}
+                          />
+                          <div className={styles.suggestionInfo}>
+                            <span className={styles.suggestionAuthor}>
+                              {album.artist?.display_name}
+                            </span>
+                            <Link
+                              className={styles.suggestionTitle}
+                              to={`/albums/${album.id}`}
+                            >
+                              {album.title}
+                            </Link>
+                            <span className={styles.suggestionSubtitle}>
+                              {formatDate(album.release_date)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {moreSongsByArtist && moreSongsByArtist.length > 0 && (
+                  <div className={styles.suggestionsWrapper}>
+                    <span className={styles.suggestionLabel}>
+                      More by {mainArtist?.display_name}
+                    </span>
+                    <div className={styles.suggestionsSection}>
+                      {moreSongsByArtist
+                        .filter((songItem: ArtistSong) => songItem.id !== id)
+                        .map((songItem: ArtistSong) => (
+                          <div
+                            key={songItem.id}
+                            className={styles.suggestionItem}
+                          >
+                            <img
+                              src={
+                                songItem.image_url
+                                  ? songItem.image_url
+                                  : musicPlaceholder
+                              }
+                              alt={`${songItem.title} Cover`}
+                              className={styles.suggestionImage}
+                            />
+                            <div className={styles.suggestionInfo}>
+                              <span className={styles.suggestionAuthor}>
+                                {songItem.role}
+                              </span>
+                              <Link
+                                className={styles.suggestionTitle}
+                                to={`/songs/${songItem.id}`}
+                              >
+                                {songItem.title}
+                              </Link>
+                              <span className={styles.suggestionSubtitle}>
+                                {formatDate(songItem.release_date)}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {suggestedSongs && suggestedSongs.length > 0 && (
+                  <div className={styles.suggestionsWrapper}>
+                    <span className={styles.suggestionLabel}>
+                      Related Songs
+                    </span>
+                    <div className={styles.suggestionsSection}>
+                      {suggestedSongs.map((songItem: SuggestedSong) => (
+                        <div
+                          key={songItem.id}
+                          className={styles.suggestionItem}
+                        >
+                          <img
+                            src={
+                              songItem.image_url
+                                ? songItem.image_url
+                                : musicPlaceholder
+                            }
+                            alt={`${songItem.title} Cover`}
+                            className={styles.suggestionImage}
+                          />
+                          <div className={styles.suggestionInfo}>
+                            <span className={styles.suggestionAuthor}>
+                              {songItem.main_artist.display_name}
+                            </span>
+                            <Link
+                              className={styles.suggestionTitle}
+                              to={`/songs/${songItem.id}`}
+                            >
+                              {songItem.title}
+                            </Link>
+                            <span className={styles.suggestionSubtitle}>
+                              {formatDate(songItem.release_date)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

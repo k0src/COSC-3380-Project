@@ -17,6 +17,7 @@ html {
 :root {
   /* Colors */
   --color-panel-gray: #181818;
+  --color-panel-gray-dark: #0e0e0e;
   --color-panel-border: #1c1c1c;
   --color-red-950: #430c0c;
   --color-red-900: #7b2121;
@@ -30,8 +31,8 @@ html {
   --color-text-gray: #6d6d6d;
   --color-text-gray-light: #a1a1a1;
   --color-white: #f6f6f6;
-  --color-white-hover: #cccccc;
-  --color-black: #7c7c7c;
+  --color-white-hover: #bdbdbd;
+  --color-black: #080808;
 
   /* Layout Dimensions */
   --sidebar-width: 6.4rem;
@@ -39,6 +40,7 @@ html {
   --now-playing-height: 9.6rem;
 
   /* Spacing */
+  --spacing-2xs: 0.2rem;
   --spacing-xs: 0.4rem;
   --spacing-sm: 0.8rem;
   --spacing-md: 1.6rem;
@@ -48,6 +50,9 @@ html {
   --spacing-3xl: 6.4rem;
   --spacing-4xl: 8rem;
   --spacing-5xl: 9.6rem;
+
+  --layout-gap-hor: 2rem;
+  --layout-gap-ver: 2.4rem;
 
   /* Border Radius */
   --border-radius-sm: 0.4rem;
@@ -63,6 +68,7 @@ html {
   --font-size-xl: 2.4rem;
 
   /* Icon Sizes */
+  --icon-size-xs: 1.4rem;
   --icon-size-sm: 1.8rem;
   --icon-size-md: 2rem;
   --icon-size-lg: 2.4rem;

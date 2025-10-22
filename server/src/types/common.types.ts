@@ -9,4 +9,14 @@ export interface Comment {
   username: string;
   profile_picture_url: string;
   commented_at: string;
+
+  likes?: number;
+  user_liked?: boolean;
+
+  tags?: Array<{
+    user_id: string;
+    username: string;
+    start: number;
+    end: number;
+  }>;
 }

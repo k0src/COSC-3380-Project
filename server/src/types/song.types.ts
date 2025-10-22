@@ -1,4 +1,4 @@
-import type { UUID, Album, SongArtist } from "./index.js";
+import type { UUID, Album, SongArtist, Artist } from "./index.js";
 
 // Main Song type
 export interface Song {
@@ -10,9 +10,10 @@ export interface Song {
   image_url?: string;
   audio_url: string;
   created_at: string;
+  streams?: number;
 
   // Related fields
-  album?: Album;
+  albums?: Album[];
   artists?: SongArtist[];
   likes?: number;
 }
@@ -28,6 +29,11 @@ export interface AlbumSong extends Song {
 
 export interface ArtistSong extends Song {
   role: string;
+}
+
+export interface SuggestedSong extends Song {
+  total_score: number;
+  main_artist: Artist;
 }
 
 // THIS NEEDS TO INCLUDE ARTISTS AND ALBUM!!!

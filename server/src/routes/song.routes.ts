@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { SongRepository as SongRepo } from "@repositories";
 import { parseSongForm } from "@infra/form-parser";
 import getCoverGradient from "@util/colors.util";
+import { CommentService } from "@services";
 
 const router = express.Router();
 
@@ -10,11 +11,11 @@ const router = express.Router();
 // /api/songs?includeAlbum=true&includeArtists=true&includeLikes=true&limit=50&offset=0
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { includeAlbum, includeArtists, includeLikes, limit, offset } =
+    const { includeAlbums, includeArtists, includeLikes, limit, offset } =
       req.query;
 
     const songs = await SongRepo.getMany({
-      includeAlbum: includeAlbum === "true",
+      includeAlbums: includeAlbums === "true",
       includeArtists: includeArtists === "true",
       includeLikes: includeLikes === "true",
       limit: limit ? parseInt(limit as string, 10) : undefined,
@@ -32,16 +33,16 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 // Example:
 // /api/songs/:id?includeAlbum=true&includeArtists=true&includeLikes=true
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const { includeAlbum, includeArtists, includeLikes } = req.query;
-  if (!id) {
-    res.status(400).json({ error: "Song ID is required" });
-    return;
-  }
-
   try {
+    const { id } = req.params;
+    const { includeAlbums, includeArtists, includeLikes } = req.query;
+    if (!id) {
+      res.status(400).json({ error: "Song ID is required" });
+      return;
+    }
+
     const song = await SongRepo.getOne(id, {
-      includeAlbum: includeAlbum === "true",
+      includeAlbums: includeAlbums === "true",
       includeArtists: includeArtists === "true",
       includeLikes: includeLikes === "true",
     });
@@ -56,6 +57,88 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+router.get(
+  "/:id/suggestions",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { userId, limit } = req.query;
+      if (!id) {
+        res.status(400).json({ error: "Song ID is required" });
+        return;
+      }
+
+      const suggestions = await SongRepo.getSuggestedSongs(id, {
+        userId: req.query.userId as string | undefined,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+      });
+      res.status(200).json(suggestions);
+    } catch (error) {
+      console.error("Error in GET /songs/:id/suggestions:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+router.get(
+  "/:id/comments",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Song ID is required!" });
+        return;
+      }
+
+      const comments = await CommentService.getCommentsBySongId(id, {
+        includeLikes: req.query.includeLikes === "true",
+        currentUserId: req.query.currentUserId as string | undefined,
+        limit: req.query.limit
+          ? parseInt(req.query.limit as string, 10)
+          : undefined,
+        offset: req.query.offset
+          ? parseInt(req.query.offset as string, 10)
+          : undefined,
+      });
+      res.status(200).json(comments);
+    } catch (error) {
+      console.error("Error in GET /songs/:id/comments:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+router.post(
+  "/:id/comments",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { userId, commentText } = req.body;
+      if (!id) {
+        res.status(400).json({ error: "Song ID is required!" });
+        return;
+      }
+
+      if (!userId || !commentText) {
+        res
+          .status(400)
+          .json({ error: "User ID and comment text are required!" });
+        return;
+      }
+
+      const commentId = await CommentService.addComment(
+        userId,
+        id,
+        commentText
+      );
+      res.status(201).json({ id: commentId });
+    } catch (error) {
+      console.error("Error in POST /songs/:id/comments:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
 
 router.get(
   "/:id/cover-gradient",
@@ -174,6 +257,30 @@ router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+router.put(
+  "/:id/streams",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Song ID is required!" });
+        return;
+      }
+      const success = await SongRepo.incrementStreams(id);
+      if (!success) {
+        res.status(404).json({ error: "Song not found" });
+        return;
+      }
+      res
+        .status(200)
+        .json({ message: "Song streams incremented successfully" });
+    } catch (error) {
+      console.error("Error in PUT /api/songs/:id/streams:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
 
 // PUT /api/songs/:id/artist -> add artist to song
 // NEED auth protection

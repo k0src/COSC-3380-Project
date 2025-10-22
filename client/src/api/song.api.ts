@@ -1,24 +1,36 @@
 import api from "./api";
-import type { Song, UUID, CoverGradient } from "../types";
+import type { Song, UUID, CoverGradient, SuggestedSong } from "../types";
 
 export const songApi = {
   async getSongById(
     id: UUID,
     options?: {
-      includeAlbum?: boolean;
+      includeAlbums?: boolean;
       includeArtists?: boolean;
       includeLikes?: boolean;
     }
   ) {
-    const response = await api.get<Song>(
-      `/songs/${id}?` +
-        new URLSearchParams({
-          includeAlbum: options?.includeAlbum ? "true" : "false",
-          includeArtists: options?.includeArtists ? "true" : "false",
-          includeLikes: options?.includeLikes ? "true" : "false",
-        })
+    const response = await api.get<Song>(`/songs/${id}`, {
+      params: options,
+    });
+    return response.data;
+  },
+
+  async getSuggestedSongs(
+    id: UUID,
+    options?: { userId?: UUID; limit?: number }
+  ) {
+    const response = await api.get<SuggestedSong[]>(
+      `/songs/${id}/suggestions`,
+      {
+        params: options,
+      }
     );
     return response.data;
+  },
+
+  async incrementSongStreams(id: UUID) {
+    await api.put(`/songs/${id}/streams`);
   },
 
   async getCoverGradient(id: UUID) {
