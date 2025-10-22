@@ -65,6 +65,22 @@ body {
   font-size: var(--icon-size-md);
 }
 
+.logoutButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-gray) !important;
+  border-radius: var(--border-radius-md);
+  transition: color var(--transition-speed) ease-in-out;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.logoutButton:hover {
+  color: var(--color-white) !important;
+}
+
 /* Main Content */
 .mainContent {
   flex: 1;

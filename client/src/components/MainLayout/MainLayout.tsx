@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import classNames from "classnames";
+import { useAuth } from "../../contexts";
 import styles from "./MainLayout.module.css";
 import {
   LuHouse,
@@ -28,6 +29,16 @@ import {
 } from "react-icons/lu";
 
 const Sidebar: React.FC = () => {
+  const { logout, isAuthenticated } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarTop}>
@@ -44,7 +55,7 @@ const Sidebar: React.FC = () => {
           <Link to="/library/songs" className={styles.sidebarLink}>
             <LuDisc3 className={styles.sidebarIcon} />
           </Link>
-          <Link to="/artist-dashboard" className={styles.sidebarLink}>
+          <Link to="/artist/dashboard" className={styles.sidebarLink}>
             <LuUserPen className={styles.sidebarIcon} />
           </Link>
           <Link to="/library/history" className={styles.sidebarLink}>
@@ -52,14 +63,18 @@ const Sidebar: React.FC = () => {
           </Link>
         </nav>
       </div>
-      <Link to="/auth/logout" className={styles.sidebarLink}>
-        <LuLogOut className={styles.sidebarIcon} />
-      </Link>
+      {isAuthenticated && (
+        <button onClick={handleLogout} className={styles.logoutButton}>
+          <LuLogOut className={styles.sidebarIcon} />
+        </button>
+      )}
     </aside>
   );
 };
 
 const Header: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
+
   return (
     <header className={styles.header}>
       <nav className={styles.headerNav}>
@@ -93,17 +108,33 @@ const Header: React.FC = () => {
       </div>
 
       <div className={styles.headerActions}>
-        <div
-          className={classNames(styles.iconButton, styles.notificationButton)}
-        >
-          <LuBell className={styles.actionIcon} />
-        </div>
-        <Link to="/settings" className={styles.iconButton}>
-          <LuSettings className={styles.actionIcon} />
-        </Link>
-        <Link to="/me" className={styles.iconButton}>
-          <LuCircleUser className={styles.actionIcon} />
-        </Link>
+        {isAuthenticated ? (
+          <>
+            <div
+              className={classNames(
+                styles.iconButton,
+                styles.notificationButton
+              )}
+            >
+              <LuBell className={styles.actionIcon} />
+            </div>
+            <Link to="/settings" className={styles.iconButton}>
+              <LuSettings className={styles.actionIcon} />
+            </Link>
+            <Link to="/me" className={styles.iconButton} title={user?.username}>
+              <LuCircleUser className={styles.actionIcon} />
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className={styles.navbarLink}>
+              <span>Sign In</span>
+            </Link>
+            <Link to="/signup" className={styles.navbarLink}>
+              <span>Sign Up</span>
+            </Link>
+          </>
+        )}
       </div>
     </header>
   );
@@ -134,12 +165,7 @@ const NowPlayingBar: React.FC = () => {
         />
         <div className={styles.songInfo}>
           <div className={styles.artistName}>Artist Name</div>
-          <div className={styles.songTitle}>
-            Song Title Lorem ipsum dolor sit amet consectetur adipisicing elit.
-            Unde ea esse amet voluptate quam quod, sunt harum, facilis officia
-            laborum dolore hic corrupti iure vel, mollitia labore nemo eum
-            cupiditate.
-          </div>
+          <div className={styles.songTitle}>Song Title</div>
         </div>
       </div>
 

@@ -394,202 +394,203 @@ const SongPage: React.FC = () => {
       <Helmet>
         <title>{song ? `${song.title} - CoogMusic` : "CoogMusic"}</title>
       </Helmet>
-      <MainLayout>
-        {loading ? (
-          <PageLoader />
-        ) : (
-          <div className={styles.songLayout}>
-            <div className={styles.songLayoutTop}>
-              <div
-                className={styles.songContainer}
-                style={
-                  {
-                    "--cover-gradient-color1": `rgba(${coverGradient.color1.r}, ${coverGradient.color1.g}, ${coverGradient.color1.b}, 0.2)`,
-                    "--cover-gradient-color2": `rgba(${coverGradient.color2.r}, ${coverGradient.color2.g}, ${coverGradient.color2.b}, 0.2)`,
-                  } as React.CSSProperties
-                }
-              >
-                <img
-                  src={song.image_url ? song.image_url : musicPlaceholder}
-                  alt={`${song.title} Cover`}
-                  className={styles.coverImage}
-                />
-                <div className={styles.songRight}>
-                  <div className={styles.songInfoContainer}>
-                    <span className={styles.artistName}>
-                      {mainArtist?.display_name}
-                    </span>
-                    <span className={styles.songTitle}>{song.title}</span>
-                    <div className={styles.interactionsContainer}>
-                      <div className={styles.interactionStat}>
-                        <LuPlay />
-                        <span className={styles.interactionText}>
-                          {song?.streams ?? 0}
-                        </span>
-                      </div>
-                      <div className={styles.interactionStat}>
-                        <LuThumbsUp />
-                        <span className={styles.interactionText}>
-                          {song?.likes ?? 0}
-                        </span>
-                      </div>
-                      <div className={styles.interactionStat}>
-                        <LuMessageSquareText />
-                        <span className={styles.interactionText}>
-                          {comments ? comments.length : 0}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.playerContainer}>
-                    <button
-                      onClick={togglePlay}
-                      className={classNames(styles.playerPlayBtn, {
-                        [styles.playerPlayBtnActive]: isPlaying,
-                      })}
-                    >
-                      {isPlaying ? <LuCirclePause /> : <LuCirclePlay />}
-                    </button>
-                    <div
-                      ref={waveformRef}
-                      className={styles.playerWaveform}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-              <div className={styles.songLayoutTopRight}>
-                <div className={styles.songStatsContainer}>
-                  <span className={styles.statsText}>Weekly Plays</span>
-                  <SparkLineChart
-                    height={80}
-                    width={330}
-                    area
-                    showHighlight
-                    color="rgb(213, 49, 49)"
-                    className={styles.playsChart}
-                    {...sparkLineSettings}
-                  />
-                </div>
-                <div className={styles.detailsContainer}>
-                  <div className={styles.detailsColumn}>
-                    <span className={styles.detailLabel}>Genre</span>
-                    <div className={styles.detailWrapper}>
-                      <LuMusic className={styles.detailIcon} />
-                      <span
-                        className={classNames(
-                          styles.detailName,
-                          styles.genreName
-                        )}
-                      >
-                        {song.genre}
+
+      {loading ? (
+        <PageLoader />
+      ) : (
+        <div className={styles.songLayout}>
+          <div className={styles.songLayoutTop}>
+            <div
+              className={styles.songContainer}
+              style={
+                {
+                  "--cover-gradient-color1": `rgba(${coverGradient.color1.r}, ${coverGradient.color1.g}, ${coverGradient.color1.b}, 0.2)`,
+                  "--cover-gradient-color2": `rgba(${coverGradient.color2.r}, ${coverGradient.color2.g}, ${coverGradient.color2.b}, 0.2)`,
+                } as React.CSSProperties
+              }
+            >
+              <img
+                src={song.image_url ? song.image_url : musicPlaceholder}
+                alt={`${song.title} Cover`}
+                className={styles.coverImage}
+              />
+              <div className={styles.songRight}>
+                <div className={styles.songInfoContainer}>
+                  <span className={styles.artistName}>
+                    {mainArtist?.display_name}
+                  </span>
+                  <span className={styles.songTitle}>{song.title}</span>
+                  <div className={styles.interactionsContainer}>
+                    <div className={styles.interactionStat}>
+                      <LuPlay />
+                      <span className={styles.interactionText}>
+                        {song?.streams ?? 0}
                       </span>
                     </div>
-                  </div>
-                  <div className={styles.verticalRule}></div>
-                  <div className={styles.detailsColumn}>
-                    <span className={styles.detailLabel}>Release Date</span>
-                    <div className={styles.detailWrapper}>
-                      <LuCalendar className={styles.detailIcon} />
-                      <span className={styles.detailName}>
-                        {formatDate(song.release_date)}
+                    <div className={styles.interactionStat}>
+                      <LuThumbsUp />
+                      <span className={styles.interactionText}>
+                        {song?.likes ?? 0}
+                      </span>
+                    </div>
+                    <div className={styles.interactionStat}>
+                      <LuMessageSquareText />
+                      <span className={styles.interactionText}>
+                        {comments ? comments.length : 0}
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className={styles.songActionsContainer}>
+                <div className={styles.playerContainer}>
                   <button
-                    className={classNames(styles.actionButton, {
-                      [styles.actionButtonActive]: isLiked,
+                    onClick={togglePlay}
+                    className={classNames(styles.playerPlayBtn, {
+                      [styles.playerPlayBtnActive]: isPlaying,
                     })}
-                    onClick={() => setIsLiked(!isLiked)}
                   >
-                    <LuThumbsUp />
+                    {isPlaying ? <LuCirclePause /> : <LuCirclePlay />}
                   </button>
-                  <button className={styles.actionButton}>
-                    <LuListPlus />
-                  </button>
-                  <button className={styles.actionButton}>
-                    <LuListEnd />
-                  </button>
-                  <button className={styles.actionButton}>
-                    <LuShare />
-                  </button>
-                  <button className={styles.actionButton}>
-                    <LuCircleAlert />
-                  </button>
+                  <div
+                    ref={waveformRef}
+                    className={styles.playerWaveform}
+                  ></div>
                 </div>
               </div>
             </div>
-            <div className={styles.songLayoutBottom}>
-              <div className={styles.songLayoutBottomLeft}>
-                <div className={styles.artistInfoContainer}>
-                  <div className={styles.artistInfoLeft}>
-                    <img
-                      src={
-                        mainArtist?.user?.profile_picture_url
-                          ? mainArtist?.user?.profile_picture_url
-                          : userPlaceholder
-                      }
-                      alt={`${
-                        mainArtist?.display_name
-                          ? mainArtist.display_name
-                          : mainArtist?.user?.username
-                      } Image`}
-                      className={styles.artistImage}
-                    />
-                    <button
-                      className={classNames(styles.artistFollowButton, {
-                        [styles.artistFollowButtonActive]: isFollowed,
-                      })}
-                      onClick={() => setIsFollowed(!isFollowed)}
-                    >
-                      {isFollowed ? (
-                        <>
-                          Followed <LuUserRoundCheck />
-                        </>
-                      ) : (
-                        <>
-                          Follow <LuUserRoundPlus />
-                        </>
+            <div className={styles.songLayoutTopRight}>
+              <div className={styles.songStatsContainer}>
+                <span className={styles.statsText}>Weekly Plays</span>
+                <SparkLineChart
+                  height={80}
+                  width={330}
+                  area
+                  showHighlight
+                  color="rgb(213, 49, 49)"
+                  className={styles.playsChart}
+                  {...sparkLineSettings}
+                />
+              </div>
+              <div className={styles.detailsContainer}>
+                <div className={styles.detailsColumn}>
+                  <span className={styles.detailLabel}>Genre</span>
+                  <div className={styles.detailWrapper}>
+                    <LuMusic className={styles.detailIcon} />
+                    <span
+                      className={classNames(
+                        styles.detailName,
+                        styles.genreName
                       )}
-                    </button>
-                  </div>
-                  <div className={styles.artistInfoRight}>
-                    <div className={styles.artistNameContainer}>
-                      <Link
-                        className={styles.artistInfoName}
-                        to={`/artists/${mainArtist?.id}`}
-                      >
-                        {mainArtist?.display_name
-                          ? mainArtist.display_name
-                          : mainArtist?.user?.username}
-                      </Link>
-                      {/* ! ADD IS VERIFIED!! */}
-                      <div
-                        className={styles.badgeWrapper}
-                        onMouseEnter={() => setIsTooltipVisible(true)}
-                        onMouseLeave={() => setIsTooltipVisible(false)}
-                      >
-                        <LuBadgeCheck className={styles.verifiedBadge} />
-                        {isTooltipVisible && (
-                          <div className={styles.tooltip}>
-                            Verified by CoogMusic
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className={styles.horizontalRule}></div>
-                    <div className={styles.artistBio}>
-                      {mainArtist?.bio
-                        ? mainArtist.bio
-                        : `${mainArtist?.display_name ?? ""} has no bio yet...`}
-                    </div>
+                    >
+                      {song.genre}
+                    </span>
                   </div>
                 </div>
+                <div className={styles.verticalRule}></div>
+                <div className={styles.detailsColumn}>
+                  <span className={styles.detailLabel}>Release Date</span>
+                  <div className={styles.detailWrapper}>
+                    <LuCalendar className={styles.detailIcon} />
+                    <span className={styles.detailName}>
+                      {formatDate(song.release_date)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className={styles.songActionsContainer}>
+                <button
+                  className={classNames(styles.actionButton, {
+                    [styles.actionButtonActive]: isLiked,
+                  })}
+                  onClick={() => setIsLiked(!isLiked)}
+                >
+                  <LuThumbsUp />
+                </button>
+                <button className={styles.actionButton}>
+                  <LuListPlus />
+                </button>
+                <button className={styles.actionButton}>
+                  <LuListEnd />
+                </button>
+                <button className={styles.actionButton}>
+                  <LuShare />
+                </button>
+                <button className={styles.actionButton}>
+                  <LuCircleAlert />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className={styles.songLayoutBottom}>
+            <div className={styles.songLayoutBottomLeft}>
+              <div className={styles.artistInfoContainer}>
+                <div className={styles.artistInfoLeft}>
+                  <img
+                    src={
+                      mainArtist?.user?.profile_picture_url
+                        ? mainArtist?.user?.profile_picture_url
+                        : userPlaceholder
+                    }
+                    alt={`${
+                      mainArtist?.display_name
+                        ? mainArtist.display_name
+                        : mainArtist?.user?.username
+                    } Image`}
+                    className={styles.artistImage}
+                  />
+                  <button
+                    className={classNames(styles.artistFollowButton, {
+                      [styles.artistFollowButtonActive]: isFollowed,
+                    })}
+                    onClick={() => setIsFollowed(!isFollowed)}
+                  >
+                    {isFollowed ? (
+                      <>
+                        Followed <LuUserRoundCheck />
+                      </>
+                    ) : (
+                      <>
+                        Follow <LuUserRoundPlus />
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className={styles.artistInfoRight}>
+                  <div className={styles.artistNameContainer}>
+                    <Link
+                      className={styles.artistInfoName}
+                      to={`/artists/${mainArtist?.id}`}
+                    >
+                      {mainArtist?.display_name
+                        ? mainArtist.display_name
+                        : mainArtist?.user?.username}
+                    </Link>
+                    {/* ! ADD IS VERIFIED!! */}
+                    <div
+                      className={styles.badgeWrapper}
+                      onMouseEnter={() => setIsTooltipVisible(true)}
+                      onMouseLeave={() => setIsTooltipVisible(false)}
+                    >
+                      <LuBadgeCheck className={styles.verifiedBadge} />
+                      {isTooltipVisible && (
+                        <div className={styles.tooltip}>
+                          Verified by CoogMusic
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className={styles.horizontalRule}></div>
+                  <div className={styles.artistBio}>
+                    {mainArtist?.bio
+                      ? mainArtist.bio
+                      : `${mainArtist?.display_name ?? ""} has no bio yet...`}
+                  </div>
+                </div>
+              </div>
 
-                {otherArtists.length > 0 && (
-                  <div className={styles.otherArtistsContainer}>
-                    {otherArtists.map((artist: SongArtist) => (
+              {otherArtists.length > 0 && (
+                <div className={styles.otherArtistsContainer}>
+                  {otherArtists.map((artist: SongArtist, i: number) => (
+                    <>
                       <div key={artist.id} className={styles.otherArtistItem}>
                         <LuUserRoundPen className={styles.otherArtistIcon} />
                         <div className={styles.otherArtistInfo}>
@@ -604,128 +605,90 @@ const SongPage: React.FC = () => {
                           </span>
                         </div>
                       </div>
+                      {i < otherArtists.length - 1 && (
+                        <div className={styles.horizontalRule}></div>
+                      )}
+                    </>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className={styles.commentsContainer}>
+              <div className={styles.commentsContainerTop}>
+                <img
+                  src={userPlaceholder}
+                  alt="username"
+                  className={styles.commentUserPfp}
+                />
+
+                <div className={styles.commentInputContainer}>
+                  <input
+                    type="text"
+                    placeholder="Leave a comment..."
+                    className={styles.commentInput}
+                  />
+                  <button className={styles.commentButton}>
+                    <LuSend />
+                  </button>
+                </div>
+              </div>
+
+              {comments && comments.length > 0 && (
+                <>
+                  <div className={styles.horizontalRule}></div>
+                  <div className={styles.commentsList}>
+                    {comments.map((comment) => (
+                      <CommentItem key={comment.id} comment={comment} />
                     ))}
                   </div>
-                )}
-              </div>
-
-              <div className={styles.commentsContainer}>
-                <div className={styles.commentsContainerTop}>
-                  <img
-                    src={userPlaceholder}
-                    alt="username"
-                    className={styles.commentUserPfp}
-                  />
-
-                  <div className={styles.commentInputContainer}>
-                    <input
-                      type="text"
-                      placeholder="Leave a comment..."
-                      className={styles.commentInput}
-                    />
-                    <button className={styles.commentButton}>
-                      <LuSend />
-                    </button>
+                </>
+              )}
+            </div>
+            <div className={styles.suggestionsContainer}>
+              {song.albums && song.albums.length > 0 && (
+                <div className={styles.suggestionsWrapper}>
+                  {/* add links */}
+                  <span className={styles.suggestionLabel}>On Albums</span>
+                  <div className={styles.suggestionsSection}>
+                    {song.albums.map((album: Album) => (
+                      <div key={album.id} className={styles.suggestionItem}>
+                        <img
+                          src={
+                            album.image_url ? album.image_url : musicPlaceholder
+                          }
+                          alt={`${album.title} Cover`}
+                          className={styles.suggestionImage}
+                        />
+                        <div className={styles.suggestionInfo}>
+                          <span className={styles.suggestionAuthor}>
+                            {album.artist?.display_name}
+                          </span>
+                          <Link
+                            className={styles.suggestionTitle}
+                            to={`/albums/${album.id}`}
+                          >
+                            {album.title}
+                          </Link>
+                          <span className={styles.suggestionSubtitle}>
+                            {formatDate(album.release_date)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
+              )}
 
-                {comments && comments.length > 0 && (
-                  <>
-                    <div className={styles.horizontalRule}></div>
-                    <div className={styles.commentsList}>
-                      {comments.map((comment) => (
-                        <CommentItem key={comment.id} comment={comment} />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-              <div className={styles.suggestionsContainer}>
-                {song.albums && song.albums.length > 0 && (
-                  <div className={styles.suggestionsWrapper}>
-                    {/* add links */}
-                    <span className={styles.suggestionLabel}>On Albums</span>
-                    <div className={styles.suggestionsSection}>
-                      {song.albums.map((album: Album) => (
-                        <div key={album.id} className={styles.suggestionItem}>
-                          <img
-                            src={
-                              album.image_url
-                                ? album.image_url
-                                : musicPlaceholder
-                            }
-                            alt={`${album.title} Cover`}
-                            className={styles.suggestionImage}
-                          />
-                          <div className={styles.suggestionInfo}>
-                            <span className={styles.suggestionAuthor}>
-                              {album.artist?.display_name}
-                            </span>
-                            <Link
-                              className={styles.suggestionTitle}
-                              to={`/albums/${album.id}`}
-                            >
-                              {album.title}
-                            </Link>
-                            <span className={styles.suggestionSubtitle}>
-                              {formatDate(album.release_date)}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {moreSongsByArtist && moreSongsByArtist.length > 0 && (
-                  <div className={styles.suggestionsWrapper}>
-                    <span className={styles.suggestionLabel}>
-                      More by {mainArtist?.display_name}
-                    </span>
-                    <div className={styles.suggestionsSection}>
-                      {moreSongsByArtist
-                        .filter((songItem: ArtistSong) => songItem.id !== id)
-                        .map((songItem: ArtistSong) => (
-                          <div
-                            key={songItem.id}
-                            className={styles.suggestionItem}
-                          >
-                            <img
-                              src={
-                                songItem.image_url
-                                  ? songItem.image_url
-                                  : musicPlaceholder
-                              }
-                              alt={`${songItem.title} Cover`}
-                              className={styles.suggestionImage}
-                            />
-                            <div className={styles.suggestionInfo}>
-                              <span className={styles.suggestionAuthor}>
-                                {songItem.role}
-                              </span>
-                              <Link
-                                className={styles.suggestionTitle}
-                                to={`/songs/${songItem.id}`}
-                              >
-                                {songItem.title}
-                              </Link>
-                              <span className={styles.suggestionSubtitle}>
-                                {formatDate(songItem.release_date)}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
-
-                {suggestedSongs && suggestedSongs.length > 0 && (
-                  <div className={styles.suggestionsWrapper}>
-                    <span className={styles.suggestionLabel}>
-                      Related Songs
-                    </span>
-                    <div className={styles.suggestionsSection}>
-                      {suggestedSongs.map((songItem: SuggestedSong) => (
+              {moreSongsByArtist && moreSongsByArtist.length > 0 && (
+                <div className={styles.suggestionsWrapper}>
+                  <span className={styles.suggestionLabel}>
+                    More by {mainArtist?.display_name}
+                  </span>
+                  <div className={styles.suggestionsSection}>
+                    {moreSongsByArtist
+                      .filter((songItem: ArtistSong) => songItem.id !== id)
+                      .map((songItem: ArtistSong) => (
                         <div
                           key={songItem.id}
                           className={styles.suggestionItem}
@@ -741,7 +704,7 @@ const SongPage: React.FC = () => {
                           />
                           <div className={styles.suggestionInfo}>
                             <span className={styles.suggestionAuthor}>
-                              {songItem.main_artist.display_name}
+                              {songItem.role}
                             </span>
                             <Link
                               className={styles.suggestionTitle}
@@ -755,14 +718,48 @@ const SongPage: React.FC = () => {
                           </div>
                         </div>
                       ))}
-                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+
+              {suggestedSongs && suggestedSongs.length > 0 && (
+                <div className={styles.suggestionsWrapper}>
+                  <span className={styles.suggestionLabel}>Related Songs</span>
+                  <div className={styles.suggestionsSection}>
+                    {suggestedSongs.map((songItem: SuggestedSong) => (
+                      <div key={songItem.id} className={styles.suggestionItem}>
+                        <img
+                          src={
+                            songItem.image_url
+                              ? songItem.image_url
+                              : musicPlaceholder
+                          }
+                          alt={`${songItem.title} Cover`}
+                          className={styles.suggestionImage}
+                        />
+                        <div className={styles.suggestionInfo}>
+                          <span className={styles.suggestionAuthor}>
+                            {songItem.main_artist.display_name}
+                          </span>
+                          <Link
+                            className={styles.suggestionTitle}
+                            to={`/songs/${songItem.id}`}
+                          >
+                            {songItem.title}
+                          </Link>
+                          <span className={styles.suggestionSubtitle}>
+                            {formatDate(songItem.release_date)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
-      </MainLayout>
+        </div>
+      )}
     </>
   );
 };
