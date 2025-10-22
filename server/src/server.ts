@@ -51,6 +51,7 @@ const clientDistPath = path.join(__dirname, "public");
 app.use(express.static(clientDistPath));
 
 // Routes
+app.use("/api/auth", Routes.authRoutes);
 app.use("/api/songs", Routes.songRoutes);
 app.use("/api/albums", Routes.albumRoutes);
 app.use("/api/artists", Routes.artistRoutes);

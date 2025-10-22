@@ -14,9 +14,9 @@
       "@validators/*": ["validators/*"],
       "@config/*": ["config/*"],
       "@infra/*": ["infra/*"],
-      "@util/*": ["util/*"]
-      // "@middleware": ["middleware/index"],
-      // "@middleware/*": ["middleware/*"]
+      "@util/*": ["util/*"],
+      "@middleware": ["middleware/index"],
+      "@middleware/*": ["middleware/*"]
     },
     "target": "ES2022",
     "module": "ESNext",

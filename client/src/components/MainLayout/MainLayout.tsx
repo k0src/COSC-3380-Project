@@ -52,7 +52,7 @@ const Sidebar: React.FC = () => {
           </Link>
         </nav>
       </div>
-      <Link to="/account/logout" className={styles.sidebarLink}>
+      <Link to="/auth/logout" className={styles.sidebarLink}>
         <LuLogOut className={styles.sidebarIcon} />
       </Link>
     </aside>
@@ -101,7 +101,7 @@ const Header: React.FC = () => {
         <Link to="/settings" className={styles.iconButton}>
           <LuSettings className={styles.actionIcon} />
         </Link>
-        <Link to="/account" className={styles.iconButton}>
+        <Link to="/me" className={styles.iconButton}>
           <LuCircleUser className={styles.actionIcon} />
         </Link>
       </div>
