@@ -365,11 +365,11 @@
 }
 
 .artistFollowButton:hover {
-  color: var(--color-red-950);
+  background-color: var(--color-red-700);
 }
 
 .artistFollowButtonActive {
-  color: var(--color-red-950);
+  background-color: var(--color-red-700);
 }
 
 .horizontalRule {
