@@ -20,16 +20,16 @@ const ArtistPage: React.FC = () => {
   });
 
   const albums = [
-    { title: 'Certified Lover Boy', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/7/79/Drake_-_Certified_Lover_Boy.png' },
-    { title: 'Scorpion', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/9/90/Scorpion_by_Drake.jpg' },
-    { title: 'Views', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/a/af/Drake_-_Views_cover.jpg' },
-    { title: 'Take Care', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/a/ae/Drake_-_Take_Care_cover.jpg' },
-    { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' },
-        { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' },
+    { title: 'Certified Lover Boy', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/7/79/Drake_-_Certified_Lover_Boy.png' , year: 2008},
+    { title: 'Scorpion', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/9/90/Scorpion_by_Drake.jpg' , year: 2008},
+    { title: 'Views', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/a/af/Drake_-_Views_cover.jpg' , year: 2008},
+    { title: 'Take Care', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/a/ae/Drake_-_Take_Care_cover.jpg' , year: 2008},
+    { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
+        { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
 
-            { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' },
+            { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
 
-                { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' },
+                { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
 
   ];
 
