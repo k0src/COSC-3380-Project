@@ -7,7 +7,8 @@ import LandingPage from "./pages/LandingPage/LandingPage";
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={< HomePage />} />
+      <Route path='/' element={<LandingPage />} />
+      <Route path="/loggedin" element={< HomePage />} />
       <Route path="/test" element={<Pages.TestPage />} />
       <Route path="/artist" element={< ArtistPage />} />
     </Routes>
