@@ -64,3 +64,9 @@
 .logoutButton:hover {
   color: var(--color-white) !important;
 }
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}

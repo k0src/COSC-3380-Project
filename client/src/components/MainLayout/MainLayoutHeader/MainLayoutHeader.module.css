@@ -90,3 +90,32 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
   pointer-events: none;
 }
+
+@media (max-width: 768px) {
+  .nowPlayingInfo {
+    max-width: 16rem;
+  }
+
+  .playlistButton {
+    display: none;
+  }
+
+  .progressContainer {
+    max-width: 40rem;
+  }
+
+  .navbarLink span,
+  .navbarLinkActive span {
+    display: none;
+  }
+
+  .nowPlayingBar {
+    left: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .headerActions {
+    display: none;
+  }
+}

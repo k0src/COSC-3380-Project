@@ -206,3 +206,66 @@
   cursor: pointer;
   border: none;
 }
+
+/* Media Queries */
+@media (max-width: 1400px) {
+  .nowPlayingInfo {
+    max-width: 20rem;
+  }
+
+  .progressContainer {
+    max-width: 50rem;
+  }
+
+  .nowPlayingBar {
+    padding: 0 var(--spacing-md);
+  }
+}
+
+@media (max-width: 1200px) {
+  .volumeSlider {
+    max-width: 8rem;
+  }
+
+  .shareButton {
+    display: none;
+  }
+}
+
+@media (max-width: 968px) {
+  .volumeControl {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .nowPlayingInfo {
+    max-width: 16rem;
+  }
+
+  .playlistButton {
+    display: none;
+  }
+
+  .progressContainer {
+    max-width: 40rem;
+  }
+
+  .nowPlayingBar {
+    left: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 560px) {
+  .shuffleButton,
+  .repeatButton {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .progressContainer,
+  .rightControls {
+    display: none;
+  }
+}
