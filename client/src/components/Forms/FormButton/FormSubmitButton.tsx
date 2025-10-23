@@ -14,6 +14,7 @@ const FormSubmitButton: React.FC<FormSubmitButtonProps> = ({
       type="submit"
       className={styles.formSubmitButton}
       disabled={disabled}
+      aria-label={text}
     >
       {text}
     </button>

@@ -17,9 +17,8 @@ import type {
   SuggestedSong,
 } from "../../types";
 import styles from "./SongPage.module.css";
-import { MainLayout } from "../../components/index.js";
 import { useAsyncData } from "../../hooks";
-import { PageLoader } from "../../components/index.js";
+import { PageLoader } from "@components";
 import {
   LuThumbsUp,
   LuPlay,
@@ -49,7 +48,7 @@ import {
   lineElementClasses,
 } from "@mui/x-charts/LineChart";
 import { chartsAxisHighlightClasses } from "@mui/x-charts/ChartsAxisHighlight";
-import userPlaceholder from "../../../assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.png";
 import { useStreamTracking } from "../../hooks";
 import musicPlaceholder from "../../../assets/music-placeholder.png";
 import { useAuth } from "../../contexts/AuthContext.js";

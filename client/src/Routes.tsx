@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import * as Pages from "./pages";
-import { MainLayout, ProtectedRoute } from "./components";
+import { MainLayout } from "@components";
 
 export default function AppRoutes() {
   return (
