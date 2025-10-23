@@ -31,8 +31,15 @@ export const validatePassword = (password: string): string | undefined => {
   if (password.length < 8) {
     return "Password must be at least 8 characters";
   }
-  if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-    return "Password must contain uppercase, lowercase, and number";
+  if (password.length > 128) {
+    return "Password must be less than 128 characters";
+  }
+  if (
+    !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(
+      password
+    )
+  ) {
+    return "Password must contain uppercase, lowercase, number, and special character (@$!%*?&)";
   }
   return undefined;
 };

@@ -8,6 +8,11 @@ import {
   getTokenExpiration,
 } from "@config/jwt";
 import { requireAuth } from "@middleware";
+import {
+  authRateLimit,
+  loginRateLimit,
+} from "../middleware/rateLimiting.middleware.js";
+import { csrfProtection } from "../middleware/csrf.middleware.js";
 
 const router = Router();
 
@@ -38,6 +43,8 @@ interface AuthResponse {
 
 router.post(
   "/signup",
+  authRateLimit,
+  csrfProtection,
   [
     body("username")
       .trim()
@@ -48,11 +55,13 @@ router.post(
       .normalizeEmail()
       .withMessage("Please provide a valid email"),
     body("password")
-      .isLength({ min: 8 })
-      .withMessage("Password must be at least 8 characters long")
-      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+      .isLength({ min: 8, max: 128 })
+      .withMessage("Password must be between 8 and 128 characters long")
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/
+      )
       .withMessage(
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)"
       ),
   ],
   async (req: Request<{}, AuthResponse, SignupRequest>, res: Response) => {
@@ -139,6 +148,8 @@ router.post(
 
 router.post(
   "/login",
+  loginRateLimit,
+  csrfProtection,
   [
     body("email")
       .isEmail()
@@ -211,69 +222,74 @@ router.post(
   }
 );
 
-router.post("/logout", requireAuth, async (req: Request, res: Response) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      res.status(400).json({
-        error: "Bad Request",
-        message: "Authorization header is required",
-        statusCode: 400,
-      });
-      return;
-    }
-
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-      res.status(400).json({
-        error: "Bad Request",
-        message: "Token is required",
-        statusCode: 400,
-      });
-      return;
-    }
-
-    const refreshToken = req.body.refreshToken;
-
-    const accessTokenExpiration = getTokenExpiration(token);
-    if (accessTokenExpiration) {
-      const payload = token.split(".")[1];
-      if (payload) {
-        const decoded = JSON.parse(Buffer.from(payload, "base64").toString());
-        await TokenBlacklistManager.addToBlacklist(
-          decoded.jti,
-          accessTokenExpiration
-        );
+router.post(
+  "/logout",
+  requireAuth,
+  csrfProtection,
+  async (req: Request, res: Response) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Authorization header is required",
+          statusCode: 400,
+        });
+        return;
       }
-    }
 
-    if (refreshToken) {
-      try {
-        const decoded = verifyRefreshToken(refreshToken);
-        const refreshTokenExpiration = getTokenExpiration(refreshToken);
-        if (refreshTokenExpiration) {
+      const token = authHeader.split(" ")[1];
+      if (!token) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Token is required",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const refreshToken = req.body.refreshToken;
+
+      const accessTokenExpiration = getTokenExpiration(token);
+      if (accessTokenExpiration) {
+        const payload = token.split(".")[1];
+        if (payload) {
+          const decoded = JSON.parse(Buffer.from(payload, "base64").toString());
           await TokenBlacklistManager.addToBlacklist(
             decoded.jti,
-            refreshTokenExpiration
+            accessTokenExpiration
           );
         }
-      } catch (error) {
-        console.warn("Invalid refresh token during logout:", error);
       }
-    }
 
-    res.json({
-      message: "Logged out successfully",
-    });
-  } catch (error) {
-    console.error("Logout error:", error);
-    res.status(500).json({
-      error: "Internal Server Error",
-      message: "Logout failed",
-      statusCode: 500,
-    });
+      if (refreshToken) {
+        try {
+          const decoded = verifyRefreshToken(refreshToken);
+          const refreshTokenExpiration = getTokenExpiration(refreshToken);
+          if (refreshTokenExpiration) {
+            await TokenBlacklistManager.addToBlacklist(
+              decoded.jti,
+              refreshTokenExpiration
+            );
+          }
+        } catch (error) {
+          console.warn("Invalid refresh token during logout:", error);
+        }
+      }
+
+      res.json({
+        message: "Logged out successfully",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({
+        error: "Internal Server Error",
+        message: "Logout failed",
+        statusCode: 500,
+      });
+    }
   }
-});
+);
 
 router.post("/refresh", async (req: Request, res: Response) => {
   try {

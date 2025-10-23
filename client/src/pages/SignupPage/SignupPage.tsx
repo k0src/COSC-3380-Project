@@ -178,7 +178,8 @@ const SignupPage: React.FC = () => {
               )}
               <div className={styles.passwordHint}>
                 <span className={styles.hintText}>
-                  8+ characters with uppercase, lowercase, and number
+                  8+ characters with uppercase, lowercase, number, and special
+                  character (@$!%*?&)
                 </span>
               </div>
             </div>

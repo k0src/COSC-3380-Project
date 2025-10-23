@@ -1,9 +1,11 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import helmet from "helmet";
 import path from "path";
 import dotenv from "dotenv";
 import { testConnection } from "config/database";
+import { generalRateLimit } from "./middleware/rateLimiting.middleware.js";
 
 import * as Routes from "@routes";
 
@@ -29,6 +31,25 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+// Security middleware
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+        scriptSrc: ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+// General rate limiting
+app.use(generalRateLimit);
 
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
