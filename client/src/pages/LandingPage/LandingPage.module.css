@@ -188,11 +188,27 @@
 
 /* --- 4. Main Content Area --- */
 .mainContent {
-  /* This is the large black box */
+  /* display: flex; */
+  justify-content: center;
   background-color: var(--dark-bg); 
   min-height: 600px; /* Adjust height as needed */
   margin: 0 2rem 2rem 2rem;
   border-radius: 8px;
   /* The image shows this area as completely black, 
      but you could use --content-bg if you prefer */
+}
+
+.trendingHeader{
+  font-family: 'League Spartan';
+  font-weight: 200;
+  display: flex;
+  justify-self: center;
+  margin: 1em;
+  font-size: 3em;
+}
+
+.trendingSection{
+  display: flex;
+  justify-content: center;
+  gap: 2em;
 }

@@ -1,18 +1,21 @@
 import React from 'react';
 import styles from './LandingPage.module.css';
+import { Search } from 'lucide-react';
+import SongCard from '../../components/SongCard/SongCard';
 
-// Embedded SVG for the search icon
-const SearchIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#B3B3B3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M21 21L16.65 16.65" stroke="#B3B3B3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
 
 const LandingPage: React.FC = () => {
+
+  const singles = Array(4).fill({ // Using your original 'newSongs' data
+    title: "New Release",
+    artist: "Drake",
+    image: "/PlayerBar/Mask group.png",
+    year: 2008
+  });
+
+
   return (
     <div className={styles.pageContainer}>
-      {/* 1. Navbar */}
       <header className={styles.navbar}>
         <div className={styles.logo}>COOGMUSIC</div>
         <nav className={styles.navButtons}>
@@ -21,7 +24,6 @@ const LandingPage: React.FC = () => {
         </nav>
       </header>
 
-      {/* 2. Hero Section */}
       <section className={styles.heroSection}>
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>BY ARTISTS, FOR ARTISTS</h1>
@@ -31,21 +33,22 @@ const LandingPage: React.FC = () => {
           </p>
           <button className={styles.uploadButton}>UPLOAD NOW</button>
         </div>
-        {/* The image is applied as a CSS background */}
       </section>
 
-      {/* 3. Search Bar */}
       <div className={styles.searchBarContainer}>
         <div className={styles.searchBar}>
-          <SearchIcon />
+          <Search />
           <input type="text" placeholder="SEARCH SONGS, ARTISTS, PLAYLISTS" />
         </div>
       </div>
 
-      {/* 4. Main Content Area (the black box) */}
       <main className={styles.mainContent}>
-        {/* This is the large empty black area. 
-            You can add your trending/featured components here. */}
+        <h2 className={styles.trendingHeader}>Or Listen to whats Trending</h2>
+        <div className={styles.trendingSection}>
+              {singles.map((song, index) => (
+                <SongCard key={index} {...song} />
+              ))}
+        </div>
       </main>
     </div>
   );
