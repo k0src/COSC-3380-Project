@@ -26,7 +26,9 @@ const SongCard: React.FC<SongCardProps> = ({
       <div className={styles.imageContainer}>
         <img src={image} alt={title} className={styles.songImage} />
         <div className={styles.overlay}>
+
           <Play size={48} />
+
         </div>
       </div>
 

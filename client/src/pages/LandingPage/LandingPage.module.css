@@ -1,0 +1,214 @@
+/* Import fonts that match the image (optional, but recommended) */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=League+Spartan:wght@100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+:root {
+  --primary-red: #E63946; /* Color from the logo and button */
+  --dark-bg: #000000;
+  --content-bg: #121212;
+  --card-bg: #181818;
+  --button-outline: #282828;
+  --text-primary: #FFFFFF;
+  --text-secondary: #B3B3B3;
+}
+
+/* --- General Page Setup --- */
+.pageContainer {
+  background-color: var(--dark-bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* --- 1. Navbar --- */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: var(--dark-bg);
+  position: relative;
+  z-index: 10;
+}
+
+.logo {
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  font-size: 5rem;
+  margin-left: 2rem;
+  color: var(--primary-red);
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.navButtons {
+  display: flex;
+  gap: 1rem;
+}
+
+.navButton {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--button-outline);
+  border-radius: 4px;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+.signUpButton {
+  background-color: var(--card-bg);
+}
+
+.signUpButton:hover {
+  background-color: #2a2a2a;
+}
+
+.loginButton {
+  border-color: var(--button-outline);
+}
+
+.loginButton:hover {
+  background-color: var(--card-bg);
+  border-color: var(--card-bg);
+}
+
+/* --- 2. Hero Section --- */
+.heroSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 4rem 2rem;
+  min-height: 450px;
+  
+  /* !! IMPORTANT !!
+    Replace '/image_edfeff.jpg' with the correct path to your image.
+    If you put it in the 'public' folder, this path will work.
+  */
+  background-image: 
+    /* This gradient creates the dark fade on the left side */
+    linear-gradient(to right, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 40%, rgba(0, 0, 0, 0) 70%),
+    /* This is your actual image */
+    url('https://www.uh.edu/kgmca/_images/msm-bands.jpg');
+    
+  background-size: cover;
+  background-position: center;
+}
+
+.heroContent {
+    margin-left: 2rem;
+  max-width: 50%;
+  z-index: 2;
+}
+
+.heroTitle {
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 200;
+  font-size: 6rem;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.heroSubtitle {
+    font-family: 'Inter';
+    font-style: italic;
+  font-size: 3rem;
+  color: var(--text-secondary);
+  margin: 1.5rem 0;
+  max-width: 500px;
+}
+
+.uploadButton {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  padding: 1rem 2rem;
+  /* This color is from the button in the image, not the logo */
+  background-color: #1a1a1a;
+  color: var(--text-primary);
+  border: 2px solid var(--button-outline);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.uploadButton:hover {
+  background-color: #282828;
+  border-color: #444;
+}
+
+/* --- 3. Search Bar --- */
+.searchBarContainer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  background-color: var(--dark-bg);
+  /* This pulls the search bar up slightly over the hero */
+  margin-top: -50px;
+  position: relative;
+  z-index: 5;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  background-color: #2a2a2a; /* Darker than card-bg */
+  border: 1px solid var(--button-outline);
+  border-radius: 50px; /* Pill shape */
+  padding: 0.75rem 1.25rem;
+  width: 100%;
+  max-width: 500px;
+}
+
+.searchBar svg {
+  margin-right: 0.75rem;
+}
+
+.searchBar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  letter-spacing: 0.5px;
+  font-family: 'League Spartan', sans-serif;
+}
+
+.searchBar input::placeholder {
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+/* --- 4. Main Content Area --- */
+.mainContent {
+  /* display: flex; */
+  justify-content: center;
+  background-color: var(--dark-bg); 
+  min-height: 600px; /* Adjust height as needed */
+  margin: 0 2rem 2rem 2rem;
+  border-radius: 8px;
+  /* The image shows this area as completely black, 
+     but you could use --content-bg if you prefer */
+}
+
+.trendingHeader{
+  font-family: 'League Spartan';
+  font-weight: 200;
+  display: flex;
+  justify-self: center;
+  margin: 1em;
+  font-size: 3em;
+}
+
+.trendingSection{
+  display: flex;
+  justify-content: center;
+  gap: 2em;
+}

@@ -23,10 +23,7 @@ const pool = new Pool({
   user: PGUSER,
   password: PGPASSWORD,
   database: PGDATABASE,
-  max: PGPOOLSIZE ? parseInt(PGPOOLSIZE, 10) : undefined
-  // ssl: {
-  //   rejectUnauthorized: true
-  // }
+  max: PGPOOLSIZE ? parseInt(PGPOOLSIZE, 10) : undefined,
 });
 
 export async function query<T = any>(
