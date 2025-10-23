@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts";
-import type { SignupData } from "../../types";
-import { validateSignupForm, type ValidationErrors } from "../../validators";
+
+import { useAuth } from "@contexts";
+import type { SignupData } from "@types";
+import { validateSignupForm, type ValidationErrors } from "@validators";
+import { InputGroup, FormSubmitButton, PageLoader } from "@components";
+
 import styles from "./SignupPage.module.css";
-import { PageLoader } from "../../components";
-import classNames from "classnames";
+import logo from "@assets/logo.svg";
 
 const SignupPage: React.FC = () => {
   const [formData, setFormData] = useState<SignupData>({
@@ -99,7 +101,7 @@ const SignupPage: React.FC = () => {
       <div className={styles.signupLayout}>
         <div className={styles.signupContainer}>
           <div className={styles.signupHeader}>
-            <img src="/logo.svg" alt="CoogMusic" className={styles.logo} />
+            <img src={logo} alt="CoogMusic" className={styles.logo} />
             <div className={styles.signupHeaderBottom}>
               <span className={styles.title}>Join CoogMusic</span>
               <span className={styles.subtitle}>
@@ -109,103 +111,47 @@ const SignupPage: React.FC = () => {
           </div>
 
           <form className={styles.signupForm} onSubmit={handleSubmit}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="username" className={styles.formLabel}>
-                Username
-              </label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-                className={classNames(styles.input, {
-                  [styles.inputError]: !!validationErrors.username,
-                })}
-                placeholder="Choose a username"
-                disabled={isSubmitting}
-              />
-              {validationErrors.username && (
-                <span className={styles.inputErrorText}>
-                  {validationErrors.username}
-                </span>
-              )}
-            </div>
-
-            <div className={styles.inputGroup}>
-              <label htmlFor="email" className={styles.formLabel}>
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className={classNames(styles.input, {
-                  [styles.inputError]: !!validationErrors.email,
-                })}
-                placeholder="Enter your email"
-                disabled={isSubmitting}
-              />
-              {validationErrors.email && (
-                <span className={styles.inputErrorText}>
-                  {validationErrors.email}
-                </span>
-              )}
-            </div>
-
-            <div className={styles.inputGroup}>
-              <label htmlFor="password" className={styles.formLabel}>
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className={classNames(styles.input, {
-                  [styles.inputError]: !!validationErrors.password,
-                })}
-                placeholder="Create a password"
-                disabled={isSubmitting}
-              />
-              {validationErrors.password && (
-                <span className={styles.inputErrorText}>
-                  {validationErrors.password}
-                </span>
-              )}
-              <div className={styles.passwordHint}>
-                <span className={styles.hintText}>
-                  8+ characters with uppercase, lowercase, number, and special
-                  character (@$!%*?&)
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.inputGroup}>
-              <label htmlFor="confirmPassword" className={styles.formLabel}>
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={confirmPassword}
-                onChange={handleInputChange}
-                className={classNames(styles.input, {
-                  [styles.inputError]: !!validationErrors.confirmPassword,
-                })}
-                placeholder="Confirm your password"
-                disabled={isSubmitting}
-              />
-              {validationErrors.confirmPassword && (
-                <span className={styles.inputErrorText}>
-                  {validationErrors.confirmPassword}
-                </span>
-              )}
-            </div>
+            <InputGroup
+              label="Username"
+              type="text"
+              id="username"
+              value={formData.username}
+              onChange={handleInputChange}
+              placeholder="Choose a username"
+              error={validationErrors.username}
+              disabled={isSubmitting}
+            />
+            <InputGroup
+              label="Email"
+              type="email"
+              id="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Enter your email"
+              error={validationErrors.email}
+              disabled={isSubmitting}
+            />
+            <InputGroup
+              label="Password"
+              type="password"
+              id="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              placeholder="Create a password"
+              error={validationErrors.password}
+              disabled={isSubmitting}
+              hint="8+ characters with uppercase, lowercase, number, and special character (@$!%*?&)"
+            />
+            <InputGroup
+              label="Confirm Password"
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={handleInputChange}
+              placeholder="Confirm your password"
+              error={validationErrors.confirmPassword}
+              disabled={isSubmitting}
+            />
 
             {error && (
               <div className={styles.serverError}>
@@ -213,17 +159,10 @@ const SignupPage: React.FC = () => {
               </div>
             )}
 
-            <button
-              type="submit"
-              className={styles.submitButton}
+            <FormSubmitButton
+              text={isSubmitting ? "Signing Up..." : "Sign Up"}
               disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <span>Creating Account...</span>
-              ) : (
-                <span>Create Account</span>
-              )}
-            </button>
+            />
           </form>
 
           <div className={styles.signupFooter}>

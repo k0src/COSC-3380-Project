@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts";
-import type { LoginData } from "../../types";
-import { validateLoginForm, type ValidationErrors } from "../../validators";
+
+import { useAuth } from "@contexts";
+import type { LoginData } from "@types";
+import { validateLoginForm, type ValidationErrors } from "@validators";
+import { InputGroup, FormSubmitButton, PageLoader } from "@components";
+
 import styles from "./LoginPage.module.css";
-import { PageLoader } from "../../components";
-import classNames from "classnames";
+import logo from "@assets/logo.svg";
 
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState<LoginData>({
@@ -89,7 +91,7 @@ const LoginPage: React.FC = () => {
       <div className={styles.loginLayout}>
         <div className={styles.loginContainer}>
           <div className={styles.loginHeader}>
-            <img src="/logo.svg" alt="CoogMusic" className={styles.logo} />
+            <img src={logo} alt="CoogMusic" className={styles.logo} />
             <div className={styles.loginHeaderBottom}>
               <span className={styles.title}>Welcome Back</span>
               <span className={styles.subtitle}>
@@ -99,51 +101,27 @@ const LoginPage: React.FC = () => {
           </div>
 
           <form className={styles.loginForm} onSubmit={handleSubmit}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="email" className={styles.formLabel}>
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className={classNames(styles.input, {
-                  [styles.inputError]: !!validationErrors.email,
-                })}
-                placeholder="Enter your email"
-                disabled={isSubmitting}
-              />
-              {validationErrors.email && (
-                <span className={styles.inputErrorText}>
-                  {validationErrors.email}
-                </span>
-              )}
-            </div>
-
-            <div className={styles.inputGroup}>
-              <label htmlFor="password" className={styles.formLabel}>
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className={classNames(styles.input, {
-                  [styles.inputError]: !!validationErrors.password,
-                })}
-                placeholder="Enter your password"
-                disabled={isSubmitting}
-              />
-              {validationErrors.password && (
-                <span className={styles.inputErrorText}>
-                  {validationErrors.password}
-                </span>
-              )}
-            </div>
+            <InputGroup
+              label="Email"
+              type="email"
+              id="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              name="email"
+              placeholder="Enter your email"
+              error={validationErrors.email}
+              disabled={isSubmitting}
+            />
+            <InputGroup
+              label="Password"
+              type="password"
+              id="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              placeholder="Enter your password"
+              error={validationErrors.password}
+              disabled={isSubmitting}
+            />
 
             {error && (
               <div className={styles.serverError}>
@@ -151,13 +129,10 @@ const LoginPage: React.FC = () => {
               </div>
             )}
 
-            <button
-              type="submit"
-              className={styles.submitButton}
+            <FormSubmitButton
+              text={isSubmitting ? "Signing In..." : "Sign In"}
               disabled={isSubmitting}
-            >
-              {isSubmitting ? <span>Signing In...</span> : <span>Sign In</span>}
-            </button>
+            />
           </form>
 
           <div className={styles.loginFooter}>

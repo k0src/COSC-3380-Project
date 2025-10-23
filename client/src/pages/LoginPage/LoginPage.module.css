@@ -55,56 +55,9 @@
   gap: var(--spacing-md);
 }
 
-.inputGroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.formLabel {
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-text-gray);
-  padding-left: var(--spacing-2xs);
-}
-
-.input {
-  font-family: "Inter", sans-serif;
-  padding: 1.2rem;
-  background-color: var(--color-panel-gray-dark);
-  border: 2px solid var(--color-panel-border);
-  border-radius: var(--border-radius-sm);
-  color: var(--color-white);
-  font-size: var(--font-size-sm);
-  width: 100%;
-}
-
-.input:focus {
-  outline: none;
-}
-
-.input::placeholder {
-  color: var(--color-text-gray);
-}
-
-.input:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.inputError {
-  border-color: var(--color-red);
-}
-
 .errorText {
   font-size: var(--font-size-xs);
   color: var(--color-red);
-}
-
-.inputErrorText {
-  font-size: var(--font-size-xs);
-  color: var(--color-red);
-  padding-left: var(--spacing-2xs);
 }
 
 .serverError {
@@ -114,32 +67,6 @@
   background-color: #d531311a;
   border: 1px solid var(--color-red);
   border-radius: var(--border-radius-md);
-}
-
-.submitButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
-  background-color: var(--color-red);
-  color: var(--color-white);
-  border: none;
-  border-radius: var(--border-radius-md);
-  font-family: "Inter", sans-serif;
-  font-size: var(--font-size-md);
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color var(--transition-speed) ease-in-out;
-}
-
-.submitButton:hover:not(:disabled) {
-  background-color: var(--color-red-700);
-}
-
-.submitButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .loginFooter {

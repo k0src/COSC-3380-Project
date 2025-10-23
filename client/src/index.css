@@ -6,7 +6,7 @@
   box-sizing: border-box;
 }
 
-/* 1rem = 10px */
+/* 1rem = 9.6px */
 html {
   scroll-behavior: smooth;
   font-size: 60%;

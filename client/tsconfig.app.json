@@ -7,6 +7,26 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
+    /* Path mapping */
+    "baseUrl": "./src",
+    "paths": {
+      "@api": ["api/index"],
+      "@api/*": ["api/*"],
+      "@components": ["components/index"],
+      "@components/*": ["components/*"],
+      "@contexts": ["contexts/index"],
+      "@contexts/*": ["contexts/*"],
+      "@hooks": ["hooks/index"],
+      "@hooks/*": ["hooks/*"],
+      "@pages": ["pages/index"],
+      "@pages/*": ["pages/*"],
+      "@types": ["types/index"],
+      "@types/*": ["types/*"],
+      "@validators": ["validators/index"],
+      "@validators/*": ["validators/*"],
+      "@assets/*": ["assets/*"]
+    },
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
