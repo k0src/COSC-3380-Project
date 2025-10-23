@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./SongCard.module.css";
+import { Play } from "lucide-react";
 
 export interface SongCardProps {
   image: string;
@@ -25,8 +26,7 @@ const SongCard: React.FC<SongCardProps> = ({
       <div className={styles.imageContainer}>
         <img src={image} alt={title} className={styles.songImage} />
         <div className={styles.overlay}>
-          <button className={styles.playButton}>
-          </button>
+          <Play size={48} />
         </div>
       </div>
 
