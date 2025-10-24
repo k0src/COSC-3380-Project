@@ -65,6 +65,10 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Custom hook to access the AuthContext
+ * @throws Will throw an error if used outside of AuthProvider
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -77,6 +81,11 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/**
+ * AuthProvider component to wrap the app and provide authentication context
+ * @param children The child components that will have access to the AuthContext
+ * @returns
+ */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 

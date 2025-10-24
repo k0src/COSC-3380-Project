@@ -9,6 +9,13 @@ interface UseStreamTrackingParams {
   onStream: (songId: string) => void;
 }
 
+/**
+ * Hook to track if a song has been streamed in the current session (24h).
+ * @param param.songId - The ID of the song to track.
+ * @param param.wavesurferRef - Ref to the WaveSurfer instance.
+ * @param param.onStream - Callback to invoke when the song is streamed.
+ * @returns
+ */
 export const useStreamTracking = ({
   songId,
   wavesurferRef,

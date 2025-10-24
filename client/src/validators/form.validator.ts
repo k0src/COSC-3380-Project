@@ -14,6 +14,11 @@ export interface SignupFormData {
   confirmPassword: string;
 }
 
+/**
+ * Validates an email address by making sure it is not empty and follows a basic email pattern.
+ * @param email The email address to validate.
+ * @returns A string error message if validation fails, otherwise undefined.
+ */
 export const validateEmail = (email: string): string | undefined => {
   if (!email) {
     return "Email is required";
@@ -24,6 +29,11 @@ export const validateEmail = (email: string): string | undefined => {
   return undefined;
 };
 
+/**
+ * Validates a password by checking for length and character requirements.
+ * @param password The password to validate.
+ * @returns A string error message if validation fails, otherwise undefined.
+ */
 export const validatePassword = (password: string): string | undefined => {
   if (!password) {
     return "Password is required";
@@ -44,6 +54,10 @@ export const validatePassword = (password: string): string | undefined => {
   return undefined;
 };
 
+/**
+ * Validates a username by checking for length requirements.
+ * @param username The username to validate.
+ */
 export const validateUsername = (username: string): string | undefined => {
   if (!username) {
     return "Username is required";
@@ -57,6 +71,12 @@ export const validateUsername = (username: string): string | undefined => {
   return undefined;
 };
 
+/**
+ * Validates that the confirmation password matches the original password.
+ * @param password The original password
+ * @param confirmPassword The confirmation password to validate
+ * @returns A string error message if validation fails, otherwise undefined.
+ */
 export const validateConfirmPassword = (
   password: string,
   confirmPassword: string
@@ -70,6 +90,11 @@ export const validateConfirmPassword = (
   return undefined;
 };
 
+/**
+ * Validates the login form data.
+ * @param formData The login form data to validate.
+ * @returns An object containing validation errors, if any.
+ */
 export const validateLoginForm = (
   formData: LoginFormData
 ): ValidationErrors => {
@@ -85,6 +110,11 @@ export const validateLoginForm = (
   return errors;
 };
 
+/**
+ * Validates the signup form data.
+ * @param formData The signup form data to validate.
+ * @returns An object containing validation errors, if any.
+ */
 export const validateSignupForm = (
   formData: SignupFormData
 ): ValidationErrors => {

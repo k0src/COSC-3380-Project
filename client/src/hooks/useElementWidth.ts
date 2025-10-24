@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 
+/**
+ * Hook to get the width of an element.
+ * @param ref React ref object pointing to the target HTMLDivElement
+ * @returns The width of the element in pixels
+ */
 export function useElementWidth(ref: React.RefObject<HTMLDivElement | null>) {
   const [width, setWidth] = useState(0);
   useEffect(() => {
