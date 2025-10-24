@@ -53,35 +53,7 @@ import { useStreamTracking } from "../../hooks";
 import musicPlaceholder from "../../../assets/music-placeholder.png";
 import { useAuth } from "../../contexts/AuthContext.js";
 import { WaveformPlayer } from "@components";
-
-const formatDate = (dateString: string): string => dateString.split("T")[0];
-
-const formatRelativeDate = (dateString: string): string => {
-  const now = new Date();
-  const date = new Date(dateString);
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (seconds < 60) return "Just now";
-
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60)
-    return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
-
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} ${days === 1 ? "day" : "days"} ago`;
-
-  const weeks = Math.floor(days / 7);
-  if (weeks < 4) return `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`;
-
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} ${months === 1 ? "month" : "months"} ago`;
-
-  const years = Math.floor(days / 365);
-  return `${years} ${years === 1 ? "year" : "years"} ago`;
-};
+import { formatRelativeDate, formatDateString } from "@util";
 
 const DUMMY_PLAYS = [
   2, 4, 5, 10, 21, 24, 19, 28, 40, 48, 55, 60, 62, 61, 61, 60, 59, 60, 67, 34,
@@ -488,7 +460,7 @@ const SongPage: React.FC = () => {
                   <div className={styles.detailWrapper}>
                     <LuCalendar className={styles.detailIcon} />
                     <span className={styles.detailName}>
-                      {formatDate(song.release_date)}
+                      {formatDateString(song.release_date)}
                     </span>
                   </div>
                 </div>
@@ -678,7 +650,7 @@ const SongPage: React.FC = () => {
                             {album.title}
                           </Link>
                           <span className={styles.suggestionSubtitle}>
-                            {formatDate(album.release_date)}
+                            {formatDateString(album.release_date)}
                           </span>
                         </div>
                       </div>
@@ -720,7 +692,7 @@ const SongPage: React.FC = () => {
                               {songItem.title}
                             </Link>
                             <span className={styles.suggestionSubtitle}>
-                              {formatDate(songItem.release_date)}
+                              {formatDateString(songItem.release_date)}
                             </span>
                           </div>
                         </div>
@@ -755,7 +727,7 @@ const SongPage: React.FC = () => {
                             {songItem.title}
                           </Link>
                           <span className={styles.suggestionSubtitle}>
-                            {formatDate(songItem.release_date)}
+                            {formatDateString(songItem.release_date)}
                           </span>
                         </div>
                       </div>
