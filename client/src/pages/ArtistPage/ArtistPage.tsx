@@ -1,10 +1,11 @@
 import React from "react";
+import { Helmet } from "react-helmet-async";
 import styles from './ArtistPage.module.css'
 import Sidebar from "../../components/SideBar/sidebar";
 import Topbar from "../../components/TopBar/topBar";
 import PlayerBar from "../../components/PlayerBar/playerBar";
-import ArtistBanner from "./sections/ArtistBanner";
-import ArtistBio from "./sections/ArtistBio";
+import ArtistBanner from '../../components/ArtistBanner/ArtistBanner';
+import ArtistBio from '../../components/ArtistBio/ArtistBio'
 import SongCard from "../../components/SongCard/SongCard";
 import ArtistCard from "../../components/ArtistCard/ArtistCard";
 
@@ -53,6 +54,9 @@ const ArtistPage: React.FC = () => {
 
   return (
     <>
+    <Helmet>
+      DRAKE
+    </Helmet>
       <Topbar />
       <Sidebar />
       

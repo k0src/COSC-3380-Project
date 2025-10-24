@@ -160,31 +160,14 @@ ArtistPage custom CSS - Will fix later*/
   margin: 0 auto;
 }
 
-.bioContent{
+/* .bioContent{
   font-size: 16px;
   margin: 12px;
 }
 
 .bioHeader{
   margin: 12px;
-}
-
-.bannerSection {
-  height: 100%;
-  width: 100%;
-  min-height: 30vh;
-  max-height: 40vh;
-  padding: 1em;
-  background: linear-gradient(90deg, #ff3b30 0%, #ff6a4a 100%);
-  border-radius: 8px;
-  display: grid;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  grid-template-columns: 30% 70%;
-
-
-}
+} */
 
 .artistStats{
   background: rgba(255, 255, 255, 0.05);
@@ -196,31 +179,31 @@ ArtistPage custom CSS - Will fix later*/
   gap: 40px;
   margin-bottom: 16px;
 }
-
+/* 
 .artistName{
   font-size: 10em;
 }
 
 .locationName{
   font-size: 3em;
-}
+} */
 
 .artistInfo{
   display: grid;
   grid-template-columns: 50% 50%;
 }
 
-.interHeading1 {
+/* .interHeading1 {
   font-family: "Inter", sans-serif;
   font-optical-sizing: auto;
-  font-weight: 800; /*Extra Bold for Important Titles*/
+  font-weight: 800;
   font-style: normal;
 }
 
 .interHeading2 {
   font-family: "Inter", sans-serif;
   font-optical-sizing: auto;
-  font-weight: 500; /*Medium for subheadings ig*/
+  font-weight: 500;
   font-style: normal;
 }
 
@@ -231,18 +214,18 @@ ArtistPage custom CSS - Will fix later*/
   font-style: normal;
   font-variation-settings:
     "wdth" 100;
-}
+} */
 
-.artistPFPDiv{
+/* .artistPFPDiv{
   width: fit-content;
   display: flex ;
   justify-content: center;
-}
+} */
 
-.artistPFP{
+/* .artistPFP{
   max-width: 50%;
   clip-path: circle();
-}
+} */
 
 .horizontalCardList {
   display: flex;

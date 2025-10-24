@@ -33,12 +33,12 @@ const TestPage: React.FC = () => {
       <Helmet>
         <title>Test Page</title>
       </Helmet>
- 
+
       <main className={styles.main}>
         <header className={styles.header}>
           <h1 className={styles.headingPrimary}>Test Page</h1>
         </header>
-        
+
         <div className={styles.testContainer}>
           <button className={styles.testButton} onClick={fetchData}>
             <span className={styles.testText}>Fetch Song</span>
@@ -51,7 +51,7 @@ const TestPage: React.FC = () => {
             {song && (
               <div className={styles.songDetails}>
                 <img
-                  src={song.image_url}
+                  src={song.image_url || undefined}
                   alt={song.title}
                   className={styles.songImage}
                 />
@@ -63,7 +63,7 @@ const TestPage: React.FC = () => {
                 <span className={styles.songInfoText}>ID: {song.id}</span>
                 <span className={styles.songInfoText}>Title: {song.title}</span>
                 <span className={styles.songInfoText}>
-                  Release Year: {song.release_year}
+                  Release Date: {song.release_date}
                 </span>
                 <span className={styles.songInfoText}>
                   Image URL: {song.image_url}

@@ -1,0 +1,72 @@
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--color-panel-gray);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--spacing-lg) 0;
+  border: 2px solid var(--color-panel-border);
+  z-index: 100;
+}
+
+.sidebarTop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.sidebarLogo {
+  display: flex;
+  justify-content: center;
+}
+
+.logoImage {
+  width: var(--icon-size-xl);
+  height: var(--icon-size-xl);
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.sidebarLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-gray) !important;
+  border-radius: var(--border-radius-md);
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.sidebarLink:hover {
+  color: var(--color-white) !important;
+}
+
+.sidebarIcon {
+  font-size: var(--icon-size-md);
+}
+
+.logoutButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-gray) !important;
+  border-radius: var(--border-radius-md);
+  transition: color var(--transition-speed) ease-in-out;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.logoutButton:hover {
+  color: var(--color-white) !important;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}

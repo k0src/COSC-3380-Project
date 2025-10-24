@@ -1,5 +1,5 @@
 import React from "react";
-import styles from '../ArtistPage.module.css'
+import styles from './ArtistBio.module.css'
 
 interface artistBioProps{
     bio: string;

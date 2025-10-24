@@ -1,5 +1,5 @@
 import React from "react";
-import styles from '../ArtistPage.module.css'
+import styles from './ArtistBanner.module.css'
 
 interface ArtistBannerProps {
     artistName: string;
