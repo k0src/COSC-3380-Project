@@ -6,6 +6,8 @@ import type { Song } from "../../types";
 import styles from "./TestPage.module.css";
 import { FaDatabase } from "react-icons/fa";
 
+import AudioManagerTest from "@components/AudioManagerTest/AudioManagerTest.js";
+
 const TestPage: React.FC = () => {
   const [song, setSong] = useState<Song | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -78,6 +80,7 @@ const TestPage: React.FC = () => {
             )}
           </div>
         </div>
+        <AudioManagerTest />
       </main>
     </>
   );
