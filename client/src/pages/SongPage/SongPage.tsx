@@ -52,6 +52,7 @@ import userPlaceholder from "@assets/user-placeholder.png";
 import { useStreamTracking } from "../../hooks";
 import musicPlaceholder from "../../../assets/music-placeholder.png";
 import { useAuth } from "../../contexts/AuthContext.js";
+import { WaveformPlayer } from "@components";
 
 const formatDate = (dateString: string): string => dateString.split("T")[0];
 
@@ -208,97 +209,15 @@ const SongPage: React.FC = () => {
     return { mainArtist: main, otherArtists: others };
   }, [song]);
 
-  const [wavesurfer, setWavesurfer] = useState<{
-    playPause: () => void;
-  } | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  interface OnReadyEvent {
-    playPause: () => void;
-  }
-
-  const onReady = (ws: OnReadyEvent): void => {
-    setWavesurfer(ws);
-    setIsPlaying(false);
-  };
-
-  const togglePlay = () => {
-    if (wavesurfer) wavesurfer.playPause();
-  };
-
-  const waveformRef = useRef<HTMLDivElement>(null);
-  const wavesurferRef = useRef<WaveSurfer | null>(null);
-
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (
-        e.code === "Space" &&
-        e.target instanceof HTMLElement &&
-        !["INPUT", "TEXTAREA"].includes(e.target.tagName)
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        togglePlay();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress, { capture: true });
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress, { capture: true });
-    };
-  }, [wavesurferRef.current]);
-
-  useEffect(() => {
-    if (!waveformRef.current || !song.audio_url) return;
-    const ws = WaveSurfer.create({
-      container: waveformRef.current,
-      height: 80,
-      waveColor: "#F6F6F6",
-      progressColor: "#d53131",
-      barWidth: 3,
-      barRadius: 6,
-      barGap: 5,
-      normalize: true,
-      backend: "MediaElement",
-      sampleRate: 44100,
-      url: song.audio_url,
-      autoplay: false,
-      plugins: [
-        Hover.create({
-          lineColor: "#B22323",
-          lineWidth: 2,
-          labelBackground: "#B22323",
-          labelColor: "#F6F6F6",
-          labelSize: "11px",
-        }),
-      ],
-    });
-
-    ws.on("ready", () => {
-      onReady(ws);
-      setIsPlaying(false);
-    });
-
-    ws.on("play", () => setIsPlaying(true));
-    ws.on("pause", () => setIsPlaying(false));
-
-    wavesurferRef.current = ws;
-
-    return () => {
-      ws.destroy();
-    };
-  }, [song?.audio_url]);
-
-  useStreamTracking({
-    songId: id,
-    wavesurferRef,
-    onStream: (songId) => {
-      if (isAuthenticated) {
-        songApi.incrementSongStreams(songId);
-      }
-    },
-  });
+  // useStreamTracking({
+  //   songId: id,
+  //   wavesurferRef,
+  //   onStream: (songId) => {
+  //     if (isAuthenticated) {
+  //       songApi.incrementSongStreams(songId);
+  //     }
+  //   },
+  // });
 
   const handleToggleSongLike = async () => {
     try {
@@ -529,20 +448,10 @@ const SongPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className={styles.playerContainer}>
-                  <button
-                    onClick={togglePlay}
-                    className={classNames(styles.playerPlayBtn, {
-                      [styles.playerPlayBtnActive]: isPlaying,
-                    })}
-                  >
-                    {isPlaying ? <LuCirclePause /> : <LuCirclePlay />}
-                  </button>
-                  <div
-                    ref={waveformRef}
-                    className={styles.playerWaveform}
-                  ></div>
-                </div>
+                <WaveformPlayer
+                  audioSrc={song.audio_url}
+                  captureKeyboard={true}
+                />
               </div>
             </div>
             <div className={styles.songLayoutTopRight}>

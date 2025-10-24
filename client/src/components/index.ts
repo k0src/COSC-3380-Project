@@ -7,3 +7,4 @@ export { default as MainLayoutHeader } from "./MainLayout/MainLayoutHeader/MainL
 export { default as MainLayoutSidebar } from "./MainLayout/MainLayoutSidebar/MainLayoutSidebar.js";
 export { default as MainLayoutSearchBar } from "./MainLayout/MainLayoutSearchBar/MainLayoutSearchBar.js";
 export { default as MainLayoutNowPlayingBar } from "./MainLayout/MainLayoutNowPlayingBar/MainLayoutNowPlayingBar.js";
+export { default as WaveformPlayer } from "./SongPage/WaveformPlayer/WaveformPlayer.js";

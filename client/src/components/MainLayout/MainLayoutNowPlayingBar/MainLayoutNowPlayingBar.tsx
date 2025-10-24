@@ -1,6 +1,7 @@
 import React, { useState, memo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
+import { formatPlaybackTime } from "@util";
 import classNames from "classnames";
 import styles from "./MainLayoutNowPlayingBar.module.css";
 import {
@@ -29,12 +30,6 @@ const NowPlayingBar: React.FC = () => {
   // const { user, isAuthenticated } = useAuth();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
 
   const handleToggleLike = useCallback(async () => {
     try {
@@ -132,7 +127,9 @@ const NowPlayingBar: React.FC = () => {
           </button>
         </div>
         <div className={styles.progressContainer}>
-          <span className={styles.timeLabel}>{formatTime(currentTime)}</span>
+          <span className={styles.timeLabel}>
+            {formatPlaybackTime(currentTime)}
+          </span>
           <div className={styles.progressBar}>
             <div
               className={styles.progressFill}
@@ -148,7 +145,9 @@ const NowPlayingBar: React.FC = () => {
               aria-label="Seek position"
             />
           </div>
-          <span className={styles.timeLabel}>{formatTime(duration)}</span>
+          <span className={styles.timeLabel}>
+            {formatPlaybackTime(duration)}
+          </span>
         </div>
       </div>
 

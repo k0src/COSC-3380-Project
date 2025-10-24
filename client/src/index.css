@@ -6,10 +6,10 @@
   box-sizing: border-box;
 }
 
-/* 1rem = 9.6px */
+/* 1rem = 16 * 0.59375 = 9.5px */
 html {
   scroll-behavior: smooth;
-  font-size: 60%;
+  font-size: 56.25%;
   overflow-x: hidden;
 }
 
