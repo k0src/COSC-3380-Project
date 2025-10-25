@@ -42,6 +42,9 @@ export interface AudioQueueActions {
   clearQueue: (preserveQueued?: boolean) => void;
   replaceQueue: (songs: Song[], preserveQueued?: boolean) => void;
   stop: () => void;
+  removeFromQueue: (itemId: string) => void;
+  shuffleQueue: () => void;
+  moveQueueItem: (fromIndex: number, toIndex: number) => void;
 }
 
 /**
@@ -79,6 +82,9 @@ export type QueueOperation =
   | { type: "REPLACE_QUEUE"; songs: Song[]; preserveQueued?: boolean }
   | { type: "NEXT_SONG" }
   | { type: "PREVIOUS_SONG" }
+  | { type: "REMOVE_ITEM"; itemId: string }
+  | { type: "SHUFFLE_QUEUE" }
+  | { type: "MOVE_QUEUE_ITEM"; fromIndex: number; toIndex: number }
   | { type: "SET_PLAYING"; isPlaying: boolean }
   | { type: "SET_PROGRESS"; progress: number }
   | { type: "SET_DURATION"; duration: number }

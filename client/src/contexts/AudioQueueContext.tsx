@@ -238,6 +238,118 @@ function audioQueueReducer(
       };
     }
 
+    case "REMOVE_ITEM": {
+      const newQueue = state.queue.filter((item) => item.id !== action.itemId);
+
+      if (newQueue.length === 0) {
+        return {
+          ...state,
+          queue: [],
+          currentIndex: -1,
+          currentSong: null,
+          isPlaying: false,
+          progress: 0,
+        };
+      }
+
+      const removedIndex = state.queue.findIndex(
+        (item) => item.id === action.itemId
+      );
+
+      if (removedIndex === -1) {
+        return state;
+      }
+
+      let newCurrentIndex = state.currentIndex;
+      let newCurrentSong = state.currentSong;
+
+      if (removedIndex === state.currentIndex) {
+        if (newCurrentIndex >= newQueue.length) {
+          newCurrentIndex = newQueue.length - 1;
+        }
+        newCurrentSong = newQueue[newCurrentIndex]?.song || null;
+      } else if (removedIndex < state.currentIndex) {
+        newCurrentIndex = state.currentIndex - 1;
+      }
+
+      return {
+        ...state,
+        queue: newQueue,
+        currentIndex: newCurrentIndex,
+        currentSong: newCurrentSong,
+        progress: newCurrentSong === state.currentSong ? state.progress : 0,
+      };
+    }
+
+    case "SHUFFLE_QUEUE": {
+      if (state.queue.length <= 1) {
+        return state;
+      }
+
+      const currentItem = state.queue[state.currentIndex];
+      const otherItems = state.queue.filter(
+        (_, index) => index !== state.currentIndex
+      );
+
+      const shuffledOthers = [...otherItems];
+      for (let i = shuffledOthers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledOthers[i], shuffledOthers[j]] = [
+          shuffledOthers[j],
+          shuffledOthers[i],
+        ];
+      }
+
+      const shuffledQueue = currentItem
+        ? [currentItem, ...shuffledOthers]
+        : shuffledOthers;
+
+      return {
+        ...state,
+        queue: shuffledQueue,
+        currentIndex: currentItem ? 0 : -1,
+      };
+    }
+
+    case "MOVE_QUEUE_ITEM": {
+      const { fromIndex, toIndex } = action;
+
+      if (
+        fromIndex === toIndex ||
+        fromIndex < 0 ||
+        fromIndex >= state.queue.length ||
+        toIndex < 0 ||
+        toIndex >= state.queue.length
+      ) {
+        return state;
+      }
+
+      const newQueue = [...state.queue];
+      const [movedItem] = newQueue.splice(fromIndex, 1);
+      newQueue.splice(toIndex, 0, movedItem);
+
+      let newCurrentIndex = state.currentIndex;
+      if (fromIndex === state.currentIndex) {
+        newCurrentIndex = toIndex;
+      } else if (
+        fromIndex < state.currentIndex &&
+        toIndex >= state.currentIndex
+      ) {
+        newCurrentIndex = state.currentIndex - 1;
+      } else if (
+        fromIndex > state.currentIndex &&
+        toIndex <= state.currentIndex
+      ) {
+        newCurrentIndex = state.currentIndex + 1;
+      }
+
+      return {
+        ...state,
+        queue: newQueue,
+        currentIndex: newCurrentIndex,
+      };
+    }
+
     case "SET_PLAYING":
       return { ...state, isPlaying: action.isPlaying };
 
@@ -345,10 +457,18 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
     },
 
     queueNext: (song: Song) => {
+      if (!song || !song.id) {
+        console.warn("Invalid song provided to queueNext");
+        return;
+      }
       dispatch({ type: "QUEUE_NEXT", song });
     },
 
     queueLast: (song: Song) => {
+      if (!song || !song.id) {
+        console.warn("Invalid song provided to queueLast");
+        return;
+      }
       dispatch({ type: "QUEUE_LAST", song });
     },
 
@@ -357,12 +477,44 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
     },
 
     replaceQueue: (songs: Song[], preserveQueued?: boolean) => {
-      dispatch({ type: "REPLACE_QUEUE", songs, preserveQueued });
+      if (!Array.isArray(songs)) {
+        console.warn("Invalid songs array provided to replaceQueue");
+        return;
+      }
+      const validSongs = songs.filter(
+        (song) => song && song.id && song.audio_url
+      );
+      if (validSongs.length !== songs.length) {
+        console.warn(
+          `Filtered out ${songs.length - validSongs.length} invalid songs`
+        );
+      }
+      dispatch({ type: "REPLACE_QUEUE", songs: validSongs, preserveQueued });
     },
 
     stop: () => {
       audioManager.stop();
       dispatch({ type: "CLEAR_QUEUE", preserveQueued: false });
+    },
+
+    removeFromQueue: (itemId: string) => {
+      if (!itemId) {
+        console.warn("Invalid itemId provided to removeFromQueue");
+        return;
+      }
+      dispatch({ type: "REMOVE_ITEM", itemId });
+    },
+
+    shuffleQueue: () => {
+      dispatch({ type: "SHUFFLE_QUEUE" });
+    },
+
+    moveQueueItem: (fromIndex: number, toIndex: number) => {
+      if (fromIndex < 0 || toIndex < 0) {
+        console.warn("Invalid indices provided to moveQueueItem");
+        return;
+      }
+      dispatch({ type: "MOVE_QUEUE_ITEM", fromIndex, toIndex });
     },
   };
 
