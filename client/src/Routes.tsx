@@ -1,13 +1,22 @@
 import { Routes, Route } from "react-router-dom";
 import * as Pages from "./pages";
 import { MainLayout } from "@components";
+import { AudioQueueProvider } from "@contexts";
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Pages.LoginPage />} />
       <Route path="/signup" element={<Pages.SignupPage />} />
-      <Route path="/" element={<Pages.TestPage />} />
+
+      <Route
+        path="/"
+        element={
+          <AudioQueueProvider>
+            <Pages.TestPage />
+          </AudioQueueProvider>
+        }
+      />
       <Route
         path="/songs/:id"
         element={

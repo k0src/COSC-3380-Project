@@ -22,6 +22,8 @@ export interface AudioState {
   volume: number;
   isLoading: boolean;
   error: string | null;
+  hasNextSong?: boolean;
+  hasPreviousSong?: boolean;
 }
 
 /**

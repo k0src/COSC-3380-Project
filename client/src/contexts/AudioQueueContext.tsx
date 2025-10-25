@@ -107,13 +107,7 @@ function audioQueueReducer(
       const nextIndex = getNextIndex(state.currentIndex, state.queue.length);
 
       if (nextIndex === null) {
-        return {
-          ...state,
-          isPlaying: false,
-          currentSong: null,
-          currentIndex: -1,
-          progress: 0,
-        };
+        return state;
       }
 
       const nextSong = getCurrentSong(state.queue, nextIndex);
@@ -267,7 +261,6 @@ function audioQueueReducer(
   }
 }
 
-// Provider component
 interface AudioQueueProviderProps {
   children: ReactNode;
 }
@@ -374,7 +367,12 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
   };
 
   const contextValue: AudioQueueContextType = {
-    state,
+    state: {
+      ...state,
+      hasNextSong:
+        getNextIndex(state.currentIndex, state.queue.length) !== null,
+      hasPreviousSong: getPreviousIndex(state.currentIndex) !== null,
+    },
     actions,
   };
 
