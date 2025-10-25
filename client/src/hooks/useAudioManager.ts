@@ -1,5 +1,15 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import type { Song } from "@types";
+import { AUDIO_CONSTANTS, AUDIO_QUEUE_STORAGE_KEYS } from "@constants";
+
+export interface AudioManagerActions {
+  play: (song: Song) => Promise<void>;
+  pause: () => void;
+  resume: () => void;
+  seek: (time: number) => void;
+  setVolume: (volume: number) => void;
+  stop: () => void;
+}
 
 export interface AudioManagerState {
   isPlaying: boolean;
@@ -11,22 +21,7 @@ export interface AudioManagerState {
   error: string | null;
 }
 
-export interface AudioManagerActions {
-  play: (song: Song) => Promise<void>;
-  pause: () => void;
-  resume: () => void;
-  seek: (time: number) => void;
-  setVolume: (volume: number) => void;
-  stop: () => void;
-}
-
 export interface AudioManager extends AudioManagerState, AudioManagerActions {}
-
-const STORAGE_KEYS = {
-  VOLUME: "audioManager_volume",
-  CURRENT_SONG: "audioManager_currentSong",
-  PROGRESS: "audioManager_progress",
-} as const;
 
 export function useAudioManager(): AudioManager {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -34,7 +29,7 @@ export function useAudioManager(): AudioManager {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.VOLUME);
+    const saved = localStorage.getItem(AUDIO_QUEUE_STORAGE_KEYS.VOLUME);
     return saved ? parseFloat(saved) : 1;
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -80,10 +75,13 @@ export function useAudioManager(): AudioManager {
 
         // Save progress to localStorage
         if (currentSong) {
-          localStorage.setItem(STORAGE_KEYS.PROGRESS, newProgress.toString());
+          localStorage.setItem(
+            AUDIO_QUEUE_STORAGE_KEYS.PROGRESS,
+            newProgress.toString()
+          );
         }
       }
-    }, 1000);
+    }, AUDIO_CONSTANTS.PROGRESS_UPDATE_INTERVAL);
   }, [currentSong]);
 
   const stopProgressTracking = useCallback(() => {
@@ -202,9 +200,12 @@ export function useAudioManager(): AudioManager {
           audio.src = song.audio_url;
 
           // Save current song to localStorage
-          localStorage.setItem(STORAGE_KEYS.CURRENT_SONG, JSON.stringify(song));
+          localStorage.setItem(
+            AUDIO_QUEUE_STORAGE_KEYS.CURRENT_SONG,
+            JSON.stringify(song)
+          );
           setProgress(0);
-          localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+          localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.PROGRESS);
         }
 
         const playPromise = audio.play();
@@ -254,7 +255,10 @@ export function useAudioManager(): AudioManager {
 
         // Save progress to localStorage
         if (currentSong) {
-          localStorage.setItem(STORAGE_KEYS.PROGRESS, clampedTime.toString());
+          localStorage.setItem(
+            AUDIO_QUEUE_STORAGE_KEYS.PROGRESS,
+            clampedTime.toString()
+          );
         }
       }
     },
@@ -271,7 +275,10 @@ export function useAudioManager(): AudioManager {
     }
 
     // Save volume to localStorage
-    localStorage.setItem(STORAGE_KEYS.VOLUME, clampedVolume.toString());
+    localStorage.setItem(
+      AUDIO_QUEUE_STORAGE_KEYS.VOLUME,
+      clampedVolume.toString()
+    );
   }, []);
 
   const stop = useCallback(() => {
@@ -283,15 +290,19 @@ export function useAudioManager(): AudioManager {
       setCurrentSong(null);
 
       // Clear localStorage
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_SONG);
-      localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+      localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.CURRENT_SONG);
+      localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.PROGRESS);
     }
   }, []);
 
   // Restore state on mount
   useEffect(() => {
-    const savedSong = localStorage.getItem(STORAGE_KEYS.CURRENT_SONG);
-    const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS);
+    const savedSong = localStorage.getItem(
+      AUDIO_QUEUE_STORAGE_KEYS.CURRENT_SONG
+    );
+    const savedProgress = localStorage.getItem(
+      AUDIO_QUEUE_STORAGE_KEYS.PROGRESS
+    );
 
     if (savedSong) {
       try {
@@ -310,8 +321,8 @@ export function useAudioManager(): AudioManager {
         }
       } catch (err) {
         console.warn("Failed to restore audio state:", err);
-        localStorage.removeItem(STORAGE_KEYS.CURRENT_SONG);
-        localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+        localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.CURRENT_SONG);
+        localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.PROGRESS);
       }
     }
   }, []);

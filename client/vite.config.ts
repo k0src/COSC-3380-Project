@@ -19,6 +19,7 @@ export default defineConfig({
       "@validators": path.resolve(__dirname, "./src/validators"),
       "@assets": path.resolve(__dirname, "./src/assets"),
       "@util": path.resolve(__dirname, "./src/util"),
+      "@constants": path.resolve(__dirname, "./src/constants"),
     },
   },
   server: {
