@@ -50,8 +50,8 @@ import {
 import { chartsAxisHighlightClasses } from "@mui/x-charts/ChartsAxisHighlight";
 import userPlaceholder from "@assets/user-placeholder.png";
 import { useStreamTracking } from "../../hooks";
-import musicPlaceholder from "../../../assets/music-placeholder.png";
-import { useAuth } from "../../contexts/AuthContext.js";
+import musicPlaceholder from "../../assets/music-placeholder.png";
+import { useAuth } from "../../contexts/AuthContent.js";
 
 const formatDate = (dateString: string): string => dateString.split("T")[0];
 

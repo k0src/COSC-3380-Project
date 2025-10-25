@@ -1,1 +1,1 @@
-export { AuthProvider, useAuth } from './AuthContent';
+export { AuthProvider, useAuth } from './AuthContent.js';

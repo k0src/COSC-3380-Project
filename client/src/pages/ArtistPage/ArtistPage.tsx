@@ -1,19 +1,73 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import type {
+  Song,
+  Artist,
+  Comment,
+  Album,
+  SongArtist,
+  UUID,
+  CoverGradient,
+  RGB,
+  ArtistSong,
+  SuggestedSong,
+} from "../../types";
 import styles from './ArtistPage.module.css'
-import Sidebar from "../../components/SideBar/sidebar";
-import Topbar from "../../components/TopBar/topBar";
-import PlayerBar from "../../components/PlayerBar/playerBar";
+// import Sidebar from "../../components/SideBar/sidebar";
+// import Topbar from "../../components/TopBar/topBar";
+// import PlayerBar from "../../components/PlayerBar/playerBar";
 import ArtistBanner from '../../components/ArtistBanner/ArtistBanner';
 import ArtistBio from '../../components/ArtistBio/ArtistBio'
 import SongCard from "../../components/SongCard/SongCard";
 import ArtistCard from "../../components/ArtistCard/ArtistCard";
+import { artistApi } from "@api/artist.api";
+import { useAsyncData } from "../../hooks";
+import { useAuth } from "../../contexts/AuthContent.js";
+import { songApi } from "../../api/song.api.js";
+
+
 
 const ArtistPage: React.FC = () => {
+    const { id } = useParams<{ id: UUID }>();
+    const { user, isAuthenticated } = useAuth();
+
+      if (!id) {
+    return <div>Invalid song ID</div>;
+  }
+    
+
+
+  const { data, loading, error } = useAsyncData(
+      {
+        artist: () =>
+          artistApi.getSongs(id, {
+            includeAlbum: true,
+            // includeArtist: true,
+            includeLikes: true,
+          }),
+        moreSongsByArtist: async () =>
+          artistApi.getSongs(
+            "84a51edc-a38f-4659-974b-405b3e40f432", // test - pass artist as prop
+            { limit: 5 }
+          ),
+        suggestedSongs: () =>
+          songApi.getSuggestedSongs(id, {
+            userId: isAuthenticated && user ? user.id : undefined,
+            limit: 5,
+          }),
+      },
+      [id],
+      { cacheKey: `song_${id}`, hasBlobUrl: true }
+    );
+  const artist = data?.artist;
+  const moreSongsByArtist = data?.moreSongsByArtist;
+  const suggestedSongs = data?.suggestedSongs;
+
   // Mock data
   const popularSongs = Array(10).fill({ // Renamed and shortened to Top 5
     title: "Song Title",
-    artist: "Drake",
+    artist: {artist},
     image: "/PlayerBar/Mask group.png",
     plays: Math.random()*100000,
     likes: Math.random()*1000,
@@ -26,12 +80,9 @@ const ArtistPage: React.FC = () => {
     { title: 'Views', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/a/af/Drake_-_Views_cover.jpg' , year: 2008},
     { title: 'Take Care', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/a/ae/Drake_-_Take_Care_cover.jpg' , year: 2008},
     { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
-        { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
-
-            { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
-
-                { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
-
+    { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
+    { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
+    { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
   ];
 
   const singles = Array(8).fill({ // Using your original 'newSongs' data
@@ -57,8 +108,8 @@ const ArtistPage: React.FC = () => {
     <Helmet>
       DRAKE
     </Helmet>
-      <Topbar />
-      <Sidebar />
+      {/* <Topbar />
+      <Sidebar /> */}
       
       <main className={styles.contentArea}>
         <div className={styles.contentWrapper}>
@@ -135,7 +186,7 @@ const ArtistPage: React.FC = () => {
         </div>
       </main>
 
-      <PlayerBar />
+      {/* <PlayerBar /> */}
     </>
   );
 };

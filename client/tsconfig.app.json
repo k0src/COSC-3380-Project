@@ -24,7 +24,9 @@
       "@types/*": ["types/*"],
       "@validators": ["validators/index"],
       "@validators/*": ["validators/*"],
-      "@assets/*": ["assets/*"]
+      "@assets/*": ["assets/*"],
+      "@util": ["util/index"],
+      "@util/*": ["util/*"]
     },
     
 
