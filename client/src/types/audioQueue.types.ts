@@ -54,12 +54,6 @@ export interface AudioQueueActions {
   saveState: () => void;
   clearPersistedState: () => void;
   restoreState: () => Promise<boolean>;
-  getStorageInfo: () => {
-    isAvailable: boolean;
-    hasPersistedState: boolean;
-    stateSize: number;
-    lastSaved: Date | null;
-  };
 }
 
 /**

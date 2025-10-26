@@ -1,6 +1,5 @@
-import type { AudioState, PersistedAudioState, QueueItem } from "@types";
+import type { AudioState, PersistedAudioState } from "@types";
 import { AUDIO_QUEUE_STORAGE_KEYS, QUEUE_CONSTRAINTS } from "@constants";
-import { songApi } from "@api";
 
 /**
  * Save audio queue state to localStorage
@@ -94,40 +93,6 @@ function isValidPersistedState(state: any): state is PersistedAudioState {
 }
 
 /**
- * Restore queue items from persisted state using the song API
- * @param persistedQueue The persisted queue items
- * @returns The restored queue items
- */
-export async function restoreQueueItems(
-  persistedQueue: PersistedAudioState["queue"]
-): Promise<QueueItem[]> {
-  const restoredItems: QueueItem[] = [];
-
-  try {
-    for (const persistedItem of persistedQueue) {
-      try {
-        const song = await songApi.getSongById(persistedItem.songId);
-        if (song) {
-          restoredItems.push({
-            song,
-            isQueued: persistedItem.isQueued,
-            queueId: `restored_${Date.now()}_${Math.random()
-              .toString(36)
-              .substring(2, 11)}`,
-          });
-        }
-      } catch (error) {
-        console.warn(`Failed to fetch song ${persistedItem.songId}:`, error);
-      }
-    }
-  } catch (error) {
-    console.error("Failed to restore queue:", error);
-  }
-
-  return restoredItems;
-}
-
-/**
  * Create a debounced save function to avoid excessive localStorage writes
  * @param delay The debounce delay in milliseconds
  * @returns The debounced save function
@@ -159,56 +124,5 @@ export function isLocalStorageAvailable(): boolean {
     return true;
   } catch {
     return false;
-  }
-}
-
-/**
- * Get storage usage information
- * @returns Storage info object
- */
-export function getStorageInfo(): {
-  isAvailable: boolean;
-  hasPersistedState: boolean;
-  stateSize: number;
-  lastSaved: Date | null;
-} {
-  const isAvailable = isLocalStorageAvailable();
-
-  if (!isAvailable) {
-    return {
-      isAvailable: false,
-      hasPersistedState: false,
-      stateSize: 0,
-      lastSaved: null,
-    };
-  }
-
-  try {
-    const saved = localStorage.getItem(AUDIO_QUEUE_STORAGE_KEYS.STATE);
-    const hasPersistedState = !!saved;
-    const stateSize = saved ? saved.length : 0;
-
-    let lastSaved: Date | null = null;
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.timestamp) {
-        lastSaved = new Date(parsed.timestamp);
-      }
-    }
-
-    return {
-      isAvailable: true,
-      hasPersistedState,
-      stateSize,
-      lastSaved,
-    };
-  } catch (error) {
-    console.warn("Failed to get storage info:", error);
-    return {
-      isAvailable: true,
-      hasPersistedState: false,
-      stateSize: 0,
-      lastSaved: null,
-    };
   }
 }

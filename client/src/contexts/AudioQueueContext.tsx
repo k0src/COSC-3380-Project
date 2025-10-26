@@ -27,11 +27,9 @@ import {
   loadAudioQueueState,
   createDebouncedSave,
   isLocalStorageAvailable,
-  getStorageInfo,
-  restoreQueueItems,
 } from "@util";
 import { songApi } from "@api";
-import { AUDIO_QUEUE_STORAGE_KEYS } from "../constants/audioQueue.constants.js";
+import { AUDIO_QUEUE_STORAGE_KEYS } from "@constants";
 
 const AudioQueueContext = createContext<AudioQueueContextType | null>(null);
 
@@ -772,9 +770,26 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
       }
 
       try {
-        const restoredItems: QueueItem[] = await restoreQueueItems(
-          persistedState.queue
-        );
+        const restoredItems: QueueItem[] = [];
+        for (const persistedItem of persistedState.queue) {
+          try {
+            const song = await songApi.getSongById(persistedItem.songId);
+            if (song) {
+              restoredItems.push({
+                song,
+                isQueued: persistedItem.isQueued,
+                queueId: `restored_${Date.now()}_${Math.random()
+                  .toString(36)
+                  .substring(2, 11)}`,
+              });
+            }
+          } catch (error) {
+            console.warn(
+              `Failed to fetch song ${persistedItem.songId}:`,
+              error
+            );
+          }
+        }
 
         if (restoredItems.length === 0) {
           return false;
@@ -806,10 +821,6 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
         console.error("Failed to restore state with songs:", error);
         return false;
       }
-    },
-
-    getStorageInfo: () => {
-      return getStorageInfo();
     },
   };
 
