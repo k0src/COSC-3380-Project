@@ -1,9 +1,11 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import helmet from "helmet";
 import path from "path";
 import dotenv from "dotenv";
 import { testConnection } from "config/database";
+import { generalRateLimit } from "./middleware/rateLimiting.middleware.js";
 
 import * as Routes from "@routes";
 
@@ -25,10 +27,29 @@ const corsOptions = {
       : process.env.CLIENT_URL || "http://localhost:5173",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 };
 
 app.use(cors(corsOptions));
+
+// Security middleware
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+        scriptSrc: ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+// General rate limiting
+// app.use(generalRateLimit);
 
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
@@ -51,7 +72,13 @@ const clientDistPath = path.join(__dirname, "public");
 app.use(express.static(clientDistPath));
 
 // Routes
-app.use("/api/songs", Routes.songRoutes);
+app.use("/api/auth", Routes.authRoutes);
+// app.use("/api/songs", Routes.songRoutes); // temporarily disabled for local dev without Azure
+app.use("/api/albums", Routes.albumRoutes);
+app.use("/api/artists", Routes.artistRoutes);
+app.use("/api/playlists", Routes.playlistRoutes);
+app.use("/api/users", Routes.userRoutes);
+app.use("/api/search", Routes.searchRoutes);
 
 // React SPA routes
 app.get("/", (req, res) => {

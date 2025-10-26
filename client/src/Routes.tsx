@@ -5,7 +5,8 @@ import HomePage from "./pages/HomePage/HomePage"
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={< HomePage />} />
+      <Route path="/" element={<HomePage />} />
+      <Route path="/search" element={<Pages.SearchResultsPage />} />
       <Route path="/test" element={<Pages.TestPage />} />
     </Routes>
   );
