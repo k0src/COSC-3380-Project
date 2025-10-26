@@ -127,7 +127,10 @@ const NowPlayingBar: React.FC = () => {
         />
         <div className={styles.songInfo}>
           {mainArtist.id ? (
-            <Link to={`/artist/${mainArtist.id}`} className={styles.artistName}>
+            <Link
+              to={`/artists/${mainArtist.id}`}
+              className={styles.artistName}
+            >
               {mainArtist.display_name || "Unknown Artist"}
             </Link>
           ) : (
@@ -135,7 +138,7 @@ const NowPlayingBar: React.FC = () => {
               {mainArtist.display_name || "Unknown Artist"}
             </span>
           )}
-          <Link to={`/song/${currentSong?.id}`} className={styles.songTitle}>
+          <Link to={`/songs/${currentSong?.id}`} className={styles.songTitle}>
             {currentSong?.title}
           </Link>
         </div>

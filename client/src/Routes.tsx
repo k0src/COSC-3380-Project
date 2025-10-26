@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import * as Pages from "./pages";
-import { MainLayout } from "@components";
-import { AudioQueueProvider } from "@contexts";
+import { AppLayout, MainLayout } from "@components";
 
 export default function AppRoutes() {
   return (
@@ -9,22 +8,18 @@ export default function AppRoutes() {
       <Route path="/login" element={<Pages.LoginPage />} />
       <Route path="/signup" element={<Pages.SignupPage />} />
 
-      <Route
-        path="/"
-        element={
-          <AudioQueueProvider>
-            <Pages.TestPage />
-          </AudioQueueProvider>
-        }
-      />
-      <Route
-        path="/songs/:id"
-        element={
-          <MainLayout>
-            <Pages.SongPage />
-          </MainLayout>
-        }
-      />
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Pages.TestPage />} />
+        <Route
+          path="/songs/:id"
+          element={
+            <MainLayout>
+              <Pages.SongPage />
+            </MainLayout>
+          }
+        />
+      </Route>
+
       {/* <Route 
         path="/library" 
         element={
