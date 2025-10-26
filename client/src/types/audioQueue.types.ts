@@ -12,6 +12,8 @@ export interface QueueItem {
 /**
  * Global audio state for the AudioQueue context
  */
+export type RepeatMode = "none" | "one" | "all";
+
 export interface AudioState {
   isPlaying: boolean;
   currentSong: Song | null;
@@ -23,6 +25,7 @@ export interface AudioState {
   volume: number;
   isLoading: boolean;
   error: string | null;
+  repeatMode: RepeatMode;
   hasNextSong?: boolean;
   hasPreviousSong?: boolean;
 }
@@ -46,6 +49,8 @@ export interface AudioQueueActions {
   removeFromQueue: (itemId: string) => void;
   shuffleQueue: () => void;
   moveQueueItem: (fromIndex: number, toIndex: number) => void;
+  setRepeatMode: (mode: RepeatMode) => void;
+  toggleRepeatMode: () => void;
   saveState: () => void;
   clearPersistedState: () => void;
   restoreState: () => Promise<boolean>;
@@ -100,6 +105,13 @@ export type QueueOperation =
   | { type: "SET_VOLUME"; volume: number }
   | { type: "SET_LOADING"; isLoading: boolean }
   | { type: "SET_ERROR"; error: string | null }
+  | { type: "SET_REPEAT_MODE"; repeatMode: RepeatMode }
+  | {
+      type: "SET_CURRENT_SONG_AND_INDEX";
+      song: Song;
+      queueId: string;
+      index: number;
+    }
   | {
       type: "RESTORE_STATE";
       queue: QueueItem[];

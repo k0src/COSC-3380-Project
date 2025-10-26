@@ -12,6 +12,7 @@ import type {
   QueueOperation,
   QueueItem,
   Song,
+  RepeatMode,
 } from "@types";
 import { useAudioManager } from "@hooks";
 import {
@@ -119,7 +120,15 @@ function audioQueueReducer(
     }
 
     case "NEXT_SONG": {
-      const nextIndex = getNextIndex(state.currentIndex, state.queue.length);
+      let nextIndex = getNextIndex(state.currentIndex, state.queue.length);
+
+      if (
+        nextIndex === null &&
+        state.repeatMode === "all" &&
+        state.queue.length > 0
+      ) {
+        nextIndex = 0;
+      }
 
       if (nextIndex === null) {
         return state;
@@ -138,7 +147,15 @@ function audioQueueReducer(
     }
 
     case "PREVIOUS_SONG": {
-      const prevIndex = getPreviousIndex(state.currentIndex);
+      let prevIndex = getPreviousIndex(state.currentIndex);
+
+      if (
+        prevIndex === null &&
+        state.repeatMode === "all" &&
+        state.queue.length > 0
+      ) {
+        prevIndex = state.queue.length - 1;
+      }
 
       if (prevIndex === null) {
         return state;
@@ -400,6 +417,18 @@ function audioQueueReducer(
     case "SET_ERROR":
       return { ...state, error: action.error };
 
+    case "SET_REPEAT_MODE":
+      return { ...state, repeatMode: action.repeatMode };
+
+    case "SET_CURRENT_SONG_AND_INDEX":
+      return {
+        ...state,
+        currentSong: action.song,
+        currentQueueId: action.queueId,
+        currentIndex: action.index,
+        progress: 0,
+      };
+
     case "RESTORE_STATE":
       return {
         ...state,
@@ -437,6 +466,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
     volume: 1,
     isLoading: false,
     error: null,
+    repeatMode: "none",
   };
 
   const [state, dispatch] = useReducer(audioQueueReducer, initialState);
@@ -536,14 +566,60 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
     if (!state.isPlaying || !state.currentSong) return;
 
     const interval = setInterval(() => {
-      dispatch({ type: "SET_PROGRESS", progress: audioManager.progress });
-      dispatch({ type: "SET_DURATION", duration: audioManager.duration });
+      const progress = audioManager.progress;
+      const duration = audioManager.duration;
+      const isPlaying = audioManager.isPlaying;
+
+      dispatch({ type: "SET_PROGRESS", progress });
+      dispatch({ type: "SET_DURATION", duration });
       dispatch({ type: "SET_LOADING", isLoading: audioManager.isLoading });
       dispatch({ type: "SET_ERROR", error: audioManager.error });
+
+      if (duration > 0 && progress >= duration - 0.5 && !isPlaying) {
+        if (state.repeatMode === "one") {
+          if (state.currentSong) {
+            audioManager.play(state.currentSong);
+          }
+        } else if (state.repeatMode === "all") {
+          const nextIndex = getNextIndex(
+            state.currentIndex,
+            state.queue.length
+          );
+          if (nextIndex !== null && state.queue[nextIndex]) {
+            dispatch({ type: "NEXT_SONG" });
+            audioManager.play(state.queue[nextIndex].song);
+          } else if (state.queue.length > 0) {
+            dispatch({
+              type: "SET_CURRENT_SONG_AND_INDEX",
+              song: state.queue[0].song,
+              queueId: state.queue[0].queueId,
+              index: 0,
+            });
+            audioManager.play(state.queue[0].song);
+          }
+        } else {
+          const nextIndex = getNextIndex(
+            state.currentIndex,
+            state.queue.length
+          );
+          if (nextIndex !== null && state.queue[nextIndex]) {
+            dispatch({ type: "NEXT_SONG" });
+            audioManager.play(state.queue[nextIndex].song);
+          } else {
+            dispatch({ type: "SET_PLAYING", isPlaying: false });
+          }
+        }
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [state.isPlaying, state.currentSong]);
+  }, [
+    state.isPlaying,
+    state.currentSong,
+    state.repeatMode,
+    state.currentIndex,
+    state.queue.length,
+  ]);
 
   const actions = {
     play: async (songOrList: Song | Song[]) => {
@@ -655,6 +731,20 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
         return;
       }
       dispatch({ type: "MOVE_QUEUE_ITEM", fromIndex, toIndex });
+    },
+
+    setRepeatMode: (mode: RepeatMode) => {
+      dispatch({ type: "SET_REPEAT_MODE", repeatMode: mode });
+    },
+
+    toggleRepeatMode: () => {
+      const nextMode: RepeatMode =
+        state.repeatMode === "none"
+          ? "one"
+          : state.repeatMode === "one"
+          ? "all"
+          : "none";
+      dispatch({ type: "SET_REPEAT_MODE", repeatMode: nextMode });
     },
 
     saveState: () => {
