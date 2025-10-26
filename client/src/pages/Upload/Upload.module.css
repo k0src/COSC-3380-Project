@@ -1,5 +1,5 @@
 .contentWrapper {
-  padding: 150px 32px 40px 32px;;
+  padding: 120px 20px 48px;
   color: #fff;
 }
 
@@ -19,21 +19,24 @@
 }
 
 .dropzone {
-  border: 3px dashed rgba(255,255,255,0.25);
-  border-radius: 8px;
-  padding: 72px 48px;
+  border: 2px dashed rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 48px 36px;
   text-align: center;
   cursor: pointer;
   background: rgba(255,255,255,0.01);
-  min-height: 320px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  transition: box-shadow 180ms ease, transform 160ms ease, border-color 160ms ease;
 }
 
 .dropzoneHover {
-  border-color: rgba(0,200,180,0.9);
+  border-color: rgba(255,107,107,0.9);
+  box-shadow: 0 14px 40px rgba(255,107,107,0.06);
+  transform: translateY(-4px);
 }
 
 .dropzoneText {
@@ -48,12 +51,14 @@
 }
 
 .dropzoneIcon {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: #fff;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  border-radius: 10px;
 }
 
 /* subtle hover animation for the icon */
@@ -80,15 +85,16 @@
 
 .uploadCard {
   margin-top: 18px;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.02);
   padding: 16px;
-  border-radius: 10px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
 }
 
 .titleBox {
   margin-top: 18px;
-  background: rgba(255,255,255,0.03);
-  padding: 16px;
+  background: rgba(255,255,255,0.02);
+  padding: 12px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -128,11 +134,11 @@
 }
 
 .titleInput {
-  margin-top: 14px;
+  margin-top: 12px;
   width: 100%;
   padding: 10px 12px;
-  border-radius: 6px;
-  background: rgba(0,0,0,0.5);
+  border-radius: 8px;
+  background: rgba(0,0,0,0.45);
   color: #fff;
   border: 1px solid rgba(255,255,255,0.06);
 }
@@ -149,16 +155,17 @@
 }
 
 .btnPrimary {
-  background: #00e6b8;
-  color: #000;
-  padding: 8px 12px;
+  background: #ff6b6b;
+  color: #fff;
+  padding: 9px 14px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
 }
 
 .btnDanger {
-  background: #ff4d4f; /* red */
+  background: #d94242; /* darker red for danger */
   color: #fff;
   padding: 8px 12px;
   border: none;
@@ -173,4 +180,43 @@
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 6px;
   cursor: pointer;
+}
+
+.btnPrimary[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.fileName {
+  font-weight: 600;
+}
+
+.srStatus { margin-top: 8px; min-height: 20px; }
+.errorText { color: #ffb4b4; }
+
+/* audio preview */
+.audioPreview {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+}
+.audioPlayer {
+  background: transparent;
+  color: #fff;
+}
+
+/* small toast */
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 96px;
+  background: rgba(17,24,27,0.95);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(2,6,14,0.6);
+  z-index: 2000;
+  font-weight: 600;
 }
