@@ -63,14 +63,13 @@ const NowPlayingBar: React.FC = () => {
   }, [isAuthenticated, navigate]);
 
   const handleToggleShuffle = useCallback(() => {
-    console.log(currentSong);
-    setIsShuffle((prev) => {
-      if (!prev) {
-        actions.shuffleQueue();
-      }
-      return !prev;
-    });
-  }, [actions]);
+    const wasShuffled = isShuffle;
+    setIsShuffle(!wasShuffled);
+
+    if (!wasShuffled) {
+      actions.shuffleQueue();
+    }
+  }, [actions, isShuffle]);
 
   const handleToggleRepeat = useCallback(() => {
     actions.toggleRepeatMode();
