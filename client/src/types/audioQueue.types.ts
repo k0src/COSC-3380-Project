@@ -6,7 +6,7 @@ import type { Song } from "@types";
 export interface QueueItem {
   song: Song;
   isQueued: boolean;
-  id: string;
+  queueId: string;
 }
 
 /**
@@ -15,6 +15,7 @@ export interface QueueItem {
 export interface AudioState {
   isPlaying: boolean;
   currentSong: Song | null;
+  currentQueueId: string | null;
   currentIndex: number;
   queue: QueueItem[];
   progress: number;
@@ -33,8 +34,8 @@ export interface AudioQueueActions {
   play: (songs: Song | Song[]) => Promise<void>;
   pause: () => void;
   resume: () => void;
-  next: () => void;
-  previous: () => void;
+  next: () => Promise<void>;
+  previous: () => Promise<void>;
   seek: (time: number) => void;
   setVolume: (volume: number) => void;
   queueNext: (song: Song) => void;
@@ -45,6 +46,15 @@ export interface AudioQueueActions {
   removeFromQueue: (itemId: string) => void;
   shuffleQueue: () => void;
   moveQueueItem: (fromIndex: number, toIndex: number) => void;
+  saveState: () => void;
+  clearPersistedState: () => void;
+  restoreState: () => Promise<boolean>;
+  getStorageInfo: () => {
+    isAvailable: boolean;
+    hasPersistedState: boolean;
+    stateSize: number;
+    lastSaved: Date | null;
+  };
 }
 
 /**
@@ -65,7 +75,6 @@ export interface PersistedAudioState {
     songId: string;
     isQueued: boolean;
   }[];
-  progress: number;
   volume: number;
   timestamp: number;
 }
@@ -91,4 +100,10 @@ export type QueueOperation =
   | { type: "SET_VOLUME"; volume: number }
   | { type: "SET_LOADING"; isLoading: boolean }
   | { type: "SET_ERROR"; error: string | null }
-  | { type: "REMOVE_ITEM"; itemId: string };
+  | {
+      type: "RESTORE_STATE";
+      queue: QueueItem[];
+      currentIndex: number;
+      currentSong: Song | null;
+      volume: number;
+    };

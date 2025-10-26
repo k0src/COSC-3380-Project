@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import type { Song } from "@types";
-import { AUDIO_CONSTANTS, AUDIO_QUEUE_STORAGE_KEYS } from "@constants";
 
 export interface AudioManagerActions {
   play: (song: Song) => Promise<void>;
@@ -24,199 +23,35 @@ export interface AudioManagerState {
 export interface AudioManager extends AudioManagerState, AudioManagerActions {}
 
 export function useAudioManager(): AudioManager {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentSong, setCurrentSong] = useState<Song | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolumeState] = useState(() => {
-    const saved = localStorage.getItem(AUDIO_QUEUE_STORAGE_KEYS.VOLUME);
-    return saved ? parseFloat(saved) : 1;
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
 
-  // Initialize audio element
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "metadata";
-    audio.volume = volume;
-
     audioRef.current = audio;
 
     return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
       audio.pause();
       audio.src = "";
     };
   }, []);
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.volume = volume;
-    }
-  }, [volume]);
-
-  const startProgressTracking = useCallback(() => {
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-    }
-
-    progressIntervalRef.current = setInterval(() => {
-      const audio = audioRef.current;
-      if (audio && !audio.paused && audio.duration) {
-        const newProgress = audio.currentTime;
-        setProgress(newProgress);
-
-        // Save progress to localStorage
-        if (currentSong) {
-          localStorage.setItem(
-            AUDIO_QUEUE_STORAGE_KEYS.PROGRESS,
-            newProgress.toString()
-          );
-        }
-      }
-    }, AUDIO_CONSTANTS.PROGRESS_UPDATE_INTERVAL);
-  }, [currentSong]);
-
-  const stopProgressTracking = useCallback(() => {
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = null;
-    }
-  }, []);
-
-  // Audio event handlers
-  const handleLoadStart = useCallback(() => {
-    setIsLoading(true);
-    setError(null);
-  }, []);
-
-  const handleLoadedMetadata = useCallback(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      setDuration(audio.duration);
-      setIsLoading(false);
-    }
-  }, []);
-
-  const handleCanPlay = useCallback(() => {
-    setIsLoading(false);
-  }, []);
-
-  const handlePlay = useCallback(() => {
-    setIsPlaying(true);
-    startProgressTracking();
-  }, [startProgressTracking]);
-
-  const handlePause = useCallback(() => {
-    setIsPlaying(false);
-    stopProgressTracking();
-  }, [stopProgressTracking]);
-
-  const handleEnded = useCallback(() => {
-    setIsPlaying(false);
-    stopProgressTracking();
-    setProgress(0);
-  }, [stopProgressTracking]);
-
-  const handleError = useCallback(
-    (event: Event) => {
-      const audio = event.target as HTMLAudioElement;
-      setIsLoading(false);
-      setIsPlaying(false);
-      stopProgressTracking();
-
-      let errorMessage = "Failed to load audio";
-      if (audio.error) {
-        switch (audio.error.code) {
-          case MediaError.MEDIA_ERR_ABORTED:
-            errorMessage = "Audio loading was aborted";
-            break;
-          case MediaError.MEDIA_ERR_NETWORK:
-            errorMessage = "Network error occurred while loading audio";
-            break;
-          case MediaError.MEDIA_ERR_DECODE:
-            errorMessage = "Audio file is corrupted or unsupported";
-            break;
-          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-            errorMessage = "Audio format not supported";
-            break;
-        }
-      }
-      setError(errorMessage);
-    },
-    [stopProgressTracking]
-  );
-
-  // Event listeners
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.addEventListener("loadstart", handleLoadStart);
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-    audio.addEventListener("canplay", handleCanPlay);
-    audio.addEventListener("play", handlePlay);
-    audio.addEventListener("pause", handlePause);
-    audio.addEventListener("ended", handleEnded);
-    audio.addEventListener("error", handleError);
-
-    return () => {
-      audio.removeEventListener("loadstart", handleLoadStart);
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      audio.removeEventListener("canplay", handleCanPlay);
-      audio.removeEventListener("play", handlePlay);
-      audio.removeEventListener("pause", handlePause);
-      audio.removeEventListener("ended", handleEnded);
-      audio.removeEventListener("error", handleError);
-    };
-  }, [
-    handleLoadStart,
-    handleLoadedMetadata,
-    handleCanPlay,
-    handlePlay,
-    handlePause,
-    handleEnded,
-    handleError,
-  ]);
-
-  // Actions
   const play = useCallback(
     async (song: Song): Promise<void> => {
       const audio = audioRef.current;
       if (!audio) return;
 
       try {
-        setError(null);
-
-        if (!currentSong || currentSong.id !== song.id) {
-          setCurrentSong(song);
-          audio.src = song.audio_url;
-
-          // Save current song to localStorage
-          localStorage.setItem(
-            AUDIO_QUEUE_STORAGE_KEYS.CURRENT_SONG,
-            JSON.stringify(song)
-          );
-          setProgress(0);
-          localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.PROGRESS);
-        }
+        setCurrentSong(song);
+        audio.src = song.audio_url;
 
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           await playPromise;
         }
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to play audio";
-        setError(errorMessage);
-        setIsPlaying(false);
+        console.error("Failed to play audio:", err);
       }
     },
     [currentSong]
@@ -238,47 +73,25 @@ export function useAudioManager(): AudioManager {
           await playPromise;
         }
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to resume audio";
-        setError(errorMessage);
+        console.error("Failed to resume audio:", err);
       }
     }
   }, [currentSong]);
 
-  const seek = useCallback(
-    (time: number) => {
-      const audio = audioRef.current;
-      if (audio && audio.duration) {
-        const clampedTime = Math.max(0, Math.min(time, audio.duration));
-        audio.currentTime = clampedTime;
-        setProgress(clampedTime);
-
-        // Save progress to localStorage
-        if (currentSong) {
-          localStorage.setItem(
-            AUDIO_QUEUE_STORAGE_KEYS.PROGRESS,
-            clampedTime.toString()
-          );
-        }
-      }
-    },
-    [currentSong]
-  );
+  const seek = useCallback((time: number) => {
+    const audio = audioRef.current;
+    if (audio && audio.duration) {
+      const clampedTime = Math.max(0, Math.min(time, audio.duration));
+      audio.currentTime = clampedTime;
+    }
+  }, []);
 
   const setVolume = useCallback((newVolume: number) => {
     const clampedVolume = Math.max(0, Math.min(1, newVolume));
-    setVolumeState(clampedVolume);
-
     const audio = audioRef.current;
     if (audio) {
       audio.volume = clampedVolume;
     }
-
-    // Save volume to localStorage
-    localStorage.setItem(
-      AUDIO_QUEUE_STORAGE_KEYS.VOLUME,
-      clampedVolume.toString()
-    );
   }, []);
 
   const stop = useCallback(() => {
@@ -286,57 +99,32 @@ export function useAudioManager(): AudioManager {
     if (audio) {
       audio.pause();
       audio.currentTime = 0;
-      setProgress(0);
       setCurrentSong(null);
-
-      // Clear localStorage
-      localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.CURRENT_SONG);
-      localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.PROGRESS);
-    }
-  }, []);
-
-  // Restore state on mount
-  useEffect(() => {
-    const savedSong = localStorage.getItem(
-      AUDIO_QUEUE_STORAGE_KEYS.CURRENT_SONG
-    );
-    const savedProgress = localStorage.getItem(
-      AUDIO_QUEUE_STORAGE_KEYS.PROGRESS
-    );
-
-    if (savedSong) {
-      try {
-        const song: Song = JSON.parse(savedSong);
-        setCurrentSong(song);
-
-        const audio = audioRef.current;
-        if (audio) {
-          audio.src = song.audio_url;
-
-          if (savedProgress) {
-            const progressTime = parseFloat(savedProgress);
-            audio.currentTime = progressTime;
-            setProgress(progressTime);
-          }
-        }
-      } catch (err) {
-        console.warn("Failed to restore audio state:", err);
-        localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.CURRENT_SONG);
-        localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.PROGRESS);
-      }
     }
   }, []);
 
   return {
-    // State
-    isPlaying,
-    currentSong,
-    progress,
-    duration,
-    volume,
-    isLoading,
-    error,
-    // Actions
+    get isPlaying() {
+      return audioRef.current ? !audioRef.current.paused : false;
+    },
+    get currentSong() {
+      return currentSong;
+    },
+    get progress() {
+      return audioRef.current ? audioRef.current.currentTime : 0;
+    },
+    get duration() {
+      return audioRef.current ? audioRef.current.duration || 0 : 0;
+    },
+    get volume() {
+      return audioRef.current ? audioRef.current.volume : 1;
+    },
+    get isLoading() {
+      return audioRef.current ? audioRef.current.readyState < 3 : false;
+    },
+    get error() {
+      return audioRef.current?.error ? "Audio error" : null;
+    },
     play,
     pause,
     resume,

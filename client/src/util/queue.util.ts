@@ -22,7 +22,7 @@ export function createQueueItem(
   return {
     song,
     isQueued,
-    id: generateQueueItemId(),
+    queueId: generateQueueItemId(),
   };
 }
 
@@ -101,7 +101,7 @@ export function removeItemById(
   queue: QueueItem[],
   itemId: string
 ): QueueItem[] {
-  return queue.filter((item) => item.id !== itemId);
+  return queue.filter((item) => item.queueId !== itemId);
 }
 
 /**

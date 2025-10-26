@@ -3,12 +3,14 @@ import {
   useContext,
   useReducer,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react";
 import type {
   AudioState,
   AudioQueueContextType,
   QueueOperation,
+  QueueItem,
   Song,
 } from "@types";
 import { useAudioManager } from "@hooks";
@@ -20,7 +22,15 @@ import {
   getCurrentSong,
   filterPreservedItems,
   insertItemsAtPosition,
+  saveAudioQueueState,
+  loadAudioQueueState,
+  createDebouncedSave,
+  isLocalStorageAvailable,
+  getStorageInfo,
+  restoreQueueItems,
 } from "@util";
+import { songApi } from "@api";
+import { AUDIO_QUEUE_STORAGE_KEYS } from "../constants/audioQueue.constants.js";
 
 const AudioQueueContext = createContext<AudioQueueContextType | null>(null);
 
@@ -36,6 +46,7 @@ function audioQueueReducer(
         queue: [newQueueItem],
         currentIndex: 0,
         currentSong: action.song,
+        currentQueueId: newQueueItem.queueId,
         error: null,
       };
     }
@@ -47,6 +58,7 @@ function audioQueueReducer(
           queue: [],
           currentIndex: -1,
           currentSong: null,
+          currentQueueId: null,
         };
       }
 
@@ -56,6 +68,7 @@ function audioQueueReducer(
         queue: newQueueItems,
         currentIndex: 0,
         currentSong: action.songs[0],
+        currentQueueId: newQueueItems[0].queueId,
         error: null,
       };
     }
@@ -69,6 +82,7 @@ function audioQueueReducer(
           queue: [newQueueItem],
           currentIndex: 0,
           currentSong: action.song,
+          currentQueueId: newQueueItem.queueId,
         };
       }
 
@@ -94,6 +108,7 @@ function audioQueueReducer(
           queue: [newQueueItem],
           currentIndex: 0,
           currentSong: action.song,
+          currentQueueId: newQueueItem.queueId,
         };
       }
 
@@ -111,11 +126,13 @@ function audioQueueReducer(
       }
 
       const nextSong = getCurrentSong(state.queue, nextIndex);
+      const nextQueueItem = state.queue[nextIndex];
 
       return {
         ...state,
         currentIndex: nextIndex,
         currentSong: nextSong,
+        currentQueueId: nextQueueItem?.queueId || null,
         progress: 0,
       };
     }
@@ -128,11 +145,13 @@ function audioQueueReducer(
       }
 
       const prevSong = getCurrentSong(state.queue, prevIndex);
+      const prevQueueItem = state.queue[prevIndex];
 
       return {
         ...state,
         currentIndex: prevIndex,
         currentSong: prevSong,
+        currentQueueId: prevQueueItem?.queueId || null,
         progress: 0,
       };
     }
@@ -146,6 +165,7 @@ function audioQueueReducer(
           queue: [],
           currentIndex: -1,
           currentSong: null,
+          currentQueueId: null,
           isPlaying: false,
           progress: 0,
         };
@@ -159,6 +179,7 @@ function audioQueueReducer(
           queue: [],
           currentIndex: -1,
           currentSong: null,
+          currentQueueId: null,
           isPlaying: false,
           progress: 0,
         };
@@ -170,7 +191,7 @@ function audioQueueReducer(
 
       if (currentSong) {
         const currentItemIndex = preservedItems.findIndex(
-          (item) => item.song.id === currentSong.id && item.isQueued
+          (item) => item.queueId === state.currentQueueId && item.isQueued
         );
 
         if (currentItemIndex !== -1) {
@@ -187,6 +208,10 @@ function audioQueueReducer(
         queue: preservedItems,
         currentIndex: newCurrentIndex,
         currentSong: newCurrentSong,
+        currentQueueId:
+          newCurrentIndex >= 0 && preservedItems[newCurrentIndex]
+            ? preservedItems[newCurrentIndex].queueId
+            : null,
         isPlaying: newCurrentSong ? state.isPlaying : false,
         progress: newCurrentSong === currentSong ? state.progress : 0,
       };
@@ -220,7 +245,7 @@ function audioQueueReducer(
 
       if (preserveQueued && state.currentSong) {
         const currentSongIndex = newQueue.findIndex(
-          (item) => item.song.id === state.currentSong!.id
+          (item) => item.queueId === state.currentQueueId
         );
 
         if (currentSongIndex !== -1) {
@@ -234,12 +259,18 @@ function audioQueueReducer(
         queue: newQueue,
         currentIndex: newCurrentIndex,
         currentSong: newCurrentSong,
+        currentQueueId:
+          newCurrentIndex >= 0 && newQueue[newCurrentIndex]
+            ? newQueue[newCurrentIndex].queueId
+            : null,
         progress: newCurrentSong === state.currentSong ? state.progress : 0,
       };
     }
 
     case "REMOVE_ITEM": {
-      const newQueue = state.queue.filter((item) => item.id !== action.itemId);
+      const newQueue = state.queue.filter(
+        (item) => item.queueId !== action.itemId
+      );
 
       if (newQueue.length === 0) {
         return {
@@ -247,13 +278,14 @@ function audioQueueReducer(
           queue: [],
           currentIndex: -1,
           currentSong: null,
+          currentQueueId: null,
           isPlaying: false,
           progress: 0,
         };
       }
 
       const removedIndex = state.queue.findIndex(
-        (item) => item.id === action.itemId
+        (item) => item.queueId === action.itemId
       );
 
       if (removedIndex === -1) {
@@ -368,6 +400,22 @@ function audioQueueReducer(
     case "SET_ERROR":
       return { ...state, error: action.error };
 
+    case "RESTORE_STATE":
+      return {
+        ...state,
+        queue: action.queue,
+        currentIndex: action.currentIndex,
+        currentSong: action.currentSong,
+        currentQueueId:
+          action.currentIndex >= 0 && action.queue[action.currentIndex]
+            ? action.queue[action.currentIndex].queueId
+            : null,
+        progress: 0,
+        volume: action.volume,
+        isPlaying: false,
+        error: null,
+      };
+
     default:
       return state;
   }
@@ -381,6 +429,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
   const initialState: AudioState = {
     isPlaying: false,
     currentSong: null,
+    currentQueueId: null,
     currentIndex: -1,
     queue: [],
     progress: 0,
@@ -393,67 +442,162 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
   const [state, dispatch] = useReducer(audioQueueReducer, initialState);
   const audioManager = useAudioManager();
 
-  useEffect(() => {
-    dispatch({ type: "SET_PLAYING", isPlaying: audioManager.isPlaying });
-  }, [audioManager.isPlaying]);
+  const debouncedSave = useRef(createDebouncedSave(1000));
 
   useEffect(() => {
-    dispatch({ type: "SET_PROGRESS", progress: audioManager.progress });
-  }, [audioManager.progress]);
-
-  useEffect(() => {
-    dispatch({ type: "SET_DURATION", duration: audioManager.duration });
-  }, [audioManager.duration]);
-
-  useEffect(() => {
-    dispatch({ type: "SET_VOLUME", volume: audioManager.volume });
-  }, [audioManager.volume]);
-
-  useEffect(() => {
-    dispatch({ type: "SET_LOADING", isLoading: audioManager.isLoading });
-  }, [audioManager.isLoading]);
-
-  useEffect(() => {
-    dispatch({ type: "SET_ERROR", error: audioManager.error });
-  }, [audioManager.error]);
-
-  useEffect(() => {
-    if (state.currentSong && state.currentSong !== audioManager.currentSong) {
-      audioManager.play(state.currentSong);
+    if (!isLocalStorageAvailable()) {
+      return;
     }
-  }, [state.currentSong, audioManager]);
+
+    const restoreQueue = async () => {
+      const persistedState = loadAudioQueueState();
+      if (!persistedState) return;
+
+      if (persistedState.volume !== undefined) {
+        audioManager.setVolume(persistedState.volume);
+      }
+
+      if (persistedState.queue.length > 0) {
+        try {
+          const restoredItems: QueueItem[] = [];
+
+          for (const persistedItem of persistedState.queue) {
+            try {
+              const song = await songApi.getSongById(persistedItem.songId);
+              if (song) {
+                restoredItems.push({
+                  song,
+                  isQueued: persistedItem.isQueued,
+                  queueId: `restored_${Date.now()}_${Math.random()
+                    .toString(36)
+                    .substring(2, 11)}`,
+                });
+              }
+            } catch (error) {
+              console.warn(
+                `Failed to fetch song ${persistedItem.songId}:`,
+                error
+              );
+            }
+          }
+
+          if (restoredItems.length > 0) {
+            let currentSong: Song | null = null;
+            let currentIndex = -1;
+
+            if (persistedState.currentSongId) {
+              const currentSongIndex = restoredItems.findIndex(
+                (item) => item.song.id === persistedState.currentSongId
+              );
+
+              if (currentSongIndex !== -1) {
+                currentSong = restoredItems[currentSongIndex].song;
+                currentIndex = currentSongIndex;
+              }
+            }
+
+            dispatch({
+              type: "RESTORE_STATE",
+              queue: restoredItems,
+              currentIndex: currentIndex,
+              currentSong: currentSong,
+              volume: persistedState.volume,
+            });
+          } else {
+            console.log("No songs could be restored from persisted state");
+          }
+        } catch (error) {
+          console.error("Failed to restore queue from API:", error);
+        }
+      }
+    };
+
+    restoreQueue();
+  }, []);
+
+  useEffect(() => {
+    if (isLocalStorageAvailable()) {
+      if (state.queue.length > 0 || state.currentSong || state.volume !== 1) {
+        try {
+          debouncedSave.current(state);
+        } catch (error) {
+          console.error("Failed to auto-save audio queue state:", error);
+          try {
+            localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.STATE);
+          } catch (clearError) {
+            console.error("Failed to clear corrupted state:", clearError);
+          }
+        }
+      }
+    }
+  }, [state.queue, state.currentIndex, state.currentSong, state.volume]);
+
+  useEffect(() => {
+    if (!state.isPlaying || !state.currentSong) return;
+
+    const interval = setInterval(() => {
+      dispatch({ type: "SET_PROGRESS", progress: audioManager.progress });
+      dispatch({ type: "SET_DURATION", duration: audioManager.duration });
+      dispatch({ type: "SET_LOADING", isLoading: audioManager.isLoading });
+      dispatch({ type: "SET_ERROR", error: audioManager.error });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [state.isPlaying, state.currentSong]);
 
   const actions = {
     play: async (songOrList: Song | Song[]) => {
       if (Array.isArray(songOrList)) {
         dispatch({ type: "PLAY_LIST", songs: songOrList });
+        if (songOrList.length > 0) {
+          await audioManager.play(songOrList[0]);
+          dispatch({ type: "SET_PLAYING", isPlaying: true });
+        }
       } else {
         dispatch({ type: "PLAY_SONG", song: songOrList });
+        await audioManager.play(songOrList);
+        dispatch({ type: "SET_PLAYING", isPlaying: true });
       }
     },
 
     pause: () => {
       audioManager.pause();
+      dispatch({ type: "SET_PLAYING", isPlaying: false });
     },
 
-    resume: () => {
-      audioManager.resume();
+    resume: async () => {
+      if (state.currentSong) {
+        await audioManager.play(state.currentSong);
+        dispatch({ type: "SET_PLAYING", isPlaying: true });
+      }
     },
 
-    next: () => {
-      dispatch({ type: "NEXT_SONG" });
+    next: async () => {
+      const nextIndex = getNextIndex(state.currentIndex, state.queue.length);
+      if (nextIndex !== null && state.queue[nextIndex]) {
+        dispatch({ type: "NEXT_SONG" });
+        await audioManager.play(state.queue[nextIndex].song);
+        dispatch({ type: "SET_PLAYING", isPlaying: true });
+      }
     },
 
-    previous: () => {
-      dispatch({ type: "PREVIOUS_SONG" });
+    previous: async () => {
+      const prevIndex = getPreviousIndex(state.currentIndex);
+      if (prevIndex !== null && state.queue[prevIndex]) {
+        dispatch({ type: "PREVIOUS_SONG" });
+        await audioManager.play(state.queue[prevIndex].song);
+        dispatch({ type: "SET_PLAYING", isPlaying: true });
+      }
     },
 
     seek: (time: number) => {
       audioManager.seek(time);
+      dispatch({ type: "SET_PROGRESS", progress: time });
     },
 
     setVolume: (volume: number) => {
       audioManager.setVolume(volume);
+      dispatch({ type: "SET_VOLUME", volume });
     },
 
     queueNext: (song: Song) => {
@@ -484,16 +628,12 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
       const validSongs = songs.filter(
         (song) => song && song.id && song.audio_url
       );
-      if (validSongs.length !== songs.length) {
-        console.warn(
-          `Filtered out ${songs.length - validSongs.length} invalid songs`
-        );
-      }
       dispatch({ type: "REPLACE_QUEUE", songs: validSongs, preserveQueued });
     },
 
     stop: () => {
       audioManager.stop();
+      dispatch({ type: "SET_PLAYING", isPlaying: false });
       dispatch({ type: "CLEAR_QUEUE", preserveQueued: false });
     },
 
@@ -515,6 +655,71 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
         return;
       }
       dispatch({ type: "MOVE_QUEUE_ITEM", fromIndex, toIndex });
+    },
+
+    saveState: () => {
+      if (isLocalStorageAvailable()) {
+        saveAudioQueueState(state);
+      }
+    },
+
+    clearPersistedState: () => {
+      if (isLocalStorageAvailable()) {
+        localStorage.removeItem(AUDIO_QUEUE_STORAGE_KEYS.STATE);
+      }
+    },
+
+    restoreState: async () => {
+      if (!isLocalStorageAvailable()) {
+        console.warn("localStorage not available, cannot restore state");
+        return false;
+      }
+
+      const persistedState = loadAudioQueueState();
+      if (!persistedState || persistedState.queue.length === 0) {
+        console.log("No persisted state to restore");
+        return false;
+      }
+
+      try {
+        const restoredItems: QueueItem[] = await restoreQueueItems(
+          persistedState.queue
+        );
+
+        if (restoredItems.length === 0) {
+          return false;
+        }
+
+        let currentSong: Song | null = null;
+        let currentIndex = -1;
+
+        if (persistedState.currentSongId) {
+          const currentSongIndex = restoredItems.findIndex(
+            (item) => item.song.id === persistedState.currentSongId
+          );
+
+          if (currentSongIndex !== -1) {
+            currentSong = restoredItems[currentSongIndex].song;
+            currentIndex = currentSongIndex;
+          }
+        }
+
+        dispatch({
+          type: "RESTORE_STATE",
+          queue: restoredItems,
+          currentIndex: currentIndex,
+          currentSong: currentSong,
+          volume: persistedState.volume,
+        });
+        return true;
+      } catch (error) {
+        console.error("Failed to restore state with songs:", error);
+        return false;
+      }
+    },
+
+    getStorageInfo: () => {
+      return getStorageInfo();
     },
   };
 
