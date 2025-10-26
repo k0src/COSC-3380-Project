@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { SongRepository } from "@repositories";
+import { SongRepository } from "repos";
 
 const router = express.Router();
 
