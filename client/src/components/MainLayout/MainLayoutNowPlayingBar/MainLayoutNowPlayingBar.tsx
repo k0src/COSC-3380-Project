@@ -1,7 +1,7 @@
-import React, { useState, memo, useCallback } from "react";
+import React, { useState, memo, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@contexts";
-import { formatPlaybackTime } from "@util";
+import { useAuth, useAudioQueue } from "@contexts";
+import { formatPlaybackTime, getMainArtist } from "@util";
 import classNames from "classnames";
 import styles from "./MainLayoutNowPlayingBar.module.css";
 import {
@@ -19,17 +19,24 @@ import {
 import musicPlaceholder from "@assets/music-placeholder.png";
 
 const NowPlayingBar: React.FC = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-  const [isRepeat, setIsRepeat] = useState(false);
   const [isShuffle, setIsShuffle] = useState(false);
-  const [volume, setVolume] = useState(80);
-  const [currentTime] = useState(38);
-  const [duration] = useState(181);
 
-  // const { user, isAuthenticated } = useAuth();
   const { isAuthenticated } = useAuth();
+  const { state, actions } = useAudioQueue();
   const navigate = useNavigate();
+
+  const {
+    isPlaying,
+    currentSong,
+    progress,
+    duration,
+    volume,
+    repeatMode,
+    hasNextSong,
+    hasPreviousSong,
+    isLoading,
+  } = state;
 
   const handleToggleLike = useCallback(async () => {
     try {
@@ -55,37 +62,87 @@ const NowPlayingBar: React.FC = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  const handleToggleShuffle = useCallback(
-    () => setIsShuffle((prev) => !prev),
-    []
+  const handleToggleShuffle = useCallback(() => {
+    console.log(currentSong);
+    setIsShuffle((prev) => {
+      if (!prev) {
+        actions.shuffleQueue();
+      }
+      return !prev;
+    });
+  }, [actions]);
+
+  const handleToggleRepeat = useCallback(() => {
+    actions.toggleRepeatMode();
+  }, [actions]);
+
+  const handleTogglePlay = useCallback(() => {
+    if (isPlaying) {
+      actions.pause();
+    } else {
+      actions.resume();
+    }
+  }, [isPlaying, actions]);
+
+  const handleNext = useCallback(() => {
+    if (hasNextSong) {
+      actions.next();
+    }
+  }, [hasNextSong, actions]);
+
+  const handlePrevious = useCallback(() => {
+    if (hasPreviousSong) {
+      actions.previous();
+    }
+  }, [hasPreviousSong, actions]);
+
+  const handleSeek = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newTime = Number(e.target.value);
+      actions.seek(newTime);
+    },
+    [actions]
   );
-  const handleToggleRepeat = useCallback(
-    () => setIsRepeat((prev) => !prev),
-    []
-  );
-  const handleTogglePlay = useCallback(() => setIsPlaying((prev) => !prev), []);
 
   const handleVolumeChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setVolume(Number(e.target.value));
+      const newVolume = Number(e.target.value) / 100;
+      actions.setVolume(newVolume);
     },
-    []
+    [actions]
   );
+
+  const mainArtist = useMemo(() => {
+    if (isLoading || !currentSong)
+      return { id: "", display_name: "Unknown Artist" };
+    return (
+      getMainArtist(currentSong.artists ?? []) ?? {
+        id: "",
+        display_name: "Unknown Artist",
+      }
+    );
+  }, [isLoading, currentSong]);
 
   return (
     <div className={styles.nowPlayingBar}>
       <div className={styles.nowPlayingInfo}>
         <img
-          src={musicPlaceholder}
-          alt="Album Art"
+          src={currentSong?.image_url || musicPlaceholder}
+          alt={`${currentSong?.title} album art`}
           className={styles.albumArt}
         />
         <div className={styles.songInfo}>
-          <Link to="/artist/123" className={styles.artistName}>
-            Artist Name
-          </Link>
-          <Link to="/song/123" className={styles.songTitle}>
-            Song Title
+          {mainArtist.id ? (
+            <Link to={`/artist/${mainArtist.id}`} className={styles.artistName}>
+              {mainArtist.display_name || "Unknown Artist"}
+            </Link>
+          ) : (
+            <span className={styles.artistName}>
+              {mainArtist.display_name || "Unknown Artist"}
+            </span>
+          )}
+          <Link to={`/song/${currentSong?.id}`} className={styles.songTitle}>
+            {currentSong?.title}
           </Link>
         </div>
       </div>
@@ -98,10 +155,18 @@ const NowPlayingBar: React.FC = () => {
             })}
             onClick={handleToggleShuffle}
             aria-label={isShuffle ? "Disable Shuffle" : "Enable Shuffle"}
+            disabled={isLoading}
           >
             <LuShuffle />
           </button>
-          <button className={styles.controlButton} aria-label="Previous Track">
+          <button
+            className={classNames(styles.controlButton, {
+              [styles.controlButtonDisabled]: !hasPreviousSong,
+            })}
+            onClick={handlePrevious}
+            disabled={!hasPreviousSong || isLoading}
+            aria-label="Previous Track"
+          >
             <LuSkipBack />
           </button>
           <button
@@ -109,39 +174,60 @@ const NowPlayingBar: React.FC = () => {
               [styles.playButtonActive]: isPlaying,
             })}
             onClick={handleTogglePlay}
+            disabled={isLoading}
             aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? <LuCirclePause /> : <LuCirclePlay />}
           </button>
-          <button className={styles.controlButton} aria-label="Next Track">
+          <button
+            className={classNames(styles.controlButton, {
+              [styles.controlButtonDisabled]: !hasNextSong,
+            })}
+            onClick={handleNext}
+            disabled={!hasNextSong || isLoading}
+            aria-label="Next Track"
+          >
             <LuSkipForward />
           </button>
           <button
             className={classNames(styles.controlButton, styles.repeatButton, {
-              [styles.controlButtonActive]: isRepeat,
+              [styles.controlButtonActive]: repeatMode !== "none",
             })}
             onClick={handleToggleRepeat}
-            aria-label={isRepeat ? "Disable Repeat" : "Enable Repeat"}
+            disabled={isLoading}
+            aria-label={
+              repeatMode === "none"
+                ? "Enable Repeat"
+                : repeatMode === "one"
+                ? "Repeat One"
+                : "Repeat All"
+            }
           >
             <LuRepeat />
+            {repeatMode === "one" && (
+              <span className={styles.repeatIndicator}>1</span>
+            )}
           </button>
         </div>
         <div className={styles.progressContainer}>
           <span className={styles.timeLabel}>
-            {formatPlaybackTime(currentTime)}
+            {formatPlaybackTime(progress)}
           </span>
           <div className={styles.progressBar}>
             <div
               className={styles.progressFill}
-              style={{ width: `${(currentTime / duration) * 100}%` }}
+              style={{
+                width: `${duration > 0 ? (progress / duration) * 100 : 0}%`,
+              }}
             />
             <input
               type="range"
               min="0"
-              max={duration}
-              value={currentTime}
+              max={duration || 0}
+              value={progress}
+              onChange={handleSeek}
               className={styles.progressSlider}
-              disabled
+              disabled={isLoading || duration === 0}
               aria-label="Seek position"
             />
           </div>
@@ -174,10 +260,16 @@ const NowPlayingBar: React.FC = () => {
             type="range"
             min="0"
             max="100"
-            value={volume}
+            value={Math.round(volume * 100)}
             onChange={handleVolumeChange}
             className={styles.volumeSlider}
-            style={{ "--volume-percent": `${volume}%` } as React.CSSProperties}
+            disabled={isLoading}
+            aria-label="Volume control"
+            style={
+              {
+                "--volume-percent": `${Math.round(volume * 100)}%`,
+              } as React.CSSProperties
+            }
           />
         </div>
         <button

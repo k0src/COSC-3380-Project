@@ -104,6 +104,15 @@
   color: var(--color-white);
 }
 
+.controlButtonDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.controlButtonDisabled:hover {
+  color: var(--color-text-gray);
+}
+
 .playButton {
   font-size: var(--icon-size-xl);
   color: var(--color-white);
@@ -115,6 +124,27 @@
 
 .playButtonActive {
   color: var(--color-red);
+}
+
+.repeatIndicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--color-white);
+  background-color: var(--color-red);
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.repeatButton {
+  position: relative;
 }
 
 /* Progress Bar */
@@ -156,6 +186,7 @@
   height: 100%;
   transform: translateY(-50%);
   opacity: 0;
+  cursor: pointer;
 }
 
 /* Right Controls */

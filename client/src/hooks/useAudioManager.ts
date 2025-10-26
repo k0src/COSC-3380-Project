@@ -8,6 +8,7 @@ export interface AudioManagerActions {
   seek: (time: number) => void;
   setVolume: (volume: number) => void;
   stop: () => void;
+  setCurrentSong: (song: Song | null) => void;
 }
 
 export interface AudioManagerState {
@@ -68,6 +69,10 @@ export function useAudioManager(): AudioManager {
     const audio = audioRef.current;
     if (audio && currentSong) {
       try {
+        if (!audio.src || audio.src !== currentSong.audio_url) {
+          audio.src = currentSong.audio_url;
+        }
+
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           await playPromise;
@@ -103,6 +108,10 @@ export function useAudioManager(): AudioManager {
     }
   }, []);
 
+  const setCurrentSongState = useCallback((song: Song | null) => {
+    setCurrentSong(song);
+  }, []);
+
   return {
     get isPlaying() {
       return audioRef.current ? !audioRef.current.paused : false;
@@ -131,5 +140,6 @@ export function useAudioManager(): AudioManager {
     seek,
     setVolume,
     stop,
+    setCurrentSong: setCurrentSongState,
   };
 }

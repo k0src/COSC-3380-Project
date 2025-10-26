@@ -461,7 +461,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
     queue: [],
     progress: 0,
     duration: 0,
-    volume: 1,
+    volume: 0.8,
     isLoading: false,
     error: null,
     repeatMode: "none",
@@ -491,7 +491,9 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
 
           for (const persistedItem of persistedState.queue) {
             try {
-              const song = await songApi.getSongById(persistedItem.songId);
+              const song = await songApi.getSongById(persistedItem.songId, {
+                includeArtists: true,
+              });
               if (song) {
                 restoredItems.push({
                   song,
@@ -531,11 +533,15 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
               currentSong: currentSong,
               volume: persistedState.volume,
             });
+
+            if (currentSong) {
+              audioManager.setCurrentSong(currentSong);
+            }
           } else {
             console.log("No songs could be restored from persisted state");
           }
         } catch (error) {
-          console.error("Failed to restore queue from API:", error);
+          console.error("Failed to restore queue:", error);
         }
       }
     };
@@ -641,7 +647,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
 
     resume: async () => {
       if (state.currentSong) {
-        await audioManager.play(state.currentSong);
+        await audioManager.resume();
         dispatch({ type: "SET_PLAYING", isPlaying: true });
       }
     },
@@ -773,7 +779,9 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
         const restoredItems: QueueItem[] = [];
         for (const persistedItem of persistedState.queue) {
           try {
-            const song = await songApi.getSongById(persistedItem.songId);
+            const song = await songApi.getSongById(persistedItem.songId, {
+              includeArtists: true,
+            });
             if (song) {
               restoredItems.push({
                 song,
@@ -816,6 +824,11 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
           currentSong: currentSong,
           volume: persistedState.volume,
         });
+
+        if (currentSong) {
+          audioManager.setCurrentSong(currentSong);
+        }
+
         return true;
       } catch (error) {
         console.error("Failed to restore state with songs:", error);
