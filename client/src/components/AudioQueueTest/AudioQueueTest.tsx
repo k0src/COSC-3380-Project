@@ -116,7 +116,8 @@ const AudioQueueTest: React.FC = () => {
 
       <div>
         <strong>Navigation:</strong>
-        Previous: {state.hasPreviousSong ? "Available" : "Disabled"} | Next:{" "}
+        Previous: {state.hasPreviousSong ? "Available" : "Disabled"}
+        {state.progress > 3 && " (→ Start)"} | Next:{" "}
         {state.hasNextSong ? "Available" : "Disabled"}
       </div>
 

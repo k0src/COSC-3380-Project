@@ -13,3 +13,10 @@ export const QUEUE_CONSTRAINTS = {
   MAX_QUEUED_SONGS: 50,
   CACHE_EXPIRATION_MS: 24 * 60 * 60 * 1000,
 } as const;
+/**
+ * Audio playback constants
+ */
+export const AUDIO_CONSTANTS = {
+  PROGRESS_UPDATE_INTERVAL: 1000,
+  PREVIOUS_SONG_THRESHOLD: 3,
+} as const;

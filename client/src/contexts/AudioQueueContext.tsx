@@ -30,7 +30,7 @@ import {
   isLocalStorageAvailable,
 } from "@util";
 import { songApi } from "@api";
-import { AUDIO_QUEUE_STORAGE_KEYS } from "@constants";
+import { AUDIO_QUEUE_STORAGE_KEYS, AUDIO_CONSTANTS } from "@constants";
 
 const AudioQueueContext = createContext<AudioQueueContextType | null>(null);
 
@@ -114,7 +114,7 @@ function audioQueueReducer(
         true,
         undefined,
         "last",
-        undefined // No relative position for "last" - always goes to end
+        undefined
       );
 
       if (state.queue.length === 0) {
@@ -666,11 +666,16 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
     },
 
     previous: async () => {
-      const prevIndex = getPreviousIndex(state.currentIndex);
-      if (prevIndex !== null && state.queue[prevIndex]) {
-        dispatch({ type: "PREVIOUS_SONG" });
-        await audioManager.play(state.queue[prevIndex].song);
-        dispatch({ type: "SET_PLAYING", isPlaying: true });
+      if (state.progress > AUDIO_CONSTANTS.PREVIOUS_SONG_THRESHOLD) {
+        audioManager.seek(0);
+        dispatch({ type: "SET_PROGRESS", progress: 0 });
+      } else {
+        const prevIndex = getPreviousIndex(state.currentIndex);
+        if (prevIndex !== null && state.queue[prevIndex]) {
+          dispatch({ type: "PREVIOUS_SONG" });
+          await audioManager.play(state.queue[prevIndex].song);
+          dispatch({ type: "SET_PLAYING", isPlaying: true });
+        }
       }
     },
 
@@ -847,7 +852,9 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
       ...state,
       hasNextSong:
         getNextIndex(state.currentIndex, state.queue.length) !== null,
-      hasPreviousSong: getPreviousIndex(state.currentIndex) !== null,
+      hasPreviousSong:
+        getPreviousIndex(state.currentIndex) !== null ||
+        state.progress > AUDIO_CONSTANTS.PREVIOUS_SONG_THRESHOLD,
     },
     actions,
   };
