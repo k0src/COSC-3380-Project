@@ -1,0 +1,220 @@
+body {
+  background-color: #000;
+  color: #fff;
+}
+
+.contentWrapper {
+  padding-top: 120px; /* pushes Settings section down safely below topbar */
+  padding-right: 32px;
+  padding-left: 32px;
+  padding-bottom: 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+  background-color: #000;
+  min-height: calc(100vh - 160px);
+  color: #fff;
+}
+
+
+/* Optional: more centered layout for tall screens */
+@media (min-height: 900px) {
+  .contentWrapper {
+    padding-top: 220px;
+  }
+}
+
+
+.header {
+  margin-bottom: 28px;
+  color: #fff;
+}
+
+.headingPrimary {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0;
+  color: #fff;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 32px;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 24px 20px;
+  border-radius: 10px;
+  color: #fff;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  transform: translateY(-2px);
+}
+
+.sectionTitle {
+  font-weight: 600;
+  font-size: 18px;
+  color: #fff;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 6px;
+}
+
+.listItem {
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  color: #fff;
+}
+
+.link {
+  color: #9fb4ff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: #c6d4ff;
+}
+
+.deleteBtn {
+  background: transparent;
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.deleteBtn:hover {
+  background: rgba(255, 107, 107, 0.15);
+  border-color: rgba(255, 107, 107, 0.6);
+}
+
+/* POPUP OVERLAY FIX */
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* above topbar/playerbar */
+}
+
+/* POPUP BOX */
+.confirmBox {
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 24px 32px;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.8);
+  max-width: 360px;
+  text-align: center;
+  animation: fadeIn 0.2s ease-out;
+  color: #fff;
+}
+
+.confirmBox p {
+  margin-bottom: 18px;
+  font-size: 15px;
+  color: #fff;
+}
+
+.confirmButtons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btnPrimary {
+  background: #e74c3c;
+  border: none;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnPrimary:hover {
+  background: #ff4b3e;
+}
+
+.btnSecondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnSecondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* overlay fade */
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* dialog slide up */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* when open, animate overlay and box */
+.confirmOverlay {
+  animation: overlayFade 220ms ease-out both;
+}
+
+.confirmBox {
+  animation: slideUp 240ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+/* subtle focus styles */
+.confirmBox :where(button):focus {
+  outline: 2px solid rgba(159,180,255,0.28);
+  outline-offset: 2px;
+}
+
+/* prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .confirmOverlay, .confirmBox {
+    animation: none !important;
+  }
+}
+
+/* small polish on delete button */
+.deleteBtn {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.deleteBtn:active { transform: scale(0.98); }
+.deleteBtn:focus { box-shadow: 0 6px 18px rgba(0,0,0,0.6); }

@@ -1,0 +1,176 @@
+.contentWrapper {
+  padding: 150px 32px 40px 32px;;
+  color: #fff;
+}
+
+.header {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.headingPrimary {
+  font-size: 28px;
+  margin: 0;
+}
+
+.uploadGrid {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.dropzone {
+  border: 3px dashed rgba(255,255,255,0.25);
+  border-radius: 8px;
+  padding: 72px 48px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255,255,255,0.01);
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.dropzoneHover {
+  border-color: rgba(0,200,180,0.9);
+}
+
+.dropzoneText {
+  color: rgba(255,255,255,0.95);
+  margin-top: 14px;
+}
+
+.dropzoneText strong {
+  display: block;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.dropzoneIcon {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+/* subtle hover animation for the icon */
+.dropzoneIcon,
+.dropzoneIcon svg,
+.dropzoneIcon > * {
+  transition: transform 220ms ease, box-shadow 220ms ease, opacity 180ms ease;
+  will-change: transform, box-shadow, opacity;
+}
+
+.dropzone:hover .dropzoneIcon {
+  transform: translateY(-4px) scale(1.06);
+  box-shadow: 0 10px 30px rgba(0,200,180,0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropzoneIcon,
+  .dropzoneIcon svg,
+  .dropzoneIcon > * {
+    transition: none;
+    transform: none !important;
+  }
+}
+
+.uploadCard {
+  margin-top: 18px;
+  background: rgba(255,255,255,0.03);
+  padding: 16px;
+  border-radius: 10px;
+}
+
+.titleBox {
+  margin-top: 18px;
+  background: rgba(255,255,255,0.03);
+  padding: 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.titleLabel {
+  width: 140px;
+  color: rgba(255,255,255,0.9);
+  font-weight: 600;
+}
+
+.titleField {
+  flex: 1;
+}
+
+.fileRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progressOuter {
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progressInner {
+  height: 100%;
+  background: linear-gradient(90deg,#00e6b8,#00a7ff);
+  width: 0%;
+  transition: width 200ms linear;
+}
+
+.titleInput {
+  margin-top: 14px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.metaSmall {
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+}
+
+.btnRow {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.btnPrimary {
+  background: #00e6b8;
+  color: #000;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btnDanger {
+  background: #ff4d4f; /* red */
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btnSecondary {
+  background: transparent;
+  color: #fff;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  cursor: pointer;
+}
