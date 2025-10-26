@@ -52,6 +52,7 @@ import userPlaceholder from "@assets/user-placeholder.png";
 import { useStreamTracking } from "../../hooks";
 import musicPlaceholder from "../../../assets/music-placeholder.png";
 import { useAuth } from "../../contexts/AuthContext.js";
+import { useAudioQueue } from "../../contexts/AudioQueueContext.js";
 import { WaveformPlayer } from "@components";
 import { formatRelativeDate, formatDateString } from "@util";
 
@@ -126,6 +127,7 @@ const SongPage: React.FC = () => {
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
 
   const { user, isAuthenticated } = useAuth();
+  const { actions } = useAudioQueue();
   const navigate = useNavigate();
 
   // FIX LATER
@@ -423,6 +425,7 @@ const SongPage: React.FC = () => {
                 <WaveformPlayer
                   audioSrc={song.audio_url}
                   captureKeyboard={true}
+                  onPlay={() => actions.play(song)}
                 />
               </div>
             </div>

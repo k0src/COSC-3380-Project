@@ -631,16 +631,25 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
 
   const actions = {
     play: async (songOrList: Song | Song[]) => {
-      if (Array.isArray(songOrList)) {
-        dispatch({ type: "PLAY_LIST", songs: songOrList });
-        if (songOrList.length > 0) {
-          await audioManager.play(songOrList[0]);
+      try {
+        if (Array.isArray(songOrList)) {
+          dispatch({ type: "PLAY_LIST", songs: songOrList });
+          if (songOrList.length > 0) {
+            await audioManager.play(songOrList[0]);
+            dispatch({ type: "SET_PLAYING", isPlaying: true });
+          }
+        } else {
+          dispatch({ type: "PLAY_SONG", song: songOrList });
+          await audioManager.play(songOrList);
           dispatch({ type: "SET_PLAYING", isPlaying: true });
         }
-      } else {
-        dispatch({ type: "PLAY_SONG", song: songOrList });
-        await audioManager.play(songOrList);
-        dispatch({ type: "SET_PLAYING", isPlaying: true });
+      } catch (err) {
+        console.error("Failed to play audio:", err);
+        dispatch({
+          type: "SET_ERROR",
+          error: "Failed to load audio. The file may be unavailable.",
+        });
+        dispatch({ type: "SET_PLAYING", isPlaying: false });
       }
     },
 
@@ -651,8 +660,17 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
 
     resume: async () => {
       if (state.currentSong) {
-        await audioManager.resume();
-        dispatch({ type: "SET_PLAYING", isPlaying: true });
+        try {
+          await audioManager.resume();
+          dispatch({ type: "SET_PLAYING", isPlaying: true });
+        } catch (err) {
+          console.error("Failed to resume audio:", err);
+          dispatch({
+            type: "SET_ERROR",
+            error: "Failed to load audio. The file may be unavailable.",
+          });
+          dispatch({ type: "SET_PLAYING", isPlaying: false });
+        }
       }
     },
 

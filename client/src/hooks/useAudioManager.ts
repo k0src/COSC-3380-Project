@@ -38,25 +38,44 @@ export function useAudioManager(): AudioManager {
     };
   }, []);
 
-  const play = useCallback(
-    async (song: Song): Promise<void> => {
-      const audio = audioRef.current;
-      if (!audio) return;
+  const play = useCallback(async (song: Song): Promise<void> => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-      try {
-        setCurrentSong(song);
-        audio.src = song.audio_url;
+    try {
+      setCurrentSong(song);
+      audio.src = song.audio_url;
 
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          await playPromise;
-        }
-      } catch (err) {
-        console.error("Failed to play audio:", err);
+      if (audio.readyState === 0) {
+        await new Promise((resolve, reject) => {
+          const handleCanPlay = () => {
+            audio.removeEventListener("canplay", handleCanPlay);
+            audio.removeEventListener("error", handleError);
+            resolve(void 0);
+          };
+
+          const handleError = (_e: Event) => {
+            audio.removeEventListener("canplay", handleCanPlay);
+            audio.removeEventListener("error", handleError);
+            reject(new Error("Failed to load audio"));
+          };
+
+          audio.addEventListener("canplay", handleCanPlay);
+          audio.addEventListener("error", handleError);
+
+          audio.load();
+        });
       }
-    },
-    [currentSong]
-  );
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        await playPromise;
+      }
+    } catch (err) {
+      console.error("Failed to play audio:", err);
+      throw err;
+    }
+  }, []);
 
   const pause = useCallback(() => {
     const audio = audioRef.current;
@@ -73,12 +92,34 @@ export function useAudioManager(): AudioManager {
           audio.src = currentSong.audio_url;
         }
 
+        if (audio.readyState === 0) {
+          await new Promise((resolve, reject) => {
+            const handleCanPlay = () => {
+              audio.removeEventListener("canplay", handleCanPlay);
+              audio.removeEventListener("error", handleError);
+              resolve(void 0);
+            };
+
+            const handleError = (_e: Event) => {
+              audio.removeEventListener("canplay", handleCanPlay);
+              audio.removeEventListener("error", handleError);
+              reject(new Error("Failed to load audio"));
+            };
+
+            audio.addEventListener("canplay", handleCanPlay);
+            audio.addEventListener("error", handleError);
+
+            audio.load();
+          });
+        }
+
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           await playPromise;
         }
       } catch (err) {
         console.error("Failed to resume audio:", err);
+        throw err;
       }
     }
   }, [currentSong]);

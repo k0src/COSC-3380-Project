@@ -1,33 +1,18 @@
-import {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  memo,
-  useMemo,
-  forwardRef,
-  useImperativeHandle,
-} from "react";
+import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
 import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
 import WaveSurfer from "wavesurfer.js";
 import { useElementWidth } from "@hooks";
+import { useAudioQueue } from "@contexts";
 import classNames from "classnames";
 import styles from "./WaveformPlayer.module.css";
 import { LuCirclePause, LuCirclePlay } from "react-icons/lu";
 
-// Constants
 const BAR_WIDTH = 3;
 const BAR_GAP = 5;
 const WAVEFORM_HEIGHT = 80;
 const BAR_RADIUS = 6;
 const LINE_WIDTH = 2;
 const SKELETON_PADDING = 8;
-
-export interface WaveformPlayerHandle {
-  play: () => void;
-  pause: () => void;
-  playPause: () => void;
-}
 
 export interface WaveformPlayerProps {
   audioSrc: string;
@@ -36,191 +21,228 @@ export interface WaveformPlayerProps {
   disabled?: boolean;
 }
 
-const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerProps>(
-  ({ audioSrc, captureKeyboard, onPlay, disabled }, ref) => {
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [isReady, setIsReady] = useState(false);
-    const [showSkeleton, setShowSkeleton] = useState(true);
+const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
+  audioSrc,
+  captureKeyboard,
+  onPlay,
+  disabled,
+}) => {
+  const [isReady, setIsReady] = useState(false);
+  const [showSkeleton, setShowSkeleton] = useState(true);
 
-    const waveformRef = useRef<HTMLDivElement>(null);
-    const wavesurferRef = useRef<WaveSurfer | null>(null);
-    const measureRef = useRef<HTMLDivElement>(null);
-    const skeletonBarsRef = useRef<number[]>([]);
+  const { state, actions } = useAudioQueue();
+  const { isPlaying, progress, duration, currentSong, error } = state;
 
-    const rawWidth = useElementWidth(measureRef);
-    const wrapperWidth = useMemo(
-      () => Math.floor(rawWidth / 10) * 10,
-      [rawWidth]
-    );
+  const waveformRef = useRef<HTMLDivElement>(null);
+  const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const skeletonBarsRef = useRef<number[]>([]);
+  const prevCurrentSongRef = useRef<string | null>(null);
 
-    const barSlot = BAR_WIDTH + BAR_GAP;
-    const skeletonCount = Math.max(
-      1,
-      Math.floor((wrapperWidth - SKELETON_PADDING) / barSlot)
-    );
+  const isCurrentSong = currentSong?.audio_url === audioSrc;
 
-    if (skeletonBarsRef.current.length !== skeletonCount) {
-      skeletonBarsRef.current = new Array(skeletonCount)
-        .fill(0)
-        .map(() => 20 + Math.floor(Math.random() * 80));
+  const rawWidth = useElementWidth(measureRef);
+  const wrapperWidth = useMemo(
+    () => Math.floor(rawWidth / 10) * 10,
+    [rawWidth]
+  );
+
+  const barSlot = BAR_WIDTH + BAR_GAP;
+  const skeletonCount = Math.max(
+    1,
+    Math.floor((wrapperWidth - SKELETON_PADDING) / barSlot)
+  );
+
+  if (skeletonBarsRef.current.length !== skeletonCount) {
+    skeletonBarsRef.current = new Array(skeletonCount)
+      .fill(0)
+      .map(() => 20 + Math.floor(Math.random() * 80));
+  }
+
+  const skeletonBars = skeletonBarsRef.current;
+
+  const togglePlay = useCallback(() => {
+    if (isCurrentSong) {
+      if (isPlaying) {
+        actions.pause();
+      } else {
+        actions.resume();
+      }
+    } else {
+      onPlay?.();
+    }
+  }, [isCurrentSong, isPlaying, actions, onPlay]);
+
+  const handleReady = useCallback(() => {
+    setIsReady(true);
+    setTimeout(() => setShowSkeleton(false), 100);
+  }, []);
+
+  const handleWaveformClick = useCallback(
+    (relativeX: number) => {
+      const ws = wavesurferRef.current;
+      if (!ws) return;
+
+      if (state.currentSong?.audio_url !== audioSrc) return;
+
+      if (state.duration > 0) {
+        const seekTime = relativeX * state.duration;
+        actions.seek(seekTime);
+      }
+    },
+    [audioSrc, actions]
+  );
+
+  const handleError = useCallback((error: any) => {
+    console.error("WaveSurfer error:", error);
+    setIsReady(false);
+  }, []);
+
+  useEffect(() => {
+    if (!captureKeyboard || !isCurrentSong) return;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (
+        e.code === "Space" &&
+        e.target instanceof HTMLElement &&
+        !["INPUT", "TEXTAREA"].includes(e.target.tagName)
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePlay();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress, { capture: true });
+    return () =>
+      window.removeEventListener("keydown", handleKeyPress, {
+        capture: true,
+      });
+  }, [captureKeyboard, togglePlay, isCurrentSong]);
+
+  useEffect(() => {
+    setShowSkeleton(true);
+    setIsReady(false);
+  }, [audioSrc]);
+
+  const hoverPlugin = useMemo(
+    () =>
+      Hover.create({
+        lineColor: "#B22323",
+        lineWidth: LINE_WIDTH,
+        labelBackground: "#B22323",
+        labelColor: "#F6F6F6",
+        labelSize: "11px",
+      }),
+    []
+  );
+
+  useEffect(() => {
+    if (!waveformRef.current || !audioSrc) return;
+
+    const ws = WaveSurfer.create({
+      container: waveformRef.current,
+      height: WAVEFORM_HEIGHT,
+      waveColor: "#F6F6F6",
+      progressColor: "#d53131",
+      barWidth: BAR_WIDTH,
+      barRadius: BAR_RADIUS,
+      barGap: BAR_GAP,
+      normalize: true,
+      backend: "MediaElement" as const,
+      sampleRate: 44100,
+      url: audioSrc,
+      autoplay: false,
+      plugins: [hoverPlugin],
+    });
+
+    ws.on("ready", handleReady);
+    ws.on("error", handleError);
+
+    wavesurferRef.current = ws;
+
+    return () => {
+      ws.un("ready", handleReady);
+      ws.un("error", handleError);
+      ws.destroy();
+    };
+  }, [audioSrc, handleReady, handleError, hoverPlugin]);
+
+  useEffect(() => {
+    const ws = wavesurferRef.current;
+    if (!ws) return;
+
+    ws.on("click", handleWaveformClick);
+    return () => {
+      ws.un("click", handleWaveformClick);
+    };
+  }, [handleWaveformClick]);
+
+  useEffect(() => {
+    if (!wavesurferRef.current) return;
+
+    const currentAudioUrl = currentSong?.audio_url || null;
+    const prevAudioUrl = prevCurrentSongRef.current;
+
+    if (currentAudioUrl !== prevAudioUrl) {
+      prevCurrentSongRef.current = currentAudioUrl;
+
+      if (currentAudioUrl === audioSrc) {
+        return;
+      } else {
+        wavesurferRef.current.seekTo(0);
+        return;
+      }
     }
 
-    const skeletonBars = skeletonBarsRef.current;
+    if (isCurrentSong && duration > 0 && progress > 1) {
+      const progressPercent = progress / duration;
+      wavesurferRef.current.seekTo(progressPercent);
+    }
+  }, [currentSong?.audio_url, audioSrc, isCurrentSong, progress, duration]);
 
-    // Imperative handle for parent
-    useImperativeHandle(
-      ref,
-      () => ({
-        play: () => wavesurferRef.current?.play(),
-        pause: () => wavesurferRef.current?.pause(),
-        playPause: () => wavesurferRef.current?.playPause(),
-      }),
-      []
-    );
-
-    // Event handlers
-    const togglePlay = useCallback(() => {
-      wavesurferRef.current?.playPause();
-    }, []);
-
-    const handleReady = useCallback(() => {
-      setIsPlaying(false);
-      setIsReady(true);
-      setTimeout(() => setShowSkeleton(false), 100);
-    }, []);
-
-    const handlePlay = useCallback(() => {
-      setIsPlaying(true);
-      onPlay?.();
-    }, [onPlay]);
-
-    const handlePause = useCallback(() => {
-      setIsPlaying(false);
-    }, []);
-
-    const handleError = useCallback((error: any) => {
-      console.error("WaveSurfer error:", error);
-      setIsReady(false);
-    }, []);
-
-    // Keyboard capture
-    useEffect(() => {
-      if (!captureKeyboard) return;
-
-      const handleKeyPress = (e: KeyboardEvent) => {
-        if (
-          e.code === "Space" &&
-          e.target instanceof HTMLElement &&
-          !["INPUT", "TEXTAREA"].includes(e.target.tagName)
-        ) {
-          e.preventDefault();
-          e.stopPropagation();
-          togglePlay();
+  return (
+    <div className={styles.playerContainer}>
+      <button
+        onClick={togglePlay}
+        className={classNames(styles.playerPlayBtn, {
+          [styles.playerPlayBtnActive]: isCurrentSong && isPlaying,
+        })}
+        aria-label={
+          isCurrentSong && error
+            ? "Audio unavailable"
+            : isCurrentSong && isPlaying
+            ? "Pause"
+            : "Play"
         }
-      };
+        disabled={disabled || !isReady || (isCurrentSong && !!error)}
+        title={isCurrentSong && error ? error : undefined}
+      >
+        {isCurrentSong && isPlaying ? <LuCirclePause /> : <LuCirclePlay />}
+      </button>
 
-      window.addEventListener("keydown", handleKeyPress, { capture: true });
-      return () =>
-        window.removeEventListener("keydown", handleKeyPress, {
-          capture: true,
-        });
-    }, [captureKeyboard, togglePlay]);
+      <div ref={measureRef} className={styles.waveWrapper}>
+        {showSkeleton && (
+          <div className={styles.skeletonWaveform} aria-hidden="true">
+            {skeletonBars.map((h, i) => (
+              <div
+                key={i}
+                className={styles.skeletonBar}
+                style={{ height: `${h}%`, width: `${BAR_WIDTH}px` }}
+              />
+            ))}
+          </div>
+        )}
 
-    useEffect(() => {
-      setShowSkeleton(true);
-      setIsReady(false);
-    }, [audioSrc]);
-
-    // WaveSurfer initialization
-    const hoverPlugin = useMemo(
-      () =>
-        Hover.create({
-          lineColor: "#B22323",
-          lineWidth: LINE_WIDTH,
-          labelBackground: "#B22323",
-          labelColor: "#F6F6F6",
-          labelSize: "11px",
-        }),
-      []
-    );
-
-    useEffect(() => {
-      if (!waveformRef.current || !audioSrc) return;
-
-      const ws = WaveSurfer.create({
-        container: waveformRef.current,
-        height: WAVEFORM_HEIGHT,
-        waveColor: "#F6F6F6",
-        progressColor: "#d53131",
-        barWidth: BAR_WIDTH,
-        barRadius: BAR_RADIUS,
-        barGap: BAR_GAP,
-        normalize: true,
-        backend: "MediaElement" as const,
-        sampleRate: 44100,
-        url: audioSrc,
-        autoplay: false,
-        plugins: [hoverPlugin],
-      });
-
-      ws.on("ready", handleReady);
-      ws.on("play", handlePlay);
-      ws.on("pause", handlePause);
-      ws.on("error", handleError);
-      wavesurferRef.current = ws;
-
-      return () => {
-        ws.un("ready", handleReady);
-        ws.un("play", handlePlay);
-        ws.un("pause", handlePause);
-        ws.un("error", handleError);
-        ws.destroy();
-      };
-    }, [
-      audioSrc,
-      handleReady,
-      handlePlay,
-      handlePause,
-      handleError,
-      hoverPlugin,
-    ]);
-
-    return (
-      <div className={styles.playerContainer}>
-        <button
-          onClick={togglePlay}
-          className={classNames(styles.playerPlayBtn, {
-            [styles.playerPlayBtnActive]: isPlaying,
+        <div
+          ref={waveformRef}
+          className={classNames(styles.playerWaveform, {
+            [styles.hiddenWaveform]: showSkeleton,
           })}
-          aria-label={isPlaying ? "Pause" : "Play"}
-          disabled={disabled || !isReady}
-        >
-          {isPlaying ? <LuCirclePause /> : <LuCirclePlay />}
-        </button>
-
-        <div ref={measureRef} className={styles.waveWrapper}>
-          {showSkeleton && (
-            <div className={styles.skeletonWaveform} aria-hidden="true">
-              {skeletonBars.map((h, i) => (
-                <div
-                  key={i}
-                  className={styles.skeletonBar}
-                  style={{ height: `${h}%`, width: `${BAR_WIDTH}px` }}
-                />
-              ))}
-            </div>
-          )}
-
-          <div
-            ref={waveformRef}
-            className={classNames(styles.playerWaveform, {
-              [styles.hiddenWaveform]: showSkeleton,
-            })}
-          />
-        </div>
+        />
       </div>
-    );
-  }
-);
+    </div>
+  );
+};
 
 export default memo(WaveformPlayer);
