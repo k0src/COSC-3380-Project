@@ -23,6 +23,7 @@ import {
   getCurrentSong,
   filterPreservedItems,
   insertItemsAtPosition,
+  toggleQueueShuffle,
   saveAudioQueueState,
   loadAudioQueueState,
   createDebouncedSave,
@@ -39,7 +40,7 @@ function audioQueueReducer(
 ): AudioState {
   switch (action.type) {
     case "PLAY_SONG": {
-      const newQueueItem = createQueueItem(action.song, false);
+      const newQueueItem = createQueueItem(action.song, false, 0);
       return {
         ...state,
         queue: [newQueueItem],
@@ -47,6 +48,7 @@ function audioQueueReducer(
         currentSong: action.song,
         currentQueueId: newQueueItem.queueId,
         error: null,
+        isShuffled: false,
       };
     }
 
@@ -69,11 +71,20 @@ function audioQueueReducer(
         currentSong: action.songs[0],
         currentQueueId: newQueueItems[0].queueId,
         error: null,
+        isShuffled: false,
       };
     }
 
     case "QUEUE_NEXT": {
-      const newQueueItem = createQueueItem(action.song, true);
+      const insertPosition = state.currentIndex + 1;
+      const relativePosition = 1;
+      const newQueueItem = createQueueItem(
+        action.song,
+        true,
+        undefined,
+        "next",
+        relativePosition
+      );
 
       if (state.queue.length === 0) {
         return {
@@ -85,7 +96,6 @@ function audioQueueReducer(
         };
       }
 
-      const insertPosition = state.currentIndex + 1;
       const newQueue = insertItemsAtPosition(
         state.queue,
         [newQueueItem],
@@ -99,7 +109,13 @@ function audioQueueReducer(
     }
 
     case "QUEUE_LAST": {
-      const newQueueItem = createQueueItem(action.song, true);
+      const newQueueItem = createQueueItem(
+        action.song,
+        true,
+        undefined,
+        "last",
+        undefined // No relative position for "last" - always goes to end
+      );
 
       if (state.queue.length === 0) {
         return {
@@ -328,33 +344,18 @@ function audioQueueReducer(
       };
     }
 
-    case "SHUFFLE_QUEUE": {
-      if (state.queue.length <= 1) {
-        return state;
-      }
-
-      const currentItem = state.queue[state.currentIndex];
-      const otherItems = state.queue.filter(
-        (_, index) => index !== state.currentIndex
+    case "TOGGLE_SHUFFLE_QUEUE": {
+      const { newQueue, newCurrentIndex, newShuffleState } = toggleQueueShuffle(
+        state.queue,
+        state.currentIndex,
+        state.isShuffled
       );
-
-      const shuffledOthers = [...otherItems];
-      for (let i = shuffledOthers.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledOthers[i], shuffledOthers[j]] = [
-          shuffledOthers[j],
-          shuffledOthers[i],
-        ];
-      }
-
-      const shuffledQueue = currentItem
-        ? [currentItem, ...shuffledOthers]
-        : shuffledOthers;
 
       return {
         ...state,
-        queue: shuffledQueue,
-        currentIndex: currentItem ? 0 : -1,
+        queue: newQueue,
+        currentIndex: newCurrentIndex,
+        isShuffled: newShuffleState,
       };
     }
 
@@ -441,6 +442,7 @@ function audioQueueReducer(
         volume: action.volume,
         isPlaying: false,
         error: null,
+        isShuffled: false,
       };
 
     default:
@@ -465,6 +467,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
     isLoading: false,
     error: null,
     repeatMode: "none",
+    isShuffled: false,
   };
 
   const [state, dispatch] = useReducer(audioQueueReducer, initialState);
@@ -501,6 +504,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
                   queueId: `restored_${Date.now()}_${Math.random()
                     .toString(36)
                     .substring(2, 11)}`,
+                  originalIndex: restoredItems.length,
                 });
               }
             } catch (error) {
@@ -725,8 +729,8 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
       dispatch({ type: "REMOVE_ITEM", itemId });
     },
 
-    shuffleQueue: () => {
-      dispatch({ type: "SHUFFLE_QUEUE" });
+    toggleShuffleQueue: () => {
+      dispatch({ type: "TOGGLE_SHUFFLE_QUEUE" });
     },
 
     moveQueueItem: (fromIndex: number, toIndex: number) => {
@@ -789,6 +793,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
                 queueId: `restored_${Date.now()}_${Math.random()
                   .toString(36)
                   .substring(2, 11)}`,
+                originalIndex: restoredItems.length,
               });
             }
           } catch (error) {

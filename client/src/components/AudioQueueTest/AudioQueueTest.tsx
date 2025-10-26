@@ -128,6 +128,10 @@ const AudioQueueTest: React.FC = () => {
         <strong>Repeat Mode:</strong> {state.repeatMode}
       </div>
 
+      <div>
+        <strong>Shuffle:</strong> {state.isShuffled ? "On" : "Off"}
+      </div>
+
       {state.error && (
         <div>
           <strong>Error:</strong> {state.error}
@@ -175,7 +179,9 @@ const AudioQueueTest: React.FC = () => {
       </div>
 
       <div>
-        <button onClick={actions.shuffleQueue}>Shuffle Queue</button>
+        <button onClick={actions.toggleShuffleQueue}>
+          {state.isShuffled ? "Unshuffle" : "Shuffle"} Queue
+        </button>
         <button onClick={() => actions.moveQueueItem(0, 2)}>
           Move First Song to 3rd Position
         </button>
@@ -247,8 +253,11 @@ const AudioQueueTest: React.FC = () => {
         <ul>
           {state.queue.map((item, index) => (
             <li key={item.queueId}>
-              {item.song.title} {item.isQueued && "(User Queued)"}{" "}
-              {index === state.currentIndex && "← Current"}
+              <strong>{item.song.title}</strong>
+              {item.isQueued && " (User Queued)"}
+              {item.originalIndex !== undefined &&
+                ` [Orig: ${item.originalIndex}]`}
+              {index === state.currentIndex && " ← Current"}
             </li>
           ))}
         </ul>

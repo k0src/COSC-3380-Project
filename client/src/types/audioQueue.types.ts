@@ -7,6 +7,9 @@ export interface QueueItem {
   song: Song;
   isQueued: boolean;
   queueId: string;
+  originalIndex?: number;
+  queueType?: "next" | "last";
+  relativePosition?: number; // Position relative to current song when queued
 }
 
 /**
@@ -26,6 +29,7 @@ export interface AudioState {
   isLoading: boolean;
   error: string | null;
   repeatMode: RepeatMode;
+  isShuffled: boolean;
   hasNextSong?: boolean;
   hasPreviousSong?: boolean;
 }
@@ -47,7 +51,7 @@ export interface AudioQueueActions {
   replaceQueue: (songs: Song[], preserveQueued?: boolean) => void;
   stop: () => void;
   removeFromQueue: (itemId: string) => void;
-  shuffleQueue: () => void;
+  toggleShuffleQueue: () => void;
   moveQueueItem: (fromIndex: number, toIndex: number) => void;
   setRepeatMode: (mode: RepeatMode) => void;
   toggleRepeatMode: () => void;
@@ -91,7 +95,7 @@ export type QueueOperation =
   | { type: "NEXT_SONG" }
   | { type: "PREVIOUS_SONG" }
   | { type: "REMOVE_ITEM"; itemId: string }
-  | { type: "SHUFFLE_QUEUE" }
+  | { type: "TOGGLE_SHUFFLE_QUEUE" }
   | { type: "MOVE_QUEUE_ITEM"; fromIndex: number; toIndex: number }
   | { type: "SET_PLAYING"; isPlaying: boolean }
   | { type: "SET_PROGRESS"; progress: number }

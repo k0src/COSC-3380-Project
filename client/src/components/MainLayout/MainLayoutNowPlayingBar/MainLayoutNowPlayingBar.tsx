@@ -20,7 +20,6 @@ import musicPlaceholder from "@assets/music-placeholder.png";
 
 const NowPlayingBar: React.FC = () => {
   const [isLiked, setIsLiked] = useState(false);
-  const [isShuffle, setIsShuffle] = useState(false);
 
   const { isAuthenticated } = useAuth();
   const { state, actions } = useAudioQueue();
@@ -36,6 +35,7 @@ const NowPlayingBar: React.FC = () => {
     hasNextSong,
     hasPreviousSong,
     isLoading,
+    isShuffled,
   } = state;
 
   const handleToggleLike = useCallback(async () => {
@@ -63,13 +63,8 @@ const NowPlayingBar: React.FC = () => {
   }, [isAuthenticated, navigate]);
 
   const handleToggleShuffle = useCallback(() => {
-    const wasShuffled = isShuffle;
-    setIsShuffle(!wasShuffled);
-
-    if (!wasShuffled) {
-      actions.shuffleQueue();
-    }
-  }, [actions, isShuffle]);
+    actions.toggleShuffleQueue();
+  }, [actions]);
 
   const handleToggleRepeat = useCallback(() => {
     actions.toggleRepeatMode();
@@ -150,10 +145,10 @@ const NowPlayingBar: React.FC = () => {
         <div className={styles.controlButtons}>
           <button
             className={classNames(styles.controlButton, styles.shuffleButton, {
-              [styles.controlButtonActive]: isShuffle,
+              [styles.controlButtonActive]: isShuffled,
             })}
             onClick={handleToggleShuffle}
-            aria-label={isShuffle ? "Disable Shuffle" : "Enable Shuffle"}
+            aria-label={isShuffled ? "Disable Shuffle" : "Enable Shuffle"}
             disabled={isLoading}
           >
             <LuShuffle />
