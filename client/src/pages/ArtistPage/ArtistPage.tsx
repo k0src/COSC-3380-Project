@@ -23,91 +23,87 @@ import SongCard from "../../components/SongCard/SongCard";
 import ArtistCard from "../../components/ArtistCard/ArtistCard";
 import { artistApi } from "@api/artist.api";
 import { useAsyncData } from "../../hooks";
-import { useAuth } from "../../contexts/AuthContent.js";
-import { songApi } from "../../api/song.api.js";
-
-
+import { useAuth } from "@contexts"; // Fixed import path
+import { songApi } from "@api/song.api"; // Fixed import path
+import { PageLoader } from "@components"; // Assuming you have a loader
 
 const ArtistPage: React.FC = () => {
-    const { id } = useParams<{ id: UUID }>();
-    const { user, isAuthenticated } = useAuth();
+  const { id } = useParams<{ id: UUID }>();
+  const { user, isAuthenticated } = useAuth();
 
-      if (!id) {
-    return <div>Invalid song ID</div>;
+  if (!id) {
+    return <div className={styles.errorText}>Invalid Artist ID</div>;
   }
-    
-
 
   const { data, loading, error } = useAsyncData(
-      {
-        artist: () =>
-          artistApi.getSongs(id, {
-            includeAlbum: true,
-            // includeArtist: true,
-            includeLikes: true,
-          }),
-        moreSongsByArtist: async () =>
-          artistApi.getSongs(
-            "84a51edc-a38f-4659-974b-405b3e40f432", // test - pass artist as prop
-            { limit: 5 }
-          ),
-        suggestedSongs: () =>
-          songApi.getSuggestedSongs(id, {
-            userId: isAuthenticated && user ? user.id : undefined,
-            limit: 5,
-          }),
-      },
-      [id],
-      { cacheKey: `song_${id}`, hasBlobUrl: true }
-    );
-  const artist = data?.artist;
-  const moreSongsByArtist = data?.moreSongsByArtist;
-  const suggestedSongs = data?.suggestedSongs;
+    {
+      // 1. Get the artist's details
+      artist: () => artistApi.getArtistById(id),
 
-  // Mock data
-  const popularSongs = Array(10).fill({ // Renamed and shortened to Top 5
-    title: "Song Title",
-    artist: {artist},
-    image: "/PlayerBar/Mask group.png",
-    plays: Math.random()*100000,
-    likes: Math.random()*1000,
-    comments: Math.random()*100,
-  });
+      // 2. Get the artist's popular songs
+      popularSongs: () =>
+        artistApi.getSongs(id, {
+          includeAlbum: true,
+          includeLikes: true,
+          limit: 10,
+          // You might want to add sorting to your API, e.g., sortBy: 'plays'
+        }),
+      
+      // TODO: Add API calls for these sections
+      albums: () => artistApi.getAlbums(id, { limit: 8 }),
+      // singles: () => artistApi.getSingles(id, { limit: 8 }),
+      relatedArtists: () => artistApi.getArtists(id, { limit: 5 }),
+      // relatedArtists: () => artistApi.getRelatedArtists(id, { limit: 6 }),
+    },
+    [id], // Rerun when the artist ID changes
+    { cacheKey: `artist_${id}` } // Updated cache key
+  );
 
-  const albums = [
-    { title: 'Certified Lover Boy', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/7/79/Drake_-_Certified_Lover_Boy.png' , year: 2008},
-    { title: 'Scorpion', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/9/90/Scorpion_by_Drake.jpg' , year: 2008},
-    { title: 'Views', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/a/af/Drake_-_Views_cover.jpg' , year: 2008},
-    { title: 'Take Care', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/a/ae/Drake_-_Take_Care_cover.jpg' , year: 2008},
-    { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
-    { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
-    { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
-    { title: 'Nothing Was the Same', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/4/42/Drake_-_Nothing_Was_the_Same_cover.png' , year: 2008},
-  ];
+  const artist: Artist | undefined = data?.artist;
+  const popularSongs: ArtistSong[] | undefined = data?.popularSongs;
+  const albums: Album[] = data?.albums || [];
+  // const singles: Song[] = data?.singles || [];
+  const relatedArtists: Artist[] = data?.relatedArtists || [];
 
-  const singles = Array(8).fill({ // Using your original 'newSongs' data
+  // --- Mock Data (for sections without API calls yet) ---
+  // We'll keep these for now so the UI doesn't break.
+  // Replace them when you add the API calls above.
+  
+  // const albums = [
+  //   { title: 'Certified Lover Boy', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/7/79/Drake_-_Certified_Lover_Boy.png' , year: 2008},
+  //   { title: 'Scorpion', artist: 'Drake', image: 'https://upload.wikimedia.org/wikipedia/en/9/90/Scorpion_by_Drake.jpg' , year: 2008},
+  //   // ... other mock albums
+  // ];
+
+  const singles = Array(8).fill({
     title: "New Release",
     artist: "Drake",
     image: "/PlayerBar/Mask group.png",
     year: 2008
   });
 
-  const relatedArtists = [
-     { name: 'Diddy', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSESUJJt24KBJL4V0TqWT1qSE5tDZ1tawD14Q&s' },
-     { name: 'The Weeknd', image: 'https://placehold.co/600x400' },
-     { name: 'Future', image: 'https://placehold.co/600x400' },
-     { name: 'Lil Wayne', image: 'https://placehold.co/600x400' },
-     { name: 'Rihanna', image: 'https://placehold.co/600x400' },
-     { name: 'Travis Scott', image: 'https://placehold.co/600x400' },
-  ];
+  // const relatedArtists = [
+  //    { name: 'Diddy', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSESUJJt24KBJL4V0TqWT1qSE5tDZ1tawD14Q&s' },
+  //    // ... other mock artists
+  // ];
+  // ---------------- End Mock Data -----------------
 
-  const sampleBio = "Aubrey Drake Graham, known professionally as Drake, is a Canadian rapper, singer, and actor who has won multiple Grammys and Billboard Music Awards. His signature sound combines singing and rapping, and juxtaposes vulnerability with braggadocio. Drake's 2010 debut album, Thank Me Later, debuted at number one, and he's won Grammys for best rap album for Take Care in 2013, and best rap song for \"Hotline Bling\" in 2017 and \"God's Plan\" in 2019."
 
+  // Loading and Error States
+  if (loading) {
+    return <PageLoader />; // Use a proper loading component
+  }
+
+  if (error || !artist) {
+    return <div className={styles.errorText}>Error loading artist: {error?.message}</div>;
+  }
+
+  // If data is loaded, render the page
   return (
     <>
-    <Helmet>
-      DRAKE
-    </Helmet>
+      <Helmet>
+        <title>{artist.display_name}</title>
+      </Helmet>
       {/* <Topbar />
       <Sidebar /> */}
       
@@ -115,30 +111,36 @@ const ArtistPage: React.FC = () => {
         <div className={styles.contentWrapper}>
           
           <ArtistBanner 
-            artistName="Drake" 
-            location="Toronto" 
-            imageURL="https://i2.wp.com/www.passionweiss.com/wp-content/uploads/2024/07/Drake_POW-ezgif.com-webp-to-jpg-converter-1.jpg?resize=1000%2C1000&ssl=1"
+            artistName={artist.display_name} 
+            location={artist.location || "Unknown"} 
+            imageURL={artist.image_url || 'https://placehold.co/600x400'} // Use real artist image
           />
 
-          {/* Popular Tracks Section */}
+          {/* Popular Tracks Section (Using real data) */}
           <section className={styles.trackListSection}>
             <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>Popular</h2>
             <div className={styles.verticalCardsList}>
-              {popularSongs.map((song, index) => (
-                <div key={index} className={styles.compactCard}>
+              {popularSongs?.map((song, index) => (
+                <div key={song.id} className={styles.compactCard}>
                   <span className={styles.trackNumber}>{index + 1}</span>
-                  <img src={song.image} alt={song.title} />
+                  {/* Use album art if available, fallback to song image */}
+                  <img 
+                    // src={song.albums?.image_url || song.image_url || 'https://placehold.co/48x48/181818/b3b3b3?text=?'} 
+                    alt={song.title} 
+                  />
                   <div className={styles.songInfo}>
                     <h3 className={[styles.instrumentSansContent, styles.verticalSongTitle].join(' ')}>{song.title}</h3>
-                    {/* <p className={[styles.instrumentSansContent, styles.artistName].join(' ')}>{song.artist}</p> */}
                   </div>
-                  <span className={styles.songPlays}>{song.plays.toLocaleString()}</span>
+                  <span className={styles.songPlays}>
+                    {/* Assuming your song object has 'play_count' */}
+                    {/* {song.play_count ? song.play_count.toLocaleString() : 0} */}
+                  </span>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* Albums Section */}
+          {/* Albums Section (Still Mocked) */}
           <section className={styles.horizontalScrollSection}>
             <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>Albums</h2>
             <div className={styles.horizontalCardList}>
@@ -152,35 +154,34 @@ const ArtistPage: React.FC = () => {
             </div>
           </section>
 
-          {/* Singles Section */}
+          {/* Singles Section (Still Mocked) */}
           <section className={styles.horizontalScrollSection}>
             <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>Singles</h2>
             <div className={styles.horizontalCardList}>
               {singles.map((song, index) => (
-                // <div key={index} className={styles.albumCard}> {/* Reusing albumCard style */}
-                //   <img src={song.image} alt={song.title} />
-                //   <h3 className={styles.albumTitle}>{song.title}</h3>
-                //   <p className={styles.artistName}>{song.artist}</p>
-                // </div>
                 <SongCard key={index} {...song} />
               ))}
             </div>
           </section>
 
-          {/* Fans Also Like Section */}
+          {/* Fans Also Like Section (Still Mocked) */}
           <section className={styles.horizontalScrollSection}>
             <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>Fans Also Like</h2>
             <div className={styles.horizontalCardList}>
               {relatedArtists.map((artist, index) => (
-                <ArtistCard index={index} artist={artist} />
+                <ArtistCard key={index} index={index} artist={artist} />
               ))}
             </div>
           </section>
 
-          {/* About Section */}
+          {/* About Section (Using real data) */}
           <section className={styles.aboutSection}>
             <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>About</h2>
-            <ArtistBio bio={sampleBio} followerCount={250}/>
+            <ArtistBio 
+              bio={artist.bio || "No biography available for this artist."} 
+              // Assuming your artist object has `followers_count`
+              followerCount={0} 
+            />
           </section>
 
         </div>

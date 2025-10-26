@@ -11,9 +11,6 @@ export interface Artist {
   user?: User;
   songs?: Array<{ song: Song; role: string }>;
   albums?: Album[];
-  location?: string;
-  image_url?: string;
-
 }
 
 export interface SongArtist extends Artist {
