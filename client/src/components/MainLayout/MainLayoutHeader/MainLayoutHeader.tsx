@@ -21,7 +21,7 @@ const MainLayoutHeader: React.FC = () => {
     <header className={styles.header}>
       <nav className={styles.headerNav}>
         <NavLink
-          to="/"
+          to="/loggedin"
           className={({ isActive }) =>
             isActive ? styles.navbarLinkActive : styles.navbarLink
           }

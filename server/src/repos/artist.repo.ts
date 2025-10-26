@@ -211,6 +211,70 @@ export default class ArtistRepository {
     }
   }
 
+  /**
+   * Fetches multiple artists, excluding a specific artist.
+   * (For "Related Artists" section)
+   * @param artistIdToExclude - The ID of the artist to exclude from the results.
+   * @param options - Options for pagination and including related data.
+   * @param options.includeUser - Option to include the user who created each artist.
+   * @param options.limit - Maximum number of artists to return.
+   * @param options.offset - Number of artists to skip.
+   * @returns A list of other artists.
+   * @throws Error if the operation fails.
+   */
+  static async getOtherArtists(
+    artistIdToExclude: UUID, // <-- Takes the ID to exclude
+    options?: {
+      includeUser?: boolean;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Artist[]> {
+    try {
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
+
+      const sql = `
+        SELECT a.*,
+        CASE WHEN $1 THEN row_to_json(u.*)
+        ELSE NULL END as user
+        FROM artists a
+        LEFT JOIN users u ON a.user_id = u.id
+        WHERE a.id != $4 -- Exclude the current artist
+        ORDER BY RANDOM() -- Get a random assortment
+        LIMIT $2 OFFSET $3
+      `;
+
+      const params = [
+        options?.includeUser ?? false,
+        limit,
+        offset,
+        artistIdToExclude, // Pass the excluded ID as the 4th parameter
+      ];
+
+      const artists = await query(sql, params);
+      if (!artists || artists.length === 0) {
+        return [];
+      }
+
+      const processedArtists = await Promise.all(
+        artists.map(async (artist) => {
+          if (artist.user && artist.user.profile_picture_url) {
+            artist.user.profile_picture_url = getBlobUrl(
+              artist.user.profile_picture_url
+            );
+          }
+          return artist;
+        })
+      );
+
+      return processedArtists;
+    } catch (error) {
+      console.error("Error fetching other artists:", error);
+      throw error;
+    }
+  }
+
   //! NEEDS TO BE INCLUDEALBUMS!!! - multiple
   /**
    * Fetches songs for a given artist.

@@ -12,7 +12,7 @@ export interface Artist {
   songs?: Array<{ song: Song; role: string }>;
   albums?: Album[];
   location?: string;
-  image_url?: string;
+  profile_pic_url?: string;
 
 }
 

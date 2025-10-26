@@ -29,6 +29,18 @@ export const songApi = {
     return response.data;
   },
 
+  async getMany(
+    options?: {
+      includeAlbums?: boolean;
+      includeArtists?: boolean;
+    }
+  ) {
+    const response = await api.get<Song[]>(`/songs`, {
+      params: options,
+    });
+    return response.data;
+  },
+
   async incrementSongStreams(id: UUID) {
     await api.put(`/songs/${id}/streams`);
   },

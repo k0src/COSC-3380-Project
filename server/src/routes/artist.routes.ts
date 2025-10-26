@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { ArtistRepository } from "@repositories";
+import { UUID } from "@types";
 
 const router = express.Router();
 
@@ -8,13 +9,19 @@ const router = express.Router();
 // /api/artists?includeUser=true&limit=50&offset=0
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { includeUser, limit, offset } = req.query;
+    const { includeUser, limit, offset, exclude } = req.query;
 
-    const artists = await ArtistRepository.getMany({
-      includeUser: includeUser === "true",
-      limit: limit ? parseInt(limit as string, 10) : undefined,
-      offset: offset ? parseInt(offset as string, 10) : undefined,
-    });
+    // const artists = await ArtistRepository.getMany({
+    //   includeUser: includeUser === "true",
+    //   limit: limit ? parseInt(limit as string, 10) : undefined,
+    //   offset: offset ? parseInt(offset as string, 10) : undefined,
+    // });
+    const artists = await ArtistRepository.getOtherArtists(exclude as UUID, {
+        includeUser: includeUser === "true",
+        limit: limit ? Number(limit) : undefined,
+        offset: offset ? Number(offset) : undefined,
+      });
+    
 
     res.status(200).json(artists);
   } catch (error) {
@@ -79,7 +86,7 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
 });
 
 router.get("/:id/albums", async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { id } = req.params ;
   const { 
     includeLikes, 
     includeRuntime, 

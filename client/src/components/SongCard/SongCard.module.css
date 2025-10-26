@@ -75,11 +75,14 @@
 }
 
 .songMainInfo{
-  display: grid;
-  grid-template-columns: 30% 30% 60%;
+  display: flex;
+  justify-content: center;
+  /* grid-template-columns: 30% 30% 60%; */
 }
 
 .songTitle {
+  display: flex;
+  justify-content: center;
   font-size: 1.5em; /* Matched albumTitle */
   font-weight: 700; /* Matched albumTitle */
   color: #FFFFFF;
@@ -91,8 +94,7 @@
 
 .songArtist {
   display: flex;
-  justify-content: left;
-  font-size: 1rem; /* Matched .artistName from previous TSX */
+  font-size: 1.5rem; /* Matched .artistName from previous TSX */
   color: #b3b3b3; /* Matched .artistName color */
   margin: 0;
   /* white-space: nowrap;

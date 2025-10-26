@@ -15,6 +15,24 @@ export const artistApi = {
     return response.data;
   },
 
+  async getOtherArtists(
+    artistIdToExclude: UUID,
+    options?: {
+      includeUser?: boolean;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    // Calls GET /artists?exclude=:id&limit=...
+    const response = await api.get<Artist[]>("/artists", {
+      params: {
+        ...options,
+        exclude: artistIdToExclude, // Add the exclude parameter
+      },
+    });
+    return response.data;
+  },
+
   
   // --- New Function Added ---
   async getArtistById(

@@ -1,34 +1,27 @@
 import React from "react";
 import styles from "./SongCard.module.css";
 import { Play } from "lucide-react";
+import type { Song } from "../../types";
 
-export interface SongCardProps {
-  image: string;
-  title: string;
-  artist: string;
-  plays: number;
-  likes: number;
-  comments: number;
-  year: number;
-}
-
-const SongCard: React.FC<SongCardProps> = ({
-  image,
+const SongCard: React.FC<Song> = ({
   title,
-  artist,
-  plays,
+  artists = [], // This is likely an array of Artist objects, not strings
+  image_url,
+  streams,
   likes,
-  comments,
-  year,
+  release_date,
 }) => {
+  const year = release_date ? new Date(release_date).getFullYear().toString() : '';
+
+  // --- FIX: Map over the artists array to get their names ---
+  const artistNames = artists.map(artist => artist.display_name).join(', ');
+
   return (
     <div className={styles.songCard}>
       <div className={styles.imageContainer}>
-        <img src={image} alt={title} className={styles.songImage} />
+        <img src={image_url} alt={title} className={styles.songImage} />
         <div className={styles.overlay}>
-
           <Play size={48} />
-
         </div>
       </div>
 
@@ -36,25 +29,23 @@ const SongCard: React.FC<SongCardProps> = ({
         <p className={[styles.instrumentSansContent, styles.songTitle].join(' ')}>{title}</p>
       </div>
 
-    <div className={styles.songMainInfo}>
-      <div>
-        <span className={[styles.instrumentSansContent, styles.songArtist].join(' ')}>{artist}</span>
+      <div className={styles.songMainInfo}>
+        <div>
+          {/* Use the new artistNames variable here */}
+          <span className={[styles.instrumentSansContent, styles.songArtist].join(' ')}>{artistNames}{" - "}{year}</span>
+        </div>
+        {/* <div>
+          <p className={[styles.instrumentSansContent, styles.songArtist].join(' ')}>{year}</p>
+        </div> */}
       </div>
-      <div>
-        <p className={[styles.instrumentSansContent, styles.songArtist].join(' ')}>{year}</p>
-      </div>
-    </div>
-      <div className={styles.songStats}>
+      {/* <div className={styles.songStats}>
         <div className={styles.statItem}>
-          <span>{plays}</span>
+          <span>{streams}</span>
         </div>
         <div className={styles.statItem}>
           <span>{likes}</span>
         </div>
-        <div className={styles.statItem}>
-          <span>{comments}</span>
-        </div>
-      </div>
+      </div> */}
     </div>
   );
 };

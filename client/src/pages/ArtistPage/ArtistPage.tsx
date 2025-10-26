@@ -49,10 +49,10 @@ const ArtistPage: React.FC = () => {
           // You might want to add sorting to your API, e.g., sortBy: 'plays'
         }),
       
-      // TODO: Add API calls for these sections
+      // TODO: Add API calls for these sections 
       albums: () => artistApi.getAlbums(id, { limit: 8 }),
       // singles: () => artistApi.getSingles(id, { limit: 8 }),
-      relatedArtists: () => artistApi.getArtists(id, { limit: 5 }),
+      relatedArtists: () => artistApi.getOtherArtists(id, { limit: 8 }),
       // relatedArtists: () => artistApi.getRelatedArtists(id, { limit: 6 }),
     },
     [id], // Rerun when the artist ID changes
@@ -113,7 +113,7 @@ const ArtistPage: React.FC = () => {
           <ArtistBanner 
             artistName={artist.display_name} 
             location={artist.location || "Unknown"} 
-            imageURL={artist.image_url || 'https://placehold.co/600x400'} // Use real artist image
+            imageURL={artist.profile_pic_url || 'https://placehold.co/600x400'} // Use real artist image
           />
 
           {/* Popular Tracks Section (Using real data) */}
@@ -146,9 +146,9 @@ const ArtistPage: React.FC = () => {
             <div className={styles.horizontalCardList}>
               {albums.map((album, index) => (
                 <div key={index} className={styles.albumCard}>
-                  <img src={album.image} alt={album.title} />
+                  <img src={album.image_url} alt={album.title} />
                   <h3 className={[styles.instrumentSansContent, styles.songTitle].join(' ')}>{album.title}</h3>
-                  <p className={[styles.instrumentSansContent, styles.songArtist].join(' ')}>{album.artist}</p>
+                  <p className={[styles.instrumentSansContent, styles.songArtist].join(' ')}>{album.created_by}</p>
                 </div>
               ))}
             </div>

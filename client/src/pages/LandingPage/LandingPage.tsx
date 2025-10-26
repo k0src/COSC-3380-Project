@@ -2,17 +2,29 @@ import React from 'react';
 import styles from './LandingPage.module.css';
 import { Search } from 'lucide-react';
 import SongCard from '../../components/SongCard/SongCard';
+import { useAsyncData } from '@hooks';
+import { songApi } from '@api/song.api';
+import type { Song } from '@types';
 
 
 const LandingPage: React.FC = () => {
 
-  const singles = Array(4).fill({ // Using your original 'newSongs' data
-    title: "New Release",
-    artist: "Drake",
-    image: "/PlayerBar/Mask group.png",
-    year: 2008
-  });
+  // const singles = Array(4).fill({ // Using your original 'newSongs' data
+  //   title: "New Release",
+  //   artist: "Drake",
+  //   image: "/PlayerBar/Mask group.png",
+  //   year: 2008
+  // });
 
+  const { data, loading, error } = useAsyncData(
+    {
+      singles: () => songApi.getMany({includeArtists: true}).then((songs) => songs.slice(0, 4)),
+    },
+    [],
+    { cacheKey: 'landing_page' }
+  );
+
+  const singles: Song[] = data?.singles || [];
 
   return (
     <div className={styles.pageContainer}>
@@ -45,9 +57,16 @@ const LandingPage: React.FC = () => {
       <main className={styles.mainContent}>
         <h2 className={styles.trendingHeader}>Or Listen to whats Trending</h2>
         <div className={styles.trendingSection}>
-              {singles.map((song, index) => (
-                <SongCard key={index} {...song} />
-              ))}
+          {loading && <div>Loading...</div>}
+          {Boolean(error) && <div className={styles.errorText}>Error loading songs.</div>}
+          
+          {/* You must check if 'singles' exists before mapping */}
+          {!loading && !Boolean(error) && singles && singles.map((song: Song) => (
+            
+            // Use song.id for the key, not index
+            <SongCard key={song.id} {...song} />
+          
+          ))}
         </div>
       </main>
     </div>
