@@ -57,7 +57,6 @@ const deployPkg = {
 
 fs.writeFileSync(distPkg, JSON.stringify(deployPkg, null, 2));
 
-// Write build version file
 const buildInfoPath = path.join(publicDir, "build-info.json");
 fs.writeFileSync(
   buildInfoPath,
