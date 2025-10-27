@@ -140,6 +140,10 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
   useEffect(() => {
     if (!waveformRef.current || !audioSrc) return;
 
+    const audio = new Audio();
+    audio.src = audioSrc;
+    audio.preload = "metadata";
+
     const ws = WaveSurfer.create({
       container: waveformRef.current,
       height: WAVEFORM_HEIGHT,
@@ -149,9 +153,9 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
       barRadius: BAR_RADIUS,
       barGap: BAR_GAP,
       normalize: true,
-      backend: "WebAudio" as const,
+      backend: "MediaElement" as const,
       sampleRate: 44100,
-      url: audioSrc,
+      media: audio,
       autoplay: false,
       plugins: [hoverPlugin],
     });
