@@ -1,5 +1,5 @@
 import api from "./api";
-import type { Artist, ArtistSong, Song, UUID } from "../types";
+import type { ArtistSong, UUID } from "../types";
 
 export const artistApi = {
   async getSongs(
