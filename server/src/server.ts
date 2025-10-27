@@ -43,6 +43,7 @@ app.use(
         imgSrc: ["'self'", "data:", "https:"],
         scriptSrc: ["'self'"],
         connectSrc: ["'self'", "https://*.blob.core.windows.net"],
+        mediaSrc: ["'self'", "https://*.blob.core.windows.net"],
       },
     },
     crossOriginEmbedderPolicy: false,

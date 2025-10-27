@@ -154,6 +154,10 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
       url: audioSrc,
       autoplay: false,
       plugins: [hoverPlugin],
+      fetchParams: {
+        mode: "cors",
+        credentials: "omit",
+      },
     });
 
     ws.on("ready", handleReady);
