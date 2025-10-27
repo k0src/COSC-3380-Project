@@ -6,6 +6,7 @@
   padding: var(--spacing-md);
   display: grid;
   grid-template-columns: 1fr 2rem 1fr;
+  column-gap: 0.4rem;
   align-items: center;
   flex: 1;
 }
