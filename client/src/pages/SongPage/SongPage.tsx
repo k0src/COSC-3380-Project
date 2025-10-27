@@ -53,7 +53,7 @@ import { useStreamTracking } from "../../hooks";
 import musicPlaceholder from "../../../assets/music-placeholder.png";
 import { useAuth } from "../../contexts/AuthContext.js";
 import { useAudioQueue } from "../../contexts/AudioQueueContext.js";
-import { SongContainer, SongStats, ErrorPage } from "@components";
+import { ErrorPage, SongContainer, SongStats, SongDetails } from "@components";
 import { formatRelativeDate, formatDateString } from "@util";
 
 const DUMMY_PLAYS = [
@@ -369,32 +369,10 @@ const SongPage: React.FC = () => {
               <SongStats
                 playsData={{ weeks: DUMMY_WEEKS, plays: DUMMY_PLAYS }}
               />
-              <div className={styles.detailsContainer}>
-                <div className={styles.detailsColumn}>
-                  <span className={styles.detailLabel}>Genre</span>
-                  <div className={styles.detailWrapper}>
-                    <LuMusic className={styles.detailIcon} />
-                    <span
-                      className={classNames(
-                        styles.detailName,
-                        styles.genreName
-                      )}
-                    >
-                      {song.genre}
-                    </span>
-                  </div>
-                </div>
-                <div className={styles.verticalRule}></div>
-                <div className={styles.detailsColumn}>
-                  <span className={styles.detailLabel}>Release Date</span>
-                  <div className={styles.detailWrapper}>
-                    <LuCalendar className={styles.detailIcon} />
-                    <span className={styles.detailName}>
-                      {formatDateString(song.release_date)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <SongDetails
+                genre={song.genre || "Unknown"}
+                releaseDate={song.release_date || "2025-01-01"}
+              />
               <div className={styles.songActionsContainer}>
                 <button
                   className={classNames(styles.actionButton, {
