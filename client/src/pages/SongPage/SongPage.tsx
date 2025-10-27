@@ -53,7 +53,7 @@ import { useStreamTracking } from "../../hooks";
 import musicPlaceholder from "../../../assets/music-placeholder.png";
 import { useAuth } from "../../contexts/AuthContext.js";
 import { useAudioQueue } from "../../contexts/AudioQueueContext.js";
-import { WaveformPlayer } from "@components";
+import { SongContainer } from "@components";
 import { formatRelativeDate, formatDateString } from "@util";
 
 const DUMMY_PLAYS = [
@@ -381,7 +381,7 @@ const SongPage: React.FC = () => {
       ) : (
         <div className={styles.songLayout}>
           <div className={styles.songLayoutTop}>
-            <div
+            {/* <div
               className={styles.songContainer}
               style={
                 {
@@ -428,7 +428,13 @@ const SongPage: React.FC = () => {
                   onPlay={() => actions.play(song)}
                 />
               </div>
-            </div>
+            </div> */}
+            <SongContainer
+              song={song}
+              coverGradient={coverGradient}
+              comments={comments}
+            />
+
             <div className={styles.songLayoutTopRight}>
               <div className={styles.songStatsContainer}>
                 <span className={styles.statsText}>Weekly Plays</span>

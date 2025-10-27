@@ -1,56 +1,85 @@
-// import { WaveformPlayer } from "@components";
-// import type { Song, CoverGradient } from "@types";
-// import styles from "./SongContainer.module.css";
-// import musicPlaceholder from "@assets/music-placeholder.png";
-// import { LuPlay, LuThumbsUp, LuMessageSquareText } from "react-icons/lu";
+import { useMemo, useCallback, memo } from "react";
+import { WaveformPlayer } from "@components";
+import type { Song, CoverGradient, Comment } from "@types";
+import { useAudioQueue } from "@contexts";
+import { getMainArtist } from "@util";
+import { LuPlay, LuThumbsUp, LuMessageSquareText } from "react-icons/lu";
+import styles from "./SongContainer.module.css";
+import musicPlaceholder from "@assets/music-placeholder.png";
 
-// export interface SongContainerProps {
-//   coverGradient: CoverGradient;
-// }
+export interface SongContainerProps {
+  coverGradient: CoverGradient;
+  song: Song;
+  comments?: Comment[];
+}
 
-// const SongContainer: React.FC = () => {
-//   return (
-//     <div
-//       className={styles.songContainer}
-//       style={
-//         {
-//           "--cover-gradient-color1": `rgba(${coverGradient.color1.r}, ${coverGradient.color1.g}, ${coverGradient.color1.b}, 0.2)`,
-//           "--cover-gradient-color2": `rgba(${coverGradient.color2.r}, ${coverGradient.color2.g}, ${coverGradient.color2.b}, 0.2)`,
-//         } as React.CSSProperties
-//       }
-//     >
-//       <img
-//         src={song.image_url ? song.image_url : musicPlaceholder}
-//         alt={`${song.title} Cover`}
-//         className={styles.coverImage}
-//       />
-//       <div className={styles.songRight}>
-//         <div className={styles.songInfoContainer}>
-//           <span className={styles.artistName}>{mainArtist?.display_name}</span>
-//           <span className={styles.songTitle}>{song.title}</span>
-//           <div className={styles.interactionsContainer}>
-//             <div className={styles.interactionStat}>
-//               <LuPlay />
-//               <span className={styles.interactionText}>
-//                 {song?.streams ?? 0}
-//               </span>
-//             </div>
-//             <div className={styles.interactionStat}>
-//               <LuThumbsUp />
-//               <span className={styles.interactionText}>{song?.likes ?? 0}</span>
-//             </div>
-//             <div className={styles.interactionStat}>
-//               <LuMessageSquareText />
-//               <span className={styles.interactionText}>
-//                 {comments ? comments.length : 0}
-//               </span>
-//             </div>
-//           </div>
-//         </div>
-//         <WaveformPlayer audioSrc={song.audio_url} captureKeyboard={true} />
-//       </div>
-//     </div>
-//   );
-// };
+const SongContainer: React.FC<SongContainerProps> = ({
+  coverGradient,
+  song,
+  comments,
+}) => {
+  const { actions } = useAudioQueue();
 
-// export default SongContainer;
+  const mainArtist = useMemo(
+    () => (song.artists ? getMainArtist(song.artists) : null),
+    [song.artists]
+  );
+
+  const gradientStyle = useMemo(
+    () =>
+      ({
+        "--cover-gradient-color1": `rgba(${coverGradient.color1.r}, ${coverGradient.color1.g}, ${coverGradient.color1.b}, 0.2)`,
+        "--cover-gradient-color2": `rgba(${coverGradient.color2.r}, ${coverGradient.color2.g}, ${coverGradient.color2.b}, 0.2)`,
+      } as React.CSSProperties),
+    [coverGradient]
+  );
+
+  const InteractionStat = memo(
+    ({ icon: Icon, value }: { icon: React.ElementType; value: number }) => (
+      <div className={styles.interactionStat}>
+        <Icon />
+        <span className={styles.interactionText}>{value}</span>
+      </div>
+    )
+  );
+
+  const handlePlay = useCallback(() => {
+    actions.play(song);
+  }, [actions, song]);
+
+  return (
+    <div className={styles.songContainer} style={gradientStyle}>
+      <img
+        src={song.image_url || musicPlaceholder}
+        alt={`${song.title} Cover`}
+        className={styles.coverImage}
+        loading="lazy"
+      />
+      <div className={styles.songRight}>
+        <div className={styles.songInfoContainer}>
+          <span className={styles.artistName}>{mainArtist?.display_name}</span>
+          <span className={styles.songTitle}>{song.title}</span>
+          <div className={styles.interactionsContainer}>
+            <div className={styles.interactionsContainer}>
+              <InteractionStat icon={LuPlay} value={song.streams ?? 0} />
+              <InteractionStat icon={LuThumbsUp} value={song.likes ?? 0} />
+              <InteractionStat
+                icon={LuMessageSquareText}
+                value={comments?.length ?? 0}
+              />
+            </div>
+          </div>
+        </div>
+        {song.audio_url && (
+          <WaveformPlayer
+            audioSrc={song.audio_url}
+            captureKeyboard={false}
+            onPlay={handlePlay}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SongContainer;

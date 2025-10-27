@@ -9,3 +9,4 @@ export { default as MainLayoutSearchBar } from "./MainLayout/MainLayoutSearchBar
 export { default as MainLayoutNowPlayingBar } from "./MainLayout/MainLayoutNowPlayingBar/MainLayoutNowPlayingBar.js";
 export { default as WaveformPlayer } from "./SongPage/WaveformPlayer/WaveformPlayer.js";
 export { default as AppLayout } from "./AppLayout/AppLayout.js";
+export { default as SongContainer } from "./SongPage/SongContainer/SongContainer.js";
