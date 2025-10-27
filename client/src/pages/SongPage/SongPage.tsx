@@ -29,8 +29,8 @@ const SongPage: React.FC = () => {
     );
   }
 
-  const { data, loading, error } = useAsyncData(
-    {
+  const asyncConfig = useMemo(
+    () => ({
       song: () =>
         songApi.getSongById(id, {
           includeAlbums: true,
@@ -39,26 +39,29 @@ const SongPage: React.FC = () => {
           includeComments: true,
         }),
       coverGradient: () => songApi.getCoverGradient(id),
-    },
-    [id],
-    { cacheKey: `song_${id}`, hasBlobUrl: true }
+    }),
+    [id]
   );
+
+  const { data, loading, error } = useAsyncData(asyncConfig, [id], {
+    cacheKey: `song_${id}`,
+    hasBlobUrl: true,
+  });
 
   const song = data?.song;
   const coverGradient = data?.coverGradient;
 
   const { mainArtist, otherArtists } = useMemo(() => {
-    if (!song || !song?.artists || song.artists.length === 0) {
+    if (!song?.artists?.length) {
       return { mainArtist: null, otherArtists: [] };
     }
 
     const main =
-      song.artists.find((artist) => artist.role === "Main") || song.artists[0];
-    const others =
-      song.artists.filter((artist) => artist.role !== "Main") || [];
+      song.artists.find((artist) => artist.role === "Main") ?? song.artists[0];
+    const others = song.artists.filter((artist) => artist.role !== "Main");
 
     return { mainArtist: main, otherArtists: others };
-  }, [song]);
+  }, [song?.artists]);
 
   if (error) {
     return (
