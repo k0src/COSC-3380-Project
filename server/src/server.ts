@@ -5,7 +5,7 @@ import helmet from "helmet";
 import path from "path";
 import dotenv from "dotenv";
 import { testConnection } from "config/database";
-import { generalRateLimit } from "./middleware/rateLimiting.middleware.js";
+// import { generalRateLimit } from "./middleware/rateLimiting.middleware.js";
 
 import * as Routes from "@routes";
 
@@ -67,10 +67,6 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Serve static files
-const clientDistPath = path.join(__dirname, "public");
-app.use(express.static(clientDistPath));
-
 // Routes
 app.use("/api/auth", Routes.authRoutes);
 app.use("/api/songs", Routes.songRoutes);
@@ -79,14 +75,12 @@ app.use("/api/artists", Routes.artistRoutes);
 app.use("/api/playlists", Routes.playlistRoutes);
 app.use("/api/users", Routes.userRoutes);
 
-// React SPA routes
-app.get("/", (req, res) => {
-  res.sendFile(path.join(clientDistPath, "index.html"));
-});
+const clientDistPath = path.join(__dirname, "public");
+app.use(express.static(clientDistPath));
 
-// Catch all 404
-app.use((req, res) => {
-  res.status(404).send("Not found");
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  res.sendFile(path.join(clientDistPath, "index.html"));
 });
 
 async function startServer() {
