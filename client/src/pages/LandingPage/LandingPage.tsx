@@ -32,8 +32,12 @@ const LandingPage: React.FC = () => {
       <header className={styles.navbar}>
         <div className={styles.logo}>COOGMUSIC</div>
         <nav className={styles.navButtons}>
-          <button className={`${styles.navButton} ${styles.signUpButton}`}>SIGN UP</button>
-          <button className={`${styles.navButton} ${styles.loginButton}`}>LOGIN</button>
+          <Link to="/signup">
+            <button className={`${styles.navButton} ${styles.signUpButton}`}>SIGN UP</button>
+          </Link>
+          <Link to="/login">
+            <button className={`${styles.navButton} ${styles.loginButton}`}>LOGIN</button>
+          </Link>
         </nav>
       </header>
 
