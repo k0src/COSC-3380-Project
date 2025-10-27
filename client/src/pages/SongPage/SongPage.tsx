@@ -1,9 +1,8 @@
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { songApi, artistApi } from "@api";
+import { songApi } from "@api";
 import type { UUID } from "@types";
-import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
 import {
   ErrorPage,
@@ -20,7 +19,6 @@ import styles from "./SongPage.module.css";
 
 const SongPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
-  const { user, isAuthenticated } = useAuth();
 
   if (!id) {
     return (
@@ -41,15 +39,6 @@ const SongPage: React.FC = () => {
           includeComments: true,
         }),
       coverGradient: () => songApi.getCoverGradient(id),
-      moreSongsByArtist: async () =>
-        artistApi.getSongs("84a51edc-a38f-4659-974b-405b3e40f432", {
-          limit: 5,
-        }),
-      suggestedSongs: () =>
-        songApi.getSuggestedSongs(id, {
-          userId: isAuthenticated && user ? user.id : undefined,
-          limit: 5,
-        }),
     },
     [id],
     { cacheKey: `song_${id}`, hasBlobUrl: true }
@@ -70,16 +59,6 @@ const SongPage: React.FC = () => {
 
     return { mainArtist: main, otherArtists: others };
   }, [song]);
-
-  // useStreamTracking({
-  //   songId: id,
-  //   wavesurferRef,
-  //   onStream: (songId) => {
-  //     if (isAuthenticated) {
-  //       songApi.incrementSongStreams(songId);
-  //     }
-  //   },
-  // });
 
   if (error) {
     return (

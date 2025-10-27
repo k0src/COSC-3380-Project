@@ -1,66 +1,79 @@
-import { useState, useEffect } from "react";
-import WaveSurfer from "wavesurfer.js";
+import { useEffect, useState } from "react";
+import { useAuth } from "@contexts";
+import { useAudioQueue } from "@contexts/AudioQueueContext";
+import { songApi, userApi } from "@api";
 
-const STREAM_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const STREAM_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const MIN_PLAY_TIME = 30; // 30 seconds
 
-interface UseStreamTrackingParams {
-  songId: string;
-  wavesurferRef: React.RefObject<WaveSurfer | null>;
-  onStream: (songId: string) => void;
-}
+export const useStreamTracking = () => {
+  const { user } = useAuth();
+  const { state } = useAudioQueue();
 
-/**
- * Hook to track if a song has been streamed in the current session (24h).
- * @param param.songId - The ID of the song to track.
- * @param param.wavesurferRef - Ref to the WaveSurfer instance.
- * @param param.onStream - Callback to invoke when the song is streamed.
- * @returns
- */
-export const useStreamTracking = ({
-  songId,
-  wavesurferRef,
-  onStream,
-}: UseStreamTrackingParams) => {
-  const [hasStreamedThisSession, setHasStreamedThisSession] = useState(false);
+  const [trackedSongs, setTrackedSongs] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const streamKey = `streamed_${songId}`;
+  const hasStreamedRecently = (songId: string): boolean => {
+    if (!user) return false;
+
+    const streamKey = `streamed_${user.id}_${songId}`;
     const streamData = localStorage.getItem(streamKey);
 
     if (streamData) {
-      const { timestamp } = JSON.parse(streamData);
-      const isExpired = Date.now() - timestamp > STREAM_TTL;
+      try {
+        const { timestamp } = JSON.parse(streamData);
+        const isExpired = Date.now() - timestamp > STREAM_TTL;
 
-      if (!isExpired) {
-        setHasStreamedThisSession(true);
-      } else {
+        if (!isExpired) {
+          return true;
+        } else {
+          localStorage.removeItem(streamKey);
+        }
+      } catch (error) {
+        console.error("Error parsing stream data:", error);
         localStorage.removeItem(streamKey);
       }
     }
-  }, [songId]);
+
+    return false;
+  };
 
   useEffect(() => {
-    if (!wavesurferRef.current || hasStreamedThisSession) return;
+    const currentSongId = state.currentSong?.id;
 
-    const ws = wavesurferRef.current;
+    if (!user || !currentSongId || !state.isPlaying) return;
+    if (trackedSongs.has(currentSongId)) return;
+    if (hasStreamedRecently(currentSongId)) {
+      setTrackedSongs((prev) => new Set(prev).add(currentSongId));
+      return;
+    }
 
-    const handlePlay = () => {
-      onStream(songId);
-      setHasStreamedThisSession(true);
+    if (state.progress >= MIN_PLAY_TIME) {
+      const trackStream = async () => {
+        try {
+          await Promise.all([
+            userApi.addToHistory(user.id, currentSongId, "song"),
+            songApi.incrementSongStreams(currentSongId),
+          ]);
 
-      const streamKey = `streamed_${songId}`;
-      localStorage.setItem(
-        streamKey,
-        JSON.stringify({ timestamp: Date.now() })
-      );
-    };
+          const streamKey = `streamed_${user.id}_${currentSongId}`;
+          localStorage.setItem(
+            streamKey,
+            JSON.stringify({ timestamp: Date.now() })
+          );
 
-    ws.once("play", handlePlay);
+          setTrackedSongs((prev) => new Set(prev).add(currentSongId));
+        } catch (error) {
+          console.error("Error tracking stream:", error);
+        }
+      };
 
-    return () => {
-      ws.un("play", handlePlay);
-    };
-  }, [wavesurferRef.current, songId, hasStreamedThisSession, onStream]);
-
-  return { hasStreamedThisSession };
+      trackStream();
+    }
+  }, [
+    state.progress,
+    state.currentSong?.id,
+    state.isPlaying,
+    user,
+    trackedSongs,
+  ]);
 };

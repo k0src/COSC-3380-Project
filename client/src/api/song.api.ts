@@ -36,7 +36,6 @@ export const songApi = {
     return response.data;
   },
 
-  //! SHOULD NOT BE HERE FIX!!!
   async incrementSongStreams(id: UUID) {
     await api.put(`/songs/${id}/streams`);
   },

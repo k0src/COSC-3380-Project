@@ -1,4 +1,5 @@
 import { useMemo, useCallback, memo } from "react";
+import { useStreamTracking } from "@hooks";
 import { WaveformPlayer } from "@components";
 import type { Song, CoverGradient, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
@@ -20,6 +21,7 @@ const SongContainer: React.FC<SongContainerProps> = ({
   numberComments,
 }) => {
   const { actions } = useAudioQueue();
+  useStreamTracking();
 
   const gradientStyle = useMemo(
     () =>

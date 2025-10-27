@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useReducer, useEffect } from "react";
 import type { ReactNode } from "react";
-import userAPI from "../api/user.api";
+import authApi from "../api/auth.api";
 import type {
   SignupData,
   LoginData,
   AuthState,
   AuthAction,
   AuthContextType,
-} from "../types";
+} from "@types";
 
 const initialState: AuthState = {
   user: null,
@@ -90,14 +90,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   const checkAuthStatus = async () => {
-    if (!userAPI.isAuthenticated()) {
+    if (!authApi.isAuthenticated()) {
       dispatch({ type: "SET_LOADING", payload: false });
       return;
     }
 
     try {
       dispatch({ type: "AUTH_START" });
-      const response = await userAPI.getCurrentUser();
+      const response = await authApi.getCurrentUser();
       dispatch({ type: "AUTH_SUCCESS", payload: response.user });
     } catch (error) {
       console.error("Auth check failed:", error);
@@ -112,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (data: LoginData): Promise<void> => {
     try {
       dispatch({ type: "AUTH_START" });
-      const response = await userAPI.login(data);
+      const response = await authApi.login(data);
       dispatch({ type: "AUTH_SUCCESS", payload: response.user });
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Login failed";
@@ -124,7 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signup = async (data: SignupData): Promise<void> => {
     try {
       dispatch({ type: "AUTH_START" });
-      const response = await userAPI.signup(data);
+      const response = await authApi.signup(data);
       dispatch({ type: "AUTH_SUCCESS", payload: response.user });
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Signup failed";
@@ -135,7 +135,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     try {
-      await userAPI.logout();
+      await authApi.logout();
     } catch (error) {
       console.error("Logout error:", error);
     } finally {

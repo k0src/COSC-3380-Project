@@ -1,5 +1,6 @@
 export type UUID = string;
 export type UserRole = "USER" | "ARTIST" | "ADMIN";
+export type EntityType = "song" | "album" | "artist" | "playlist";
 
 export interface Comment {
   id: UUID;
