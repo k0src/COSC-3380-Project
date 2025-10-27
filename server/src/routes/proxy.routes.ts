@@ -3,13 +3,6 @@ import { getBlobUrl } from "../config/blobStorage.js";
 
 const router = Router();
 
-router.get("/test", (req, res) => {
-  res.json({
-    message: "Proxy routes are working",
-    timestamp: new Date().toISOString(),
-  });
-});
-
 router.get("/audio/:filename", async (req, res) => {
   try {
     const { filename } = req.params;
