@@ -4,7 +4,7 @@
   min-height: 30vh;
   max-height: 30vh;
   padding: 1em;
-  background: linear-gradient(90deg, #ff3b30 0%, #ff6a4a 100%);
+  background: linear-gradient(90deg, var(--color-red) 0%, #ff6a4a 100%);
   border-radius: 8px;
   display: grid;
   flex-direction: column;
@@ -14,13 +14,14 @@
 }
 
 .artistPFPDiv{
-  width: fit-content;
+  width: 100%;
   display: flex ;
   justify-content: center;
 }
 
 .artistPFP{
-  max-width: 50%;
+  height: 128px;
+  width: 128px;
   clip-path: circle();
 }
 

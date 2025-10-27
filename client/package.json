@@ -11,6 +11,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.3.4",
+    "@mui/x-charts": "^8.15.0",
     "axios": "^1.11.0",
     "classnames": "^2.5.1",
     "dotenv": "^17.2.2",
@@ -20,7 +24,8 @@
     "react-helmet-async": "^2.0.5",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.8.2",
-    "react-spinners": "^0.17.0"
+    "react-spinners": "^0.17.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

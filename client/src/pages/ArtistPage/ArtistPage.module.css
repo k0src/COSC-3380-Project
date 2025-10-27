@@ -42,9 +42,7 @@ Reset and variables
 .sectionTitle {
   font-size: 24px;
   font-weight: 700;
-  margin: 0;
-  padding-left: 12px;
-  
+  margin: 0;  
 }
 
 .viewMore {
@@ -92,6 +90,7 @@ Reset and variables
   flex-direction: column;
   gap: 16px;
   overflow-y: auto;
+  margin-top: 1rem;
   height: calc(400px - 48px); /* Match featured height minus header */
 }
 
@@ -152,7 +151,11 @@ ArtistPage custom CSS - Will fix later*/
 .trackListSection,
 .horizontalScrollSection,
 .aboutSection {
-  margin-top: 2.5rem;
+  margin-top: 1rem;
+}
+
+.trackNumber{
+  margin: 0 1rem;
 }
 
 .aboutSection {
@@ -327,4 +330,90 @@ ArtistPage custom CSS - Will fix later*/
 
 .verticalSongArtist{
   font-size: 8rem;
+}
+
+.artistFollowButton {
+  font-family: "Inter", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 10vw;
+  gap: var(--spacing-sm);
+  background: var(--color-red);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: var(--color-red-200);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.artistFollowButton:hover {
+  background-color: var(--color-red-700);
+}
+
+.artistFollowButtonActive {
+  background-color: var(--color-red-700);
+}
+
+/* Add these new styles to your CSS file */
+
+/* 1. This container holds the number and the play button */
+.trackNumberContainer {
+  /* This ensures it keeps the same spacing as the old .trackNumber */
+  width: 24px;
+  margin-right: 1rem;
+  
+  /* These center the number/icon */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 2. Your original .trackNumber style, just ensure 'display: block' */
+.trackNumber {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #B3B3B3; /* or var(--text-secondary) */
+  text-align: center;
+  display: block; /* Show by default */
+}
+
+/* 3. The new play button style */
+.playButton {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: #FFFFFF; /* or var(--text-primary) */
+  display: none; /* Hide by default */
+}
+
+.playIcon {
+  width: 20px;
+  height: 20px;
+}
+
+/* 4. THE HOVER EFFECT */
+.compactCard:hover .trackNumber {
+  display: none; /* Hide the number on hover */
+}
+
+.compactCard:hover .playButton {
+  display: block; /* Show the play button on hover */
+}
+
+/* 5. The link style for the title */
+.songLink {
+  text-decoration: none;
+  color: inherit;
+  flex-grow: 1; /* This makes it take up the necessary space */
+}
+
+/* Make sure .songInfo still behaves correctly inside the link */
+.songInfo {
+  flex-grow: 1; 
+  min-width: 0;
 }

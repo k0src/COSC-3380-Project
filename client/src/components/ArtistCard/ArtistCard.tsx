@@ -10,7 +10,7 @@ const ArtistCard: React.FC<ArtistCardProps> = ({
     artist,
 }) => (
         <div className={styles.artistCircleCard}>
-            <img src={artist.profile_pic_url} alt={artist.display_name} className={styles.artistImage} />
+            <img src={artist?.user?.profile_picture_url} alt={artist.display_name} className={styles.artistImage} />
             <h3 className={styles.artistNameCentered}>{artist.display_name}</h3>
         </div>
 )
