@@ -149,15 +149,11 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
       barRadius: BAR_RADIUS,
       barGap: BAR_GAP,
       normalize: true,
-      backend: "MediaElement" as const,
+      backend: "WebAudio" as const,
       sampleRate: 44100,
       url: audioSrc,
       autoplay: false,
       plugins: [hoverPlugin],
-      fetchParams: {
-        mode: "cors",
-        credentials: "omit",
-      },
     });
 
     ws.on("ready", handleReady);
