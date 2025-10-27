@@ -26,7 +26,9 @@
       "@validators/*": ["validators/*"],
       "@assets/*": ["assets/*"],
       "@util": ["util/index"],
-      "@util/*": ["util/*"]
+      "@util/*": ["util/*"],
+      "@constants": ["constants/index"],
+      "@constants/*": ["constants/*"],
     },
     
 

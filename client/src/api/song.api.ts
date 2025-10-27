@@ -33,6 +33,8 @@ export const songApi = {
     options?: {
       includeAlbums?: boolean;
       includeArtists?: boolean;
+      limit?: number;
+      offset?: number;
     }
   ) {
     const response = await api.get<Song[]>(`/songs`, {

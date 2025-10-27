@@ -7,7 +7,7 @@ export interface Artist {
   user_id: UUID;
   created_at: string;
   verified: boolean;
-
+  profile_pic_url?: string;
   user?: User;
   songs?: Array<{ song: Song; role: string }>;
   albums?: Album[];

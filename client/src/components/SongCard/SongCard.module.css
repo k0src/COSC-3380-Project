@@ -2,8 +2,8 @@
 
 .songCard {
   flex: 0 0 auto; /* For horizontal scrolling */
-  max-width: 180px;
-  min-width: 60px;
+  max-width: 15vw;
+  min-width: 10vw;
   background-color: transparent;
   border-radius: 8px;
   padding: 1rem; /* 16px */
@@ -51,7 +51,7 @@
   opacity: 1;
 }
 
-.playButton {
+/* .playButton {
   width: 48px;
   height: 48px;
   background-color: #e63946;
@@ -61,7 +61,7 @@
   justify-content: center;
   align-items: center;
   transition: transform 0.2s ease, background-color 0.2s ease;
-}
+} */
 
 .playButton:hover {
   transform: scale(1.1);
@@ -87,7 +87,6 @@
   font-weight: 700; /* Matched albumTitle */
   color: #FFFFFF;
   margin: 0.5rem 0 0.25rem; /* Matched albumTitle */
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }

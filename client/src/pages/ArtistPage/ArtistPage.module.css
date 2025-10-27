@@ -99,11 +99,16 @@ Reset and variables
 .compactCard {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
-  padding: 12px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
   transition: background-color 0.2s ease;
+}
+
+.songPlays {
+  font-size: 16px;
+  color: var(--text-primary);
 }
 
 .compactCard:hover {
@@ -120,6 +125,10 @@ Reset and variables
 .compactCard .songInfo {
   flex: 1;
   min-width: 0;
+}
+
+.songInfo {
+  padding: 5px;
 }
 
 .compactCard .songTitle {

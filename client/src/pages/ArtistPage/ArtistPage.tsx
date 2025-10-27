@@ -61,6 +61,7 @@ const ArtistPage: React.FC = () => {
 
   const artist: Artist | undefined = data?.artist;
   const popularSongs: ArtistSong[] | undefined = data?.popularSongs;
+  console.log({ popularSongs }); 
   const albums: Album[] = data?.albums || [];
   // const singles: Song[] = data?.singles || [];
   const relatedArtists: Artist[] = data?.relatedArtists || [];
@@ -75,12 +76,12 @@ const ArtistPage: React.FC = () => {
   //   // ... other mock albums
   // ];
 
-  const singles = Array(8).fill({
-    title: "New Release",
-    artist: "Drake",
-    image: "/PlayerBar/Mask group.png",
-    year: 2008
-  });
+  // const singles = Array(8).fill({
+  //   title: "New Release",
+  //   artist: "Drake",
+  //   image: "/PlayerBar/Mask group.png",
+  //   year: 2008
+  // });
 
   // const relatedArtists = [
   //    { name: 'Diddy', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSESUJJt24KBJL4V0TqWT1qSE5tDZ1tawD14Q&s' },
@@ -121,21 +122,27 @@ const ArtistPage: React.FC = () => {
             <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>Popular</h2>
             <div className={styles.verticalCardsList}>
               {popularSongs?.map((song, index) => (
-                <div key={song.id} className={styles.compactCard}>
-                  <span className={styles.trackNumber}>{index + 1}</span>
-                  {/* Use album art if available, fallback to song image */}
-                  <img 
-                    // src={song.albums?.image_url || song.image_url || 'https://placehold.co/48x48/181818/b3b3b3?text=?'} 
-                    alt={song.title} 
-                  />
-                  <div className={styles.songInfo}>
-                    <h3 className={[styles.instrumentSansContent, styles.verticalSongTitle].join(' ')}>{song.title}</h3>
-                  </div>
-                  <span className={styles.songPlays}>
-                    {/* Assuming your song object has 'play_count' */}
-                    {/* {song.play_count ? song.play_count.toLocaleString() : 0} */}
-                  </span>
-                </div>
+            <Link 
+                    key={song.id} 
+                    to={`/songs/${song.id}`} 
+                    className={styles.songLink}
+                  >
+                    <div className={styles.compactCard}>
+                      <span className={styles.trackNumber}>{index + 1}</span>
+                      
+                      {/* I fixed the image URL logic based on our previous file */}
+                      <img 
+                        src={song.image_url || song.image_url || 'https://placehold.co/48x48/181818/b3b3b3?text=?'} 
+                        alt={song.title} 
+                      />
+                      <div className={styles.songInfo}>
+                        <h3 className={[styles.instrumentSansContent, styles.verticalSongTitle].join(' ')}>{song.title}</h3>
+                      </div>
+                      <span className={styles.songPlays}>
+                        {song.streams ? song.streams.toLocaleString() : 0}
+                      </span>
+                    </div>
+                  </Link>
               ))}
             </div>
           </section>
@@ -158,8 +165,8 @@ const ArtistPage: React.FC = () => {
           <section className={styles.horizontalScrollSection}>
             <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>Singles</h2>
             <div className={styles.horizontalCardList}>
-              {singles.map((song, index) => (
-                <SongCard key={index} {...song} />
+              {popularSongs.map((song) => (
+                <SongCard key={song.id} {...song} />
               ))}
             </div>
           </section>
@@ -169,7 +176,9 @@ const ArtistPage: React.FC = () => {
             <h2 className={[styles.interHeading2, styles.sectionTitle].join(' ')}>Fans Also Like</h2>
             <div className={styles.horizontalCardList}>
               {relatedArtists.map((artist, index) => (
-                <ArtistCard key={index} index={index} artist={artist} />
+                <Link to={`/artists/${artist.id}`} key={index}>
+                  <ArtistCard artist={artist} />
+                </Link>
               ))}
             </div>
           </section>

@@ -6,3 +6,4 @@ export * from "./artist.types";
 export * from "./user.types.js";
 export * from "./playlist.types";
 export * from "./util.types";
+export * from "./audioQueue.types";

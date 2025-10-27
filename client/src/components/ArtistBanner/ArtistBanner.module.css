@@ -2,7 +2,7 @@
   height: 100%;
   width: 100%;
   min-height: 30vh;
-  max-height: 40vh;
+  max-height: 30vh;
   padding: 1em;
   background: linear-gradient(90deg, #ff3b30 0%, #ff6a4a 100%);
   border-radius: 8px;
@@ -26,7 +26,7 @@
 
 
 .artistName{
-  font-size: 10em;
+  font-size: 10rem;
 }
 
 .locationName{

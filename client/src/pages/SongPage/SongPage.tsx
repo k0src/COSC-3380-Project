@@ -51,36 +51,10 @@ import { chartsAxisHighlightClasses } from "@mui/x-charts/ChartsAxisHighlight";
 import userPlaceholder from "@assets/user-placeholder.png";
 import { useStreamTracking } from "../../hooks";
 import musicPlaceholder from "../../assets/music-placeholder.png";
-import { useAuth } from "../../contexts/AuthContent.js";
-
-const formatDate = (dateString: string): string => dateString.split("T")[0];
-
-const formatRelativeDate = (dateString: string): string => {
-  const now = new Date();
-  const date = new Date(dateString);
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (seconds < 60) return "Just now";
-
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60)
-    return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
-
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} ${days === 1 ? "day" : "days"} ago`;
-
-  const weeks = Math.floor(days / 7);
-  if (weeks < 4) return `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`;
-
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} ${months === 1 ? "month" : "months"} ago`;
-
-  const years = Math.floor(days / 365);
-  return `${years} ${years === 1 ? "year" : "years"} ago`;
-};
+import { useAuth } from "@contexts";
+import { useAudioQueue } from "../../contexts/AudioQueueContext.js";
+import { WaveformPlayer } from "@components";
+import { formatRelativeDate, formatDateString } from "@util";
 
 const DUMMY_PLAYS = [
   2, 4, 5, 10, 21, 24, 19, 28, 40, 48, 55, 60, 62, 61, 61, 60, 59, 60, 67, 34,
@@ -153,6 +127,7 @@ const SongPage: React.FC = () => {
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
 
   const { user, isAuthenticated } = useAuth();
+  const { actions } = useAudioQueue();
   const navigate = useNavigate();
 
   // FIX LATER
@@ -208,97 +183,15 @@ const SongPage: React.FC = () => {
     return { mainArtist: main, otherArtists: others };
   }, [song]);
 
-  const [wavesurfer, setWavesurfer] = useState<{
-    playPause: () => void;
-  } | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  interface OnReadyEvent {
-    playPause: () => void;
-  }
-
-  const onReady = (ws: OnReadyEvent): void => {
-    setWavesurfer(ws);
-    setIsPlaying(false);
-  };
-
-  const togglePlay = () => {
-    if (wavesurfer) wavesurfer.playPause();
-  };
-
-  const waveformRef = useRef<HTMLDivElement>(null);
-  const wavesurferRef = useRef<WaveSurfer | null>(null);
-
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (
-        e.code === "Space" &&
-        e.target instanceof HTMLElement &&
-        !["INPUT", "TEXTAREA"].includes(e.target.tagName)
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        togglePlay();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress, { capture: true });
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress, { capture: true });
-    };
-  }, [wavesurferRef.current]);
-
-  useEffect(() => {
-    if (!waveformRef.current || !song.audio_url) return;
-    const ws = WaveSurfer.create({
-      container: waveformRef.current,
-      height: 80,
-      waveColor: "#F6F6F6",
-      progressColor: "#d53131",
-      barWidth: 3,
-      barRadius: 6,
-      barGap: 5,
-      normalize: true,
-      backend: "MediaElement",
-      sampleRate: 44100,
-      url: song.audio_url,
-      autoplay: false,
-      plugins: [
-        Hover.create({
-          lineColor: "#B22323",
-          lineWidth: 2,
-          labelBackground: "#B22323",
-          labelColor: "#F6F6F6",
-          labelSize: "11px",
-        }),
-      ],
-    });
-
-    ws.on("ready", () => {
-      onReady(ws);
-      setIsPlaying(false);
-    });
-
-    ws.on("play", () => setIsPlaying(true));
-    ws.on("pause", () => setIsPlaying(false));
-
-    wavesurferRef.current = ws;
-
-    return () => {
-      ws.destroy();
-    };
-  }, [song?.audio_url]);
-
-  useStreamTracking({
-    songId: id,
-    wavesurferRef,
-    onStream: (songId) => {
-      if (isAuthenticated) {
-        songApi.incrementSongStreams(songId);
-      }
-    },
-  });
+  // useStreamTracking({
+  //   songId: id,
+  //   wavesurferRef,
+  //   onStream: (songId) => {
+  //     if (isAuthenticated) {
+  //       songApi.incrementSongStreams(songId);
+  //     }
+  //   },
+  // });
 
   const handleToggleSongLike = async () => {
     try {
@@ -529,20 +422,11 @@ const SongPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className={styles.playerContainer}>
-                  <button
-                    onClick={togglePlay}
-                    className={classNames(styles.playerPlayBtn, {
-                      [styles.playerPlayBtnActive]: isPlaying,
-                    })}
-                  >
-                    {isPlaying ? <LuCirclePause /> : <LuCirclePlay />}
-                  </button>
-                  <div
-                    ref={waveformRef}
-                    className={styles.playerWaveform}
-                  ></div>
-                </div>
+                <WaveformPlayer
+                  audioSrc={song.audio_url}
+                  captureKeyboard={true}
+                  onPlay={() => actions.play(song)}
+                />
               </div>
             </div>
             <div className={styles.songLayoutTopRight}>
@@ -579,7 +463,7 @@ const SongPage: React.FC = () => {
                   <div className={styles.detailWrapper}>
                     <LuCalendar className={styles.detailIcon} />
                     <span className={styles.detailName}>
-                      {formatDate(song.release_date)}
+                      {formatDateString(song.release_date)}
                     </span>
                   </div>
                 </div>
@@ -769,7 +653,7 @@ const SongPage: React.FC = () => {
                             {album.title}
                           </Link>
                           <span className={styles.suggestionSubtitle}>
-                            {formatDate(album.release_date)}
+                            {formatDateString(album.release_date)}
                           </span>
                         </div>
                       </div>
@@ -811,7 +695,7 @@ const SongPage: React.FC = () => {
                               {songItem.title}
                             </Link>
                             <span className={styles.suggestionSubtitle}>
-                              {formatDate(songItem.release_date)}
+                              {formatDateString(songItem.release_date)}
                             </span>
                           </div>
                         </div>
@@ -846,7 +730,7 @@ const SongPage: React.FC = () => {
                             {songItem.title}
                           </Link>
                           <span className={styles.suggestionSubtitle}>
-                            {formatDate(songItem.release_date)}
+                            {formatDateString(songItem.release_date)}
                           </span>
                         </div>
                       </div>

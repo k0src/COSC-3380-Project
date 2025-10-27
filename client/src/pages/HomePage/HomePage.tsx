@@ -25,8 +25,6 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      <Topbar />
-      <Sidebar />
       
       <main className={styles.contentArea}>
         <div className={styles.contentWrapper}>
@@ -78,8 +76,6 @@ const HomePage: React.FC = () => {
           </section>
         </div>
       </main>
-
-      <PlayerBar />
     </>
   );
 };

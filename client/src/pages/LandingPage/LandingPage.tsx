@@ -5,6 +5,7 @@ import SongCard from '../../components/SongCard/SongCard';
 import { useAsyncData } from '@hooks';
 import { songApi } from '@api/song.api';
 import type { Song } from '@types';
+import { Link } from 'react-router-dom';
 
 
 const LandingPage: React.FC = () => {
@@ -18,10 +19,10 @@ const LandingPage: React.FC = () => {
 
   const { data, loading, error } = useAsyncData(
     {
-      singles: () => songApi.getMany({includeArtists: true}).then((songs) => songs.slice(0, 4)),
+      singles: () => songApi.getMany({includeArtists: true, limit: 4})
     },
     [],
-    { cacheKey: 'landing_page' }
+    { cacheKey: 'landing_page' },
   );
 
   const singles: Song[] = data?.singles || [];
@@ -62,10 +63,9 @@ const LandingPage: React.FC = () => {
           
           {/* You must check if 'singles' exists before mapping */}
           {!loading && !Boolean(error) && singles && singles.map((song: Song) => (
-            
-            // Use song.id for the key, not index
-            <SongCard key={song.id} {...song} />
-          
+            <Link to={`/songs/${song.id}`} key={song.id} className={styles.songCardLink}>
+              <SongCard {...song} />  
+            </Link>
           ))}
         </div>
       </main>

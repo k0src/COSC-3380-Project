@@ -11,7 +11,11 @@ export default function AppRoutes() {
     <Routes>
       {/* <Route path="/artist" element={< Pages.ArtistPage />} /> */}
       <Route path='/' element={<Pages.LandingPage />} />
-      <Route path="/loggedin" element={< Pages.HomePage />} />
+      <Route path="/loggedin" element={
+        <MainLayout>
+          <Pages.HomePage />
+        </MainLayout>
+      } />
       <Route path="/login" element={<Pages.LoginPage />} />
       <Route path="/test" element={<Pages.TestPage />} />
       <Route path="/signup" element={<Pages.SignupPage />} />
@@ -32,6 +36,15 @@ export default function AppRoutes() {
         </MainLayout>
       }
       />
+
+      {/* <Route
+        path="/playlists/:id"
+        element={
+          <MainLayout>
+            <Pages.PlaylistPage />
+          </MainLayout>
+        }
+      /> */}
     </Routes>
   );
 }

@@ -2,6 +2,7 @@ import React from "react";
 import styles from "./SongCard.module.css";
 import { Play } from "lucide-react";
 import type { Song } from "../../types";
+import { Link } from "react-router-dom";
 
 const SongCard: React.FC<Song> = ({
   title,
@@ -12,6 +13,7 @@ const SongCard: React.FC<Song> = ({
   release_date,
 }) => {
   const year = release_date ? new Date(release_date).getFullYear().toString() : '';
+  console.log({ title, artists, year });
 
   // --- FIX: Map over the artists array to get their names ---
   const artistNames = artists.map(artist => artist.display_name).join(', ');
@@ -30,9 +32,14 @@ const SongCard: React.FC<Song> = ({
       </div>
 
       <div className={styles.songMainInfo}>
-        <div>
-          {/* Use the new artistNames variable here */}
-          <span className={[styles.instrumentSansContent, styles.songArtist].join(' ')}>{artistNames}{" - "}{year}</span>
+<div>
+          {/* Conditionally render:
+            - If artistNames exists: "Artist Names - Year"
+            - Otherwise: "Year"
+          */}
+          <span className={[styles.instrumentSansContent, styles.songArtist].join(' ')}>
+            {artistNames ? `${artistNames} - ${year}` : year}
+          </span>
         </div>
         {/* <div>
           <p className={[styles.instrumentSansContent, styles.songArtist].join(' ')}>{year}</p>

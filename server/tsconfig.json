@@ -16,7 +16,11 @@
       "@infra/*": ["infra/*"],
       "@util/*": ["util/*"],
       "@middleware": ["middleware/index"],
-      "@middleware/*": ["middleware/*"]
+      "@middleware/*": ["middleware/*"],
+      "@constants": ["constants/index"],
+      "@constants/*": ["constants/*"],
+      "@utils": ["utils/index"],
+      "@utils/*": ["utils/*"]
     },
     "target": "ES2022",
     "module": "ESNext",
