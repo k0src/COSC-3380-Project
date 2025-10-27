@@ -13,6 +13,8 @@ const __dirname = path.resolve();
 
 dotenv.config();
 
+console.log("Imported routes:", Object.keys(Routes));
+
 const app = express();
 const PORT = Number(process.env.PORT) || 8080;
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -24,7 +26,7 @@ const corsOptions = {
       ? process.env.ALLOWED_ORIGINS
         ? process.env.ALLOWED_ORIGINS.split(",")
         : true
-      : process.env.CLIENT_URL || "http://localhost:5173",
+      : process.env.CLIENT_URL || ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176", "http://localhost:5177", "http://localhost:5178", "http://localhost:5179", "http://localhost:5180"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
@@ -71,14 +73,20 @@ app.get("/api/health", (req, res) => {
 const clientDistPath = path.join(__dirname, "public");
 app.use(express.static(clientDistPath));
 
-// Routes
-app.use("/api/auth", Routes.authRoutes);
-// app.use("/api/songs", Routes.songRoutes); // temporarily disabled for local dev without Azure
-app.use("/api/albums", Routes.albumRoutes);
-app.use("/api/artists", Routes.artistRoutes);
-app.use("/api/playlists", Routes.playlistRoutes);
-app.use("/api/users", Routes.userRoutes);
-app.use("/api/search", Routes.searchRoutes);
+// Routes (guard against undefined handlers)
+// if (Routes.authRoutes) app.use("/api/auth", Routes.authRoutes);
+if (Routes.songRoutes) {
+  console.log("✓ Registering song routes at /api/songs");
+  app.use("/api/songs", Routes.songRoutes);
+}
+// if (Routes.albumRoutes) app.use("/api/albums", Routes.albumRoutes);
+// if (Routes.artistRoutes) app.use("/api/artists", Routes.artistRoutes);
+// if (Routes.playlistRoutes) app.use("/api/playlists", Routes.playlistRoutes);
+// if (Routes.userRoutes) app.use("/api/users", Routes.userRoutes);
+if (Routes.searchRoutes) {
+  console.log("✓ Registering search routes at /api/search");
+  app.use("/api/search", Routes.searchRoutes);
+}
 
 // React SPA routes
 app.get("/", (req, res) => {
@@ -92,7 +100,11 @@ app.use((req, res) => {
 
 async function startServer() {
   try {
-    await testConnection();
+    try {
+      await testConnection();
+    } catch (err) {
+      console.warn("⚠ Database connection failed at startup. Continuing to start server.", err);
+    }
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`⚡ Server running on port: ${PORT}`);
       console.log("Environment: ", NODE_ENV);
@@ -107,3 +119,4 @@ async function startServer() {
 }
 
 startServer();
+Monday, October 27, 2025 2:17:15 AM

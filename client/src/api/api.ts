@@ -2,8 +2,15 @@ import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
+// Ensure the baseURL always points to the API root. If a full server URL is
+// provided (e.g., http://localhost:8080), append "/api". Otherwise, default
+// to the Vite dev proxy on "/api" so requests are proxied during development.
+const resolvedBaseUrl = API_BASE_URL
+  ? `${API_BASE_URL.replace(/\/$/, "")}/api`
+  : "/api";
+
 const api = axios.create({
-  baseURL: API_BASE_URL || "/api",
+  baseURL: resolvedBaseUrl,
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",

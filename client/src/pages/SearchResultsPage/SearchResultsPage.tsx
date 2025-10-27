@@ -1,46 +1,45 @@
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import homeStyles from "../HomePage/HomePage.module.css";
 import Sidebar from "../../components/SideBar/sidebar";
 import Topbar from "../../components/TopBar/topBar";
 import PlayerBar from "../../components/PlayerBar/playerBar";
 import SongCard from "../../components/SongCard/SongCard";
+import { fetchSearch, type SearchResponse } from "../../api/search.api";
 
 export default function SearchResultsPage() {
-  // Mock data for recently played
-  const recentSongs = Array(4).fill({
-    title: "Song Title",
-    artist: "Artist Name",
-    image: "/PlayerBar/Mask group.png",
-    plays: 1234,
-    likes: 234,
-    comments: 12,
-  });
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get("q") ?? "";
 
-  // Mock data for artists, albums, playlists
-  const newArtists = Array(8).fill({
-    name: "Artist Name",
-    image: "/PlayerBar/Mask group.png",
-    plays: 321000,
-    likes: 12345,
-    comments: 456,
-  });
+  const [results, setResults] = useState<SearchResponse>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const newAlbums = Array(8).fill({
-    title: "Album Title",
-    artist: "Artist Name",
-    image: "/PlayerBar/Mask group.png",
-    plays: 210000,
-    likes: 9876,
-    comments: 321,
-  });
+  useEffect(() => {
+    if (!query.trim()) return;
 
-  const newPlaylists = Array(8).fill({
-    title: "Playlist Name",
-    artist: "User Name",
-    image: "/PlayerBar/Mask group.png",
-    plays: 150000,
-    likes: 5432,
-    comments: 210,
-  });
+    const loadResults = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchSearch(query, "all", 20, 0);
+        setResults(data);
+      } catch (err) {
+        console.error("Search failed:", err);
+        setError("Failed to load search results. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadResults();
+  }, [query]);
+
+  const songs = results.songs ?? [];
+  const artists = results.artists ?? [];
+  const albums = results.albums ?? [];
+  const playlists = results.playlists ?? [];
+
   return (
     <>
       <Topbar />
@@ -49,89 +48,96 @@ export default function SearchResultsPage() {
 
       <main className={homeStyles.contentArea}>
         <div className={homeStyles.contentWrapper}>
-          <section className={homeStyles.recentlyPlayedColumn}>
-            <div className={homeStyles.sectionHeader}>
-              <h2 className={homeStyles.sectionTitle}>Songs</h2>
-              <a href="#" className={homeStyles.viewMore}>View More</a>
-            </div>
-            <div className={homeStyles.verticalCardsList}>
-              {recentSongs.map((song, index) => (
-                <div key={index} className={homeStyles.compactCard}>
-                  <img src={song.image} alt={song.title} />
-                  <div className={homeStyles.songInfo}>
-                    <h3 className={homeStyles.songTitle}>{song.title}</h3>
-                    <p className={homeStyles.artistName}>{song.artist}</p>
-                  </div>
+          {loading && <p>Loading...</p>}
+          {error && <p style={{ color: "red" }}>{error}</p>}
+
+          {!loading && !error && (
+            <>
+              <section className={homeStyles.recentlyPlayedColumn}>
+                <div className={homeStyles.sectionHeader}>
+                  <h2 className={homeStyles.sectionTitle}>Songs</h2>
+                  <a href="#" className={homeStyles.viewMore}>View More</a>
                 </div>
-              ))}
-            </div>
-          </section>
+                <div className={homeStyles.verticalCardsList}>
+                  {songs.map((song, index) => (
+                    <div key={index} className={homeStyles.compactCard}>
+                      <img src={song.image} alt={song.title} />
+                      <div className={homeStyles.songInfo}>
+                        <h3 className={homeStyles.songTitle}>{song.title}</h3>
+                        <p className={homeStyles.artistName}>{song.artist}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
 
-          {/* Artists Section */}
-          <section className={homeStyles.section}>
-            <div className={homeStyles.sectionHeader}>
-              <h2 className={homeStyles.sectionTitle}>Artists</h2>
-              <a href="#" className={homeStyles.viewMore}>View More</a>
-            </div>
-            <div className={homeStyles.cardsContainer}>
-              {newArtists.map((artist, index) => (
-                <SongCard
-                  key={`artist-${index}`}
-                  title={artist.name}
-                  artist={""}
-                  image={artist.image}
-                  plays={artist.plays}
-                  likes={artist.likes}
-                  comments={artist.comments}
-                  showStats={false}
-                />
-              ))}
-            </div>
-          </section>
+              {/* Artists Section */}
+              <section className={homeStyles.section}>
+                <div className={homeStyles.sectionHeader}>
+                  <h2 className={homeStyles.sectionTitle}>Artists</h2>
+                  <a href="#" className={homeStyles.viewMore}>View More</a>
+                </div>
+                <div className={homeStyles.cardsContainer}>
+                  {artists.map((artist, index) => (
+                    <SongCard
+                      key={`artist-${index}`}
+                      title={artist.name}
+                      artist={""}
+                      image={artist.image}
+                      plays={artist.plays}
+                      likes={artist.likes ?? 0}
+                      comments={artist.comments ?? 0}
+                      showStats={false}
+                    />
+                  ))}
+                </div>
+              </section>
 
-          {/* Albums Section */}
-          <section className={homeStyles.section}>
-            <div className={homeStyles.sectionHeader}>
-              <h2 className={homeStyles.sectionTitle}>Albums</h2>
-              <a href="#" className={homeStyles.viewMore}>View More</a>
-            </div>
-            <div className={homeStyles.cardsContainer}>
-              {newAlbums.map((album, index) => (
-                <SongCard
-                  key={`album-${index}`}
-                  title={album.title}
-                  artist={album.artist}
-                  image={album.image}
-                  plays={album.plays}
-                  likes={album.likes}
-                  comments={album.comments}
-                  showStats={false}
-                />
-              ))}
-            </div>
-          </section>
+              {/* Albums Section */}
+              <section className={homeStyles.section}>
+                <div className={homeStyles.sectionHeader}>
+                  <h2 className={homeStyles.sectionTitle}>Albums</h2>
+                  <a href="#" className={homeStyles.viewMore}>View More</a>
+                </div>
+                <div className={homeStyles.cardsContainer}>
+                  {albums.map((album, index) => (
+                    <SongCard
+                      key={`album-${index}`}
+                      title={album.title}
+                      artist={album.artist}
+                      image={album.image}
+                      plays={album.plays ?? 0}
+                      likes={album.likes ?? 0}
+                      comments={album.comments ?? 0}
+                      showStats={false}
+                    />
+                  ))}
+                </div>
+              </section>
 
-          {/* Playlists Section */}
-          <section className={homeStyles.section}>
-            <div className={homeStyles.sectionHeader}>
-              <h2 className={homeStyles.sectionTitle}>Playlists</h2>
-              <a href="#" className={homeStyles.viewMore}>View More</a>
-            </div>
-            <div className={homeStyles.cardsContainer}>
-              {newPlaylists.map((pl, index) => (
-                <SongCard
-                  key={`pl-${index}`}
-                  title={pl.title}
-                  artist={pl.artist}
-                  image={pl.image}
-                  plays={pl.plays}
-                  likes={pl.likes}
-                  comments={pl.comments}
-                  showStats={false}
-                />
-              ))}
-            </div>
-          </section>
+              {/* Playlists Section */}
+              <section className={homeStyles.section}>
+                <div className={homeStyles.sectionHeader}>
+                  <h2 className={homeStyles.sectionTitle}>Playlists</h2>
+                  <a href="#" className={homeStyles.viewMore}>View More</a>
+                </div>
+                <div className={homeStyles.cardsContainer}>
+                  {playlists.map((pl, index) => (
+                    <SongCard
+                      key={`pl-${index}`}
+                      title={pl.title}
+                      artist={pl.artist}
+                      image={pl.image}
+                      plays={pl.plays ?? 0}
+                      likes={pl.likes ?? 0}
+                      comments={pl.comments ?? 0}
+                      showStats={false}
+                    />
+                  ))}
+                </div>
+              </section>
+            </>
+          )}
         </div>
       </main>
 

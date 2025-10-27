@@ -12,19 +12,33 @@ dotenv.config();
 
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
 const containerName = process.env.AZURE_STORAGE_CONTAINER || "uploads";
-const accountName = process.env.AZURE_STORAGE_ACCOUNT!;
-const accountKey = process.env.AZURE_STORAGE_ACCOUNT_KEY!;
+const accountName = process.env.AZURE_STORAGE_ACCOUNT;
+const accountKey = process.env.AZURE_STORAGE_ACCOUNT_KEY;
+const sasTokenDuration = Number(process.env.SAS_TOKEN_DURATION) || 3600;
 
-if (!connectionString) {
-  throw new Error("Missing Azure Storage connection string");
+// Make Azure blob storage optional for local development
+const isAzureConfigured = !!(connectionString && accountName && accountKey);
+
+let blobServiceClient: BlobServiceClient | null = null;
+let containerClient: ContainerClient | null = null;
+
+if (isAzureConfigured && connectionString) {
+  blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+  containerClient = blobServiceClient.getContainerClient(containerName);
+  console.log("✓ Azure Blob Storage configured");
+} else {
+  console.warn("⚠ Azure Blob Storage not configured - blob URLs will return placeholder paths");
 }
 
-const blobServiceClient =
-  BlobServiceClient.fromConnectionString(connectionString);
-const containerClient: ContainerClient =
-  blobServiceClient.getContainerClient(containerName);
+export function getBlobUrl(
+  filename: string,
+  expiresInSeconds = sasTokenDuration
+): string {
+  if (!isAzureConfigured || !containerClient || !accountName || !accountKey) {
+    // Return placeholder URL when Azure is not configured
+    return `/placeholder/${filename}`;
+  }
 
-export function getBlobUrl(filename: string, expiresInSeconds = 3600): string {
   const blobClient = containerClient.getBlobClient(filename);
   try {
     const sasToken = generateBlobSASQueryParameters(
@@ -40,7 +54,7 @@ export function getBlobUrl(filename: string, expiresInSeconds = 3600): string {
     return `${blobClient.url}?${sasToken}`;
   } catch (error) {
     console.error("Could not generate SAS token:", error);
-    return blobClient.url;
+    throw new Error("Could not generate SAS token");
   }
 }
 
@@ -48,6 +62,11 @@ export async function uploadBlob(
   filename: string,
   data: Buffer | Readable
 ): Promise<void> {
+  if (!isAzureConfigured || !containerClient) {
+    console.warn("Azure Blob Storage not configured - skipping upload");
+    return;
+  }
+
   try {
     const blockBlobClient = containerClient.getBlockBlobClient(filename);
 
@@ -63,6 +82,11 @@ export async function uploadBlob(
 }
 
 export async function deleteBlob(filename: string): Promise<void> {
+  if (!isAzureConfigured || !containerClient) {
+    console.warn("Azure Blob Storage not configured - skipping delete");
+    return;
+  }
+
   try {
     const blobClient = containerClient.getBlobClient(filename);
     await blobClient.deleteIfExists();
