@@ -161,7 +161,11 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
         ws.on("error", handleError);
         wavesurferRef.current = ws;
 
-        const response = await fetch(audioSrc);
+        const urlParts = audioSrc.split("/");
+        const filename = urlParts[urlParts.length - 1].split("?")[0];
+
+        const proxyUrl = `/api/proxy/audio/${filename}`;
+        const response = await fetch(proxyUrl);
         if (!response.ok) {
           throw new Error(`Failed to fetch audio: ${response.status}`);
         }
@@ -179,7 +183,7 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
             : [decodedData.getChannelData(0)];
         const duration = decodedData.duration;
 
-        ws.load(audioSrc, peaks, duration);
+        ws.load(proxyUrl, peaks, duration);
       } catch (error) {
         console.error("Failed to load audio:", error);
         handleError(error);

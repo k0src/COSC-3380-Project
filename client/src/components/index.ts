@@ -36,3 +36,6 @@ export { default as PageLoader } from "./PageLoader/PageLoader.js";
 export { default as ErrorPage } from "./ErrorPage/ErrorPage.js";
 
 export { default as SongCard } from "./SongCard/SongCard.js";
+
+/* =============================== Dev Tools =============================== */
+export { default as DevBanner } from "./DevBanner/DevBanner.js";
