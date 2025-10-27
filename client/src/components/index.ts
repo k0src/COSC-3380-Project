@@ -26,6 +26,7 @@ export { default as SongActions } from "./SongPage/SongActions/SongActions.js";
 export { default as ArtistInfo } from "./SongPage/ArtistInfo/ArtistInfo.js";
 export { default as SongComments } from "./SongPage/SongComments/SongComments.js";
 export { default as CommentItem } from "./SongPage/CommentItem/CommentItem.js";
+export { default as SongSuggestions } from "./SongPage/SongSuggestions/SongSuggestions.js";
 
 /* ================================= Modals ================================= */
 export { default as ShareModal } from "./ShareModal/ShareModal.js";

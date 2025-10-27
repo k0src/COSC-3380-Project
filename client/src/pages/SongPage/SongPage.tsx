@@ -1,58 +1,10 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useMemo } from "react";
+import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { songApi } from "../../api/song.api.js";
-import { commentApi } from "../../api/comment.api.js";
-import { artistApi } from "../../api/artist.api.js";
-import type {
-  Song,
-  Artist,
-  Comment,
-  Album,
-  SongArtist,
-  UUID,
-  CoverGradient,
-  RGB,
-  ArtistSong,
-  SuggestedSong,
-} from "../../types";
-import styles from "./SongPage.module.css";
-import { useAsyncData } from "../../hooks";
-import { PageLoader } from "@components";
-import {
-  LuThumbsUp,
-  LuPlay,
-  LuMessageSquareText,
-  LuCirclePlay,
-  LuCirclePause,
-  LuListPlus,
-  LuShare,
-  LuCircleAlert,
-  LuMusic,
-  LuChartLine,
-  LuCalendar,
-  LuUserRoundPlus,
-  LuUserRoundCheck,
-  LuBadgeCheck,
-  LuSend,
-  LuUserRoundPen,
-  LuListEnd,
-} from "react-icons/lu";
-import Hover from "wavesurfer.js/dist/plugins/hover.esm.js";
-import WaveSurfer from "wavesurfer.js";
-import classNames from "classnames";
-import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
-import type { SparkLineChartProps } from "@mui/x-charts/SparkLineChart";
-import {
-  areaElementClasses,
-  lineElementClasses,
-} from "@mui/x-charts/LineChart";
-import { chartsAxisHighlightClasses } from "@mui/x-charts/ChartsAxisHighlight";
-import userPlaceholder from "@assets/user-placeholder.png";
-import { useStreamTracking } from "../../hooks";
-import musicPlaceholder from "../../../assets/music-placeholder.png";
-import { useAuth } from "../../contexts/AuthContext.js";
-import { useAudioQueue } from "../../contexts/AudioQueueContext.js";
+import { songApi, artistApi } from "@api";
+import type { UUID } from "@types";
+import { useAuth } from "@contexts";
+import { useAsyncData } from "@hooks";
 import {
   ErrorPage,
   SongContainer,
@@ -61,8 +13,10 @@ import {
   SongActions,
   ArtistInfo,
   SongComments,
+  SongSuggestions,
+  PageLoader,
 } from "@components";
-import { formatRelativeDate, formatDateString } from "@util";
+import styles from "./SongPage.module.css";
 
 const DUMMY_PLAYS = [
   2, 4, 5, 10, 21, 24, 19, 28, 40, 48, 55, 60, 62, 61, 61, 60, 59, 60, 67, 34,
@@ -103,13 +57,7 @@ const DUMMY_WEEKS = [
 
 const SongPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
-
-  const [isLiked, setIsLiked] = useState(false);
-  const [isFollowed, setIsFollowed] = useState(false);
-  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
-
   const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
 
   if (!id) {
     return (
@@ -127,14 +75,9 @@ const SongPage: React.FC = () => {
           includeAlbums: true,
           includeArtists: true,
           includeLikes: true,
+          includeComments: true,
         }),
       coverGradient: () => songApi.getCoverGradient(id),
-      comments: () =>
-        commentApi.getCommentsBySongId(id, {
-          includeLikes: true,
-          currentUserId: isAuthenticated && user ? user.id : undefined,
-          limit: 25,
-        }),
       moreSongsByArtist: async () =>
         artistApi.getSongs("84a51edc-a38f-4659-974b-405b3e40f432", {
           limit: 5,
@@ -151,16 +94,14 @@ const SongPage: React.FC = () => {
 
   const song = data?.song;
   const coverGradient = data?.coverGradient;
-  const comments = data?.comments;
-  const moreSongsByArtist = data?.moreSongsByArtist;
-  const suggestedSongs = data?.suggestedSongs;
 
   const { mainArtist, otherArtists } = useMemo(() => {
     if (!song || !song?.artists || song.artists.length === 0) {
       return { mainArtist: null, otherArtists: [] };
     }
 
-    const main = song.artists.find((artist) => artist.role === "Main") || null;
+    const main =
+      song.artists.find((artist) => artist.role === "Main") || song.artists[0];
     const others =
       song.artists.filter((artist) => artist.role !== "Main") || [];
 
@@ -176,112 +117,6 @@ const SongPage: React.FC = () => {
   //     }
   //   },
   // });
-
-  const handleAddComment = async () => {
-    try {
-      if (isAuthenticated) {
-        // send request here
-        console.log("added comment to song: " + song.id);
-      } else {
-        navigate("/login");
-      }
-    } catch (error) {
-      console.error("Adding comment failed:", error);
-    }
-  };
-
-  const CommentItem: React.FC<{ comment: Comment }> = ({ comment }) => {
-    const [isLiked, setIsLiked] = useState(comment.user_liked ?? false);
-    const [likeCount, setLikeCount] = useState(Number(comment.likes) || 0);
-
-    const navigate = useNavigate();
-
-    // send request here too
-    const toggleCommentLike = () => {
-      if (!isAuthenticated) {
-        navigate("/login");
-      }
-      if (isLiked) {
-        setLikeCount(likeCount - 1);
-        setIsLiked(false);
-      } else {
-        setLikeCount(likeCount + 1);
-        setIsLiked(true);
-      }
-    };
-
-    const { comment_text, tags } = comment;
-
-    const segments: React.ReactNode[] = [];
-    let lastIndex = 0;
-
-    if (tags && tags.length > 0) {
-      const sortedTags = [...tags].sort((a, b) => a.start - b.start);
-
-      for (const tag of sortedTags) {
-        if (tag.start > lastIndex) {
-          segments.push(comment_text.slice(lastIndex, tag.start));
-        }
-
-        segments.push(
-          <Link
-            key={tag.user_id + tag.start}
-            to={`/users/${tag.user_id}`}
-            className={styles.commentTag}
-          >
-            {comment_text.slice(tag.start, tag.end)}
-          </Link>
-        );
-
-        lastIndex = tag.end;
-      }
-    }
-
-    if (lastIndex < comment_text.length) {
-      segments.push(comment_text.slice(lastIndex));
-    }
-
-    return (
-      <div key={comment.id} className={styles.comment}>
-        <img
-          src={
-            comment.profile_picture_url
-              ? comment.profile_picture_url
-              : userPlaceholder
-          }
-          alt={comment.username}
-          className={styles.commentListUserPfp}
-        />
-        <div className={styles.commentContentWrapper}>
-          <div className={styles.commentContent}>
-            <div className={styles.commentHeader}>
-              <span className={styles.commentUsername}>{comment.username}</span>
-              <span className={styles.commentSeparator}>&bull;</span>
-              <span className={styles.commentTimestamp}>
-                {formatRelativeDate(comment.commented_at)}
-              </span>
-            </div>
-            <span className={styles.commentText}>{segments}</span>
-          </div>
-          <div
-            className={classNames(styles.commentLikesContainer, {
-              [styles.commentLikesContainerActive]: isLiked,
-            })}
-          >
-            <span className={styles.commentLikeCount}>{likeCount}</span>
-            <button
-              className={classNames(styles.commentLikeButton, {
-                [styles.commentLikeButtonActive]: isLiked,
-              })}
-              onClick={toggleCommentLike}
-            >
-              <LuThumbsUp />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   if (error) {
     return (
@@ -312,7 +147,7 @@ const SongPage: React.FC = () => {
               song={song}
               mainArtist={mainArtist ?? undefined}
               coverGradient={coverGradient}
-              comments={comments}
+              numberComments={song.comments}
             />
             <div className={styles.songLayoutTopRight}>
               <SongStats
@@ -331,120 +166,8 @@ const SongPage: React.FC = () => {
               mainArtist={mainArtist ?? undefined}
               otherArtists={otherArtists}
             />
-
             <SongComments songId={song.id} />
-            <div className={styles.suggestionsContainer}>
-              {song.albums && song.albums.length > 0 && (
-                <div className={styles.suggestionsWrapper}>
-                  {/* add links */}
-                  <span className={styles.suggestionLabel}>On Albums</span>
-                  <div className={styles.suggestionsSection}>
-                    {song.albums.map((album: Album) => (
-                      <div key={album.id} className={styles.suggestionItem}>
-                        <img
-                          src={
-                            album.image_url ? album.image_url : musicPlaceholder
-                          }
-                          alt={`${album.title} Cover`}
-                          className={styles.suggestionImage}
-                        />
-                        <div className={styles.suggestionInfo}>
-                          <span className={styles.suggestionAuthor}>
-                            {album.artist?.display_name}
-                          </span>
-                          <Link
-                            className={styles.suggestionTitle}
-                            to={`/albums/${album.id}`}
-                          >
-                            {album.title}
-                          </Link>
-                          <span className={styles.suggestionSubtitle}>
-                            {formatDateString(album.release_date)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {moreSongsByArtist && moreSongsByArtist.length > 0 && (
-                <div className={styles.suggestionsWrapper}>
-                  <span className={styles.suggestionLabel}>
-                    More by {mainArtist?.display_name}
-                  </span>
-                  <div className={styles.suggestionsSection}>
-                    {moreSongsByArtist
-                      .filter((songItem: ArtistSong) => songItem.id !== id)
-                      .map((songItem: ArtistSong) => (
-                        <div
-                          key={songItem.id}
-                          className={styles.suggestionItem}
-                        >
-                          <img
-                            src={
-                              songItem.image_url
-                                ? songItem.image_url
-                                : musicPlaceholder
-                            }
-                            alt={`${songItem.title} Cover`}
-                            className={styles.suggestionImage}
-                          />
-                          <div className={styles.suggestionInfo}>
-                            <span className={styles.suggestionAuthor}>
-                              {songItem.role}
-                            </span>
-                            <Link
-                              className={styles.suggestionTitle}
-                              to={`/songs/${songItem.id}`}
-                            >
-                              {songItem.title}
-                            </Link>
-                            <span className={styles.suggestionSubtitle}>
-                              {formatDateString(songItem.release_date)}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {suggestedSongs && suggestedSongs.length > 0 && (
-                <div className={styles.suggestionsWrapper}>
-                  <span className={styles.suggestionLabel}>Related Songs</span>
-                  <div className={styles.suggestionsSection}>
-                    {suggestedSongs.map((songItem: SuggestedSong) => (
-                      <div key={songItem.id} className={styles.suggestionItem}>
-                        <img
-                          src={
-                            songItem.image_url
-                              ? songItem.image_url
-                              : musicPlaceholder
-                          }
-                          alt={`${songItem.title} Cover`}
-                          className={styles.suggestionImage}
-                        />
-                        <div className={styles.suggestionInfo}>
-                          <span className={styles.suggestionAuthor}>
-                            {songItem.main_artist.display_name}
-                          </span>
-                          <Link
-                            className={styles.suggestionTitle}
-                            to={`/songs/${songItem.id}`}
-                          >
-                            {songItem.title}
-                          </Link>
-                          <span className={styles.suggestionSubtitle}>
-                            {formatDateString(songItem.release_date)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <SongSuggestions song={song} mainArtist={mainArtist ?? undefined} />
           </div>
         </div>
       )}

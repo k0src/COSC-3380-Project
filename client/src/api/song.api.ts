@@ -8,6 +8,7 @@ export const songApi = {
       includeAlbums?: boolean;
       includeArtists?: boolean;
       includeLikes?: boolean;
+      includeComments?: boolean;
     }
   ) {
     const response = await api.get<Song>(`/songs/${id}`, {

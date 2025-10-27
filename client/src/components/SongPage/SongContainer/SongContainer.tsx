@@ -1,6 +1,6 @@
 import { useMemo, useCallback, memo } from "react";
 import { WaveformPlayer } from "@components";
-import type { Song, CoverGradient, Comment, SongArtist } from "@types";
+import type { Song, CoverGradient, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
 import { LuPlay, LuThumbsUp, LuMessageSquareText } from "react-icons/lu";
 import styles from "./SongContainer.module.css";
@@ -10,14 +10,14 @@ export interface SongContainerProps {
   coverGradient: CoverGradient;
   song: Song;
   mainArtist: SongArtist | undefined;
-  comments?: Comment[];
+  numberComments?: number;
 }
 
 const SongContainer: React.FC<SongContainerProps> = ({
   coverGradient,
   song,
   mainArtist,
-  comments,
+  numberComments,
 }) => {
   const { actions } = useAudioQueue();
 
@@ -61,7 +61,7 @@ const SongContainer: React.FC<SongContainerProps> = ({
               <InteractionStat icon={LuThumbsUp} value={song.likes ?? 0} />
               <InteractionStat
                 icon={LuMessageSquareText}
-                value={comments?.length ?? 0}
+                value={numberComments ?? 0}
               />
             </div>
           </div>
