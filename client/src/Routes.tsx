@@ -9,7 +9,14 @@ export default function AppRoutes() {
       <Route path="/signup" element={<Pages.SignupPage />} />
 
       <Route element={<AppLayout />}>
-        <Route path="/" element={<Pages.TestPage />} />
+        <Route
+          path="/"
+          element={
+            <MainLayout>
+              <Pages.HomePage />
+            </MainLayout>
+          }
+        />
         <Route
           path="/songs/:id"
           element={

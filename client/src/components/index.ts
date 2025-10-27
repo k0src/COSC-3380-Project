@@ -34,3 +34,5 @@ export { default as ShareModal } from "./ShareModal/ShareModal.js";
 /* =============================== Page States ============================== */
 export { default as PageLoader } from "./PageLoader/PageLoader.js";
 export { default as ErrorPage } from "./ErrorPage/ErrorPage.js";
+
+export { default as SongCard } from "./SongCard/SongCard.js";
