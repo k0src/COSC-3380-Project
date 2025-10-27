@@ -1,8 +1,7 @@
 import { useMemo, useCallback, memo } from "react";
 import { WaveformPlayer } from "@components";
-import type { Song, CoverGradient, Comment } from "@types";
+import type { Song, CoverGradient, Comment, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
-import { getMainArtist } from "@util";
 import { LuPlay, LuThumbsUp, LuMessageSquareText } from "react-icons/lu";
 import styles from "./SongContainer.module.css";
 import musicPlaceholder from "@assets/music-placeholder.png";
@@ -10,20 +9,17 @@ import musicPlaceholder from "@assets/music-placeholder.png";
 export interface SongContainerProps {
   coverGradient: CoverGradient;
   song: Song;
+  mainArtist: SongArtist | undefined;
   comments?: Comment[];
 }
 
 const SongContainer: React.FC<SongContainerProps> = ({
   coverGradient,
   song,
+  mainArtist,
   comments,
 }) => {
   const { actions } = useAudioQueue();
-
-  const mainArtist = useMemo(
-    () => (song.artists ? getMainArtist(song.artists) : null),
-    [song.artists]
-  );
 
   const gradientStyle = useMemo(
     () =>

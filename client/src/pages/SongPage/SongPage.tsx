@@ -59,6 +59,7 @@ import {
   SongStats,
   SongDetails,
   SongActions,
+  ArtistInfo,
 } from "@components";
 import { formatRelativeDate, formatDateString } from "@util";
 
@@ -302,7 +303,10 @@ const SongPage: React.FC = () => {
         <Helmet>
           <title>Internal Server Error</title>
         </Helmet>
-        <p>{String(error)}</p> {/* fix */}
+        <ErrorPage
+          title="Internal Server Error"
+          message="An unexpected error occurred. Please try again later."
+        />
       </>
     );
   }
@@ -320,10 +324,10 @@ const SongPage: React.FC = () => {
           <div className={styles.songLayoutTop}>
             <SongContainer
               song={song}
+              mainArtist={mainArtist ?? undefined}
               coverGradient={coverGradient}
               comments={comments}
             />
-
             <div className={styles.songLayoutTopRight}>
               <SongStats
                 playsData={{ weeks: DUMMY_WEEKS, plays: DUMMY_PLAYS }}
@@ -337,99 +341,10 @@ const SongPage: React.FC = () => {
             </div>
           </div>
           <div className={styles.songLayoutBottom}>
-            <div className={styles.songLayoutBottomLeft}>
-              <div className={styles.artistInfoContainer}>
-                <div className={styles.artistInfoLeft}>
-                  <img
-                    src={
-                      mainArtist?.user?.profile_picture_url
-                        ? mainArtist?.user?.profile_picture_url
-                        : userPlaceholder
-                    }
-                    alt={`${
-                      mainArtist?.display_name
-                        ? mainArtist.display_name
-                        : mainArtist?.user?.username
-                    } Image`}
-                    className={styles.artistImage}
-                  />
-                  <button
-                    className={classNames(styles.artistFollowButton, {
-                      [styles.artistFollowButtonActive]: isFollowed,
-                    })}
-                    onClick={handleFollowArtist}
-                  >
-                    {isFollowed ? (
-                      <>
-                        Followed <LuUserRoundCheck />
-                      </>
-                    ) : (
-                      <>
-                        Follow <LuUserRoundPlus />
-                      </>
-                    )}
-                  </button>
-                </div>
-                <div className={styles.artistInfoRight}>
-                  <div className={styles.artistNameContainer}>
-                    <Link
-                      className={styles.artistInfoName}
-                      to={`/artists/${mainArtist?.id}`}
-                    >
-                      {mainArtist?.display_name
-                        ? mainArtist.display_name
-                        : mainArtist?.user?.username}
-                    </Link>
-                    {mainArtist?.verified && (
-                      <div
-                        className={styles.badgeWrapper}
-                        onMouseEnter={() => setIsTooltipVisible(true)}
-                        onMouseLeave={() => setIsTooltipVisible(false)}
-                      >
-                        <LuBadgeCheck className={styles.verifiedBadge} />
-                        {isTooltipVisible && (
-                          <div className={styles.tooltip}>
-                            Verified by CoogMusic
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className={styles.horizontalRule}></div>
-                  <div className={styles.artistBio}>
-                    {mainArtist?.bio
-                      ? mainArtist.bio
-                      : `${mainArtist?.display_name ?? ""} has no bio yet...`}
-                  </div>
-                </div>
-              </div>
-
-              {otherArtists.length > 0 && (
-                <div className={styles.otherArtistsContainer}>
-                  {otherArtists.map((artist: SongArtist, i: number) => (
-                    <>
-                      <div key={artist.id} className={styles.otherArtistItem}>
-                        <LuUserRoundPen className={styles.otherArtistIcon} />
-                        <div className={styles.otherArtistInfo}>
-                          <Link
-                            className={styles.otherArtistName}
-                            to={`/artists/${artist.id}`}
-                          >
-                            {artist.display_name}
-                          </Link>
-                          <span className={styles.otherArtistRole}>
-                            {artist.role}
-                          </span>
-                        </div>
-                      </div>
-                      {i < otherArtists.length - 1 && (
-                        <div className={styles.horizontalRule}></div>
-                      )}
-                    </>
-                  ))}
-                </div>
-              )}
-            </div>
+            <ArtistInfo
+              mainArtist={mainArtist ?? undefined}
+              otherArtists={otherArtists}
+            />
 
             <div className={styles.commentsContainer}>
               <div className={styles.commentsContainerTop}>

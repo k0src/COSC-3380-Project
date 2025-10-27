@@ -15,3 +15,4 @@ export { default as ErrorPage } from "./ErrorPage/ErrorPage.js";
 export { default as ShareModal } from "./ShareModal/ShareModal.js";
 export { default as SongDetails } from "./SongPage/SongDetails/SongDetails.js";
 export { default as SongActions } from "./SongPage/SongActions/SongActions.js";
+export { default as ArtistInfo } from "./SongPage/ArtistInfo/ArtistInfo.js";

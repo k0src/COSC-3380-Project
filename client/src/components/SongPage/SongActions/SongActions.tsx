@@ -23,7 +23,7 @@ const SongActions: React.FC<SongActionsProps> = ({
   songTitle,
   songUrl,
 }) => {
-  // user
+  //! user
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -33,7 +33,7 @@ const SongActions: React.FC<SongActionsProps> = ({
   const handleToggleSongLike = async () => {
     try {
       if (isAuthenticated) {
-        // send request here
+        //! send request here
         setIsLiked((prev) => !prev);
       } else {
         navigate("/login");
@@ -46,7 +46,7 @@ const SongActions: React.FC<SongActionsProps> = ({
   const handleAddToPlaylist = async () => {
     try {
       if (isAuthenticated) {
-        // send request here
+        //! send request here
         console.log("added to playlist: " + songId);
       } else {
         navigate("/login");
@@ -59,7 +59,7 @@ const SongActions: React.FC<SongActionsProps> = ({
   const handleAddToQueue = async () => {
     try {
       if (isAuthenticated) {
-        // send request here
+        //! send request here
         console.log("added to queue: " + songId);
       } else {
         navigate("/login");
@@ -74,7 +74,7 @@ const SongActions: React.FC<SongActionsProps> = ({
   };
 
   const handleReport = () => {
-    // open report modal...
+    //! open report modal...
   };
 
   return (
