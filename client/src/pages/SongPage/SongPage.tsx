@@ -60,6 +60,7 @@ import {
   SongDetails,
   SongActions,
   ArtistInfo,
+  SongComments,
 } from "@components";
 import { formatRelativeDate, formatDateString } from "@util";
 
@@ -110,7 +111,6 @@ const SongPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // FIX LATER
   if (!id) {
     return (
       <ErrorPage
@@ -136,10 +136,9 @@ const SongPage: React.FC = () => {
           limit: 25,
         }),
       moreSongsByArtist: async () =>
-        artistApi.getSongs(
-          "84a51edc-a38f-4659-974b-405b3e40f432", // test - pass artist as prop
-          { limit: 5 }
-        ),
+        artistApi.getSongs("84a51edc-a38f-4659-974b-405b3e40f432", {
+          limit: 5,
+        }),
       suggestedSongs: () =>
         songApi.getSuggestedSongs(id, {
           userId: isAuthenticated && user ? user.id : undefined,
@@ -177,19 +176,6 @@ const SongPage: React.FC = () => {
   //     }
   //   },
   // });
-
-  const handleFollowArtist = async () => {
-    try {
-      if (isAuthenticated) {
-        // send request here
-        setIsFollowed((prev) => !prev);
-      } else {
-        navigate("/login");
-      }
-    } catch (error) {
-      console.error("Toggling follow artist failed:", error);
-    }
-  };
 
   const handleAddComment = async () => {
     try {
@@ -346,40 +332,7 @@ const SongPage: React.FC = () => {
               otherArtists={otherArtists}
             />
 
-            <div className={styles.commentsContainer}>
-              <div className={styles.commentsContainerTop}>
-                <img
-                  src={userPlaceholder}
-                  alt="username"
-                  className={styles.commentUserPfp}
-                />
-
-                <div className={styles.commentInputContainer}>
-                  <input
-                    type="text"
-                    placeholder="Leave a comment..."
-                    className={styles.commentInput}
-                  />
-                  <button
-                    className={styles.commentButton}
-                    onClick={handleAddComment}
-                  >
-                    <LuSend />
-                  </button>
-                </div>
-              </div>
-
-              {comments && comments.length > 0 && (
-                <>
-                  <div className={styles.horizontalRule}></div>
-                  <div className={styles.commentsList}>
-                    {comments.map((comment) => (
-                      <CommentItem key={comment.id} comment={comment} />
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
+            <SongComments songId={song.id} />
             <div className={styles.suggestionsContainer}>
               {song.albums && song.albums.length > 0 && (
                 <div className={styles.suggestionsWrapper}>

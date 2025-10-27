@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import type { SongArtist } from "@types";
 import { useAuth } from "@contexts";
 import styles from "./ArtistInfo.module.css";
+import { HorizontalRule } from "@components";
 import classNames from "classnames";
 import userPlaceholder from "@assets/user-placeholder.png";
 import {
@@ -114,7 +115,7 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
               </div>
             )}
           </div>
-          <div className={styles.horizontalRule}></div>
+          <HorizontalRule />
           <div className={styles.artistBio}>
             {mainArtist?.bio || `${artistDisplayName} has no bio yet...`}
           </div>
@@ -126,9 +127,7 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
           {otherArtists.map((artist: SongArtist, i: number) => (
             <Fragment key={artist.id}>
               <OtherArtistItem artist={artist} />
-              {i < otherArtists.length - 1 && (
-                <div className={styles.horizontalRule}></div>
-              )}
+              {i < otherArtists.length - 1 && <HorizontalRule />}
             </Fragment>
           ))}
         </div>

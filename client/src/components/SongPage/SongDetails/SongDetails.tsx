@@ -1,7 +1,8 @@
 import { memo, useMemo } from "react";
 import { formatDateString } from "@util";
-import classNames from "classnames";
+import { VerticalRule } from "@components";
 import styles from "./SongDetails.module.css";
+import classNames from "classnames";
 import { LuMusic, LuCalendar } from "react-icons/lu";
 
 export interface SongDetailsProps {
@@ -27,7 +28,7 @@ const SongDetails: React.FC<SongDetailsProps> = ({ genre, releaseDate }) => {
           </span>
         </div>
       </div>
-      <div className={styles.verticalRule}></div>
+      <VerticalRule />
       <div className={styles.detailsColumn}>
         <span className={styles.detailLabel}>Release Date</span>
         <div className={styles.detailWrapper}>

@@ -10,14 +10,6 @@
   flex: 1;
 }
 
-.verticalRule {
-  width: 1.25px;
-  height: 100%;
-  background-color: var(--color-text-gray);
-  opacity: 0.25;
-  border-radius: 1px;
-}
-
 .detailsColumn {
   display: flex;
   flex-direction: column;

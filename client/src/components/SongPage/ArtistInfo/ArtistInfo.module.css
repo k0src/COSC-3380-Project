@@ -144,15 +144,6 @@
   color: var(--color-white-hover);
 }
 
-.horizontalRule {
-  width: 100%;
-  height: 1px;
-  background-color: var(--color-text-gray);
-  opacity: 0.25;
-  border-radius: 1px;
-  margin: 0.2rem 0;
-}
-
 .artistBio {
   color: var(--color-text-gray);
   font-size: var(--font-size-sm);
