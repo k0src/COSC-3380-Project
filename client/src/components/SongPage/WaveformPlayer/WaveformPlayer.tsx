@@ -140,38 +140,60 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
   useEffect(() => {
     if (!waveformRef.current || !audioSrc) return;
 
-    const audio = new Audio();
-    audio.src = audioSrc;
-    audio.crossOrigin = "anonymous";
-    audio.preload = "auto";
+    const loadAudioWithCORSBypass = async () => {
+      try {
+        const ws = WaveSurfer.create({
+          container: waveformRef.current!,
+          height: WAVEFORM_HEIGHT,
+          waveColor: "#F6F6F6",
+          progressColor: "#d53131",
+          barWidth: BAR_WIDTH,
+          barRadius: BAR_RADIUS,
+          barGap: BAR_GAP,
+          normalize: true,
+          backend: "MediaElement" as const,
+          sampleRate: 44100,
+          autoplay: false,
+          plugins: [hoverPlugin],
+        });
 
-    waveformRef.current.appendChild(audio);
+        ws.on("ready", handleReady);
+        ws.on("error", handleError);
+        wavesurferRef.current = ws;
 
-    const ws = WaveSurfer.create({
-      container: waveformRef.current,
-      height: WAVEFORM_HEIGHT,
-      waveColor: "#F6F6F6",
-      progressColor: "#d53131",
-      barWidth: BAR_WIDTH,
-      barRadius: BAR_RADIUS,
-      barGap: BAR_GAP,
-      normalize: true,
-      backend: "MediaElement" as const,
-      sampleRate: 44100,
-      media: audio,
-      autoplay: false,
-      plugins: [hoverPlugin],
-    });
+        const response = await fetch(audioSrc);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch audio: ${response.status}`);
+        }
 
-    ws.on("ready", handleReady);
-    ws.on("error", handleError);
+        const arrayBuffer = await response.arrayBuffer();
 
-    wavesurferRef.current = ws;
+        const audioContext = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
+        const decodedData = await audioContext.decodeAudioData(arrayBuffer);
+
+        const channelsNumber = decodedData.numberOfChannels;
+        const peaks =
+          channelsNumber > 1
+            ? [decodedData.getChannelData(0), decodedData.getChannelData(1)]
+            : [decodedData.getChannelData(0)];
+        const duration = decodedData.duration;
+
+        ws.load(audioSrc, peaks, duration);
+      } catch (error) {
+        console.error("Failed to load audio:", error);
+        handleError(error);
+      }
+    };
+
+    loadAudioWithCORSBypass();
 
     return () => {
-      ws.un("ready", handleReady);
-      ws.un("error", handleError);
-      ws.destroy();
+      if (wavesurferRef.current) {
+        wavesurferRef.current.un("ready", handleReady);
+        wavesurferRef.current.un("error", handleError);
+        wavesurferRef.current.destroy();
+      }
     };
   }, [audioSrc, handleReady, handleError, hoverPlugin]);
 
