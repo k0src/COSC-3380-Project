@@ -142,7 +142,10 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
 
     const audio = new Audio();
     audio.src = audioSrc;
-    audio.preload = "metadata";
+    audio.crossOrigin = "anonymous";
+    audio.preload = "auto";
+
+    waveformRef.current.appendChild(audio);
 
     const ws = WaveSurfer.create({
       container: waveformRef.current,
