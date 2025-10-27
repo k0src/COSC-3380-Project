@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { UserRepository } from "@repositories";
+import { HistoryService } from "@services";
 
 const router = express.Router();
 
@@ -54,5 +55,26 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// PUT /api/users/:id/history
+router.put(
+  "/:id/history",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { entityId, entityType } = req.body;
+    if (!id || !entityId || !entityType) {
+      res.status(400).json({ error: "Missing required parameters" });
+      return;
+    }
+
+    try {
+      await HistoryService.addToHistory(id, entityId, entityType);
+      res.status(200).json({ message: "History updated successfully" });
+    } catch (error) {
+      console.error("Error in PUT /users/:id/history:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
 
 export default router;

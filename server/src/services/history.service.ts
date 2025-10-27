@@ -92,14 +92,6 @@ export default class HistoryService {
         throw new Error("Invalid entity type");
       }
 
-      // Check for duplicate entry before inserting
-      const checkQuery = `SELECT 1 FROM ${table} WHERE user_id = $1 AND ${entity}_id = $2`;
-      const exists = await query(checkQuery, [userId, entityId]);
-
-      if (exists && exists.length > 0) {
-        return; // already in history
-      }
-
       await query(
         `INSERT INTO ${table} (user_id, ${entity}_id) VALUES ($1, $2)`,
         [userId, entityId]
