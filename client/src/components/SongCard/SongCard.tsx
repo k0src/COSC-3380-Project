@@ -8,6 +8,7 @@ export interface SongCardProps {
   plays: number;
   likes: number;
   comments: number;
+  showStats?: boolean;
 }
 
 const SongCard: React.FC<SongCardProps> = ({
@@ -17,6 +18,7 @@ const SongCard: React.FC<SongCardProps> = ({
   plays,
   likes,
   comments,
+  showStats = true,
 }) => {
   return (
     <div className={styles.songCard}>
@@ -32,18 +34,19 @@ const SongCard: React.FC<SongCardProps> = ({
         <p className={styles.songTitle}>{title}</p>
         <span className={styles.songArtist}>{artist}</span>
       </div>
-
-      <div className={styles.songStats}>
-        <div className={styles.statItem}>
-          <span>{plays}</span>
+      {showStats && (
+        <div className={styles.songStats}>
+          <div className={styles.statItem}>
+            <span>{plays}</span>
+          </div>
+          <div className={styles.statItem}>
+            <span>{likes}</span>
+          </div>
+          <div className={styles.statItem}>
+            <span>{comments}</span>
+          </div>
         </div>
-        <div className={styles.statItem}>
-          <span>{likes}</span>
-        </div>
-        <div className={styles.statItem}>
-          <span>{comments}</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
