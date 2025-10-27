@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { getBlobUrl } from "../config/blobStorage.js";
+import { pool } from "../config/database.js";
 
 const router = express.Router();
 
@@ -13,8 +14,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    // Dynamically import pool to avoid import-time errors
-    const { pool } = await import("../config/database.js");
     
     const searchTerm = `%${q.toLowerCase()}%`;
     const limitNum = parseInt(limit as string, 10);

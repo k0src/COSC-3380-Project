@@ -5,15 +5,12 @@ import helmet from "helmet";
 import path from "path";
 import dotenv from "dotenv";
 import { testConnection } from "config/database";
-import { generalRateLimit } from "./middleware/rateLimiting.middleware.js";
-
+import searchRoutes from "./routes/search.routes.js";
 import * as Routes from "@routes";
 
 const __dirname = path.resolve();
 
 dotenv.config();
-
-console.log("Imported routes:", Object.keys(Routes));
 
 const app = express();
 const PORT = Number(process.env.PORT) || 8080;
@@ -80,12 +77,14 @@ if (Routes.songRoutes) {
   app.use("/api/songs", Routes.songRoutes);
 }
 // if (Routes.albumRoutes) app.use("/api/albums", Routes.albumRoutes);
-// if (Routes.artistRoutes) app.use("/api/artists", Routes.artistRoutes);
+// if (Routes.artistRoutes) app.use("/api/artists", Routes.artistRoutes");
 // if (Routes.playlistRoutes) app.use("/api/playlists", Routes.playlistRoutes);
 // if (Routes.userRoutes) app.use("/api/users", Routes.userRoutes);
-if (Routes.searchRoutes) {
+
+// Register search routes using direct import (tsconfig-paths issue with re-exports)
+if (searchRoutes) {
   console.log("✓ Registering search routes at /api/search");
-  app.use("/api/search", Routes.searchRoutes);
+  app.use("/api/search", searchRoutes);
 }
 
 // React SPA routes
@@ -98,25 +97,47 @@ app.use((req, res) => {
   res.status(404).send("Not found");
 });
 
-async function startServer() {
-  try {
-    try {
-      await testConnection();
-    } catch (err) {
-      console.warn("⚠ Database connection failed at startup. Continuing to start server.", err);
-    }
-    app.listen(PORT, "0.0.0.0", () => {
+// Test connection then start server
+testConnection()
+  .then(() => {
+    console.log("✅ Database connection verified");
+  })
+  .catch((err) => {
+    console.warn("⚠ Database connection failed. Server will start anyway.", err.message);
+  })
+  .finally(() => {
+    const server = app.listen(PORT, "0.0.0.0", () => {
       console.log(`⚡ Server running on port: ${PORT}`);
       console.log("Environment: ", NODE_ENV);
       if (NODE_ENV !== "production") {
         console.log("CORS Origin:", corsOptions.origin);
       }
     });
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
-}
-
-startServer();
-Monday, October 27, 2025 2:17:15 AM
+    
+    // Explicitly keep the process alive
+    server.on('listening', () => {
+      console.log('✅ Server is now accepting connections');
+    });
+    
+    server.on('error', (err) => {
+      console.error('❌ Server error:', err);
+      process.exit(1);
+    });
+    
+    // Keep process alive
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received, closing server');
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+    });
+    
+    process.on('SIGINT', () => {
+      console.log('SIGINT received, closing server');
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+    });
+  });
