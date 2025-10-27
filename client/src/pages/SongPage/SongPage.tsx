@@ -53,7 +53,7 @@ import { useStreamTracking } from "../../hooks";
 import musicPlaceholder from "../../../assets/music-placeholder.png";
 import { useAuth } from "../../contexts/AuthContext.js";
 import { useAudioQueue } from "../../contexts/AudioQueueContext.js";
-import { SongContainer } from "@components";
+import { SongContainer, SongStats, ErrorPage } from "@components";
 import { formatRelativeDate, formatDateString } from "@util";
 
 const DUMMY_PLAYS = [
@@ -93,32 +93,6 @@ const DUMMY_WEEKS = [
   "7/23",
 ];
 
-const sparkLineSettings: SparkLineChartProps = {
-  data: DUMMY_PLAYS,
-  baseline: "min",
-  xAxis: { id: "week-axis", data: DUMMY_WEEKS },
-  yAxis: {
-    domainLimit: (_, maxValue: number) => ({
-      min: -maxValue / 6,
-      max: maxValue,
-    }),
-  },
-  sx: {
-    [`& .${areaElementClasses.root}`]: { opacity: 0.2 },
-    [`& .${lineElementClasses.root}`]: { strokeWidth: 3 },
-    [`& .${chartsAxisHighlightClasses.root}`]: {
-      stroke: "rgb(213, 49, 49)",
-      strokeDasharray: "none",
-      strokeWidth: 2,
-    },
-  },
-  slotProps: {
-    lineHighlight: { r: 4 },
-  },
-  clipAreaOffset: { top: 2, bottom: 2 },
-  axisHighlight: { x: "line" },
-};
-
 const SongPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
 
@@ -127,12 +101,16 @@ const SongPage: React.FC = () => {
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
 
   const { user, isAuthenticated } = useAuth();
-  const { actions } = useAudioQueue();
   const navigate = useNavigate();
 
   // FIX LATER
   if (!id) {
-    return <div>Invalid song ID</div>;
+    return (
+      <ErrorPage
+        title="Song Not Found"
+        message="The requested song does not exist."
+      />
+    );
   }
 
   const { data, loading, error } = useAsyncData(
@@ -381,54 +359,6 @@ const SongPage: React.FC = () => {
       ) : (
         <div className={styles.songLayout}>
           <div className={styles.songLayoutTop}>
-            {/* <div
-              className={styles.songContainer}
-              style={
-                {
-                  "--cover-gradient-color1": `rgba(${coverGradient.color1.r}, ${coverGradient.color1.g}, ${coverGradient.color1.b}, 0.2)`,
-                  "--cover-gradient-color2": `rgba(${coverGradient.color2.r}, ${coverGradient.color2.g}, ${coverGradient.color2.b}, 0.2)`,
-                } as React.CSSProperties
-              }
-            >
-              <img
-                src={song.image_url ? song.image_url : musicPlaceholder}
-                alt={`${song.title} Cover`}
-                className={styles.coverImage}
-              />
-              <div className={styles.songRight}>
-                <div className={styles.songInfoContainer}>
-                  <span className={styles.artistName}>
-                    {mainArtist?.display_name}
-                  </span>
-                  <span className={styles.songTitle}>{song.title}</span>
-                  <div className={styles.interactionsContainer}>
-                    <div className={styles.interactionStat}>
-                      <LuPlay />
-                      <span className={styles.interactionText}>
-                        {song?.streams ?? 0}
-                      </span>
-                    </div>
-                    <div className={styles.interactionStat}>
-                      <LuThumbsUp />
-                      <span className={styles.interactionText}>
-                        {song?.likes ?? 0}
-                      </span>
-                    </div>
-                    <div className={styles.interactionStat}>
-                      <LuMessageSquareText />
-                      <span className={styles.interactionText}>
-                        {comments ? comments.length : 0}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <WaveformPlayer
-                  audioSrc={song.audio_url}
-                  captureKeyboard={true}
-                  onPlay={() => actions.play(song)}
-                />
-              </div>
-            </div> */}
             <SongContainer
               song={song}
               coverGradient={coverGradient}
@@ -436,18 +366,9 @@ const SongPage: React.FC = () => {
             />
 
             <div className={styles.songLayoutTopRight}>
-              <div className={styles.songStatsContainer}>
-                <span className={styles.statsText}>Weekly Plays</span>
-                <SparkLineChart
-                  height={80}
-                  width={330}
-                  area
-                  showHighlight
-                  color="rgb(213, 49, 49)"
-                  className={styles.playsChart}
-                  {...sparkLineSettings}
-                />
-              </div>
+              <SongStats
+                playsData={{ weeks: DUMMY_WEEKS, plays: DUMMY_PLAYS }}
+              />
               <div className={styles.detailsContainer}>
                 <div className={styles.detailsColumn}>
                   <span className={styles.detailLabel}>Genre</span>
