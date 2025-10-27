@@ -2,6 +2,7 @@ import React, { useState, memo, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth, useAudioQueue } from "@contexts";
 import { formatPlaybackTime, getMainArtist } from "@util";
+import { ShareModal } from "@components";
 import classNames from "classnames";
 import styles from "./MainLayoutNowPlayingBar.module.css";
 import {
@@ -20,6 +21,7 @@ import musicPlaceholder from "@assets/music-placeholder.png";
 
 const NowPlayingBar: React.FC = () => {
   const [isLiked, setIsLiked] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const { isAuthenticated } = useAuth();
   const { state, actions } = useAudioQueue();
@@ -106,6 +108,10 @@ const NowPlayingBar: React.FC = () => {
     [actions]
   );
 
+  const handleShare = useCallback(() => {
+    setIsShareModalOpen(true);
+  }, []);
+
   const mainArtist = useMemo(() => {
     if (isLoading || !currentSong)
       return { id: "", display_name: "Unknown Artist" };
@@ -118,165 +124,180 @@ const NowPlayingBar: React.FC = () => {
   }, [isLoading, currentSong]);
 
   return (
-    <div className={styles.nowPlayingBar}>
-      <div className={styles.nowPlayingInfo}>
-        <img
-          src={currentSong?.image_url || musicPlaceholder}
-          alt={`${currentSong?.title} album art`}
-          className={styles.albumArt}
-        />
-        <div className={styles.songInfo}>
-          {mainArtist.id ? (
-            <Link
-              to={`/artists/${mainArtist.id}`}
-              className={styles.artistName}
-            >
-              {mainArtist.display_name || "Unknown Artist"}
-            </Link>
-          ) : (
-            <span className={styles.artistName}>
-              {mainArtist.display_name || "Unknown Artist"}
-            </span>
-          )}
-          <Link to={`/songs/${currentSong?.id}`} className={styles.songTitle}>
-            {currentSong?.title}
-          </Link>
-        </div>
-      </div>
-
-      <div className={styles.playerControls}>
-        <div className={styles.controlButtons}>
-          <button
-            className={classNames(styles.controlButton, styles.shuffleButton, {
-              [styles.controlButtonActive]: isShuffled,
-            })}
-            onClick={handleToggleShuffle}
-            aria-label={isShuffled ? "Disable Shuffle" : "Enable Shuffle"}
-            disabled={isLoading}
-          >
-            <LuShuffle />
-          </button>
-          <button
-            className={classNames(styles.controlButton, {
-              [styles.controlButtonDisabled]: !hasPreviousSong,
-            })}
-            onClick={handlePrevious}
-            disabled={!hasPreviousSong || isLoading}
-            aria-label="Previous Track"
-          >
-            <LuSkipBack />
-          </button>
-          <button
-            className={classNames(styles.controlButton, styles.playButton, {
-              [styles.playButtonActive]: isPlaying,
-            })}
-            onClick={handleTogglePlay}
-            disabled={isLoading}
-            aria-label={isPlaying ? "Pause" : "Play"}
-          >
-            {isPlaying ? <LuCirclePause /> : <LuCirclePlay />}
-          </button>
-          <button
-            className={classNames(styles.controlButton, {
-              [styles.controlButtonDisabled]: !hasNextSong,
-            })}
-            onClick={handleNext}
-            disabled={!hasNextSong || isLoading}
-            aria-label="Next Track"
-          >
-            <LuSkipForward />
-          </button>
-          <button
-            className={classNames(styles.controlButton, styles.repeatButton, {
-              [styles.controlButtonActive]: repeatMode !== "none",
-            })}
-            onClick={handleToggleRepeat}
-            disabled={isLoading}
-            aria-label={
-              repeatMode === "none"
-                ? "Enable Repeat"
-                : repeatMode === "one"
-                ? "Repeat One"
-                : "Repeat All"
-            }
-          >
-            <LuRepeat />
-            {repeatMode === "one" && (
-              <span className={styles.repeatIndicator}>1</span>
+    <>
+      <div className={styles.nowPlayingBar}>
+        <div className={styles.nowPlayingInfo}>
+          <img
+            src={currentSong?.image_url || musicPlaceholder}
+            alt={`${currentSong?.title} album art`}
+            className={styles.albumArt}
+          />
+          <div className={styles.songInfo}>
+            {mainArtist.id ? (
+              <Link
+                to={`/artists/${mainArtist.id}`}
+                className={styles.artistName}
+              >
+                {mainArtist.display_name || "Unknown Artist"}
+              </Link>
+            ) : (
+              <span className={styles.artistName}>
+                {mainArtist.display_name || "Unknown Artist"}
+              </span>
             )}
-          </button>
+            <Link to={`/songs/${currentSong?.id}`} className={styles.songTitle}>
+              {currentSong?.title}
+            </Link>
+          </div>
         </div>
-        <div className={styles.progressContainer}>
-          <span className={styles.timeLabel}>
-            {formatPlaybackTime(progress)}
-          </span>
-          <div className={styles.progressBar}>
-            <div
-              className={styles.progressFill}
-              style={{
-                width: `${duration > 0 ? (progress / duration) * 100 : 0}%`,
-              }}
-            />
+
+        <div className={styles.playerControls}>
+          <div className={styles.controlButtons}>
+            <button
+              className={classNames(
+                styles.controlButton,
+                styles.shuffleButton,
+                {
+                  [styles.controlButtonActive]: isShuffled,
+                }
+              )}
+              onClick={handleToggleShuffle}
+              aria-label={isShuffled ? "Disable Shuffle" : "Enable Shuffle"}
+              disabled={isLoading}
+            >
+              <LuShuffle />
+            </button>
+            <button
+              className={classNames(styles.controlButton, {
+                [styles.controlButtonDisabled]: !hasPreviousSong,
+              })}
+              onClick={handlePrevious}
+              disabled={!hasPreviousSong || isLoading}
+              aria-label="Previous Track"
+            >
+              <LuSkipBack />
+            </button>
+            <button
+              className={classNames(styles.controlButton, styles.playButton, {
+                [styles.playButtonActive]: isPlaying,
+              })}
+              onClick={handleTogglePlay}
+              disabled={isLoading}
+              aria-label={isPlaying ? "Pause" : "Play"}
+            >
+              {isPlaying ? <LuCirclePause /> : <LuCirclePlay />}
+            </button>
+            <button
+              className={classNames(styles.controlButton, {
+                [styles.controlButtonDisabled]: !hasNextSong,
+              })}
+              onClick={handleNext}
+              disabled={!hasNextSong || isLoading}
+              aria-label="Next Track"
+            >
+              <LuSkipForward />
+            </button>
+            <button
+              className={classNames(styles.controlButton, styles.repeatButton, {
+                [styles.controlButtonActive]: repeatMode !== "none",
+              })}
+              onClick={handleToggleRepeat}
+              disabled={isLoading}
+              aria-label={
+                repeatMode === "none"
+                  ? "Enable Repeat"
+                  : repeatMode === "one"
+                  ? "Repeat One"
+                  : "Repeat All"
+              }
+            >
+              <LuRepeat />
+              {repeatMode === "one" && (
+                <span className={styles.repeatIndicator}>1</span>
+              )}
+            </button>
+          </div>
+          <div className={styles.progressContainer}>
+            <span className={styles.timeLabel}>
+              {formatPlaybackTime(progress)}
+            </span>
+            <div className={styles.progressBar}>
+              <div
+                className={styles.progressFill}
+                style={{
+                  width: `${duration > 0 ? (progress / duration) * 100 : 0}%`,
+                }}
+              />
+              <input
+                type="range"
+                min="0"
+                max={duration || 0}
+                value={progress}
+                onChange={handleSeek}
+                className={styles.progressSlider}
+                disabled={isLoading || duration === 0}
+                aria-label="Seek position"
+              />
+            </div>
+            <span className={styles.timeLabel}>
+              {formatPlaybackTime(duration)}
+            </span>
+          </div>
+        </div>
+
+        <div className={styles.rightControls}>
+          <button
+            className={classNames(styles.controlButton, {
+              [styles.controlButtonActive]: isLiked,
+            })}
+            onClick={handleToggleLike}
+            aria-label={isLiked ? "Unlike" : "Like"}
+          >
+            <LuThumbsUp />
+          </button>
+          <button
+            className={classNames(styles.controlButton, styles.playlistButton)}
+            onClick={handleAddToPlaylist}
+            aria-label="Add to Playlist"
+          >
+            <LuListPlus />
+          </button>
+          <div className={styles.volumeControl}>
+            <LuVolume2 className={styles.volumeIcon} />
             <input
               type="range"
               min="0"
-              max={duration || 0}
-              value={progress}
-              onChange={handleSeek}
-              className={styles.progressSlider}
-              disabled={isLoading || duration === 0}
-              aria-label="Seek position"
+              max="100"
+              value={Math.round(volume * 100)}
+              onChange={handleVolumeChange}
+              className={styles.volumeSlider}
+              disabled={isLoading}
+              aria-label="Volume control"
+              style={
+                {
+                  "--volume-percent": `${Math.round(volume * 100)}%`,
+                } as React.CSSProperties
+              }
             />
           </div>
-          <span className={styles.timeLabel}>
-            {formatPlaybackTime(duration)}
-          </span>
+          <button
+            className={classNames(styles.controlButton, styles.shareButton)}
+            aria-label="Share"
+            onClick={handleShare}
+            disabled={isLoading || !currentSong}
+          >
+            <LuShare />
+          </button>
         </div>
       </div>
 
-      <div className={styles.rightControls}>
-        <button
-          className={classNames(styles.controlButton, {
-            [styles.controlButtonActive]: isLiked,
-          })}
-          onClick={handleToggleLike}
-          aria-label={isLiked ? "Unlike" : "Like"}
-        >
-          <LuThumbsUp />
-        </button>
-        <button
-          className={classNames(styles.controlButton, styles.playlistButton)}
-          onClick={handleAddToPlaylist}
-          aria-label="Add to Playlist"
-        >
-          <LuListPlus />
-        </button>
-        <div className={styles.volumeControl}>
-          <LuVolume2 className={styles.volumeIcon} />
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={Math.round(volume * 100)}
-            onChange={handleVolumeChange}
-            className={styles.volumeSlider}
-            disabled={isLoading}
-            aria-label="Volume control"
-            style={
-              {
-                "--volume-percent": `${Math.round(volume * 100)}%`,
-              } as React.CSSProperties
-            }
-          />
-        </div>
-        <button
-          className={classNames(styles.controlButton, styles.shareButton)}
-          aria-label="Share"
-        >
-          <LuShare />
-        </button>
-      </div>
-    </div>
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        pageUrl={`${window.location.origin}/songs/${currentSong?.id}`}
+        pageTitle={currentSong?.title}
+      />
+    </>
   );
 };
 
