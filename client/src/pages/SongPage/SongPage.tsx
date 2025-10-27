@@ -369,10 +369,7 @@ const SongPage: React.FC = () => {
               <SongStats
                 playsData={{ weeks: DUMMY_WEEKS, plays: DUMMY_PLAYS }}
               />
-              <SongDetails
-                genre={song.genre || "Unknown"}
-                releaseDate={song.release_date || "2025-01-01"}
-              />
+              <SongDetails genre={song.genre} releaseDate={song.release_date} />
               <div className={styles.songActionsContainer}>
                 <button
                   className={classNames(styles.actionButton, {
