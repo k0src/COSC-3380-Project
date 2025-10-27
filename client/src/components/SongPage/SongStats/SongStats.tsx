@@ -45,6 +45,8 @@ const SongStats: React.FC<SongStatsProps> = ({ songId }) => {
   );
 
   const playsData = data?.weeklyPlays || { weeks: [], plays: [] };
+  const plays = playsData.plays ?? [];
+  const weeks = playsData.weeks ?? [];
 
   const domainLimit = useCallback(
     (_: any, maxValue: number) => ({
@@ -56,9 +58,9 @@ const SongStats: React.FC<SongStatsProps> = ({ songId }) => {
 
   const sparkLineSettings = useMemo<SparkLineChartProps>(
     () => ({
-      data: playsData.plays,
+      data: plays,
       baseline: "min",
-      xAxis: { id: "week-axis", data: playsData.weeks },
+      xAxis: { id: "week-axis", data: weeks },
       yAxis: {
         domainLimit: domainLimit,
       },
@@ -67,10 +69,17 @@ const SongStats: React.FC<SongStatsProps> = ({ songId }) => {
       clipAreaOffset: CLIP_AREA_OFFSET,
       axisHighlight: { x: "line" },
     }),
-    [playsData.plays, playsData.weeks]
+    [plays, weeks]
   );
 
-  if (!playsData.plays.length || !playsData.weeks.length || error) {
+  if (
+    !playsData ||
+    !plays.length ||
+    !weeks.length ||
+    plays.length == 1 ||
+    weeks.length == 1 ||
+    error
+  ) {
     return (
       <div className={styles.songStatsContainer}>
         <span className={styles.statsText}>Weekly Plays</span>
