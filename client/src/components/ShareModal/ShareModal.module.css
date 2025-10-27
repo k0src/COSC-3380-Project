@@ -1,0 +1,190 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: var(--color-panel-gray);
+  border: 2px solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  width: 90%;
+  max-width: 46rem;
+  padding: var(--spacing-lg);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideIn 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-white);
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: 2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed) ease;
+}
+
+.closeButton:hover {
+  color: var(--color-white);
+}
+
+.socialIcons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.socialButton {
+  background: var(--color-gray-button);
+  border: 1px solid var(--color-gray-button-border);
+  border-radius: var(--border-radius-md);
+  padding: 2rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  cursor: pointer;
+  transition: background var(--transition-speed) ease;
+  color: var(--color-white);
+  font-size: var(--font-size-lg);
+}
+
+.socialButton:hover {
+  background: var(--color-gray-button-border);
+}
+
+.socialLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-white-hover);
+}
+
+.linkSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  line-height: 1.1;
+}
+
+.linkLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-white-hover);
+}
+
+.linkInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.linkInput {
+  width: 100%;
+  background: var(--color-gray-button);
+  border: 1px solid var(--color-gray-button-border);
+  border-radius: var(--border-radius-md);
+  padding: 1.04rem 4.58rem 1.04rem 1.25rem;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  transition: all var(--transition-speed) ease;
+}
+
+.copyButton {
+  position: absolute;
+  right: 0.3125rem;
+  background: var(--color-gray-button-border);
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.8rem;
+  color: var(--color-white-hover);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed) ease;
+}
+
+.copyButton:hover {
+  background: #5d5d5d;
+  color: var(--color-white);
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.8rem);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-white);
+  color: var(--color-panel-gray);
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.6rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  animation: tooltipFadeIn var(--transition-speed) ease-out;
+  pointer-events: none;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

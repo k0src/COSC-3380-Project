@@ -1,0 +1,28 @@
+.songActionsContainer {
+  flex: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  border: 2px solid var(--color-panel-border);
+  color: var(--color-white);
+  cursor: pointer;
+  font-size: var(--icon-size-md);
+  padding: var(--spacing-md) 2.1rem;
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.actionButton:hover {
+  color: var(--color-red);
+}
+
+.actionButtonActive {
+  color: var(--color-red);
+}

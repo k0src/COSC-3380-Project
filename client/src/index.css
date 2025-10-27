@@ -40,6 +40,9 @@ html {
   --color-white-hover: #bdbdbd;
   --color-black: #080808;
 
+  --color-gray-button: #242424;
+  --color-gray-button-border: #464646;
+
   /* Layout Dimensions */
   --sidebar-width: 6.4rem;
   --header-height: 6.4rem;

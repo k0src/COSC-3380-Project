@@ -53,7 +53,13 @@ import { useStreamTracking } from "../../hooks";
 import musicPlaceholder from "../../../assets/music-placeholder.png";
 import { useAuth } from "../../contexts/AuthContext.js";
 import { useAudioQueue } from "../../contexts/AudioQueueContext.js";
-import { ErrorPage, SongContainer, SongStats, SongDetails } from "@components";
+import {
+  ErrorPage,
+  SongContainer,
+  SongStats,
+  SongDetails,
+  SongActions,
+} from "@components";
 import { formatRelativeDate, formatDateString } from "@util";
 
 const DUMMY_PLAYS = [
@@ -170,53 +176,6 @@ const SongPage: React.FC = () => {
   //     }
   //   },
   // });
-
-  const handleToggleSongLike = async () => {
-    try {
-      if (isAuthenticated) {
-        // send request here
-        setIsLiked((prev) => !prev);
-      } else {
-        navigate("/login");
-      }
-    } catch (error) {
-      console.error("Toggling song like failed:", error);
-    }
-  };
-
-  const handleAddToPlaylist = async () => {
-    try {
-      if (isAuthenticated) {
-        // send request here
-        console.log("added to playlist: " + song.id);
-      } else {
-        navigate("/login");
-      }
-    } catch (error) {
-      console.error("Adding to playlist failed:", error);
-    }
-  };
-
-  const handleAddToQueue = async () => {
-    try {
-      if (isAuthenticated) {
-        // send request here
-        console.log("added to queue: " + song.id);
-      } else {
-        navigate("/login");
-      }
-    } catch (error) {
-      console.error("Adding to queue failed:", error);
-    }
-  };
-
-  const handleShare = () => {
-    // open share modal...
-  };
-
-  const handleReport = () => {
-    // open report modal...
-  };
 
   const handleFollowArtist = async () => {
     try {
@@ -370,34 +329,11 @@ const SongPage: React.FC = () => {
                 playsData={{ weeks: DUMMY_WEEKS, plays: DUMMY_PLAYS }}
               />
               <SongDetails genre={song.genre} releaseDate={song.release_date} />
-              <div className={styles.songActionsContainer}>
-                <button
-                  className={classNames(styles.actionButton, {
-                    [styles.actionButtonActive]: isLiked,
-                  })}
-                  onClick={handleToggleSongLike}
-                >
-                  <LuThumbsUp />
-                </button>
-                <button
-                  className={styles.actionButton}
-                  onClick={handleAddToPlaylist}
-                >
-                  <LuListPlus />
-                </button>
-                <button
-                  className={styles.actionButton}
-                  onClick={handleAddToQueue}
-                >
-                  <LuListEnd />
-                </button>
-                <button className={styles.actionButton} onClick={handleShare}>
-                  <LuShare />
-                </button>
-                <button className={styles.actionButton} onClick={handleReport}>
-                  <LuCircleAlert />
-                </button>
-              </div>
+              <SongActions
+                songId={song.id}
+                songTitle={song.title}
+                songUrl={window.location.href}
+              />
             </div>
           </div>
           <div className={styles.songLayoutBottom}>
