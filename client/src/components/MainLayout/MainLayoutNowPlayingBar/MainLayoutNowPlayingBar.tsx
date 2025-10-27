@@ -146,7 +146,7 @@ const NowPlayingBar: React.FC = () => {
               </span>
             )}
             <Link to={`/songs/${currentSong?.id}`} className={styles.songTitle}>
-              {currentSong?.title}
+              {currentSong?.title || "Unknown Song"}
             </Link>
           </div>
         </div>
