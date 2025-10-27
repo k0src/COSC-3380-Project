@@ -7,3 +7,4 @@ export * from "./user.types.js";
 export * from "./playlist.types.js";
 export * from "./util.types.js";
 export * from "./audioQueue.types.js";
+export * from "./stats.types.js";

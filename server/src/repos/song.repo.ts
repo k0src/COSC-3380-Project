@@ -149,6 +149,7 @@ export default class SongRepository {
    * @param options.includeAlbums - Option to include the albums data.
    * @param options.includeArtists - Option to include the artists data.
    * @param options.includeLikes - Option to include the like count.
+   * @param options.includeComments - Option to include the comment count.
    * @returns The song, or null if not found.
    * @throws Error if the operation fails.
    */
@@ -158,6 +159,7 @@ export default class SongRepository {
       includeAlbums?: boolean;
       includeArtists?: boolean;
       includeLikes?: boolean;
+      includeComments?: boolean;
     }
   ): Promise<Song | null> {
     try {
@@ -191,15 +193,20 @@ export default class SongRepository {
           CASE WHEN $3 THEN
             (SELECT COUNT(*) FROM song_likes sl
             WHERE sl.song_id = s.id)
-          ELSE NULL END AS likes
+          ELSE NULL END AS likes,
+          CASE WHEN $4 THEN
+            (SELECT COUNT(*) FROM comments c
+            WHERE c.song_id = s.id)
+          ELSE NULL END AS comments
         FROM songs s
-        WHERE s.id = $4
+        WHERE s.id = $5
       `;
 
       const params = [
         options?.includeAlbums ?? false,
         options?.includeArtists ?? false,
         options?.includeLikes ?? false,
+        options?.includeComments ?? false,
         id,
       ];
 
@@ -247,6 +254,7 @@ export default class SongRepository {
    * @param options.includeAlbums - Option to include the albums data.
    * @param options.includeArtists - Option to include the artists data.
    * @param options.includeLikes - Option to include the like count.
+   * @param options.includeComments - Option to include the comment count.
    * @param options.limit - Maximum number of songs to return.
    * @param options.offset - Number of songs to skip.
    * @returns A list of songs.
@@ -256,6 +264,7 @@ export default class SongRepository {
     includeAlbums?: boolean;
     includeArtists?: boolean;
     includeLikes?: boolean;
+    includeComments?: boolean;
     limit?: number;
     offset?: number;
   }): Promise<Song[]> {
@@ -283,18 +292,23 @@ export default class SongRepository {
         CASE WHEN $3 THEN
           (SELECT COUNT(*) FROM song_likes sl
           WHERE sl.song_id = s.id)
-        ELSE NULL END AS likes
+        ELSE NULL END AS likes,
+        CASE WHEN $4 THEN
+          (SELECT COUNT(*) FROM comments c
+          WHERE c.song_id = s.id)
+        ELSE NULL END AS comments
         FROM songs s
         LEFT JOIN album_songs als ON als.song_id = s.id
         LEFT JOIN albums a ON als.album_id = a.id
         ORDER BY s.created_at DESC
-        LIMIT $4 OFFSET $5
+        LIMIT $5 OFFSET $6
       `;
 
       const params = [
         options?.includeAlbums ?? false,
         options?.includeArtists ?? false,
         options?.includeLikes ?? false,
+        options?.includeComments ?? false,
         limit,
         offset,
       ];

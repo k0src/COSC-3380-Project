@@ -1,4 +1,7 @@
 import { useMemo, memo, useCallback } from "react";
+import { useAsyncData } from "@hooks";
+import { songApi } from "@api";
+import { PuffLoader } from "react-spinners";
 import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
 import type { SparkLineChartProps } from "@mui/x-charts/SparkLineChart";
 import {
@@ -29,13 +32,20 @@ const CHART_SLOT_PROPS = {
 const CLIP_AREA_OFFSET = { top: 2, bottom: 2 };
 
 export interface SongStatsProps {
-  playsData: {
-    weeks: string[];
-    plays: number[];
-  };
+  songId: string;
 }
 
-const SongStats: React.FC<SongStatsProps> = ({ playsData }) => {
+const SongStats: React.FC<SongStatsProps> = ({ songId }) => {
+  const { data, loading, error } = useAsyncData(
+    {
+      weeklyPlays: () => songApi.getWeeklyPlays(songId),
+    },
+    [songId],
+    { cacheKey: `weekly_plays_${songId}` }
+  );
+
+  const playsData = data?.weeklyPlays || { weeks: [], plays: [] };
+
   const domainLimit = useCallback(
     (_: any, maxValue: number) => ({
       min: -maxValue / 6,
@@ -60,7 +70,7 @@ const SongStats: React.FC<SongStatsProps> = ({ playsData }) => {
     [playsData.plays, playsData.weeks]
   );
 
-  if (!playsData.plays.length || !playsData.weeks.length) {
+  if (!playsData.plays.length || !playsData.weeks.length || error) {
     return (
       <div className={styles.songStatsContainer}>
         <span className={styles.statsText}>Weekly Plays</span>
@@ -72,16 +82,22 @@ const SongStats: React.FC<SongStatsProps> = ({ playsData }) => {
   return (
     <div className={styles.songStatsContainer}>
       <span className={styles.statsText}>Weekly Plays</span>
-      <SparkLineChart
-        height={CHART_HEIGHT}
-        width={CHART_WIDTH}
-        area
-        showHighlight
-        color={CHART_COLOR}
-        className={styles.playsChart}
-        aria-label="Weekly plays chart"
-        {...sparkLineSettings}
-      />
+      {loading ? (
+        <div className={styles.loaderContainer}>
+          <PuffLoader color={CHART_COLOR} size={40} />
+        </div>
+      ) : (
+        <SparkLineChart
+          height={CHART_HEIGHT}
+          width={CHART_WIDTH}
+          area
+          showHighlight
+          color={CHART_COLOR}
+          className={styles.playsChart}
+          aria-label="Weekly plays chart"
+          {...sparkLineSettings}
+        />
+      )}
     </div>
   );
 };

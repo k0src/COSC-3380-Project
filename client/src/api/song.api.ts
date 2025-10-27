@@ -1,5 +1,11 @@
 import api from "./api";
-import type { Song, UUID, CoverGradient, SuggestedSong } from "../types";
+import type {
+  Song,
+  UUID,
+  CoverGradient,
+  SuggestedSong,
+  WeeklyPlays,
+} from "@types";
 
 export const songApi = {
   async getSongById(
@@ -30,6 +36,7 @@ export const songApi = {
     return response.data;
   },
 
+  //! SHOULD NOT BE HERE FIX!!!
   async incrementSongStreams(id: UUID) {
     await api.put(`/songs/${id}/streams`);
   },
@@ -38,6 +45,11 @@ export const songApi = {
     const response = await api.get<CoverGradient>(
       `/songs/${id}/cover-gradient`
     );
+    return response.data;
+  },
+
+  async getWeeklyPlays(id: UUID) {
+    const response = await api.get<WeeklyPlays>(`/songs/${id}/weekly-plays`);
     return response.data;
   },
 };

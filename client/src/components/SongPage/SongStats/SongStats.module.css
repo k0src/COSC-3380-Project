@@ -23,3 +23,10 @@
   justify-content: center;
   height: 8.33rem;
 }
+
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 8.33rem;
+}

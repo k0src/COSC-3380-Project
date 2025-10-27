@@ -2,22 +2,29 @@ import express, { Request, Response } from "express";
 import { SongRepository as SongRepo } from "@repositories";
 import { parseSongForm } from "@infra/form-parser";
 import getCoverGradient from "@util/colors.util";
-import { CommentService } from "@services";
+import { CommentService, StatsService } from "@services";
 
 const router = express.Router();
 
 // GET /api/songs
 // Example:
-// /api/songs?includeAlbum=true&includeArtists=true&includeLikes=true&limit=50&offset=0
+// /api/songs?includeAlbum=true&includeArtists=true&includeLikes=true&includeComments=true&limit=50&offset=0
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { includeAlbums, includeArtists, includeLikes, limit, offset } =
-      req.query;
+    const {
+      includeAlbums,
+      includeArtists,
+      includeLikes,
+      includeComments,
+      limit,
+      offset,
+    } = req.query;
 
     const songs = await SongRepo.getMany({
       includeAlbums: includeAlbums === "true",
       includeArtists: includeArtists === "true",
       includeLikes: includeLikes === "true",
+      includeComments: includeComments === "true",
       limit: limit ? parseInt(limit as string, 10) : undefined,
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });
@@ -31,11 +38,12 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 
 // GET /api/songs/:id
 // Example:
-// /api/songs/:id?includeAlbum=true&includeArtists=true&includeLikes=true
+// /api/songs/:id?includeAlbum=true&includeArtists=true&includeLikes=true&includeComments=true
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { includeAlbums, includeArtists, includeLikes } = req.query;
+    const { includeAlbums, includeArtists, includeLikes, includeComments } =
+      req.query;
     if (!id) {
       res.status(400).json({ error: "Song ID is required" });
       return;
@@ -45,6 +53,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
       includeAlbums: includeAlbums === "true",
       includeArtists: includeArtists === "true",
       includeLikes: includeLikes === "true",
+      includeComments: includeComments === "true",
     });
     if (!song) {
       res.status(404).json({ error: "Song not found" });
@@ -415,6 +424,26 @@ router.get(
       res.status(200).json(artists);
     } catch (error) {
       console.error("Error in GET /api/songs/:id/artists:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/songs/:id/weekly-plays
+router.get(
+  "/:id/weekly-plays",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Song ID is required!" });
+        return;
+      }
+
+      const weeklyPlays = await StatsService.getWeeklyPlays(id);
+      res.status(200).json(weeklyPlays);
+    } catch (error) {
+      console.error("Error in GET /api/songs/:id/weekly-plays:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   }

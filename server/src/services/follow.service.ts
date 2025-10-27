@@ -1,5 +1,5 @@
 import type { User, UUID } from "@types";
-import { query } from "../config/database.js";
+import { query } from "@config/database.js";
 
 /**
  * Service for managing user followers.
