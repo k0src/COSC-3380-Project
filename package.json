@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\" --names \"SERVER,CLIENT\" --prefix-colors \"blue,green\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
     "client": "cd client && npm run dev",
     "server": "cd server && npm run dev",
     "build": "node scripts/build.js",
