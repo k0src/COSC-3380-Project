@@ -1,14 +1,12 @@
 import { Router } from "express";
-import { getBlobUrl } from "../config/blobStorage.js";
+import { getBlobUrl } from "@config/blobStorage.js";
 
 const router = Router();
 
 router.get("/audio/:filename", async (req, res) => {
   try {
     const { filename } = req.params;
-    console.log(`Proxy request for filename: ${filename}`);
     const blobUrl = getBlobUrl(filename);
-    console.log(`Generated blob URL: ${blobUrl}`);
     const response = await fetch(blobUrl);
 
     if (!response.ok) {
