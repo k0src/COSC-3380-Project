@@ -9,6 +9,7 @@ const DevBanner: React.FC = () => {
   useEffect(() => {
     const isDismissed = localStorage.getItem("dev-banner-dismissed");
     if (isDismissed) return;
+    if (import.meta.env.DEV) return;
 
     fetch("/version.json")
       .then((res) => res.json())
