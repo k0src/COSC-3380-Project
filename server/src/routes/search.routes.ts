@@ -14,6 +14,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
+    console.log(`[search] request q="${q}" type=${type} limit=${limit} offset=${offset}`);
     
     const searchTerm = `%${q.toLowerCase()}%`;
     const limitNum = parseInt(limit as string, 10);
@@ -32,6 +33,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
           LIMIT $2 OFFSET $3
         `;
         const songsResult = await pool.query(songsQuery, [searchTerm, limitNum, offsetNum]);
+        console.log(`[search] songs matched=${songsResult.rowCount}`);
         results.songs = songsResult.rows.map((row: any) => ({
           ...row,
           image: row.image || "/PlayerBar/Mask group.png",
@@ -57,6 +59,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
           LIMIT $2 OFFSET $3
         `;
         const artistsResult = await pool.query(artistsQuery, [searchTerm, limitNum, offsetNum]);
+        console.log(`[search] artists matched=${artistsResult.rowCount}`);
         results.artists = artistsResult.rows.map((row: any) => ({
           ...row,
           image: "/PlayerBar/Mask group.png",
@@ -81,6 +84,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
           LIMIT $2 OFFSET $3
         `;
         const albumsResult = await pool.query(albumsQuery, [searchTerm, limitNum, offsetNum]);
+        console.log(`[search] albums matched=${albumsResult.rowCount}`);
         results.albums = albumsResult.rows.map((row: any) => ({
           ...row,
           image: row.image || "/PlayerBar/Mask group.png",
@@ -108,6 +112,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
           LIMIT $2 OFFSET $3
         `;
         const playlistsResult = await pool.query(playlistsQuery, [searchTerm, limitNum, offsetNum]);
+        console.log(`[search] playlists matched=${playlistsResult.rowCount}`);
         results.playlists = playlistsResult.rows.map((row: any) => ({
           ...row,
           image: "/PlayerBar/Mask group.png",
