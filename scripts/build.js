@@ -33,7 +33,7 @@ try {
   const versionFile = path.join(publicDir, "version.json");
   fs.writeFileSync(
     versionFile,
-    JSON.stringify({ verison: commitHash }, null, 2)
+    JSON.stringify({ version: commitHash }, null, 2)
   );
   console.log("\nCreated version.json with commit hash:", commitHash);
 } catch (error) {
