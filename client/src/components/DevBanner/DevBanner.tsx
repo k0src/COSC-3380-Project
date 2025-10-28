@@ -4,27 +4,23 @@ import styles from "./DevBanner.module.css";
 
 const DevBanner: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [buildVersion, setBuildVersion] = useState<string>("v2.41");
+  const [buildVersion, setBuildVersion] = useState<string>("");
 
   useEffect(() => {
     const isDismissed = localStorage.getItem("dev-banner-dismissed");
     if (isDismissed) return;
 
-    if (import.meta.env.DEV) {
-      setIsVisible(true);
-    } else {
-      fetch("/build-info.json")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.version) {
-            setBuildVersion(data.version);
-            setIsVisible(true);
-          }
-        })
-        .catch(() => {
+    fetch("/version.json")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.version) {
+          setBuildVersion(data.version);
           setIsVisible(true);
-        });
-    }
+        }
+      })
+      .catch(() => {
+        setIsVisible(true);
+      });
   }, []);
 
   const handleClose = () => {

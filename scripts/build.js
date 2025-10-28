@@ -2,27 +2,6 @@ import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 
-const MAJOR_VERSION = 2;
-const VERSION_FILE = path.join(process.cwd(), "build-version.json");
-
-let minorVersion = 41;
-if (fs.existsSync(VERSION_FILE)) {
-  try {
-    const versionData = JSON.parse(fs.readFileSync(VERSION_FILE, "utf-8"));
-    minorVersion = versionData.minor || 41;
-  } catch (error) {
-    console.log("Could not read version file, starting from 41");
-  }
-}
-
-minorVersion++;
-const BUILD_VERSION = `v${MAJOR_VERSION}.${minorVersion}`;
-
-fs.writeFileSync(
-  VERSION_FILE,
-  JSON.stringify({ major: MAJOR_VERSION, minor: minorVersion }, null, 2)
-);
-
 const rootDir = process.cwd();
 const serverDir = path.join(rootDir, "server");
 const clientDir = path.join(rootDir, "client");
@@ -36,15 +15,32 @@ const run = (cmd, cwd = rootDir) => {
   execSync(cmd, { stdio: "inherit", cwd });
 };
 
+// Build server
 run("npm install", serverDir);
 run("npm run build", serverDir);
 
+// Build client
 run("npm install --legacy-peer-deps", clientDir);
 run("npm run build", clientDir);
 
+// Copy client /dist/ to server /public/
 if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
 fs.cpSync(path.join(clientDir, "dist"), publicDir, { recursive: true });
 
+// Create version file
+try {
+  const commitHash = execSync("git rev-parse --short HEAD").toString().trim();
+  const versionFile = path.join(publicDir, "version.json");
+  fs.writeFileSync(
+    versionFile,
+    JSON.stringify({ verison: commitHash }, null, 2)
+  );
+  console.log("\nCreated version.json with commit hash:", commitHash);
+} catch (error) {
+  console.error("Failed to create version.json:", error);
+}
+
+// Prepare server package.json for deployment
 const pkgContent = JSON.parse(fs.readFileSync(serverPkg, "utf-8"));
 const deployPkg = {
   name: pkgContent.name,
@@ -57,12 +53,7 @@ const deployPkg = {
 
 fs.writeFileSync(distPkg, JSON.stringify(deployPkg, null, 2));
 
-const buildInfoPath = path.join(publicDir, "build-info.json");
-fs.writeFileSync(
-  buildInfoPath,
-  JSON.stringify({ version: BUILD_VERSION }, null, 2)
-);
-
+// Install production dependencies in server/dist
 run("npm install --omit=dev", serverDist);
 
-console.log(`\nserver/dist built successfully - ${BUILD_VERSION}`);
+console.log("\nserver/dist built successfully");
