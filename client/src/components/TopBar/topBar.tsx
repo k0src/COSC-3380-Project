@@ -35,7 +35,7 @@ const TopBar: React.FC = () => {
     <header className={styles.topBarContainer}>
       {/*  Navigation Buttons  */}
       <div className={styles.topBarNav}>
-        <button className={styles.navButton}>
+          <button className={styles.navButton} onClick={() => navigate("/")}>
           <img src={HomeButton} alt="Home" className={styles.navIcon} />
           <span className={styles.navText}>Home</span>
         </button>
