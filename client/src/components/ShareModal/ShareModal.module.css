@@ -84,6 +84,7 @@
 }
 
 .socialButton {
+  font-family: "Inter", sans-serif;
   background: var(--color-gray-button);
   border: 1px solid var(--color-gray-button-border);
   border-radius: var(--border-radius-md);
@@ -129,6 +130,7 @@
 }
 
 .linkInput {
+  font-family: "Inter", sans-serif;
   width: 100%;
   background: var(--color-gray-button);
   border: 1px solid var(--color-gray-button-border);

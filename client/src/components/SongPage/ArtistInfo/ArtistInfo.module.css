@@ -88,6 +88,10 @@
   cursor: pointer;
 }
 
+.artistInfoName:hover {
+  color: var(--color-red);
+}
+
 .badgeWrapper {
   position: relative;
   display: flex;
