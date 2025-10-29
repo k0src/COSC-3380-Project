@@ -64,8 +64,8 @@
 }
 
 .coverImage {
-  width: 80rem;
-  height: 80rem;
+  width: 75rem;
+  height: 75rem;
   object-fit: contain;
   border-radius: var(--border-radius-sm);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
