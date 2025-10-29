@@ -4,7 +4,7 @@ import { useLikeStatus } from "@hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, useAudioQueue } from "@contexts";
 import { formatPlaybackTime, getMainArtist } from "@util";
-import { ShareModal } from "@components";
+import { ShareModal, CoverLightbox } from "@components";
 import classNames from "classnames";
 import styles from "./MainLayoutNowPlayingBar.module.css";
 import {
@@ -24,6 +24,7 @@ import musicPlaceholder from "@assets/music-placeholder.png";
 
 const NowPlayingBar: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const { user, isAuthenticated } = useAuth();
   const { state, actions } = useAudioQueue();
@@ -154,6 +155,8 @@ const NowPlayingBar: React.FC = () => {
             src={currentSong?.image_url || musicPlaceholder}
             alt={`${currentSong?.title} album art`}
             className={styles.albumArt}
+            loading="lazy"
+            onClick={() => setIsLightboxOpen(true)}
           />
           <div className={styles.songInfo}>
             {mainArtist.id ? (
@@ -327,6 +330,13 @@ const NowPlayingBar: React.FC = () => {
         onClose={() => setIsShareModalOpen(false)}
         pageUrl={`${window.location.origin}/songs/${currentSong?.id}`}
         pageTitle={currentSong?.title}
+      />
+
+      <CoverLightbox
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        imageUrl={currentSong?.image_url || musicPlaceholder}
+        altText={`${currentSong?.title} Cover` || "Song Cover"}
       />
     </>
   );
