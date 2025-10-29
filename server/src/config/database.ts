@@ -1,7 +1,12 @@
-import { Pool, PoolClient } from "pg";
 import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import { Pool, PoolClient } from "pg";
 
-dotenv.config();
+// Resolve server/.env regardless of cwd
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: join(__dirname, "../../.env") });
 
 const {
   PGHOST,
@@ -35,6 +40,7 @@ const pool = new Pool({
   ssl: {
     rejectUnauthorized: false,
   },
+  connectionTimeoutMillis: Number(process.env.PGCONNECT_TIMEOUT || 3000),
 });
 
 export async function query<T = any>(
