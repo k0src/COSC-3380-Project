@@ -1,8 +1,9 @@
-import { memo, useState, useEffect, useCallback } from "react";
+import React, { memo, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { userApi } from "@api";
+import type { Song } from "@types";
 import { useAuth } from "@contexts";
-import { ShareModal } from "@components";
+import { ShareModal, QueueMenu } from "@components";
 import styles from "./SongActions.module.css";
 import classNames from "classnames";
 import {
@@ -14,32 +15,33 @@ import {
 } from "react-icons/lu";
 
 export interface SongActionsProps {
-  songId: string;
-  songTitle?: string;
+  song: Song;
   songUrl?: string;
 }
 
-const SongActions: React.FC<SongActionsProps> = ({
-  songId,
-  songTitle,
-  songUrl,
-}) => {
+const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const queueButtonRef = useRef<HTMLButtonElement>(null);
 
   const [isLiked, setIsLiked] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [queueMenuOpen, setQueueMenuOpen] = useState(false);
 
   const fetchLikeStatus = useCallback(async () => {
-    if (isAuthenticated && user && songId) {
+    if (isAuthenticated && user && song.id) {
       try {
-        const response = await userApi.checkLikeStatus(user.id, songId, "song");
+        const response = await userApi.checkLikeStatus(
+          user.id,
+          song.id,
+          "song"
+        );
         setIsLiked(response.isLiked);
       } catch (error) {
         console.error("Failed to fetch like status:", error);
       }
     }
-  }, [isAuthenticated, user, songId]);
+  }, [isAuthenticated, user, song.id]);
 
   useEffect(() => {
     fetchLikeStatus();
@@ -48,7 +50,7 @@ const SongActions: React.FC<SongActionsProps> = ({
   const handleToggleSongLike = async () => {
     try {
       if (isAuthenticated) {
-        await userApi.toggleLike(user!.id, songId, "song");
+        await userApi.toggleLike(user!.id, song.id, "song");
         setIsLiked((prev) => !prev);
       } else {
         navigate("/login");
@@ -62,7 +64,7 @@ const SongActions: React.FC<SongActionsProps> = ({
     try {
       if (isAuthenticated) {
         //! send request here
-        console.log("added to playlist: " + songId);
+        console.log("added to playlist: " + song.id);
       } else {
         navigate("/login");
       }
@@ -74,8 +76,7 @@ const SongActions: React.FC<SongActionsProps> = ({
   const handleAddToQueue = async () => {
     try {
       if (isAuthenticated) {
-        //! send request here
-        console.log("added to queue: " + songId);
+        setQueueMenuOpen((prev) => !prev);
       } else {
         navigate("/login");
       }
@@ -106,9 +107,21 @@ const SongActions: React.FC<SongActionsProps> = ({
         <button className={styles.actionButton} onClick={handleAddToPlaylist}>
           <LuListPlus />
         </button>
-        <button className={styles.actionButton} onClick={handleAddToQueue}>
-          <LuListEnd />
-        </button>
+        <div className={styles.queueButtonContainer}>
+          <button
+            ref={queueButtonRef}
+            className={styles.actionButton}
+            onClick={handleAddToQueue}
+          >
+            <LuListEnd />
+          </button>
+          <QueueMenu
+            isOpen={queueMenuOpen}
+            onClose={() => setQueueMenuOpen(false)}
+            song={song}
+            buttonRef={queueButtonRef}
+          />
+        </div>
         <button className={styles.actionButton} onClick={handleShare}>
           <LuShare />
         </button>
@@ -121,7 +134,7 @@ const SongActions: React.FC<SongActionsProps> = ({
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         pageUrl={songUrl}
-        pageTitle={songTitle}
+        pageTitle={song.title}
       />
     </>
   );

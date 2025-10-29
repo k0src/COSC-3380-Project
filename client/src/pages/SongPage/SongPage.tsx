@@ -97,11 +97,7 @@ const SongPage: React.FC = () => {
             <div className={styles.songLayoutTopRight}>
               <SongStats songId={song.id} />
               <SongDetails genre={song.genre} releaseDate={song.release_date} />
-              <SongActions
-                songId={song.id}
-                songTitle={song.title}
-                songUrl={window.location.href}
-              />
+              <SongActions song={song} songUrl={window.location.href} />
             </div>
           </div>
           <div className={styles.songLayoutBottom}>

@@ -26,3 +26,7 @@
 .actionButtonActive {
   color: var(--color-red);
 }
+
+.queueButtonContainer {
+  position: relative;
+}

@@ -30,6 +30,7 @@ export { default as SongSuggestions } from "./SongPage/SongSuggestions/SongSugge
 
 /* ================================= Modals ================================= */
 export { default as ShareModal } from "./ShareModal/ShareModal.js";
+export { default as QueueMenu } from "./QueueMenu/QueueMenu.js";
 
 /* =============================== Page States ============================== */
 export { default as PageLoader } from "./PageLoader/PageLoader.js";
