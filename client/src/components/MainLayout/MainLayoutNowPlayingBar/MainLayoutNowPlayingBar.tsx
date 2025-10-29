@@ -1,5 +1,7 @@
-import React, { useState, memo, useMemo, useCallback } from "react";
+import React, { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useLikeStatus } from "@hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, useAudioQueue } from "@contexts";
 import { formatPlaybackTime, getMainArtist } from "@util";
 import { ShareModal } from "@components";
@@ -20,11 +22,11 @@ import {
 import musicPlaceholder from "@assets/music-placeholder.png";
 
 const NowPlayingBar: React.FC = () => {
-  const [isLiked, setIsLiked] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { state, actions } = useAudioQueue();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const {
@@ -40,13 +42,29 @@ const NowPlayingBar: React.FC = () => {
     isShuffled,
   } = state;
 
+  const {
+    isLiked,
+    toggleLike,
+    isLoading: isLikeLoading,
+  } = useLikeStatus({
+    userId: user?.id || "",
+    entityId: currentSong?.id || "",
+    entityType: "song",
+    isAuthenticated,
+  });
+
+  useEffect(() => {
+    if (user?.id && currentSong?.id) {
+      queryClient.invalidateQueries({
+        queryKey: ["likeStatus", user.id, currentSong.id, "song"],
+      });
+    }
+  }, [user?.id, currentSong?.id]);
+
   const handleToggleLike = useCallback(async () => {
     try {
-      if (isAuthenticated) {
-        setIsLiked((prev) => !prev);
-      } else {
-        navigate("/login");
-      }
+      if (!isAuthenticated) return navigate("/login");
+      await toggleLike();
     } catch (error) {
       console.error("Toggling like failed:", error);
     }
@@ -250,6 +268,7 @@ const NowPlayingBar: React.FC = () => {
             className={classNames(styles.controlButton, {
               [styles.controlButtonActive]: isLiked,
             })}
+            disabled={isLikeLoading}
             onClick={handleToggleLike}
             aria-label={isLiked ? "Unlike" : "Like"}
           >

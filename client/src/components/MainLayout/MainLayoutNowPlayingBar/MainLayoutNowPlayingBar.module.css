@@ -101,7 +101,7 @@
 }
 
 .controlButtonActive {
-  color: var(--color-white);
+  color: var(--color-red);
 }
 
 .controlButtonDisabled {

@@ -1,9 +1,10 @@
-import React, { memo, useState, useEffect, useCallback, useRef } from "react";
+import React, { memo, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { userApi } from "@api";
 import type { Song } from "@types";
+import { useLikeStatus } from "@hooks";
 import { useAuth } from "@contexts";
 import { ShareModal, QueueMenu } from "@components";
+import { useQueryClient } from "@tanstack/react-query";
 import styles from "./SongActions.module.css";
 import classNames from "classnames";
 import {
@@ -21,40 +22,36 @@ export interface SongActionsProps {
 
 const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
   const { user, isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const queueButtonRef = useRef<HTMLButtonElement>(null);
+  const {
+    isLiked,
+    toggleLike,
+    isLoading: isLikeLoading,
+  } = useLikeStatus({
+    userId: user?.id || "",
+    entityId: song.id,
+    entityType: "song",
+    isAuthenticated,
+  });
 
-  const [isLiked, setIsLiked] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [queueMenuOpen, setQueueMenuOpen] = useState(false);
 
-  const fetchLikeStatus = useCallback(async () => {
-    if (isAuthenticated && user && song.id) {
-      try {
-        const response = await userApi.checkLikeStatus(
-          user.id,
-          song.id,
-          "song"
-        );
-        setIsLiked(response.isLiked);
-      } catch (error) {
-        console.error("Failed to fetch like status:", error);
-      }
-    }
-  }, [isAuthenticated, user, song.id]);
+  const queueButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    fetchLikeStatus();
-  }, [fetchLikeStatus]);
+    if (user?.id && song?.id) {
+      queryClient.invalidateQueries({
+        queryKey: ["likeStatus", user.id, song.id, "song"],
+      });
+    }
+  }, [user?.id, song?.id]);
 
   const handleToggleSongLike = async () => {
     try {
-      if (isAuthenticated) {
-        await userApi.toggleLike(user!.id, song.id, "song");
-        setIsLiked((prev) => !prev);
-      } else {
-        navigate("/login");
-      }
+      if (!isAuthenticated) return navigate("/login");
+      await toggleLike();
     } catch (error) {
       console.error("Toggling song like failed:", error);
     }
@@ -100,6 +97,7 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
           className={classNames(styles.actionButton, {
             [styles.actionButtonActive]: isLiked,
           })}
+          disabled={isLikeLoading}
           onClick={handleToggleSongLike}
         >
           <LuThumbsUp />

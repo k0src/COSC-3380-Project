@@ -7,3 +7,4 @@ export type {
   AudioManagerState,
   AudioManagerActions,
 } from "./useAudioManager.js";
+export { useLikeStatus } from "./useLikeStatus.js";
