@@ -1,5 +1,6 @@
-import { memo, useState } from "react";
+import { memo, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { userApi } from "@api";
 import { useAuth } from "@contexts";
 import { ShareModal } from "@components";
 import styles from "./SongActions.module.css";
@@ -23,17 +24,31 @@ const SongActions: React.FC<SongActionsProps> = ({
   songTitle,
   songUrl,
 }) => {
-  //! user
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [isLiked, setIsLiked] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
+  const fetchLikeStatus = useCallback(async () => {
+    if (isAuthenticated && user && songId) {
+      try {
+        const response = await userApi.checkLikeStatus(user.id, songId, "song");
+        setIsLiked(response.isLiked);
+      } catch (error) {
+        console.error("Failed to fetch like status:", error);
+      }
+    }
+  }, [isAuthenticated, user, songId]);
+
+  useEffect(() => {
+    fetchLikeStatus();
+  }, [fetchLikeStatus]);
+
   const handleToggleSongLike = async () => {
     try {
       if (isAuthenticated) {
-        //! send request here
+        await userApi.toggleLike(user!.id, songId, "song");
         setIsLiked((prev) => !prev);
       } else {
         navigate("/login");

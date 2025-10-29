@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { UserRepository } from "@repositories";
-import { HistoryService } from "@services";
+import { HistoryService, LikeService } from "@services";
 
 const router = express.Router();
 
@@ -76,5 +76,50 @@ router.put(
     }
   }
 );
+
+// POST /api/users/:id/likes
+router.post(
+  "/:id/likes",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { entityId, entityType } = req.body;
+
+    if (!id || !entityId || !entityType) {
+      res.status(400).json({ error: "Missing required parameters" });
+      return;
+    }
+
+    try {
+      const result = await LikeService.toggleLike(id, entityId, entityType);
+      res.status(200).json({ message: `${entityType} ${result} successfully` });
+    } catch (error) {
+      console.error("Error in POST /users/:id/likes:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/likes?entityType=song&entityId=123
+router.get("/:id/likes", async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { entityType, entityId } = req.query;
+
+  if (!id || !entityType || !entityId) {
+    res.status(400).json({ error: "Missing required parameters" });
+    return;
+  }
+
+  try {
+    const isLiked = await LikeService.hasUserLiked(
+      id,
+      entityId as string,
+      entityType as any
+    );
+    res.status(200).json({ isLiked });
+  } catch (error) {
+    console.error("Error in GET /users/:id/likes:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 export default router;

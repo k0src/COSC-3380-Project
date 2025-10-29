@@ -1,41 +1,45 @@
-import type { UUID, Song, Album, Playlist, User } from "@types";
+import type { UUID, Song, Album, Playlist, User, Comment } from "@types";
 import { query } from "@config/database.js";
 
-type LikeableEntity = "song" | "album" | "playlist";
+type LikeableEntity = "song" | "album" | "playlist" | "comment";
 
 type LikeableEntitiesMap = {
   song: Song;
   album: Album;
   playlist: Playlist;
+  comment: Comment;
 };
 
 const LIKE_FUNCTIONS: Record<LikeableEntity, string> = {
   song: "toggle_song_like",
   album: "toggle_album_like",
   playlist: "toggle_playlist_like",
+  comment: "toggle_comment_like",
 };
 
 const LIKE_TABLES: Record<LikeableEntity, string> = {
   song: "song_likes",
   album: "album_likes",
   playlist: "playlist_likes",
+  comment: "comment_likes",
 };
 
 const LIKEABLE_ENTITY_TABLES: Record<LikeableEntity, string> = {
   song: "songs",
   album: "albums",
   playlist: "playlists",
+  comment: "comments",
 };
 
 /**
- * Service for managing likes on songs, albums, and playlists.
+ * Service for managing likes on songs, albums, playlists, and comments.
  */
 export default class LikeService {
   /**
-   * Toggles a like for a given entity (song, album, playlist) by a user.
+   * Toggles a like for a given entity (song, album, playlist, comment) by a user.
    * @param userId - The ID of the user.
    * @param entityId - The ID of the entity to like/unlike.
-   * @param entity - The type of entity (song, album, playlist).
+   * @param entity - The type of entity (song, album, playlist, comment).
    * @return A string indicating the action ("liked"/"unliked").
    * @throws Error if the operation fails.
    */
@@ -67,7 +71,7 @@ export default class LikeService {
   /**
    * Get the number of likes for an entity.
    * @param entityId - The ID of the entity.
-   * @param entity - The type of entity (song, album, playlist).
+   * @param entity - The type of entity (song, album, playlist, comment).
    * @return The number of likes.
    * @throws Error if the operation fails.
    */
@@ -95,7 +99,7 @@ export default class LikeService {
   /**
    * Get all entities liked by a user.
    * @param userId - The ID of the user.
-   * @param entity - The type of entity (song, album, playlist).
+   * @param entity - The type of entity (song, album, playlist, comment).
    * @return An array of entities liked by the user.
    * @throws Error if the operation fails.
    */
@@ -119,7 +123,7 @@ export default class LikeService {
   /**
    * Get all users who liked an entity.
    * @param entityId - The ID of the entity.
-   * @param entity - The type of entity (song, album, playlist).
+   * @param entity - The type of entity (song, album, playlist, comment).
    * @param options - Optional parameters for pagination.
    * @param options.limit - The maximum number of users to return.
    * @param options.offset - The number of users to skip.
@@ -152,7 +156,7 @@ export default class LikeService {
    * Checks if a user has liked an entity.
    * @param userId - The ID of the user.
    * @param entityId - The ID of the entity.
-   * @param entity - The type of entity (song, album, playlist).
+   * @param entity - The type of entity (song, album, playlist, comment).
    * @return Boolean indicating whether the user has liked the entity.
    * @throws Error if the operation fails.
    */

@@ -37,5 +37,5 @@ export { default as ErrorPage } from "./ErrorPage/ErrorPage.js";
 
 export { default as SongCard } from "./SongCard/SongCard.js";
 
-/* =============================== Dev Tools =============================== */
+/* ================================ Dev Tools =============================== */
 export { default as DevBanner } from "./DevBanner/DevBanner.js";
