@@ -1,6 +1,6 @@
-import { useMemo, useCallback, memo } from "react";
+import { useMemo, useCallback, memo, useState } from "react";
 import { useStreamTracking } from "@hooks";
-import { WaveformPlayer } from "@components";
+import { WaveformPlayer, CoverLightbox } from "@components";
 import type { Song, CoverGradient, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
 import { LuPlay, LuThumbsUp, LuMessageSquareText } from "react-icons/lu";
@@ -21,6 +21,7 @@ const SongContainer: React.FC<SongContainerProps> = ({
   numberComments,
 }) => {
   const { actions } = useAudioQueue();
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   useStreamTracking();
 
   const gradientStyle = useMemo(
@@ -45,6 +46,10 @@ const SongContainer: React.FC<SongContainerProps> = ({
     actions.play(song);
   }, [actions, song]);
 
+  const handleImageClick = useCallback(() => {
+    setIsLightboxOpen(true);
+  }, []);
+
   return (
     <div className={styles.songContainer} style={gradientStyle}>
       <img
@@ -52,6 +57,7 @@ const SongContainer: React.FC<SongContainerProps> = ({
         alt={`${song.title} Cover`}
         className={styles.coverImage}
         loading="lazy"
+        onClick={handleImageClick}
       />
       <div className={styles.songRight}>
         <div className={styles.songInfoContainer}>
@@ -76,6 +82,13 @@ const SongContainer: React.FC<SongContainerProps> = ({
           />
         )}
       </div>
+
+      <CoverLightbox
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        imageUrl={song.image_url || musicPlaceholder}
+        altText={`${song.title} Cover`}
+      />
     </div>
   );
 };

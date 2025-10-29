@@ -18,6 +18,7 @@ import {
   LuThumbsUp,
   LuListPlus,
   LuShare,
+  LuListEnd,
 } from "react-icons/lu";
 import musicPlaceholder from "@assets/music-placeholder.png";
 
@@ -128,6 +129,10 @@ const NowPlayingBar: React.FC = () => {
 
   const handleShare = useCallback(() => {
     setIsShareModalOpen(true);
+  }, []);
+
+  const handleManageQueue = useCallback(() => {
+    console.log("do something here later");
   }, []);
 
   const mainArtist = useMemo(() => {
@@ -273,6 +278,13 @@ const NowPlayingBar: React.FC = () => {
             aria-label={isLiked ? "Unlike" : "Like"}
           >
             <LuThumbsUp />
+          </button>
+          <button
+            className={styles.controlButton}
+            onClick={handleManageQueue}
+            aria-label="Manage Queue"
+          >
+            <LuListEnd />
           </button>
           <button
             className={classNames(styles.controlButton, styles.playlistButton)}
