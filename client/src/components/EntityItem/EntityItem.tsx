@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useRef } from "react";
+import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAudioQueue, useAuth } from "@contexts";
 import type { Song, Playlist, Album } from "@types";
@@ -11,16 +11,23 @@ import { LuPlay, LuListEnd } from "react-icons/lu";
 interface EntityActionButtonsProps {
   type: "song" | "list" | "artist";
   entity?: Song | Playlist | Album;
+  isHovered: boolean;
 }
 
 const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
-  ({ type, entity }) => {
+  ({ type, entity, isHovered }) => {
     const { actions } = useAudioQueue();
     const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
     const [queueMenuOpen, setQueueMenuOpen] = useState(false);
     const queueButtonRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+      if (!isHovered && queueMenuOpen) {
+        setQueueMenuOpen(false);
+      }
+    }, [isHovered, queueMenuOpen]);
 
     const handlePlay = useCallback(() => {
       if (!entity) return;
@@ -108,8 +115,14 @@ const EntityItem: React.FC<EntityItemProps> = ({
   subtitle,
   type,
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
-    <div className={styles.entityItem}>
+    <div
+      className={styles.entityItem}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <img
         src={
           imageUrl || (type === "artist" ? artistPlaceholder : musicPlaceholder)
@@ -125,7 +138,7 @@ const EntityItem: React.FC<EntityItemProps> = ({
         </Link>
         <span className={styles.entitySubtitle}>{subtitle}</span>
       </div>
-      <EntityActionButtons type={type} entity={entity} />
+      <EntityActionButtons type={type} entity={entity} isHovered={isHovered} />
     </div>
   );
 };
