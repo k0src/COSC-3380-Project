@@ -1,13 +1,12 @@
 import { useMemo, memo } from "react";
-import { Link } from "react-router-dom";
 import { useAsyncData } from "@hooks";
 import { PuffLoader } from "react-spinners";
 import { useAuth } from "@contexts";
 import { songApi, artistApi } from "@api";
 import { formatDateString } from "@util";
+import { EntityItem } from "@components";
 import type { Song, Album, Artist, ArtistSong, SuggestedSong } from "@types";
 import styles from "./SongSuggestions.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
 
 export interface SongSuggestionsProps {
   song: Song;
@@ -56,35 +55,6 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
   );
   const suggestedSongs = data?.suggestedSongs;
 
-  interface SuggestionItemProps {
-    imageUrl?: string;
-    alt: string;
-    author: string;
-    title: string;
-    linkTo: string;
-    subtitle: string;
-  }
-
-  const SuggestionItem = memo<SuggestionItemProps>(
-    ({ imageUrl, alt, author, title, linkTo, subtitle }) => (
-      <div className={styles.suggestionItem}>
-        <img
-          src={imageUrl || musicPlaceholder}
-          alt={alt}
-          className={styles.suggestionImage}
-          loading="lazy"
-        />
-        <div className={styles.suggestionInfo}>
-          <span className={styles.suggestionAuthor}>{author}</span>
-          <Link className={styles.suggestionTitle} to={linkTo}>
-            {title}
-          </Link>
-          <span className={styles.suggestionSubtitle}>{subtitle}</span>
-        </div>
-      </div>
-    )
-  );
-
   return loading ? (
     <div className={styles.loaderContainer}>
       <PuffLoader color="#D53131" size={50} />
@@ -96,9 +66,9 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
           <span className={styles.suggestionLabel}>On Albums</span>
           <div className={styles.suggestionsSection}>
             {song.albums.map((album: Album) => (
-              <SuggestionItem
+              <EntityItem
                 key={album.id}
-                imageUrl={album.image_url ?? musicPlaceholder}
+                imageUrl={album.image_url}
                 alt={`${album.title} Cover`}
                 author={album.artist?.display_name || "Unknown Artist"}
                 title={album.title}
@@ -117,9 +87,9 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
           </span>
           <div className={styles.suggestionsSection}>
             {filteredMoreSongs.map((songItem: ArtistSong) => (
-              <SuggestionItem
+              <EntityItem
                 key={songItem.id}
-                imageUrl={songItem.image_url ?? musicPlaceholder}
+                imageUrl={songItem.image_url}
                 alt={`${songItem.title} Cover`}
                 author={songItem.role}
                 title={songItem.title}
@@ -136,9 +106,9 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
           <span className={styles.suggestionLabel}>Related Songs</span>
           <div className={styles.suggestionsSection}>
             {suggestedSongs.map((songItem: SuggestedSong) => (
-              <SuggestionItem
+              <EntityItem
                 key={songItem.id}
-                imageUrl={songItem.image_url ?? musicPlaceholder}
+                imageUrl={songItem.image_url}
                 alt={`${songItem.title} Cover`}
                 author={songItem.main_artist.display_name}
                 title={songItem.title}

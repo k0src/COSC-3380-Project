@@ -28,6 +28,10 @@ export { default as SongComments } from "./SongPage/SongComments/SongComments.js
 export { default as CommentItem } from "./SongPage/CommentItem/CommentItem.js";
 export { default as SongSuggestions } from "./SongPage/SongSuggestions/SongSuggestions.js";
 
+/* ================================== Cards ================================== */
+export { default as SongCard } from "./SongCard/SongCard.js";
+export { default as EntityItem } from "./EntityItem/EntityItem.js";
+
 /* ================================= Modals ================================= */
 export { default as ShareModal } from "./ShareModal/ShareModal.js";
 export { default as QueueMenu } from "./QueueMenu/QueueMenu.js";
@@ -36,8 +40,6 @@ export { default as CoverLightbox } from "./CoverLightbox/CoverLightbox.js";
 /* =============================== Page States ============================== */
 export { default as PageLoader } from "./PageLoader/PageLoader.js";
 export { default as ErrorPage } from "./ErrorPage/ErrorPage.js";
-
-export { default as SongCard } from "./SongCard/SongCard.js";
 
 /* ================================ Dev Tools =============================== */
 export { default as DevBanner } from "./DevBanner/DevBanner.js";

@@ -66,6 +66,7 @@ const NowPlayingBar: React.FC = () => {
   const handleToggleLike = useCallback(async () => {
     try {
       if (!isAuthenticated) return navigate("/login");
+      if (!currentSong) return;
       await toggleLike();
     } catch (error) {
       console.error("Toggling like failed:", error);
@@ -74,6 +75,7 @@ const NowPlayingBar: React.FC = () => {
 
   const handleAddToPlaylist = useCallback(async () => {
     try {
+      if (!currentSong) return;
       if (isAuthenticated) {
         console.log("added to playlist");
       } else {
@@ -129,10 +131,12 @@ const NowPlayingBar: React.FC = () => {
   );
 
   const handleShare = useCallback(() => {
+    if (!currentSong) return;
     setIsShareModalOpen(true);
   }, []);
 
   const handleManageQueue = useCallback(() => {
+    if (!currentSong) return;
     console.log("do something here later");
   }, []);
 
@@ -332,12 +336,14 @@ const NowPlayingBar: React.FC = () => {
         pageTitle={currentSong?.title}
       />
 
-      <CoverLightbox
-        isOpen={isLightboxOpen}
-        onClose={() => setIsLightboxOpen(false)}
-        imageUrl={currentSong?.image_url || musicPlaceholder}
-        altText={`${currentSong?.title} Cover` || "Song Cover"}
-      />
+      {currentSong && currentSong.image_url && (
+        <CoverLightbox
+          isOpen={isLightboxOpen}
+          onClose={() => setIsLightboxOpen(false)}
+          imageUrl={currentSong.image_url}
+          altText={`${currentSong.title} Cover`}
+        />
+      )}
     </>
   );
 };

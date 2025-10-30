@@ -83,12 +83,14 @@ const SongContainer: React.FC<SongContainerProps> = ({
         )}
       </div>
 
-      <CoverLightbox
-        isOpen={isLightboxOpen}
-        onClose={() => setIsLightboxOpen(false)}
-        imageUrl={song.image_url || musicPlaceholder}
-        altText={`${song.title} Cover`}
-      />
+      {song.image_url && (
+        <CoverLightbox
+          isOpen={isLightboxOpen}
+          onClose={() => setIsLightboxOpen(false)}
+          imageUrl={song.image_url}
+          altText={`${song.title} Cover`}
+        />
+      )}
     </div>
   );
 };
