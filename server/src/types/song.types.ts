@@ -17,6 +17,8 @@ export interface Song {
   artists?: SongArtist[];
   likes?: number;
   comments?: number;
+
+  type: "song";
 }
 
 // Extended types with additional fields for specifc contexts

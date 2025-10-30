@@ -226,6 +226,7 @@ export default class SongRepository {
           if (album.image_url) {
             album.image_url = getBlobUrl(album.image_url);
           }
+          album.type = "album";
           return album;
         });
       }
@@ -236,10 +237,12 @@ export default class SongRepository {
               artist.user.profile_picture_url
             );
           }
+          artist.type = "artist";
           return artist;
         });
       }
 
+      song.type = "song";
       return song;
     } catch (error) {
       console.error("Error fetching song:", error);
@@ -337,6 +340,7 @@ export default class SongRepository {
               if (album.image_url) {
                 album.image_url = getBlobUrl(album.image_url);
               }
+              album.type = "album";
               return album;
             });
           }
@@ -347,9 +351,11 @@ export default class SongRepository {
                   artist.user.profile_picture_url
                 );
               }
+              artist.type = "artist";
               return artist;
             });
           }
+          song.type = "song";
           return song;
         })
       );
@@ -427,6 +433,7 @@ export default class SongRepository {
     }
   }
 
+  //! FIX - should be getAlbums
   /**
    * Fetches the album for a given song.
    * @param songId - The ID of the song.
@@ -486,6 +493,7 @@ export default class SongRepository {
         album.image_url = getBlobUrl(album.image_url);
       }
 
+      album.type = "album";
       return album;
     } catch (error) {
       console.error("Error fetching album:", error);
@@ -539,6 +547,7 @@ export default class SongRepository {
               artist.user.profile_picture_url
             );
           }
+          artist.type = "artist";
           return artist;
         })
       );
@@ -550,6 +559,7 @@ export default class SongRepository {
     }
   }
 
+  //! add options
   static async getSuggestedSongs(
     songId: UUID,
     options?: { userId?: UUID; limit?: number }
@@ -572,6 +582,7 @@ export default class SongRepository {
           if (song.audio_url) {
             song.audio_url = getBlobUrl(song.audio_url);
           }
+          song.type = "song";
           return song;
         })
       );

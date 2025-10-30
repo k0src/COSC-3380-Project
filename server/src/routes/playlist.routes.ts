@@ -57,4 +57,33 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// GET /api/playlists/:id/songs
+// Example:
+// /api/playlists/:id/songs?includeAlbums=true&includeArtisst=true&includeLikes=true&limit=50&offset=0
+router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { includeAlbums, includeArtists, includeLikes, limit, offset } =
+    req.query;
+
+  if (!id) {
+    res.status(400).json({ error: "Playlist ID is required" });
+    return;
+  }
+
+  try {
+    const songs = await PlaylistRepository.getSongs(id, {
+      includeAlbums: includeAlbums === "true",
+      includeArtists: includeArtists === "true",
+      includeLikes: includeLikes === "true",
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      offset: offset ? parseInt(offset as string, 10) : undefined,
+    });
+
+    res.status(200).json(songs);
+  } catch (error) {
+    console.error("Error in GET /playlists/:id/songs:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export default router;

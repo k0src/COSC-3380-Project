@@ -32,13 +32,21 @@ import {
   createDebouncedSave,
   isLocalStorageAvailable,
 } from "@util";
-import { songApi } from "@api";
+import { songApi, playlistApi, albumApi } from "@api";
 import { AUDIO_QUEUE_STORAGE_KEYS, AUDIO_CONSTANTS } from "@constants";
 
-const isSong = (entity: PlayableEntity): boolean => (entity as Song).type === "song";
-const isSongList = (entity: PlayableEntity): boolean => Array.isArray(entity) && entity.every((item) => isSong(item));
-const isPlaylist = (entity: PlayableEntity): boolean => (entity as Playlist).type === "playlist";
-const isAlbum = (entity: PlayableEntity): boolean => (entity as Album).type === "album";
+const isSong = (entity: PlayableEntity): entity is Song => {
+  return !Array.isArray(entity) && entity.type === "song";
+};
+const isSongList = (entity: PlayableEntity): entity is Song[] => {
+  return Array.isArray(entity) && entity.every((item) => item.type === "song");
+};
+const isPlaylist = (entity: PlayableEntity): entity is Playlist => {
+  return !Array.isArray(entity) && entity.type === "playlist";
+};
+const isAlbum = (entity: PlayableEntity): entity is Album => {
+  return !Array.isArray(entity) && entity.type === "album";
+};
 
 const AudioQueueContext = createContext<AudioQueueContextType | null>(null);
 
@@ -640,24 +648,37 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
   const actions = {
     play: async (playable: PlayableEntity) => {
       try {
-        if (Array.isArray(playable)) {
+        if (isSong(playable)) {
+          dispatch({ type: "PLAY_SONG", song: playable });
+          await audioManager.play(playable);
+          dispatch({ type: "SET_PLAYING", isPlaying: true });
+        } else if (isSongList(playable)) {
           dispatch({ type: "PLAY_LIST", songs: playable });
           if (playable.length > 0) {
             await audioManager.play(playable[0]);
             dispatch({ type: "SET_PLAYING", isPlaying: true });
           }
-        } else if 
-        // if (Array.isArray(playable)) {
-        //   dispatch({ type: "PLAY_LIST", songs: playable });
-        //   if (playable.length > 0) {
-        //     await audioManager.play(playable[0]);
-        //     dispatch({ type: "SET_PLAYING", isPlaying: true });
-        //   }
-        // } else {
-        //   dispatch({ type: "PLAY_SONG", song: playable });
-        //   await audioManager.play(playable);
-        //   dispatch({ type: "SET_PLAYING", isPlaying: true });
-        // }
+        } else if (isPlaylist(playable)) {
+          const songs = await playlistApi.getSongs(playable.id, {
+            includeArtists: true,
+          });
+          dispatch({ type: "PLAY_LIST", songs });
+          if (songs.length > 0) {
+            await audioManager.play(songs[0]);
+            dispatch({ type: "SET_PLAYING", isPlaying: true });
+          }
+        } else if (isAlbum(playable)) {
+          const songs = await albumApi.getSongs(playable.id, {
+            includeArtists: true,
+          });
+          dispatch({ type: "PLAY_LIST", songs });
+          if (songs.length > 0) {
+            await audioManager.play(songs[0]);
+            dispatch({ type: "SET_PLAYING", isPlaying: true });
+          }
+        } else {
+          console.warn("Invalid playable entity provided to play");
+        }
       } catch (err) {
         console.error("Failed to play audio:", err);
         dispatch({

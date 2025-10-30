@@ -127,6 +127,8 @@ export default class AlbumRepository {
     }
   }
 
+  //! get user with artists get pfp
+  //! get all artists (do this for all getAlbums)
   /**
    * Gets a single album by ID.
    * @param id - The ID of the album to get.
@@ -185,6 +187,11 @@ export default class AlbumRepository {
         album.image_url = getBlobUrl(album.image_url);
       }
 
+      if (album.artist) {
+        album.artist.type = "artist";
+      }
+
+      album.type = "album";
       return album;
     } catch (error) {
       console.error("Error fetching album:", error);
@@ -192,6 +199,8 @@ export default class AlbumRepository {
     }
   }
 
+  //! get user with artists get pfp
+  //! get all artists
   /**
    * Gets multiple albums.
    * @param options - Options for pagination and including related data.
@@ -255,6 +264,10 @@ export default class AlbumRepository {
           if (album.image_url) {
             album.image_url = getBlobUrl(album.image_url);
           }
+          if (album.artist) {
+            album.artist.type = "artist";
+          }
+          album.type = "album";
           return album;
         })
       );
@@ -374,6 +387,18 @@ export default class AlbumRepository {
           if (song.audio_url) {
             song.audio_url = getBlobUrl(song.audio_url);
           }
+          if (song.artists && song.artists?.length > 0) {
+            song.artists = song.artists.map((artist) => {
+              if (artist.user && artist.user.profile_picture_url) {
+                artist.user.profile_picture_url = getBlobUrl(
+                  artist.user.profile_picture_url
+                );
+              }
+              artist.type = "artist";
+              return artist;
+            });
+          }
+          song.type = "song";
           return song;
         })
       );

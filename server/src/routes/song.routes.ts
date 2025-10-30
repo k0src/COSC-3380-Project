@@ -31,7 +31,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json(songs);
   } catch (error) {
-    console.error("Error in GET /songs/:", error);
+    console.error("Error in GET /songs/", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -368,6 +368,7 @@ router.get("/count", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+//! FIX - should be getAlbums
 // GET /api/songs/:id/album
 // Example:
 // /api/songs/:id/album/?includeArtist=true&includeLikes=true&includeRuntime=true&includeSongCount=true

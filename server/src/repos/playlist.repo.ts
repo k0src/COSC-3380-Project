@@ -168,6 +168,7 @@ export default class PlaylistRepository {
         );
       }
 
+      playlist.type = "playlist";
       return playlist;
     } catch (error) {
       console.error("Error fetching playlist:", error);
@@ -233,6 +234,7 @@ export default class PlaylistRepository {
               playlist.user.profile_picture_url
             );
           }
+          playlist.type = "playlist";
           return playlist;
         })
       );
@@ -248,7 +250,7 @@ export default class PlaylistRepository {
    * Fetches all songs in a specific playlist.
    * @param playlistId The ID of the playlist.
    * @param options - Options for pagination and including related data.
-   * @param options.includeAlbum - Option to include the album data.
+   * @param options.includeAlbums - Option to include the albums data.
    * @param options.includeArtists - Option to include the artists data.
    * @param options.includeLikes - Option to include the like count.
    * @param options.limit - Maximum number of songs to return.
@@ -259,7 +261,7 @@ export default class PlaylistRepository {
   static async getSongs(
     playlistId: UUID,
     options?: {
-      includeAlbum?: boolean;
+      includeAlbums?: boolean;
       includeArtists?: boolean;
       includeLikes?: boolean;
       limit?: number;
@@ -308,7 +310,7 @@ export default class PlaylistRepository {
       `;
 
       const params = [
-        options?.includeAlbum ?? false,
+        options?.includeAlbums ?? false,
         options?.includeArtists ?? false,
         options?.includeLikes ?? false,
         playlistId,
@@ -334,6 +336,7 @@ export default class PlaylistRepository {
               if (album.image_url) {
                 album.image_url = getBlobUrl(album.image_url);
               }
+              album.type = "album";
               return album;
             });
           }
@@ -344,9 +347,11 @@ export default class PlaylistRepository {
                   artist.user.profile_picture_url
                 );
               }
+              artist.type = "artist";
               return artist;
             });
           }
+          song.type = "song";
           return song;
         })
       );

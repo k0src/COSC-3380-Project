@@ -151,6 +151,7 @@ export default class ArtistRepository {
         );
       }
 
+      artist.type = "artist";
       return artist;
     } catch (error) {
       console.error("Error fetching artist:", error);
@@ -200,6 +201,7 @@ export default class ArtistRepository {
               artist.user.profile_picture_url
             );
           }
+          artist.type = "artist";
           return artist;
         })
       );
@@ -277,9 +279,12 @@ export default class ArtistRepository {
           if (song.album && song.album.image_url) {
             song.album.image_url = getBlobUrl(song.album.image_url);
           }
+          song.type = "song";
           return song;
         })
       );
+
+      // album.type = "album";
 
       return processedSongs;
     } catch (error) {
@@ -352,6 +357,7 @@ export default class ArtistRepository {
           if (album.image_url) {
             album.image_url = getBlobUrl(album.image_url);
           }
+          album.type = "album";
           return album;
         })
       );

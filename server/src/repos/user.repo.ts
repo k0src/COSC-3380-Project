@@ -364,8 +364,17 @@ export default class UserRepository {
         offset,
       ];
 
-      const res = await query(sql, params);
-      return res;
+      const playlists = await query(sql, params);
+      if (!playlists || playlists.length === 0) {
+        return [];
+      }
+
+      const processedPlaylists = playlists.map((playlist: Playlist) => {
+        playlist.type = "playlist";
+        return playlist;
+      });
+
+      return processedPlaylists;
     } catch (error) {
       console.error("Error fetching user playlists:", error);
       throw error;

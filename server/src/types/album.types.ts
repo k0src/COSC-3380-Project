@@ -13,4 +13,6 @@ export interface Album {
   artist?: Artist;
   likes?: number;
   runtime?: number;
+
+  type: "album";
 }

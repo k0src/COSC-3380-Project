@@ -9,6 +9,8 @@ export interface Artist {
   verified: boolean;
 
   user?: User;
+
+  type: "artist";
 }
 
 export interface SongArtist extends Artist {

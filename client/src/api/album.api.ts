@@ -5,7 +5,7 @@ export const albumApi = {
   async getSongs(
     id: UUID,
     options?: {
-      includeArtist?: boolean;
+      includeArtists?: boolean;
       includeLikes?: boolean;
       limit?: number;
       offset?: number;

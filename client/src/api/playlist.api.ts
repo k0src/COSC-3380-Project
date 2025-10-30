@@ -5,8 +5,8 @@ export const playlistApi = {
   async getSongs(
     id: UUID,
     options?: {
-      includeAlbum?: boolean;
-      includeArtist?: boolean;
+      includeAlbums?: boolean;
+      includeArtists?: boolean;
       includeLikes?: boolean;
       limit?: number;
       offset?: number;
