@@ -4,12 +4,14 @@ import { useAudioQueue } from "@contexts";
 import type { Song } from "@types";
 import styles from "./QueueMenu.module.css";
 import { useCallback } from "react";
+import classNames from "classnames";
 
 interface QueueMenuProps {
   isOpen: boolean;
   onClose: () => void;
   song: Song;
   buttonRef: React.RefObject<HTMLButtonElement | null>;
+  justification?: "left" | "center" | "right";
 }
 
 const QueueMenu: React.FC<QueueMenuProps> = ({
@@ -17,6 +19,7 @@ const QueueMenu: React.FC<QueueMenuProps> = ({
   onClose,
   song,
   buttonRef,
+  justification = "center",
 }) => {
   const { actions } = useAudioQueue();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -69,7 +72,14 @@ const QueueMenu: React.FC<QueueMenuProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div ref={menuRef} className={styles.queueMenu}>
+    <div
+      ref={menuRef}
+      className={classNames(styles.queueMenu, {
+        [styles.justifyLeft]: justification === "left",
+        [styles.justifyCenter]: justification === "center",
+        [styles.justifyRight]: justification === "right",
+      })}
+    >
       <button className={styles.menuButton} onClick={handleQueueNext}>
         <LuListStart className={styles.menuIcon} />
         <span>Queue Next</span>

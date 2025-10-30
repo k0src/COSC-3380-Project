@@ -336,6 +336,9 @@ export default class PlaylistRepository {
               if (album.image_url) {
                 album.image_url = getBlobUrl(album.image_url);
               }
+              if (album.artist) {
+                album.artist.type = "artist";
+              }
               album.type = "album";
               return album;
             });

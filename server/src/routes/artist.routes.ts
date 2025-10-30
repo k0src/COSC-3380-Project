@@ -55,20 +55,19 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    const { includeAlbums, includeArtists, includeLikes, limit, offset } =
+      req.query;
     if (!id) {
       res.status(400).json({ error: "Artist ID is required" });
       return;
     }
 
     const songs = await ArtistRepository.getSongs(id, {
-      includeAlbum: req.query.includeAlbum === "true",
-      includeLikes: req.query.includeLikes === "true",
-      limit: req.query.limit
-        ? parseInt(req.query.limit as string, 10)
-        : undefined,
-      offset: req.query.offset
-        ? parseInt(req.query.offset as string, 10)
-        : undefined,
+      includeArtists: includeArtists === "true",
+      includeAlbums: includeAlbums === "true",
+      includeLikes: includeLikes === "true",
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      offset: offset ? parseInt(offset as string, 10) : undefined,
     });
 
     res.status(200).json(songs);

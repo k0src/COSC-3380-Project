@@ -1,8 +1,6 @@
 .queueMenu {
   position: absolute;
   bottom: calc(100% + 0.8rem);
-  left: 50%;
-  transform: translateX(-50%);
   background: var(--color-panel-gray);
   border: 2px solid var(--color-panel-border) !important;
   border-radius: var(--border-radius-md);
@@ -18,7 +16,43 @@
   overflow: hidden;
 }
 
+.justifyCenter {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.justifyLeft {
+  left: 0;
+  transform: translateX(0);
+}
+
+.justifyRight {
+  right: 0;
+  transform: translateX(0);
+}
+
 @keyframes menuFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.justifyCenter {
+  animation: menuFadeInCenter var(--transition-speed) ease-out;
+}
+
+.justifyLeft {
+  animation: menuFadeInLeft var(--transition-speed) ease-out;
+}
+
+.justifyRight {
+  animation: menuFadeInRight var(--transition-speed) ease-out;
+}
+
+@keyframes menuFadeInCenter {
   from {
     opacity: 0;
     transform: translateX(-50%) translateY(-4px);
@@ -29,12 +63,34 @@
   }
 }
 
+@keyframes menuFadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(0) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes menuFadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(0) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
 .menuButton {
   font-family: "Inter", sans-serif;
   width: 100%;
   background: var(--color-panel-gray);
   border: none;
-  padding: var(--spacing-md) var(--spacing-md);
+  padding: var(--spacing-md);
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);

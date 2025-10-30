@@ -1,4 +1,4 @@
-import { Album, Artist, ArtistSong, UUID } from "@types";
+import { Album, Artist, ArtistSong, Song, UUID } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
 
@@ -213,12 +213,12 @@ export default class ArtistRepository {
     }
   }
 
-  //! NEEDS TO BE INCLUDEALBUMS!!! - multiple
   /**
    * Fetches songs for a given artist.
    * @param artistId - The ID of the artist.
    * @param options - Options for pagination and related data.
-   * @param options.includeAlbum - Option to include the album data.
+   * @param options.includeAlbums - Option to include the albums data.
+   * @param options.includeArtists - Option to include the artists data.
    * @param options.includeLikes - Option to include the like count.
    * @param options.limit - Maximum number of songs to return.
    * @param options.offset - Number of songs to skip.
@@ -228,7 +228,8 @@ export default class ArtistRepository {
   static async getSongs(
     artistId: UUID,
     options?: {
-      includeAlbum?: boolean;
+      includeArtists?: boolean;
+      includeAlbums?: boolean;
       includeLikes?: boolean;
       limit?: number;
       offset?: number;
@@ -239,23 +240,44 @@ export default class ArtistRepository {
       const offset = options?.offset || 0;
 
       const sql = `
-        SELECT DISTINCT ON (s.id) s.*, sa.role,
-        CASE WHEN $1 THEN row_to_json(a.*) 
-        ELSE NULL END as album,
-        CASE WHEN $2 THEN 
-          (SELECT COUNT(*) FROM song_likes sl WHERE sl.song_id = s.id) 
-        ELSE NULL END as likes
+        SELECT s.*, sa.role,
+          CASE WHEN $1 THEN 
+            (SELECT json_agg(row_to_json(ar_with_role))
+            FROM (
+              SELECT
+                ar.*,
+                sa2.role,
+                row_to_json(u) AS user
+              FROM artists ar
+              JOIN users u ON u.artist_id = ar.id
+              JOIN song_artists sa2 ON sa2.artist_id = ar.id
+              WHERE sa2.song_id = s.id
+            ) AS ar_with_role)
+          ELSE NULL END AS artists,
+          CASE WHEN $2 THEN
+            (SELECT json_agg(row_to_json(album_with_artist))
+            FROM (
+              SELECT a.*,
+                row_to_json(ar) AS artist
+              FROM albums a
+              JOIN album_songs als ON als.album_id = a.id
+              LEFT JOIN artists ar ON ar.id = a.created_by
+              WHERE als.song_id = s.id
+            ) AS album_with_artist)
+          ELSE NULL END AS albums,
+          CASE WHEN $3 THEN 
+            (SELECT COUNT(*) FROM song_likes sl WHERE sl.song_id = s.id) 
+          ELSE NULL END as likes
         FROM songs s
-        LEFT JOIN album_songs als ON als.song_id = s.id
-        LEFT JOIN albums a ON als.album_id = a.id
-        LEFT JOIN song_artists sa ON sa.song_id = s.id
-        WHERE sa.artist_id = $3
-        ORDER BY s.id, s.created_at DESC
-        LIMIT $4 OFFSET $5
+        JOIN song_artists sa ON sa.song_id = s.id
+        WHERE sa.artist_id = $4
+        ORDER BY s.created_at DESC
+        LIMIT $5 OFFSET $6
       `;
 
       const params = [
-        options?.includeAlbum ?? false,
+        options?.includeAlbums ?? false,
+        options?.includeArtists ?? false,
         options?.includeLikes ?? false,
         artistId,
         limit,
@@ -268,23 +290,40 @@ export default class ArtistRepository {
       }
 
       const processedSongs = await Promise.all(
-        songs.map(async (song) => {
+        songs.map(async (song: ArtistSong) => {
           if (song.image_url) {
             song.image_url = getBlobUrl(song.image_url);
           }
           if (song.audio_url) {
             song.audio_url = getBlobUrl(song.audio_url);
           }
-
-          if (song.album && song.album.image_url) {
-            song.album.image_url = getBlobUrl(song.album.image_url);
+          if (song.albums && song.albums?.length > 0) {
+            song.albums = song.albums.map((album) => {
+              if (album.image_url) {
+                album.image_url = getBlobUrl(album.image_url);
+              }
+              if (album.artist) {
+                album.artist.type = "artist";
+              }
+              album.type = "album";
+              return album;
+            });
+          }
+          if (song.artists && song.artists?.length > 0) {
+            song.artists = song.artists.map((artist) => {
+              if (artist.user && artist.user.profile_picture_url) {
+                artist.user.profile_picture_url = getBlobUrl(
+                  artist.user.profile_picture_url
+                );
+              }
+              artist.type = "artist";
+              return artist;
+            });
           }
           song.type = "song";
           return song;
         })
       );
-
-      // album.type = "album";
 
       return processedSongs;
     } catch (error) {

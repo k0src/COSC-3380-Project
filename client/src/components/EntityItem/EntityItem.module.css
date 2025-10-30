@@ -2,6 +2,9 @@
   display: flex;
   gap: var(--spacing-md);
   align-items: center;
+  min-width: 0;
+  width: 100%;
+  position: relative;
 }
 
 .entityImage {
@@ -44,6 +47,7 @@
   color: var(--color-text-gray);
   font-weight: 500;
 }
+.entityTitle,
 .entityAuthor,
 .entitySubtitle,
 .entitySubtitle {
@@ -52,4 +56,53 @@
   overflow: hidden;
   width: 100%;
   max-width: 100%;
+}
+
+.entityActionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  border: 2px solid var(--color-panel-border);
+  color: var(--color-white);
+  cursor: pointer;
+  font-size: var(--icon-size-xs);
+  padding: var(--spacing-sm);
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.entityActionButton:hover {
+  color: var(--color-red);
+}
+
+.queueButtonContainer {
+  position: relative;
+}
+
+.entityActionButtonContainer {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-speed) ease;
+  background: linear-gradient(
+    to left,
+    var(--color-black) 0%,
+    var(--color-black) 75%,
+    transparent 100%
+  );
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm)
+    var(--spacing-xl);
+  border-radius: var(--border-radius-sm);
+}
+
+.entityItem:hover .entityActionButtonContainer {
+  opacity: 1;
+  visibility: visible;
 }

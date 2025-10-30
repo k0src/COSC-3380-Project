@@ -24,11 +24,15 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
     () => ({
       ...(mainArtist && {
         moreSongsByArtist: async () =>
-          artistApi.getSongs(mainArtist.id, { limit: 5 }),
+          artistApi.getSongs(mainArtist.id, {
+            includeArtists: true,
+            limit: 5,
+          }),
       }),
       suggestedSongs: () =>
         songApi.getSuggestedSongs(songId, {
           userId: isAuthenticated && user ? user.id : undefined,
+          includeArtists: true,
           limit: 5,
         }),
     }),
@@ -74,6 +78,7 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
                 linkTo={`/albums/${album.id}`}
                 subtitle={formatDateString(album.release_date)}
                 type="list"
+                entity={album}
               />
             ))}
           </div>
@@ -95,6 +100,7 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
                 linkTo={`/songs/${songItem.id}`}
                 subtitle={formatDateString(songItem.release_date)}
                 type="song"
+                entity={songItem}
               />
             ))}
           </div>
@@ -114,6 +120,7 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
                 linkTo={`/songs/${songItem.id}`}
                 subtitle={formatDateString(songItem.release_date)}
                 type="song"
+                entity={songItem}
               />
             ))}
           </div>

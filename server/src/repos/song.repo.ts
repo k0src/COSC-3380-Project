@@ -226,6 +226,9 @@ export default class SongRepository {
           if (album.image_url) {
             album.image_url = getBlobUrl(album.image_url);
           }
+          if (album.artist) {
+            album.artist.type = "artist";
+          }
           album.type = "album";
           return album;
         });
@@ -339,6 +342,9 @@ export default class SongRepository {
             song.albums = song.albums.map((album) => {
               if (album.image_url) {
                 album.image_url = getBlobUrl(album.image_url);
+              }
+              if (album.artist) {
+                album.artist.type = "artist";
               }
               album.type = "album";
               return album;
@@ -559,28 +565,70 @@ export default class SongRepository {
     }
   }
 
-  //! add options
   static async getSuggestedSongs(
     songId: UUID,
-    options?: { userId?: UUID; limit?: number }
+    options?: {
+      userId?: UUID;
+      includeAlbums?: boolean;
+      includeArtists?: boolean;
+      includeLikes?: boolean;
+      includeComments?: boolean;
+      limit?: number;
+      offset?: number;
+    }
   ): Promise<SuggestedSong[]> {
     try {
+      const limit = options?.limit ?? 20;
+      const offset = options?.offset ?? 0;
       const suggestions = await query(
-        "SELECT * FROM get_song_recommendations($1, $2, $3)",
-        [songId, options?.userId || null, options?.limit || null]
+        "SELECT * FROM get_song_recommendations($1, $2, $3, $4, $5, $6, $7, $8)",
+        [
+          songId,
+          options?.userId || null,
+          options?.includeAlbums ?? false,
+          options?.includeArtists ?? false,
+          options?.includeLikes ?? false,
+          options?.includeComments ?? false,
+          limit,
+          offset,
+        ]
       );
-
       if (!suggestions || suggestions.length === 0) {
         return [];
       }
-
       const processedSongs = await Promise.all(
-        suggestions.map(async (song) => {
+        suggestions.map(async (song: SuggestedSong) => {
           if (song.image_url) {
             song.image_url = getBlobUrl(song.image_url);
           }
           if (song.audio_url) {
             song.audio_url = getBlobUrl(song.audio_url);
+          }
+          if (song.albums && song.albums?.length > 0) {
+            song.albums = song.albums.map((album) => {
+              if (album.image_url) {
+                album.image_url = getBlobUrl(album.image_url);
+              }
+              if (album.artist) {
+                album.artist.type = "artist";
+              }
+              album.type = "album";
+              return album;
+            });
+          }
+          if (song.artists && song.artists?.length > 0) {
+            song.artists = song.artists.map((artist) => {
+              if (artist.user && artist.user.profile_picture_url) {
+                artist.user.profile_picture_url = getBlobUrl(
+                  artist.user.profile_picture_url
+                );
+              }
+              artist.type = "artist";
+              return artist;
+            });
+          }
+          if (song.main_artist) {
+            song.main_artist.type = "artist";
           }
           song.type = "song";
           return song;

@@ -72,15 +72,28 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { userId, limit } = req.query;
+      const {
+        userId,
+        includeAlbums,
+        includeArtists,
+        includeLikes,
+        includeComments,
+        limit,
+        offset,
+      } = req.query;
       if (!id) {
         res.status(400).json({ error: "Song ID is required" });
         return;
       }
 
       const suggestions = await SongRepo.getSuggestedSongs(id, {
-        userId: req.query.userId as string | undefined,
+        userId: userId as string | undefined,
+        includeAlbums: includeAlbums === "true",
+        includeArtists: includeArtists === "true",
+        includeLikes: includeLikes === "true",
+        includeComments: includeComments === "true",
         limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
       });
       res.status(200).json(suggestions);
     } catch (error) {

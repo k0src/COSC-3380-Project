@@ -25,7 +25,15 @@ export const songApi = {
 
   async getSuggestedSongs(
     id: UUID,
-    options?: { userId?: UUID; limit?: number }
+    options?: {
+      userId?: UUID;
+      includeAlbums?: boolean;
+      includeArtists?: boolean;
+      includeLikes?: boolean;
+      includeComments?: boolean;
+      limit?: number;
+      offset?: number;
+    }
   ) {
     const response = await api.get<SuggestedSong[]>(
       `/songs/${id}/suggestions`,

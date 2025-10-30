@@ -6,6 +6,7 @@ export const artistApi = {
     id: UUID,
     options?: {
       includeAlbum?: boolean;
+      includeArtists?: boolean;
       includeLikes?: boolean;
       limit?: number;
       offset?: number;
