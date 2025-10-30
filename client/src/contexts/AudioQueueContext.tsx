@@ -12,7 +12,10 @@ import type {
   QueueOperation,
   QueueItem,
   Song,
+  PlayableEntity,
   RepeatMode,
+  Playlist,
+  Album,
 } from "@types";
 import { useAudioManager } from "@hooks";
 import {
@@ -31,6 +34,11 @@ import {
 } from "@util";
 import { songApi } from "@api";
 import { AUDIO_QUEUE_STORAGE_KEYS, AUDIO_CONSTANTS } from "@constants";
+
+const isSong = (entity: PlayableEntity): boolean => (entity as Song).type === "song";
+const isSongList = (entity: PlayableEntity): boolean => Array.isArray(entity) && entity.every((item) => isSong(item));
+const isPlaylist = (entity: PlayableEntity): boolean => (entity as Playlist).type === "playlist";
+const isAlbum = (entity: PlayableEntity): boolean => (entity as Album).type === "album";
 
 const AudioQueueContext = createContext<AudioQueueContextType | null>(null);
 
@@ -630,19 +638,26 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
   ]);
 
   const actions = {
-    play: async (songOrList: Song | Song[]) => {
+    play: async (playable: PlayableEntity) => {
       try {
-        if (Array.isArray(songOrList)) {
-          dispatch({ type: "PLAY_LIST", songs: songOrList });
-          if (songOrList.length > 0) {
-            await audioManager.play(songOrList[0]);
+        if (Array.isArray(playable)) {
+          dispatch({ type: "PLAY_LIST", songs: playable });
+          if (playable.length > 0) {
+            await audioManager.play(playable[0]);
             dispatch({ type: "SET_PLAYING", isPlaying: true });
           }
-        } else {
-          dispatch({ type: "PLAY_SONG", song: songOrList });
-          await audioManager.play(songOrList);
-          dispatch({ type: "SET_PLAYING", isPlaying: true });
-        }
+        } else if 
+        // if (Array.isArray(playable)) {
+        //   dispatch({ type: "PLAY_LIST", songs: playable });
+        //   if (playable.length > 0) {
+        //     await audioManager.play(playable[0]);
+        //     dispatch({ type: "SET_PLAYING", isPlaying: true });
+        //   }
+        // } else {
+        //   dispatch({ type: "PLAY_SONG", song: playable });
+        //   await audioManager.play(playable);
+        //   dispatch({ type: "SET_PLAYING", isPlaying: true });
+        // }
       } catch (err) {
         console.error("Failed to play audio:", err);
         dispatch({

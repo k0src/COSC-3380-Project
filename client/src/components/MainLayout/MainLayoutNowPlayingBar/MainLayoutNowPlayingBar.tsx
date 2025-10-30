@@ -73,6 +73,7 @@ const NowPlayingBar: React.FC = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  //! add to playlist
   const handleAddToPlaylist = useCallback(async () => {
     try {
       if (!currentSong) return;
@@ -135,6 +136,7 @@ const NowPlayingBar: React.FC = () => {
     setIsShareModalOpen(true);
   }, []);
 
+  //! manage queue
   const handleManageQueue = useCallback(() => {
     if (!currentSong) return;
     console.log("do something here later");

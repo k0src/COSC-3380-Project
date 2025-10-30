@@ -331,10 +331,18 @@ export default class AlbumRepository {
       const sql = `
         SELECT s.*, als.track_number,
         CASE WHEN $1 THEN 
-          (SELECT json_agg(row_to_json(ar.*)) FROM artists ar
-          JOIN song_artists sa ON ar.id = sa.artist_id
-          WHERE sa.song_id = s.id)
-        ELSE NULL END as artists,
+          (SELECT json_agg(row_to_json(ar_with_role))
+          FROM (
+            SELECT
+              ar.*,
+              sa.role,
+              row_to_json(u) AS user
+            FROM artists ar
+            JOIN users u ON u.artist_id = ar.id
+            JOIN song_artists sa ON sa.artist_id = ar.id
+            WHERE sa.song_id = s.id
+          ) AS ar_with_role)
+        ELSE NULL END AS artists,
         CASE WHEN $2 THEN
           (SELECT COUNT(*) FROM song_likes sl WHERE sl.song_id = s.id)
         ELSE NULL END as likes

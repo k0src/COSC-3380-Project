@@ -272,21 +272,36 @@ export default class PlaylistRepository {
 
       const sql = `
         SELECT s.*, ps.added_at,
-        CASE WHEN $1 THEN row_to_json(a.*)
-        ELSE NULL END as album,
-        CASE WHEN $2 THEN
-          (SELECT json_agg(row_to_json(ar.*)) FROM artists ar
-          JOIN song_artists sa ON sa.artist_id = ar.id
-          WHERE sa.song_id = s.id)
-        ELSE NULL END as artists,
-        CASE WHEN $3 THEN 
-          (SELECT COUNT(*) FROM song_likes sl
-          WHERE sl.song_id = s.id)
-        ELSE NULL END as likes
+          CASE WHEN $1 THEN
+            (SELECT json_agg(row_to_json(album_with_artist))
+            FROM (
+              SELECT a.*,
+                row_to_json(ar) AS artist
+              FROM albums a
+              JOIN album_songs als ON als.album_id = a.id
+              LEFT JOIN artists ar ON ar.id = a.created_by
+              WHERE als.song_id = s.id
+            ) AS album_with_artist)
+          ELSE NULL END AS albums,
+          CASE WHEN $2 THEN
+            (SELECT json_agg(row_to_json(ar_with_role))
+            FROM (
+              SELECT
+                ar.*,
+                sa.role,
+                row_to_json(u) AS user
+              FROM artists ar
+              JOIN users u ON u.artist_id = ar.id
+              JOIN song_artists sa ON sa.artist_id = ar.id
+              WHERE sa.song_id = s.id
+            ) AS ar_with_role)
+          ELSE NULL END AS artists,
+          CASE WHEN $3 THEN 
+            (SELECT COUNT(*) FROM song_likes sl
+            WHERE sl.song_id = s.id)
+          ELSE NULL END as likes
         FROM songs s
-        LEFT JOIN album_songs als ON als.song_id = s.id
-        LEFT JOIN albums a ON als.album_id = a.id
-        LEFT JOIN playlist_songs ps ON s.id = ps.song_id
+        JOIN playlist_songs ps ON s.id = ps.song_id
         WHERE ps.playlist_id = $4
         ORDER BY ps.added_at
         LIMIT $5 OFFSET $6
@@ -314,8 +329,23 @@ export default class PlaylistRepository {
           if (song.audio_url) {
             song.audio_url = getBlobUrl(song.audio_url);
           }
-          if (song.album && song.album.image_url) {
-            song.album.image_url = getBlobUrl(song.album.image_url);
+          if (song.albums && song.albums?.length > 0) {
+            song.albums = song.albums.map((album) => {
+              if (album.image_url) {
+                album.image_url = getBlobUrl(album.image_url);
+              }
+              return album;
+            });
+          }
+          if (song.artists && song.artists?.length > 0) {
+            song.artists = song.artists.map((artist) => {
+              if (artist.user && artist.user.profile_picture_url) {
+                artist.user.profile_picture_url = getBlobUrl(
+                  artist.user.profile_picture_url
+                );
+              }
+              return artist;
+            });
           }
           return song;
         })

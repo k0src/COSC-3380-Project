@@ -7,6 +7,7 @@ export interface Playlist {
   created_by: UUID;
   created_at: string;
 
+  song_count?: number;
   user?: User;
   likes?: number;
 }

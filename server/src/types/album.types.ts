@@ -1,4 +1,4 @@
-import type { UUID, Artist, Song } from "./index.js";
+import type { UUID, Artist } from "./index.js";
 
 export interface Album {
   id: UUID;
@@ -9,7 +9,7 @@ export interface Album {
   audio_url: string;
   created_at: string;
 
-  songs?: Array<{ song: Song; track_number: string }>;
+  song_count?: number;
   artist?: Artist;
   likes?: number;
   runtime?: number;

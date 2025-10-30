@@ -1,17 +1,18 @@
 import api from "./api";
-import type { ArtistSong, UUID } from "@types";
+import type { PlaylistSong, UUID } from "@types";
 
-export const artistApi = {
+export const playlistApi = {
   async getSongs(
     id: UUID,
     options?: {
       includeAlbum?: boolean;
+      includeArtist?: boolean;
       includeLikes?: boolean;
       limit?: number;
       offset?: number;
     }
   ) {
-    const response = await api.get<ArtistSong[]>(`/artists/${id}/songs`, {
+    const response = await api.get<PlaylistSong[]>(`/playlists/${id}/songs`, {
       params: options,
     });
     return response.data;

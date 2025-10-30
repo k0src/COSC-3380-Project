@@ -12,11 +12,12 @@ export interface Song {
   created_at: string;
   streams?: number;
 
-  // Related fields
   albums?: Album[];
   artists?: SongArtist[];
   likes?: number;
   comments?: number;
+
+  type: "song";
 }
 
 // Extended types with additional fields for specifc contexts

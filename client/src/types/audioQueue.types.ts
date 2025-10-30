@@ -1,4 +1,4 @@
-import type { Song } from "@types";
+import type { Song, Playlist, Album } from "@types";
 
 /**
  * Queue item that wraps a Song with queueing metadata
@@ -35,10 +35,15 @@ export interface AudioState {
 }
 
 /**
+ * Entities that can be played in the audio queue
+ */
+export type PlayableEntity = Song | Song[] | Playlist | Album;
+
+/**
  * AudioQueue actions
  */
 export interface AudioQueueActions {
-  play: (songs: Song | Song[]) => Promise<void>;
+  play: (songs: PlayableEntity) => Promise<void>;
   pause: () => void;
   resume: () => void;
   next: () => Promise<void>;

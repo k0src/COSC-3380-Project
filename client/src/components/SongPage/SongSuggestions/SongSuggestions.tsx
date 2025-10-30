@@ -69,11 +69,11 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
               <EntityItem
                 key={album.id}
                 imageUrl={album.image_url}
-                alt={`${album.title} Cover`}
                 author={album.artist?.display_name || "Unknown Artist"}
                 title={album.title}
                 linkTo={`/albums/${album.id}`}
                 subtitle={formatDateString(album.release_date)}
+                type="list"
               />
             ))}
           </div>
@@ -90,11 +90,11 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
               <EntityItem
                 key={songItem.id}
                 imageUrl={songItem.image_url}
-                alt={`${songItem.title} Cover`}
                 author={songItem.role}
                 title={songItem.title}
                 linkTo={`/songs/${songItem.id}`}
                 subtitle={formatDateString(songItem.release_date)}
+                type="song"
               />
             ))}
           </div>
@@ -109,11 +109,11 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
               <EntityItem
                 key={songItem.id}
                 imageUrl={songItem.image_url}
-                alt={`${songItem.title} Cover`}
                 author={songItem.main_artist.display_name}
                 title={songItem.title}
                 linkTo={`/songs/${songItem.id}`}
                 subtitle={formatDateString(songItem.release_date)}
+                type="song"
               />
             ))}
           </div>
