@@ -205,8 +205,9 @@ function audioQueueReducer(
 
     case "CLEAR_QUEUE": {
       const preserveQueued = action.preserveQueued ?? true;
+      const preserveCurrentSong = action.preserveCurrentSong ?? true;
 
-      if (!preserveQueued) {
+      if (!preserveQueued && !preserveCurrentSong) {
         return {
           ...state,
           queue: [],
@@ -218,7 +219,20 @@ function audioQueueReducer(
         };
       }
 
-      const preservedItems = filterPreservedItems(state.queue);
+      let preservedItems: QueueItem[] = [];
+      if (preserveQueued) {
+        preservedItems = filterPreservedItems(state.queue);
+      }
+
+      if (preserveCurrentSong && state.currentSong && state.currentIndex >= 0) {
+        const currentItem = state.queue[state.currentIndex];
+        if (
+          currentItem &&
+          !preservedItems.some((item) => item.queueId === currentItem.queueId)
+        ) {
+          preservedItems.unshift(currentItem);
+        }
+      }
 
       if (preservedItems.length === 0) {
         return {
@@ -235,19 +249,26 @@ function audioQueueReducer(
       const currentSong = state.currentSong;
       let newCurrentIndex = -1;
       let newCurrentSong = null;
+      let newCurrentQueueId = null;
 
-      if (currentSong) {
+      if (preserveCurrentSong && currentSong) {
+        // Find the current song in preserved items
         const currentItemIndex = preservedItems.findIndex(
-          (item) => item.queueId === state.currentQueueId && item.isQueued
+          (item) => item.queueId === state.currentQueueId
         );
 
         if (currentItemIndex !== -1) {
           newCurrentIndex = currentItemIndex;
           newCurrentSong = currentSong;
-        } else if (preservedItems.length > 0) {
-          newCurrentIndex = 0;
-          newCurrentSong = preservedItems[0].song;
+          newCurrentQueueId = preservedItems[currentItemIndex].queueId;
         }
+      }
+
+      // If current song wasn't preserved or found, set to first preserved item
+      if (newCurrentIndex === -1 && preservedItems.length > 0) {
+        newCurrentIndex = 0;
+        newCurrentSong = preservedItems[0].song;
+        newCurrentQueueId = preservedItems[0].queueId;
       }
 
       return {
@@ -255,10 +276,7 @@ function audioQueueReducer(
         queue: preservedItems,
         currentIndex: newCurrentIndex,
         currentSong: newCurrentSong,
-        currentQueueId:
-          newCurrentIndex >= 0 && preservedItems[newCurrentIndex]
-            ? preservedItems[newCurrentIndex].queueId
-            : null,
+        currentQueueId: newCurrentQueueId,
         isPlaying: newCurrentSong ? state.isPlaying : false,
         progress: newCurrentSong === currentSong ? state.progress : 0,
       };
@@ -768,8 +786,11 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
       dispatch({ type: "QUEUE_LAST", song });
     },
 
-    clearQueue: (preserveQueued?: boolean) => {
-      dispatch({ type: "CLEAR_QUEUE", preserveQueued });
+    clearQueue: (
+      preserveQueued?: boolean,
+      preserveCurrentSong: boolean = true
+    ) => {
+      dispatch({ type: "CLEAR_QUEUE", preserveQueued, preserveCurrentSong });
     },
 
     replaceQueue: (songs: Song[], preserveQueued?: boolean) => {
@@ -786,7 +807,11 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
     stop: () => {
       audioManager.stop();
       dispatch({ type: "SET_PLAYING", isPlaying: false });
-      dispatch({ type: "CLEAR_QUEUE", preserveQueued: false });
+      dispatch({
+        type: "CLEAR_QUEUE",
+        preserveQueued: false,
+        preserveCurrentSong: false,
+      });
     },
 
     removeFromQueue: (itemId: string) => {

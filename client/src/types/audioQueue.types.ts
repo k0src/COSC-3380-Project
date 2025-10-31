@@ -52,7 +52,7 @@ export interface AudioQueueActions {
   setVolume: (volume: number) => void;
   queueNext: (song: Song) => void;
   queueLast: (song: Song) => void;
-  clearQueue: (preserveQueued?: boolean) => void;
+  clearQueue: (preserveQueued?: boolean, preserveCurrentSong?: boolean) => void;
   replaceQueue: (songs: Song[], preserveQueued?: boolean) => void;
   stop: () => void;
   removeFromQueue: (itemId: string) => void;
@@ -95,7 +95,11 @@ export type QueueOperation =
   | { type: "PLAY_LIST"; songs: Song[] }
   | { type: "QUEUE_NEXT"; song: Song }
   | { type: "QUEUE_LAST"; song: Song }
-  | { type: "CLEAR_QUEUE"; preserveQueued?: boolean }
+  | {
+      type: "CLEAR_QUEUE";
+      preserveQueued?: boolean;
+      preserveCurrentSong?: boolean;
+    }
   | { type: "REPLACE_QUEUE"; songs: Song[]; preserveQueued?: boolean }
   | { type: "NEXT_SONG" }
   | { type: "PREVIOUS_SONG" }

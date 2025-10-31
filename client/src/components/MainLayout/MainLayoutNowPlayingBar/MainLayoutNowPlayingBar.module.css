@@ -203,6 +203,10 @@
   justify-content: flex-end;
 }
 
+.queueButtonContainer {
+  position: relative;
+}
+
 .volumeControl {
   display: flex;
   align-items: center;

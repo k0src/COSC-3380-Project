@@ -1,10 +1,18 @@
-import React, { useState, useEffect, memo, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  memo,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLikeStatus } from "@hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, useAudioQueue } from "@contexts";
 import { formatPlaybackTime, getMainArtist } from "@util";
 import { ShareModal, CoverLightbox } from "@components";
+import { QueueManager } from "@components";
 import classNames from "classnames";
 import styles from "./MainLayoutNowPlayingBar.module.css";
 import {
@@ -25,6 +33,8 @@ import musicPlaceholder from "@assets/music-placeholder.png";
 const NowPlayingBar: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isQueueManagerOpen, setIsQueueManagerOpen] = useState(false);
+  const queueButtonRef = useRef<HTMLButtonElement>(null);
 
   const { user, isAuthenticated } = useAuth();
   const { state, actions } = useAudioQueue();
@@ -136,10 +146,8 @@ const NowPlayingBar: React.FC = () => {
     setIsShareModalOpen(true);
   }, []);
 
-  //! manage queue
   const handleManageQueue = useCallback(() => {
-    if (!currentSong) return;
-    console.log("do something here later");
+    setIsQueueManagerOpen((prev) => !prev);
   }, []);
 
   const mainArtist = useMemo(() => {
@@ -292,13 +300,21 @@ const NowPlayingBar: React.FC = () => {
           >
             <LuThumbsUp />
           </button>
-          <button
-            className={styles.controlButton}
-            onClick={handleManageQueue}
-            aria-label="Manage Queue"
-          >
-            <LuListEnd />
-          </button>
+          <div className={styles.queueButtonContainer}>
+            <button
+              ref={queueButtonRef}
+              className={styles.controlButton}
+              onClick={handleManageQueue}
+              aria-label="Manage Queue"
+            >
+              <LuListEnd />
+            </button>
+            <QueueManager
+              isOpen={isQueueManagerOpen}
+              onClose={() => setIsQueueManagerOpen(false)}
+              buttonRef={queueButtonRef}
+            />
+          </div>
           <button
             className={classNames(styles.controlButton, styles.playlistButton)}
             onClick={handleAddToPlaylist}

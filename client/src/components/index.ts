@@ -36,6 +36,7 @@ export { default as EntityItem } from "./EntityItem/EntityItem.js";
 export { default as ShareModal } from "./ShareModal/ShareModal.js";
 export { default as QueueMenu } from "./QueueMenu/QueueMenu.js";
 export { default as CoverLightbox } from "./CoverLightbox/CoverLightbox.js";
+export { default as QueueManager } from "./MainLayout/QueueManager/QueueManager.js";
 
 /* =============================== Page States ============================== */
 export { default as PageLoader } from "./PageLoader/PageLoader.js";
