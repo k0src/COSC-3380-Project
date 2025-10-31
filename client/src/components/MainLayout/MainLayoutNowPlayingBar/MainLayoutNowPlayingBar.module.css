@@ -119,7 +119,12 @@
   color: var(--color-white);
 }
 
-.playButton:hover {
+.playButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.playButton:not(:disabled):hover {
   color: var(--color-red);
 }
 

@@ -276,8 +276,8 @@ export default class ArtistRepository {
       `;
 
       const params = [
-        options?.includeAlbums ?? false,
         options?.includeArtists ?? false,
+        options?.includeAlbums ?? false,
         options?.includeLikes ?? false,
         artistId,
         limit,

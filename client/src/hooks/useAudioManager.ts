@@ -170,7 +170,14 @@ export function useAudioManager(): AudioManager {
       return audioRef.current ? audioRef.current.volume : 1;
     },
     get isLoading() {
-      return audioRef.current ? audioRef.current.readyState < 3 : false;
+      const audio = audioRef.current;
+      if (!audio) return false;
+
+      if (audio.ended) {
+        return false;
+      }
+
+      return audio.readyState < 3 && !audio.ended;
     },
     get error() {
       return audioRef.current?.error ? "Audio error" : null;

@@ -95,7 +95,7 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
               <EntityItem
                 key={songItem.id}
                 imageUrl={songItem.image_url}
-                author={songItem.role}
+                author={mainArtist?.display_name || "Unknown Artist"}
                 title={songItem.title}
                 linkTo={`/songs/${songItem.id}`}
                 subtitle={formatDateString(songItem.release_date)}
@@ -115,7 +115,7 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
               <EntityItem
                 key={songItem.id}
                 imageUrl={songItem.image_url}
-                author={songItem.main_artist.display_name}
+                author={songItem.main_artist?.display_name || "Unknown Artist"}
                 title={songItem.title}
                 linkTo={`/songs/${songItem.id}`}
                 subtitle={formatDateString(songItem.release_date)}

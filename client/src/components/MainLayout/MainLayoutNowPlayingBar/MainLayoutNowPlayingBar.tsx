@@ -143,15 +143,19 @@ const NowPlayingBar: React.FC = () => {
   }, []);
 
   const mainArtist = useMemo(() => {
-    if (isLoading || !currentSong)
+    if (!currentSong) return { id: "", display_name: "Unknown Artist" };
+
+    if (!currentSong.artists || currentSong.artists.length === 0) {
       return { id: "", display_name: "Unknown Artist" };
+    }
+
     return (
-      getMainArtist(currentSong.artists ?? []) ?? {
+      getMainArtist(currentSong.artists) ?? {
         id: "",
         display_name: "Unknown Artist",
       }
     );
-  }, [isLoading, currentSong]);
+  }, [currentSong]);
 
   return (
     <>

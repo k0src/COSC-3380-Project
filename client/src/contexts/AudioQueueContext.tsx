@@ -596,7 +596,16 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
 
       dispatch({ type: "SET_PROGRESS", progress });
       dispatch({ type: "SET_DURATION", duration });
-      dispatch({ type: "SET_LOADING", isLoading: audioManager.isLoading });
+      const currentLoading = audioManager.isLoading;
+      if (currentLoading !== state.isLoading) {
+        console.log(
+          "AudioQueue - isLoading changed from",
+          state.isLoading,
+          "to",
+          currentLoading
+        );
+      }
+      dispatch({ type: "SET_LOADING", isLoading: currentLoading });
       dispatch({ type: "SET_ERROR", error: audioManager.error });
 
       if (duration > 0 && progress >= duration - 0.5 && !isPlaying) {
