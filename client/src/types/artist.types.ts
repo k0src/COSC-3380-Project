@@ -7,6 +7,7 @@ export interface Artist {
   user_id: UUID;
   created_at: string;
   verified: boolean;
+  streams: number;
 
   user?: User;
 

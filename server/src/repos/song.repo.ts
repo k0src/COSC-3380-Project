@@ -255,13 +255,16 @@ export default class SongRepository {
 
   /**
    * Gets multiple songs.
-   * @param options - Options for pagination and including related data.
-   * @param options.includeAlbums - Option to include the albums data.
-   * @param options.includeArtists - Option to include the artists data.
-   * @param options.includeLikes - Option to include the like count.
-   * @param options.includeComments - Option to include the comment count.
-   * @param options.limit - Maximum number of songs to return.
-   * @param options.offset - Number of songs to skip.
+   * @param options Options for pagination and including related data.
+   * @param options.includeAlbums Option to include the albums data.
+   * @param options.includeArtists Option to include the artists data.
+   * @param options.includeLikes Option to include the like count.
+   * @param options.includeComments Option to include the comment count.
+   * @param options.orderBy Object specifying the column and direction to order by.
+   * @param options.orderBy.column The column to order by.
+   * @param options.orderBy.direction The direction to order by (ASC or DESC).
+   * @param options.limit Maximum number of songs to return.
+   * @param options.offset Number of songs to skip.
    * @returns A list of songs.
    * @throws Error if the operation fails.
    */
@@ -270,12 +273,35 @@ export default class SongRepository {
     includeArtists?: boolean;
     includeLikes?: boolean;
     includeComments?: boolean;
+    orderByColumn?:
+      | "title"
+      | "created_at"
+      | "streams"
+      | "release_date"
+      | "likes"
+      | "comments"
+      | "duration";
+    orderByDirection?: "ASC" | "DESC";
     limit?: number;
     offset?: number;
   }): Promise<Song[]> {
     try {
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
+      const orderByColumn = options?.orderByColumn ?? "created_at";
+      const orderByDirection = options?.orderByDirection ?? "DESC";
+
+      const orderByMap: Record<string, string> = {
+        title: "s.title",
+        created_at: "s.created_at",
+        streams: "s.streams",
+        release_date: "s.release_date",
+        likes: "likes",
+        comments: "comments",
+        duration: "s.duration",
+      };
+
+      const sqlOrderByColumn = orderByMap[orderByColumn];
 
       const sql = `
         SELECT s.*,
@@ -312,7 +338,7 @@ export default class SongRepository {
             WHERE c.song_id = s.id)
           ELSE NULL END AS comments
         FROM songs s
-        ORDER BY s.created_at DESC
+        ORDER BY ${sqlOrderByColumn} ${orderByDirection}
         LIMIT $5 OFFSET $6
       `;
 
@@ -439,28 +465,58 @@ export default class SongRepository {
     }
   }
 
-  //! FIX - should be getAlbums
   /**
-   * Fetches the album for a given song.
+   * Fetches albums for a given song.
    * @param songId - The ID of the song.
    * @param options - Options for pagination and including related data.
    * @param options.includeArtist - Option to include the artist data.
    * @param options.includeLikes - Option to include the like count.
    * @param options.includeRuntime - Option to include the total runtime of the album.
    * @param options.includeSongCount - Option to include the total number of songs on the album.
-   * @returns The album of the song, or null if not found.
+   * @param options.orderBy Object specifying the column and direction to order by.
+   * @param options.orderBy.column The column to order by.
+   * @param options.orderBy.direction The direction to order by (ASC or DESC).
+   * @param options.limit - Maximum number of albums to return.
+   * @param options.offset - Number of albums to skip.
+   * @returns A list of albums that contain the song.
    * @throws Error if the operation fails.
    */
-  static async getAlbum(
+  static async getAlbums(
     songId: UUID,
     options?: {
       includeArtist?: boolean;
       includeLikes?: boolean;
       includeRuntime?: boolean;
       includeSongCount?: boolean;
+      orderByColumn?:
+        | "title"
+        | "created_at"
+        | "release_date"
+        | "likes"
+        | "runtime"
+        | "songCount";
+      orderByDirection?: "ASC" | "DESC";
+      limit?: number;
+      offset?: number;
     }
-  ): Promise<Album | null> {
+  ): Promise<Album[]> {
     try {
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+      const orderByColumn = options?.orderByColumn ?? "created_at";
+      const orderByDirection = options?.orderByDirection ?? "DESC";
+
+      const orderByMap: Record<string, string> = {
+        title: "a.title",
+        created_at: "a.created_at",
+        release_date: "a.release_date",
+        likes: "likes",
+        runtime: "runtime",
+        songCount: "song_count",
+      };
+
+      const sqlOrderByColumn = orderByMap[orderByColumn];
+
       const sql = `
         SELECT a.*,
         CASE WHEN $1 THEN row_to_json(ar)
@@ -477,8 +533,10 @@ export default class SongRepository {
         ELSE NULL END AS song_count
         FROM albums a
         LEFT JOIN artists ar ON a.created_by = ar.id
-        LEFT JOIN album_songs als ON als.album_id = a.id
+        JOIN album_songs als ON als.album_id = a.id
         WHERE als.song_id = $5
+        ORDER BY ${sqlOrderByColumn} ${orderByDirection}
+        LIMIT $6 OFFSET $7
       `;
 
       const params = [
@@ -487,22 +545,31 @@ export default class SongRepository {
         options?.includeRuntime ?? false,
         options?.includeSongCount ?? false,
         songId,
+        limit,
+        offset,
       ];
 
-      const res = await query(sql, params);
-      if (!res || res.length === 0) {
-        return null;
+      const albums = await query(sql, params);
+      if (!albums || albums.length === 0) {
+        return [];
       }
 
-      let album: Album = res[0];
-      if (album.image_url) {
-        album.image_url = getBlobUrl(album.image_url);
-      }
+      const processedAlbums = await Promise.all(
+        albums.map(async (album) => {
+          if (album.image_url) {
+            album.image_url = getBlobUrl(album.image_url);
+          }
+          if (album.artist) {
+            album.artist.type = "artist";
+          }
+          album.type = "album";
+          return album;
+        })
+      );
 
-      album.type = "album";
-      return album;
+      return processedAlbums;
     } catch (error) {
-      console.error("Error fetching album:", error);
+      console.error("Error fetching albums for song:", error);
       throw error;
     }
   }
@@ -511,6 +578,9 @@ export default class SongRepository {
    * Fetches artists for a given song.
    * @param songId - The ID of the song.
    * @param options.includeUser - Option to include the user who created each artist.
+   * @param options.orderBy Object specifying the column and direction to order by.
+   * @param options.orderBy.column The column to order by.
+   * @param options.orderBy.direction The direction to order by (ASC or DESC).
    * @param options.limit - Maximum number of artists to return.
    * @param options.offset - Number of artists to skip.
    * @returns A list of artists associated with the song.
@@ -520,6 +590,8 @@ export default class SongRepository {
     songId: UUID,
     options?: {
       includeUser?: boolean;
+      orderByColumn?: "name" | "created_at" | "verified" | "streams";
+      orderByDirection?: "ASC" | "DESC";
       limit?: number;
       offset?: number;
     }
@@ -527,15 +599,30 @@ export default class SongRepository {
     try {
       const limit = options?.limit || 50;
       const offset = options?.offset || 0;
+      const orderByColumn = options?.orderByColumn ?? "created_at";
+      const orderByDirection = options?.orderByDirection ?? "DESC";
+
+      const orderByMap: Record<string, string> = {
+        name: "a.display_name",
+        created_at: "a.created_at",
+        verified: "a.verified",
+        streams: "streams",
+      };
+
+      const sqlOrderByColumn = orderByMap[orderByColumn];
 
       const sql = `
-        SELECT sa.role, a.*,
-        CASE WHEN $1 THEN row_to_json(u)
-        ELSE NULL END AS user
-        FROM artists a
-        JOIN song_artists sa ON sa.artist_id = a.id
+        SELECT a.*,
+          CASE WHEN $1 THEN row_to_json(u.*)
+          ELSE NULL END as user,
+          COALESCE(SUM(s.streams), 0) as streams
+          FROM artists a
         LEFT JOIN users u ON a.user_id = u.id
+        LEFT JOIN song_artists sa ON a.id = sa.artist_id
+        LEFT JOIN songs s ON sa.song_id = s.id
         WHERE sa.song_id = $2
+        GROUP BY a.id, u.id
+        ORDER BY ${sqlOrderByColumn} ${orderByDirection}
         LIMIT $3 OFFSET $4
       `;
 

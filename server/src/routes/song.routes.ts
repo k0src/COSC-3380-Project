@@ -3,6 +3,7 @@ import { SongRepository as SongRepo } from "@repositories";
 import { parseSongForm } from "@infra/form-parser";
 import getCoverGradient from "@util/colors.util";
 import { CommentService, StatsService } from "@services";
+import { validateOrderBy } from "@validators";
 
 const router = express.Router();
 
@@ -16,15 +17,28 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
       includeArtists,
       includeLikes,
       includeComments,
+      orderByColumn,
+      orderByDirection,
       limit,
       offset,
     } = req.query;
+
+    let column = (orderByColumn as string) || "created_at";
+    let direction = (orderByDirection as string) || "DESC";
+
+    if (!validateOrderBy(column, direction, "song")) {
+      console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+      column = "created_at";
+      direction = "DESC";
+    }
 
     const songs = await SongRepo.getMany({
       includeAlbums: includeAlbums === "true",
       includeArtists: includeArtists === "true",
       includeLikes: includeLikes === "true",
       includeComments: includeComments === "true",
+      orderByColumn: column as any,
+      orderByDirection: direction as any,
       limit: limit ? parseInt(limit as string, 10) : undefined,
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });
@@ -381,38 +395,55 @@ router.get("/count", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-//! FIX - should be getAlbums
-// GET /api/songs/:id/album
-// Example:
-// /api/songs/:id/album/?includeArtist=true&includeLikes=true&includeRuntime=true&includeSongCount=true
-router.get("/:id/album", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const { includeArtist, includeLikes, includeRuntime, includeSongCount } =
-      req.query;
+// GET /api/songs/:id/albums
+router.get(
+  "/:id/albums",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const {
+        includeArtist,
+        includeLikes,
+        includeRuntime,
+        includeSongCount,
+        orderByColumn,
+        orderByDirection,
+        limit,
+        offset,
+      } = req.query;
 
-    if (!id) {
-      res.status(400).json({ error: "Song ID is required!" });
-      return;
+      if (!id) {
+        res.status(400).json({ error: "Song ID is required!" });
+        return;
+      }
+
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+
+      if (!validateOrderBy(column, direction, "album")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
+
+      const albums = await SongRepo.getAlbums(id, {
+        includeArtist: includeArtist === "true",
+        includeLikes: includeLikes === "true",
+        includeRuntime: includeRuntime === "true",
+        includeSongCount: includeSongCount === "true",
+        orderByColumn: column as any,
+        orderByDirection: direction as any,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(albums);
+    } catch (error) {
+      console.error("Error in GET /api/songs/:id/album:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
-
-    const album = await SongRepo.getAlbum(id, {
-      includeArtist: includeArtist === "true",
-      includeLikes: includeLikes === "true",
-      includeRuntime: includeRuntime === "true",
-      includeSongCount: includeSongCount === "true",
-    });
-    if (!album) {
-      res.status(404).json({ error: "Album not found" });
-      return;
-    }
-
-    res.status(200).json(album);
-  } catch (error) {
-    console.error("Error in GET /api/songs/:id/album:", error);
-    res.status(500).json({ error: "Internal server error" });
   }
-});
+);
 
 // GET /api/songs/:id/artists
 // Example:
@@ -422,15 +453,27 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { includeUser, limit, offset } = req.query;
+      const { includeUser, orderByColumn, orderByDirection, limit, offset } =
+        req.query;
 
       if (!id) {
         res.status(400).json({ error: "Song ID is required!" });
         return;
       }
 
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+
+      if (!validateOrderBy(column, direction, "artist")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
+
       const artists = await SongRepo.getArtists(id, {
         includeUser: includeUser === "true",
+        orderByColumn: column as any,
+        orderByDirection: direction as any,
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
