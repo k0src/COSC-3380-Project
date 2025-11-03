@@ -39,6 +39,7 @@ html {
   --color-white: #f6f6f6;
   --color-white-hover: #bdbdbd;
   --color-black: #080808;
+  --color-black-hover: #111111;
 
   --color-gray-button: #242424;
   --color-gray-button-hover: #323232;
@@ -61,8 +62,8 @@ html {
   --spacing-4xl: 8rem;
   --spacing-5xl: 9.6rem;
 
-  --layout-gap-hor: 2rem;
-  --layout-gap-ver: 2.4rem;
+  --layout-gap-hor: 2.4rem;
+  --layout-gap-ver: 3.6rem;
 
   /* Border Radius */
   --border-radius-sm: 0.4rem;

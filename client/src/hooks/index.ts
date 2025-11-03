@@ -8,3 +8,4 @@ export type {
   AudioManagerActions,
 } from "./useAudioManager.js";
 export { useLikeStatus } from "./useLikeStatus.js";
+export { useTextContrast } from "./useTextContrast.js";

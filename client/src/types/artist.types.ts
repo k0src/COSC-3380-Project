@@ -8,6 +8,8 @@ export interface Artist {
   created_at: string;
   verified: boolean;
   streams: number;
+  location?: string;
+  banner_image_url?: string;
 
   user?: User;
 

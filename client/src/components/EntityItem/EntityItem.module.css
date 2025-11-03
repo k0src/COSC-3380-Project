@@ -47,6 +47,7 @@
   color: var(--color-text-gray);
   font-weight: 500;
 }
+
 .entityTitle,
 .entityAuthor,
 .entitySubtitle,
@@ -105,4 +106,25 @@
 .entityItem:hover .entityActionButtonContainer {
   opacity: 1;
   visibility: visible;
+}
+
+.entityActionButtonContainerWide {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.entityIndex {
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+  font-weight: 500;
+  width: 2rem;
+  min-width: 2rem;
+  max-width: 2rem;
+  flex-shrink: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-align: center;
 }

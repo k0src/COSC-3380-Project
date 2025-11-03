@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { ArtistRepository } from "@repositories";
 import { validateOrderBy } from "@validators";
+import { FollowService } from "@services";
 
 const router = express.Router();
 
@@ -72,6 +73,7 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
     const {
       includeAlbums,
       includeArtists,
+      onlySingles,
       includeLikes,
       includeComments,
       orderByColumn,
@@ -94,8 +96,9 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
     }
 
     const songs = await ArtistRepository.getSongs(id, {
-      includeArtists: includeArtists === "true",
       includeAlbums: includeAlbums === "true",
+      includeArtists: includeArtists === "true",
+      onlySingles: onlySingles === "true",
       includeLikes: includeLikes === "true",
       includeComments: includeComments === "true",
       orderByColumn: column as any,
@@ -180,6 +183,134 @@ router.get(
       res.status(200).json(relatedArtists);
     } catch (error) {
       console.error("Error in GET /artists/:id/related:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/artists/:id/number-songs
+router.get(
+  "/:id/number-songs",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const numberOfSongs = await ArtistRepository.getNumberOfSongs(id);
+      res.status(200).json({ numberOfSongs });
+    } catch (error) {
+      console.error("Error in GET /artists/:id/number-songs:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/artists/:id/streams
+router.get(
+  "/:id/streams",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const streams = await ArtistRepository.getTotalStreams(id);
+      res.status(200).json({ streams });
+    } catch (error) {
+      console.error("Error in GET /artists/:id/streams:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/artists/:id/followers
+// pass in the USER id of the artist
+//TODO this doenst really make sense here - it should be in users routes since followers are users, move later!!
+router.get(
+  "/:id/followers",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const followers = await FollowService.getFollowers(id);
+      res.status(200).json(followers);
+    } catch (error) {
+      console.error("Error in GET /artists/:id/followers:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/artists/:id/following
+router.get(
+  "/:id/following",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const following = await FollowService.getFollowing(id);
+      res.status(200).json(following);
+    } catch (error) {
+      console.error("Error in GET /artists/:id/following:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/artists/:id/playlists
+router.get(
+  "/:id/playlists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { includeUser, limit, offset } = req.query;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const playlists = await ArtistRepository.getPlaylists(id, {
+        includeUser: includeUser === "true",
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(playlists);
+    } catch (error) {
+      console.error("Error in GET /artists/:id/playlists:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/artists/:id/monthly-listeners
+router.get(
+  "/:id/monthly-listeners",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const monthlyListeners = await ArtistRepository.getMonthlyListeners(id);
+      res.status(200).json({ monthlyListeners });
+    } catch (error) {
+      console.error("Error in GET /artists/:id/monthly-listeners:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   }

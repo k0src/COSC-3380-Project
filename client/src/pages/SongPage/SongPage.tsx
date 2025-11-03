@@ -65,15 +65,10 @@ const SongPage: React.FC = () => {
 
   if (error) {
     return (
-      <>
-        <Helmet>
-          <title>Internal Server Error</title>
-        </Helmet>
-        <ErrorPage
-          title="Internal Server Error"
-          message="An unexpected error occurred. Please try again later."
-        />
-      </>
+      <ErrorPage
+        title="Internal Server Error"
+        message="An unexpected error occurred. Please try again later."
+      />
     );
   }
 

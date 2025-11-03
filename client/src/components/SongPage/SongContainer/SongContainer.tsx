@@ -5,6 +5,7 @@ import type { Song, CoverGradient, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
 import { LuPlay, LuThumbsUp, LuMessageSquareText } from "react-icons/lu";
 import styles from "./SongContainer.module.css";
+import classNames from "classnames";
 import musicPlaceholder from "@assets/music-placeholder.png";
 
 export interface SongContainerProps {
@@ -55,7 +56,9 @@ const SongContainer: React.FC<SongContainerProps> = ({
       <img
         src={song.image_url || musicPlaceholder}
         alt={`${song.title} Cover`}
-        className={styles.coverImage}
+        className={classNames(styles.coverImage, {
+          [styles.coverImageClickable]: !!song.image_url,
+        })}
         loading="lazy"
         onClick={handleImageClick}
       />

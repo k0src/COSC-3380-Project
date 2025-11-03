@@ -5,28 +5,35 @@ import { getBlobUrl } from "@config/blobStorage";
 export default class ArtistRepository {
   /**
    * Creates a new artist.
-   * @param artistData - The data for the new artist.
-   * @param artist.display_name - The display name of the artist.
-   * @param artist.bio - The bio of the artist.
-   * @param artist.user_id - The user ID associated with the artist.
+   * @param artistData The data for the new artist.
+   * @param artist.display_name The display name of the artist.
+   * @param artist.bio The bio of the artist (optional).
+   * @param artist.location The location of the artist (optional).
+   * @param artist.banner_image_url The banner image URL of the artist (optional).
+   * @param artist.user_id The user ID associated with the artist.
    * @returns The created artist, or null if creation fails.
    * @throws Error if the operation fails.
    */
   static async create({
     display_name,
     bio,
+    location,
+    banner_image_url,
     user_id,
   }: {
     display_name: string;
     bio?: string;
+    location?: string;
+    banner_image_url?: string;
     user_id: UUID;
   }): Promise<Artist | null> {
     try {
       const res = await query(
-        `INSERT INTO artists (display_name, bio, user_id)
-        VALUES ($1, $2, $3)
+        `INSERT INTO artists 
+          (display_name, bio, location, banner_image_url, user_id)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *`,
-        [display_name, bio, user_id]
+        [display_name, bio, location, banner_image_url, user_id]
       );
 
       return res[0] ?? null;
@@ -38,11 +45,13 @@ export default class ArtistRepository {
 
   /**
    * Updates a artist.
-   * @param id - The ID of the artist to update.
-   * @param artistData - The new data for the artist.
-   * @param artist.display_name - The new display name of the artist (optional).
-   * @param artist.bio - The new bio of the artist (optional).
-   * @param artist.user_id - The new user ID associated with the artist (optional).
+   * @param id The ID of the artist to update.
+   * @param artistData The new data for the artist.
+   * @param artist.display_name The new display name of the artist (optional).
+   * @param artist.bio The new bio of the artist (optional).
+   * @param artist.location The new location of the artist (optional).
+   * @param artist.banner_image_url The new banner image URL of the artist (optional).
+   * @param artist.user_id The new user ID associated with the artist (optional).
    * @returns The updated artist, or null if the update fails.
    * @throws Error if the operation fails.
    */
@@ -51,8 +60,16 @@ export default class ArtistRepository {
     {
       display_name,
       bio,
+      location,
+      banner_image_url,
       user_id,
-    }: { display_name?: string; bio?: string; user_id?: UUID }
+    }: {
+      display_name?: string;
+      bio?: string;
+      location?: string;
+      banner_image_url?: string;
+      user_id?: UUID;
+    }
   ): Promise<Artist | null> {
     try {
       const fields: string[] = [];
@@ -65,6 +82,14 @@ export default class ArtistRepository {
       if (bio !== undefined) {
         fields.push(`bio = $${values.length + 1}`);
         values.push(bio);
+      }
+      if (location !== undefined) {
+        fields.push(`location = $${values.length + 1}`);
+        values.push(location);
+      }
+      if (banner_image_url !== undefined) {
+        fields.push(`banner_image_url = $${values.length + 1}`);
+        values.push(banner_image_url);
       }
       if (user_id !== undefined) {
         fields.push(`user_id = $${values.length + 1}`);
@@ -149,6 +174,9 @@ export default class ArtistRepository {
         artist.user.profile_picture_url = getBlobUrl(
           artist.user.profile_picture_url
         );
+      }
+      if (artist.banner_image_url) {
+        artist.banner_image_url = getBlobUrl(artist.banner_image_url);
       }
 
       artist.type = "artist";
@@ -235,17 +263,19 @@ export default class ArtistRepository {
 
   /**
    * Fetches songs for a given artist.
-   * @param artistId - The ID of the artist.
-   * @param options - Options for pagination and related data.
-   * @param options.includeAlbums - Option to include the albums data.
-   * @param options.includeArtists - Option to include the artists data.
-   * @param options.includeLikes - Option to include the like count.
+   * @param artistId The ID of the artist.
+   * @param options Options for pagination and related data.
+   * @param options.includeArtists Option to include the artists data.
+   * @param options.includeAlbums Option to include the albums data.
+   * @param options.onlySingles Option to include only singles.
+   * @param options.includeArtists Option to include the artists data.
+   * @param options.includeLikes Option to include the like count.
    * @param options.includeComments Option to include the comment count.
    * @param options.orderBy Object specifying the column and direction to order by.
    * @param options.orderBy.column The column to order by.
    * @param options.orderBy.direction The direction to order by (ASC or DESC).
-   * @param options.limit - Maximum number of songs to return.
-   * @param options.offset - Number of songs to skip.
+   * @param options.limit Maximum number of songs to return.
+   * @param options.offset Number of songs to skip.
    * @returns A list of songs in the artist's catalog.
    * @throws Error if the operation fails.
    */
@@ -254,6 +284,7 @@ export default class ArtistRepository {
     options?: {
       includeArtists?: boolean;
       includeAlbums?: boolean;
+      onlySingles?: boolean;
       includeLikes?: boolean;
       includeComments?: boolean;
       orderByColumn?:
@@ -274,6 +305,7 @@ export default class ArtistRepository {
       const offset = options?.offset || 0;
       const orderByColumn = options?.orderByColumn ?? "created_at";
       const orderByDirection = options?.orderByDirection ?? "DESC";
+      const onlySingles = options?.onlySingles ?? false;
 
       const orderByMap: Record<string, string> = {
         title: "s.title",
@@ -286,6 +318,11 @@ export default class ArtistRepository {
       };
 
       const sqlOrderByColumn = orderByMap[orderByColumn];
+      const singlesFilter = onlySingles
+        ? "AND NOT EXISTS (SELECT 1 FROM album_songs als WHERE als.song_id = s.id)"
+        : "";
+
+      console.log(options);
 
       const sql = `
         SELECT s.*, sa.role,
@@ -319,6 +356,7 @@ export default class ArtistRepository {
         FROM songs s
         JOIN song_artists sa ON sa.song_id = s.id
         WHERE sa.artist_id = $4
+        ${singlesFilter}
         ORDER BY ${sqlOrderByColumn} ${orderByDirection}
         LIMIT $5 OFFSET $6
       `;
@@ -382,16 +420,16 @@ export default class ArtistRepository {
 
   /**
    * Fetches albums for a given artist.
-   * @param artistId - The ID of the artist.
-   * @param options - Options for pagination and related data.
-   * @param options.includeLikes - Option to include the like count.
-   * @param options.includeRuntime - Option to include the total runtime of the album.
-   * @param options.includeSongCount - Option to include the total number of songs on the album.
+   * @param artistId The ID of the artist.
+   * @param options Options for pagination and related data.
+   * @param options.includeLikes Option to include the like count.
+   * @param options.includeRuntime Option to include the total runtime of the album.
+   * @param options.includeSongCount Option to include the total number of songs on the album.
    * @param options.orderBy Object specifying the column and direction to order by.
    * @param options.orderBy.column The column to order by.
    * @param options.orderBy.direction The direction to order by (ASC or DESC).
-   * @param options.limit - Maximum number of albums to return.
-   * @param options.offset - Number of albums to skip.
+   * @param options.limit Maximum number of albums to return.
+   * @param options.offset Number of albums to skip.
    * @returns A list of albums by the artist.
    * @throws Error if the operation fails.
    */
@@ -541,6 +579,123 @@ export default class ArtistRepository {
       return processedArtists;
     } catch (error) {
       console.error("Error fetching related artists:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Counts the number of songs for a given artist.
+   * @param artistId The ID of the artist.
+   * @return The number of songs for the artist.
+   * @throws Error if the operation fails.
+   */
+  static async getNumberOfSongs(artistId: UUID): Promise<number> {
+    try {
+      const res = await query(
+        `SELECT COUNT(*) FROM song_artists WHERE artist_id = $1`,
+        [artistId]
+      );
+      return parseInt(res[0]?.count ?? "0", 10);
+    } catch (error) {
+      console.error("Error counting songs for artist:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calculates the total number of streams for all songs by a given artist.
+   * @param artistId The ID of the artist.
+   * @return The total number of streams for the artist's songs.
+   * @throws Error if the operation fails.
+   */
+  static async getTotalStreams(artistId: UUID): Promise<number> {
+    try {
+      const res = await query(
+        `SELECT COALESCE(SUM(s.streams), 0) AS total_streams
+         FROM songs s
+         JOIN song_artists sa ON s.id = sa.song_id
+         WHERE sa.artist_id = $1`,
+        [artistId]
+      );
+      return parseInt(res[0]?.total_streams ?? "0", 10);
+    } catch (error) {
+      console.error("Error fetching total streams for artist:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetches playlists that feature songs by the given artist.
+   * @param artistId The ID of the artist.
+   * @param options Options for pagination and including related data.
+   * @param options.includeUser Option to include the user who created each playlist.
+   * @param options.limit Maximum number of playlists to return.
+   * @param options.offset Number of playlists to skip.
+   * @return A list of playlists featuring the artist's songs.
+   * @throws Error if the operation fails.
+   */
+  static async getPlaylists(
+    artistId: UUID,
+    options?: {
+      includeUser?: boolean;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<any[]> {
+    try {
+      const playlists = await query(
+        `SELECT DISTINCT ON (p.id) p.*,
+         CASE WHEN $1 THEN row_to_json(u.*) 
+         ELSE NULL END as user
+         FROM playlists p
+         JOIN playlist_songs ps ON p.id = ps.playlist_id
+         JOIN songs s ON ps.song_id = s.id
+         JOIN song_artists sa ON s.id = sa.song_id
+         LEFT JOIN users u ON p.created_by = u.id
+         WHERE sa.artist_id = $2
+         ORDER BY p.id`,
+        [options?.includeUser ?? false, artistId]
+      );
+      if (!playlists || playlists.length === 0) {
+        return [];
+      }
+
+      const processedPlaylists = await Promise.all(
+        playlists.map(async (playlist) => {
+          if (playlist.image_url) {
+            playlist.image_url = getBlobUrl(playlist.image_url);
+          }
+          playlist.type = "playlist";
+          return playlist;
+        })
+      );
+
+      return processedPlaylists;
+    } catch (error) {
+      console.error("Error fetching playlists for artist:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetches the number of unique monthly listeners for a given artist.
+   * @param artistId The ID of the artist.
+   * @return The number of unique monthly listeners.
+   * @throws Error if the operation fails.
+   */
+  static async getMonthlyListeners(artistId: UUID): Promise<number> {
+    try {
+      const res = await query(
+        `SELECT listeners_28d AS monthly_listeners
+        FROM artist_listeners_28d_daily
+        WHERE artist_id = $1
+        ORDER BY day DESC
+        LIMIT 1`,
+        [artistId]
+      );
+      return parseInt(res[0]?.monthly_listeners ?? "0", 10);
+    } catch (error) {
+      console.error("Error fetching monthly listeners for artist:", error);
       throw error;
     }
   }

@@ -25,6 +25,14 @@ export default function AppRoutes() {
             </MainLayout>
           }
         />
+        <Route
+          path="/artists/:id"
+          element={
+            <MainLayout>
+              <Pages.ArtistPage />
+            </MainLayout>
+          }
+        />
       </Route>
 
       {/* <Route 

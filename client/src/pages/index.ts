@@ -3,3 +3,4 @@ export { default as SongPage } from "./SongPage/SongPage.js";
 export { default as LoginPage } from "./LoginPage/LoginPage.js";
 export { default as SignupPage } from "./SignupPage/SignupPage.js";
 export { default as HomePage } from "./HomePage/HomePage.js";
+export { default as ArtistPage } from "./ArtistPage/ArtistPage.js";

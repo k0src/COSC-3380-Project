@@ -1,5 +1,6 @@
 import type { User, UUID } from "@types";
 import { query } from "@config/database.js";
+import { getBlobUrl } from "@config/blobStorage";
 
 /**
  * Service for managing user followers.
@@ -65,8 +66,16 @@ export default class FollowService {
         LIMIT $2 OFFSET $3
       `;
 
-      const res = await query(sql, params);
-      return res;
+      const followers = await query(sql, params);
+
+      const processedFollowers = followers.map((follower) => {
+        if (follower.profile_image_url) {
+          follower.profile_image_url = getBlobUrl(follower.profile_image_url);
+        }
+        return follower;
+      });
+
+      return processedFollowers;
     } catch (error) {
       console.error("Error getting followers:", error);
       throw error;
@@ -95,8 +104,18 @@ export default class FollowService {
         LIMIT $2 OFFSET $3
       `;
 
-      const res = await query(sql, params);
-      return res;
+      const following = await query(sql, params);
+
+      const processedFollowing = following.map((followedUser) => {
+        if (followedUser.profile_image_url) {
+          followedUser.profile_image_url = getBlobUrl(
+            followedUser.profile_image_url
+          );
+        }
+        return followedUser;
+      });
+
+      return processedFollowing;
     } catch (error) {
       console.error("Error getting following:", error);
       throw error;

@@ -28,9 +28,13 @@ export { default as SongComments } from "./SongPage/SongComments/SongComments.js
 export { default as CommentItem } from "./SongPage/CommentItem/CommentItem.js";
 export { default as SongSuggestions } from "./SongPage/SongSuggestions/SongSuggestions.js";
 
+/* =============================== ArtistPage =============================== */
+export { default as ArtistBanner } from "./ArtistPage/ArtistBanner/ArtistBanner.js";
+
 /* ================================== Cards ================================== */
 export { default as SongCard } from "./SongCard/SongCard.js";
 export { default as EntityItem } from "./EntityItem/EntityItem.js";
+export { default as EntityItemCard } from "./EntityItemCard/EntityItemCard.js";
 
 /* ================================= Modals ================================= */
 export { default as ShareModal } from "./ShareModal/ShareModal.js";
