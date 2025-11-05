@@ -14,7 +14,9 @@ const Settings: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const changeFirstRef = useRef<HTMLInputElement | null>(null);
   const changeOverlayRef = useRef<HTMLDivElement | null>(null);
-  const [showPasswords, setShowPasswords] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
   const yesRef = useRef<HTMLButtonElement | null>(null);
   const noRef = useRef<HTMLButtonElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
@@ -269,68 +271,108 @@ const Settings: React.FC = () => {
               <label style={{ display: "block", fontSize: 13, color: "#ccc" }}>
                 Current password
               </label>
-              <input
-                ref={changeFirstRef}
-                type={showPasswords ? "text" : "password"}
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  marginTop: 6,
-                  marginBottom: 10,
-                  borderRadius: 6,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(0,0,0,0.45)",
-                  color: "#fff",
-                }}
-              />
+              <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 6, marginBottom: 10 }}>
+                <input
+                  ref={changeFirstRef}
+                  type={showCurrent ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: "8px 10px",
+                    borderRadius: 6,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(0,0,0,0.45)",
+                    color: "#fff",
+                  }}
+                />
+                <button
+                  type="button"
+                  aria-pressed={showCurrent}
+                  aria-label={showCurrent ? "Hide current password" : "Show current password"}
+                  onClick={() => setShowCurrent((s) => !s)}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    color: "#fff",
+                    padding: "6px 8px",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                  }}
+                >
+                  {showCurrent ? "Hide" : "Show"}
+                </button>
+              </div>
 
               <label style={{ display: "block", fontSize: 13, color: "#ccc" }}>
                 New password
               </label>
-              <input
-                type={showPasswords ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  marginTop: 6,
-                  marginBottom: 10,
-                  borderRadius: 6,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(0,0,0,0.45)",
-                  color: "#fff",
-                }}
-              />
+              <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 6, marginBottom: 10 }}>
+                <input
+                  type={showNewPass ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: "8px 10px",
+                    borderRadius: 6,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(0,0,0,0.45)",
+                    color: "#fff",
+                  }}
+                />
+                <button
+                  type="button"
+                  aria-pressed={showNewPass}
+                  aria-label={showNewPass ? "Hide new password" : "Show new password"}
+                  onClick={() => setShowNewPass((s) => !s)}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    color: "#fff",
+                    padding: "6px 8px",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                  }}
+                >
+                  {showNewPass ? "Hide" : "Show"}
+                </button>
+              </div>
 
               <label style={{ display: "block", fontSize: 13, color: "#ccc" }}>
                 Confirm new password
               </label>
-              <input
-                type={showPasswords ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  marginTop: 6,
-                  borderRadius: 6,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(0,0,0,0.45)",
-                  color: "#fff",
-                }}
-              />
-
-              <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 6 }}>
                 <input
-                  type="checkbox"
-                  checked={showPasswords}
-                  onChange={(e) => setShowPasswords(e.target.checked)}
+                  type={showConfirmPass ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: "8px 10px",
+                    borderRadius: 6,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(0,0,0,0.45)",
+                    color: "#fff",
+                  }}
                 />
-                <span style={{ fontSize: 13, color: "#ccc" }}>Show passwords</span>
-              </label>
+                <button
+                  type="button"
+                  aria-pressed={showConfirmPass}
+                  aria-label={showConfirmPass ? "Hide confirm password" : "Show confirm password"}
+                  onClick={() => setShowConfirmPass((s) => !s)}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    color: "#fff",
+                    padding: "6px 8px",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                  }}
+                >
+                  {showConfirmPass ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
             <div className={styles.confirmButtons}>
