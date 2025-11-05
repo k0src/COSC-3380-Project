@@ -322,8 +322,6 @@ export default class ArtistRepository {
         ? "AND NOT EXISTS (SELECT 1 FROM album_songs als WHERE als.song_id = s.id)"
         : "";
 
-      console.log(options);
-
       const sql = `
         SELECT s.*, sa.role,
           CASE WHEN $1 THEN 
@@ -646,7 +644,19 @@ export default class ArtistRepository {
       const playlists = await query(
         `SELECT DISTINCT ON (p.id) p.*,
          CASE WHEN $1 THEN row_to_json(u.*) 
-         ELSE NULL END as user
+         ELSE NULL END as user,
+         (
+           SELECT json_agg(image_url)
+           FROM (
+             SELECT s.image_url
+             FROM playlist_songs ps
+             JOIN songs s ON ps.song_id = s.id
+             WHERE ps.playlist_id = p.id
+             AND s.image_url IS NOT NULL
+             ORDER BY ps.added_at
+             LIMIT 4
+           ) AS limited_images
+         ) as song_images
          FROM playlists p
          JOIN playlist_songs ps ON p.id = ps.playlist_id
          JOIN songs s ON ps.song_id = s.id
@@ -662,9 +672,12 @@ export default class ArtistRepository {
 
       const processedPlaylists = await Promise.all(
         playlists.map(async (playlist) => {
-          if (playlist.image_url) {
-            playlist.image_url = getBlobUrl(playlist.image_url);
+          if (playlist.song_images && playlist.song_images.length > 0) {
+            playlist.image_url = `/api/playlists/${playlist.id}/cover-image`;
           }
+
+          delete playlist.song_images;
+
           playlist.type = "playlist";
           return playlist;
         })

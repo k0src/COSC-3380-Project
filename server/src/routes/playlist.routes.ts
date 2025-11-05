@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { PlaylistRepository } from "@repositories";
+import { generatePlaylistImage } from "../util/playlistImage.util.js";
 
 const router = express.Router();
 
@@ -85,5 +86,48 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// GET /api/playlists/:id/cover-image
+router.get(
+  "/:id/cover-image",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        res.status(400).json({ error: "Playlist ID is required" });
+        return;
+      }
+
+      const songImageUrls = await PlaylistRepository.getCoverImageUrls(id, 4);
+
+      if (songImageUrls.length === 0) {
+        res
+          .status(404)
+          .json({ error: "No songs with images found in playlist" });
+        return;
+      }
+
+      const imageBuffer = await generatePlaylistImage({
+        playlistId: id,
+        songImageUrls,
+        size: 640,
+      });
+
+      res.set({
+        "Content-Type": "image/jpeg",
+        "Cache-Control": "public, max-age=3600",
+        ETag: `"${id}-${songImageUrls.length}"`,
+      });
+
+      res.send(imageBuffer);
+    } catch (error) {
+      console.error("Error in GET /playlists/:id/cover-image:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to generate playlist cover image" });
+    }
+  }
+);
 
 export default router;

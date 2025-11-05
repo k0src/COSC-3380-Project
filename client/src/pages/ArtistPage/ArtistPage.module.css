@@ -5,8 +5,14 @@
 }
 
 .artistLayoutBottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+}
+
+.artistLayoutBottomTop {
   display: grid;
-  grid-template-columns: 2fr 0.75fr;
+  grid-template-columns: 2fr 1fr;
   column-gap: var(--layout-gap-hor);
 }
 
@@ -15,14 +21,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
-}
-
-.popularSongsContainer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  min-width: 0;
-  width: 100%;
 }
 
 .sectionTitle {
@@ -35,108 +33,10 @@
   max-width: 100%;
 }
 
-.popularSongsList {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  min-width: 0;
-}
-
-.artistLayoutBottomTopRight {
+.artistLayoutBottomRight {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
-}
-
-.artistActionsContainer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  background: var(--color-panel-gray);
-  border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-panel-border);
-  padding: var(--spacing-md);
-  min-width: 0;
-}
-
-.actionsLayout {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  align-items: center;
-  row-gap: var(--spacing-md);
-  column-gap: var(--spacing-sm);
-}
-
-.actionButton {
-  font-family: "Inter", sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  background: var(--color-red);
-  border: 1px solid var(--color-red);
-  border-radius: var(--border-radius-sm);
-  border: none;
-  color: var(--color-red-200);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  transition: background-color var(--transition-speed) ease-in-out;
-}
-
-.actionButton:hover {
-  background-color: var(--color-red-700);
-}
-
-.actionButtonAlt {
-  font-family: "Inter", sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  background: var(--color-gray-button);
-  border-radius: var(--border-radius-sm);
-  border: 1px solid var(--color-gray-button-border);
-  color: var(--color-white);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  transition: background-color var(--transition-speed) ease-in-out;
-}
-
-.actionButtonAlt:hover {
-  background-color: var(--color-gray-button-hover);
-}
-
-.artistStat {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacing-xs);
-}
-
-.artistStatLarge {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  font-size: var(--font-size-lg);
-  color: var(--color-white);
-  font-weight: 700;
-}
-
-.artistStatLabel {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-gray);
-  font-weight: 500;
-}
-
-.artistStatLarge,
-.artistStatLabel {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: 100%;
 }
 
 .albumsContainer {
@@ -287,22 +187,6 @@
   transition: opacity var(--transition-speed) ease;
 }
 
-.playlistsContainer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  min-width: 0;
-  width: 100%;
-}
-
-.playlistsList {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  min-width: 0;
-}
-
 .relatedArtistsContainer {
   display: flex;
   flex-direction: column;
@@ -359,35 +243,4 @@
 
 .relatedArtistName:hover {
   color: var(--color-red);
-}
-
-.aboutContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacing-md);
-  background: var(--color-panel-gray);
-  border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-panel-border);
-  padding: var(--spacing-md);
-  min-width: 0;
-  width: 100%;
-}
-
-.aboutTitle {
-  font-size: var(--font-size-lg);
-  color: var(--color-white);
-  font-weight: 500;
-}
-
-.monthlyListenersText {
-  font-size: var(--font-size-md);
-  color: var(--color-white);
-  font-weight: 500;
-}
-
-.artistBio {
-  font-size: var(--font-size-md);
-  color: var(--color-text-gray);
-  font-weight: 400;
 }

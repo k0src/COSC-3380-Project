@@ -10,6 +10,7 @@ export interface Playlist {
   song_count?: number;
   user?: User;
   likes?: number;
+  image_url?: string;
 
   type: "playlist";
 }

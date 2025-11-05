@@ -30,11 +30,20 @@ export { default as SongSuggestions } from "./SongPage/SongSuggestions/SongSugge
 
 /* =============================== ArtistPage =============================== */
 export { default as ArtistBanner } from "./ArtistPage/ArtistBanner/ArtistBanner.js";
+export { default as RelatedArtists } from "./ArtistPage/RelatedArtists/RelatedArtists.js";
+export { default as ArtistActions } from "./ArtistPage/ArtistActions/ArtistActions.js";
+export { default as ArtistPlaylists } from "./ArtistPage/ArtistPlaylists/ArtistPlaylists.js";
+export { default as ArtistAbout } from "./ArtistPage/ArtistAbout/ArtistAbout.js";
+
+/* ================================== Lists ================================= */
+export { default as SongsList } from "./SongsList/SongsList.js";
+export { default as FollowProfiles } from "./FollowProfiles/FollowProfiles.js";
 
 /* ================================== Cards ================================== */
 export { default as SongCard } from "./SongCard/SongCard.js";
 export { default as EntityItem } from "./EntityItem/EntityItem.js";
 export { default as EntityItemCard } from "./EntityItemCard/EntityItemCard.js";
+export { default as SlidingCardList } from "./SlidingCardList/SlidingCardList.js";
 
 /* ================================= Modals ================================= */
 export { default as ShareModal } from "./ShareModal/ShareModal.js";

@@ -93,14 +93,44 @@ export const artistApi = {
     return response.data.streams;
   },
 
-  async getFollowers(id: UUID) {
-    const response = await api.get<User[]>(`/artists/${id}/followers`);
+  async getFollowers(
+    id: UUID,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    const response = await api.get<User[]>(`/artists/${id}/followers`, {
+      params: options,
+    });
     return response.data;
   },
 
-  async getFollowing(id: UUID) {
-    const response = await api.get<User[]>(`/artists/${id}/following`);
+  async getFollowing(
+    id: UUID,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    const response = await api.get<User[]>(`/artists/${id}/following`, {
+      params: options,
+    });
     return response.data;
+  },
+
+  async getFollowerCount(id: UUID) {
+    const response = await api.get<{ followerCount: number }>(
+      `/artists/${id}/follower-count`
+    );
+    return response.data.followerCount;
+  },
+
+  async getFollowingCount(id: UUID) {
+    const response = await api.get<{ followingCount: number }>(
+      `/artists/${id}/following-count`
+    );
+    return response.data.followingCount;
   },
 
   async getPlaylists(

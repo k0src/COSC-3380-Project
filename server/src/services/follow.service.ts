@@ -69,8 +69,10 @@ export default class FollowService {
       const followers = await query(sql, params);
 
       const processedFollowers = followers.map((follower) => {
-        if (follower.profile_image_url) {
-          follower.profile_image_url = getBlobUrl(follower.profile_image_url);
+        if (follower.profile_picture_url) {
+          follower.profile_picture_url = getBlobUrl(
+            follower.profile_picture_url
+          );
         }
         return follower;
       });
@@ -107,9 +109,9 @@ export default class FollowService {
       const following = await query(sql, params);
 
       const processedFollowing = following.map((followedUser) => {
-        if (followedUser.profile_image_url) {
-          followedUser.profile_image_url = getBlobUrl(
-            followedUser.profile_image_url
+        if (followedUser.profile_picture_url) {
+          followedUser.profile_picture_url = getBlobUrl(
+            followedUser.profile_picture_url
           );
         }
         return followedUser;

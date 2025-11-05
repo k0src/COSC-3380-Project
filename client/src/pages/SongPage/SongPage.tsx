@@ -80,6 +80,11 @@ const SongPage: React.FC = () => {
 
       {loading ? (
         <PageLoader />
+      ) : !song ? (
+        <ErrorPage
+          title="Song Not Found"
+          message="The requested song does not exist."
+        />
       ) : (
         <div className={styles.songLayout}>
           <div className={styles.songLayoutTop}>

@@ -427,4 +427,38 @@ export default class PlaylistRepository {
       throw error;
     }
   }
+
+  /**
+   * Fetches song image URLs from a playlist for cover generation.
+   * @param playlistId - The ID of the playlist.
+   * @param limit - Maximum number of song images to fetch (default: 4).
+   * @returns An array of song image URLs with SAS tokens.
+   * @throws Error if the operation fails.
+   */
+  static async getCoverImageUrls(
+    playlistId: UUID,
+    limit: number = 4
+  ): Promise<string[]> {
+    try {
+      const songs = await query(
+        `SELECT s.image_url
+         FROM playlist_songs ps
+         JOIN songs s ON ps.song_id = s.id
+         WHERE ps.playlist_id = $1
+         AND s.image_url IS NOT NULL
+         ORDER BY ps.added_at
+         LIMIT $2`,
+        [playlistId, limit]
+      );
+
+      if (!songs || songs.length === 0) {
+        return [];
+      }
+
+      return songs.map((song: any) => getBlobUrl(song.image_url));
+    } catch (error) {
+      console.error("Error fetching playlist cover image URLs:", error);
+      throw error;
+    }
+  }
 }

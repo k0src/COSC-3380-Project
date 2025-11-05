@@ -236,12 +236,16 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
+      const { limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "Artist ID is required" });
         return;
       }
 
-      const followers = await FollowService.getFollowers(id);
+      const followers = await FollowService.getFollowers(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
       res.status(200).json(followers);
     } catch (error) {
       console.error("Error in GET /artists/:id/followers:", error);
@@ -256,15 +260,59 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
+      const { limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "Artist ID is required" });
         return;
       }
 
-      const following = await FollowService.getFollowing(id);
+      const following = await FollowService.getFollowing(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
       res.status(200).json(following);
     } catch (error) {
       console.error("Error in GET /artists/:id/following:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/artists/:id/follower-count
+router.get(
+  "/:id/follower-count",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const followerCount = await FollowService.getFollowerCount(id);
+      res.status(200).json({ followerCount });
+    } catch (error) {
+      console.error("Error in GET /artists/:id/follower-count:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/artists/:id/following-count
+router.get(
+  "/:id/following-count",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const followingCount = await FollowService.getFollowingCount(id);
+      res.status(200).json({ followingCount });
+    } catch (error) {
+      console.error("Error in GET /artists/:id/following-count:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
