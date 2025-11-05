@@ -208,6 +208,46 @@ router.get(
   }
 );
 
+// GET /api/artists/:id/number-albums
+router.get(
+  "/:id/number-albums",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const numberOfAlbums = await ArtistRepository.getNumberOfAlbums(id);
+      res.status(200).json({ numberOfAlbums });
+    } catch (error) {
+      console.error("Error in GET /artists/:id/number-albums:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/artists/:id/number-singles
+router.get(
+  "/:id/number-singles",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const numberOfSingles = await ArtistRepository.getNumberOfSingles(id);
+      res.status(200).json({ numberOfSingles });
+    } catch (error) {
+      console.error("Error in GET /artists/:id/number-singles:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
 // GET /api/artists/:id/streams
 router.get(
   "/:id/streams",

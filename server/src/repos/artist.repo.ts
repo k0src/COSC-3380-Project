@@ -601,6 +601,50 @@ export default class ArtistRepository {
   }
 
   /**
+   * Counts the number of albums for a given artist.
+   * @param artistId The ID of the artist.
+   * @return The number of albums for the artist.
+   * @throws Error if the operation fails.
+   */
+  static async getNumberOfAlbums(artistId: UUID): Promise<number> {
+    try {
+      const res = await query(
+        `SELECT COUNT(DISTINCT als.album_id) FROM album_songs als
+         JOIN song_artists sa ON als.song_id = sa.song_id
+         WHERE sa.artist_id = $1`,
+        [artistId]
+      );
+      return parseInt(res[0]?.count ?? "0", 10);
+    } catch (error) {
+      console.error("Error counting albums for artist:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Counts the number of singles for a given artist.
+   * @param artistId The ID of the artist.
+   * @return The number of singles for the artist.
+   * @throws Error if the operation fails.
+   */
+  static async getNumberOfSingles(artistId: UUID): Promise<number> {
+    try {
+      const res = await query(
+        `SELECT COUNT(*) FROM song_artists sa
+         WHERE sa.artist_id = $1
+         AND NOT EXISTS (
+          SELECT 1 FROM album_songs als WHERE als.song_id = sa.song_id
+         )`,
+        [artistId]
+      );
+      return parseInt(res[0]?.count ?? "0", 10);
+    } catch (error) {
+      console.error("Error counting singles for artist:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Calculates the total number of streams for all songs by a given artist.
    * @param artistId The ID of the artist.
    * @return The total number of streams for the artist's songs.

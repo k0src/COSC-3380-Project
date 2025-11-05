@@ -12,7 +12,7 @@
 
 .artistLayoutBottomTop {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 2fr 0.75fr;
   column-gap: var(--layout-gap-hor);
 }
 

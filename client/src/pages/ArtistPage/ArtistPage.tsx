@@ -112,6 +112,7 @@ const ArtistPage: React.FC = () => {
                   fetchData={fetchPopularSongs}
                   cacheKey={`popular_songs_${id}`}
                   dependencies={[id]}
+                  viewMoreLink={`/artists/${id}/discography`}
                 />
                 <SlidingCardList
                   title="Albums"
@@ -140,16 +141,17 @@ const ArtistPage: React.FC = () => {
                       artistName={artist.display_name}
                       shareLink={window.location.href}
                     />
-
                     <FollowProfiles
                       title="Followers"
                       userId={artist.user.id}
                       profileLimit={8}
+                      profileMin={4}
                       following={false}
                     />
                     <FollowProfiles
                       title="Following"
                       userId={artist.user.id}
+                      profileMin={4}
                       profileLimit={8}
                     />
                   </>

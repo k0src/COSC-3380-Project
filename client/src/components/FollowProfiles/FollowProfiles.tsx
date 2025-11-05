@@ -13,6 +13,7 @@ export interface FollowProfilesProps {
   userId: UUID;
   following?: boolean;
   profileLimit: number;
+  profileMin?: number;
 }
 
 const FollowProfiles: React.FC<FollowProfilesProps> = ({
@@ -20,6 +21,7 @@ const FollowProfiles: React.FC<FollowProfilesProps> = ({
   userId,
   following = true,
   profileLimit,
+  profileMin = 0,
 }) => {
   const { data, loading, error } = useAsyncData(
     {
@@ -61,6 +63,10 @@ const FollowProfiles: React.FC<FollowProfilesProps> = ({
   }
 
   if (!profiles || profiles.length === 0) {
+    return null;
+  }
+
+  if (profiles.length < profileMin) {
     return null;
   }
 

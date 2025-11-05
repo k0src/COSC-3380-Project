@@ -5,12 +5,14 @@ import { useAsyncData } from "@hooks";
 import { EntityItem } from "@components";
 import { getMainArtist } from "@util";
 import styles from "./SongsList.module.css";
+import { Link } from "react-router-dom";
 
 export interface SongsListProps {
   title: string;
   fetchData: () => Promise<Song[]>;
   cacheKey: string;
   dependencies?: any[];
+  viewMoreLink?: string;
 }
 
 const SongsList: React.FC<SongsListProps> = ({
@@ -18,6 +20,7 @@ const SongsList: React.FC<SongsListProps> = ({
   fetchData,
   cacheKey,
   dependencies = [],
+  viewMoreLink,
 }) => {
   const asyncConfig = useMemo(
     () => ({
@@ -53,7 +56,17 @@ const SongsList: React.FC<SongsListProps> = ({
 
   return (
     <div className={styles.songsContainer}>
-      <h2 className={styles.sectionTitle}>{title}</h2>
+      {viewMoreLink ? (
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>{title}</h2>
+          <Link to={viewMoreLink} className={styles.viewMoreLink}>
+            View More
+          </Link>
+        </div>
+      ) : (
+        <h2 className={styles.sectionTitle}>{title}</h2>
+      )}
+
       <div className={styles.songsList}>
         {songs.map((song, i) => (
           <EntityItem

@@ -20,6 +20,22 @@
   width: 100%;
 }
 
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.viewMoreLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray) !important;
+  text-decoration: none;
+}
+
+.viewMoreLink:hover {
+  color: var(--color-white) !important;
+}
+
 .sectionTitle {
   font-size: var(--font-size-lg);
   color: var(--color-white);

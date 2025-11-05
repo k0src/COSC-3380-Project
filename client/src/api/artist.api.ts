@@ -86,6 +86,20 @@ export const artistApi = {
     return response.data.numberOfSongs;
   },
 
+  async getNumberOfAlbums(id: UUID) {
+    const response = await api.get<{ numberOfAlbums: number }>(
+      `/artists/${id}/number-albums`
+    );
+    return response.data.numberOfAlbums;
+  },
+
+  async getNumberOfSingles(id: UUID) {
+    const response = await api.get<{ numberOfSingles: number }>(
+      `/artists/${id}/number-singles`
+    );
+    return response.data.numberOfSingles;
+  },
+
   async getTotalStreams(id: UUID) {
     const response = await api.get<{ streams: number }>(
       `/artists/${id}/streams`
