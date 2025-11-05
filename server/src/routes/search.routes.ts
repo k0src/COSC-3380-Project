@@ -38,7 +38,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
         image_url AS image,
         genre
       FROM songs
-      WHERE title ILIKE $1
+      WHERE title ILIKE $1 OR genre ILIKE $1
       ORDER BY title ASC
       LIMIT $2 OFFSET $3
     `;
@@ -49,12 +49,12 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     }));
   }
 
-  // Artists (display_name only)
+  // Artists (display_name and bio)
   if (type === "all" || type === "artists") {
     const artistsQuery = `
-      SELECT user_id as id, display_name as name, bio
+      SELECT user_id as id, display_name as name, bio, image_url AS image
       FROM artists
-      WHERE display_name ILIKE $1
+      WHERE display_name ILIKE $1 OR bio ILIKE $1
       LIMIT $2 OFFSET $3
     `;
     const rows = await safeQuery(artistsQuery, [searchTerm, limitNum, offsetNum]);
@@ -66,7 +66,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     }));
   }
 
-  // Albums (title, image_url, created_by)
+  // Albums (title only)
   if (type === "all" || type === "albums") {
     const albumsQuery = `
       SELECT
@@ -74,7 +74,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
         image_url AS image,
         created_by AS artist
       FROM albums
-      WHERE title ILIKE $1 OR created_by ILIKE $1
+      WHERE title ILIKE $1
       ORDER BY title ASC
       LIMIT $2 OFFSET $3
     `;
@@ -88,15 +88,16 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     }));
   }
 
-  // Playlists (title, description, created_by)
+  // Playlists (title and description only)
   if (type === "all" || type === "playlists") {
     const playlistsQuery = `
       SELECT
         title,
         description,
-        created_by AS artist
+        created_by AS artist,
+        image_url AS image
       FROM playlists
-      WHERE title ILIKE $1 OR description ILIKE $1 OR created_by ILIKE $1
+      WHERE title ILIKE $1 OR description ILIKE $1
       ORDER BY title ASC
       LIMIT $2 OFFSET $3
     `;
