@@ -1,49 +1,59 @@
 import { Routes, Route } from "react-router-dom";
 import * as Pages from "./pages";
-import { AppLayout, MainLayout } from "@components";
+import { AppLayout, MainLayout, PageLoader } from "@components";
+import { useAuth } from "@contexts";
 
 export default function AppRoutes() {
+  const { isAuthenticated, isLoading } = useAuth();
   return (
-    <Routes>
-      <Route path="/login" element={<Pages.LoginPage />} />
-      <Route path="/signup" element={<Pages.SignupPage />} />
+    <>
+      {isLoading ? (
+        <PageLoader />
+      ) : (
+        <Routes>
+          <Route path="/login" element={<Pages.LoginPage />} />
+          <Route path="/signup" element={<Pages.SignupPage />} />
 
-      <Route element={<AppLayout />}>
-        <Route
-          path="/"
-          element={
-            <MainLayout>
-              <Pages.HomePage />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/songs/:id"
-          element={
-            <MainLayout>
-              <Pages.SongPage />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/artists/:id"
-          element={
-            <MainLayout>
-              <Pages.ArtistPage />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/artists/:id/discography"
-          element={
-            <MainLayout>
-              <Pages.ArtistDiscography />
-            </MainLayout>
-          }
-        />
-      </Route>
+          <Route element={<AppLayout />}>
+            {!isAuthenticated ? (
+              <Route path="/" element={<Pages.LandingPage />} />
+            ) : (
+              <Route
+                path="/"
+                element={
+                  <MainLayout>
+                    <Pages.HomePage />
+                  </MainLayout>
+                }
+              />
+            )}
+            <Route
+              path="/songs/:id"
+              element={
+                <MainLayout>
+                  <Pages.SongPage />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="/artists/:id"
+              element={
+                <MainLayout>
+                  <Pages.ArtistPage />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="/artists/:id/discography"
+              element={
+                <MainLayout>
+                  <Pages.ArtistDiscography />
+                </MainLayout>
+              }
+            />
+          </Route>
 
-      {/* <Route 
+          {/* <Route 
         path="/library" 
         element={
           <MainLayout>
@@ -53,7 +63,7 @@ export default function AppRoutes() {
           </MainLayout>
         } 
       /> */}
-      {/* <Route 
+          {/* <Route 
         path="/library/playlists" 
         element={
           <MainLayout>
@@ -63,7 +73,7 @@ export default function AppRoutes() {
           </MainLayout>
         } 
       /> */}
-      {/* <Route 
+          {/* <Route 
         path="/library/songs" 
         element={
           <MainLayout>
@@ -73,7 +83,7 @@ export default function AppRoutes() {
           </MainLayout>
         } 
       /> */}
-      {/* <Route 
+          {/* <Route 
         path="/library/history" 
         element={
           <MainLayout>
@@ -83,7 +93,7 @@ export default function AppRoutes() {
           </MainLayout>
         } 
       /> */}
-      {/* <Route 
+          {/* <Route 
         path="/artist-dashboard" 
         element={
           <MainLayout>
@@ -93,7 +103,7 @@ export default function AppRoutes() {
           </MainLayout>
         } 
       /> */}
-      {/* <Route 
+          {/* <Route 
         path="/me" 
         element={
           <MainLayout>
@@ -103,7 +113,7 @@ export default function AppRoutes() {
           </MainLayout>
         } 
       /> */}
-      {/* <Route 
+          {/* <Route 
         path="/settings" 
         element={
           <MainLayout>
@@ -113,6 +123,8 @@ export default function AppRoutes() {
           </MainLayout>
         } 
       /> */}
-    </Routes>
+        </Routes>
+      )}
+    </>
   );
 }
