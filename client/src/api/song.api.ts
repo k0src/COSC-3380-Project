@@ -23,6 +23,20 @@ export const songApi = {
     return response.data;
   },
 
+  async getMany(options?: {
+    includeAlbums?: boolean;
+    includeArtists?: boolean;
+    includeLikes?: boolean;
+    includeComments?: boolean;
+    limit?: number;
+    offset?: number;
+  }) {
+    const response = await api.get<Song[]>(`/songs`, {
+      params: options,
+    });
+    return response.data;
+  },
+
   async getSuggestedSongs(
     id: UUID,
     options?: {
