@@ -1,6 +1,11 @@
 import { Playlist, PlaylistSong, UUID } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const API_URL = process.env.API_URL;
 
 export default class PlaylistRepository {
   /**
@@ -114,6 +119,8 @@ export default class PlaylistRepository {
     }
   }
 
+  //! get playlist cover image here
+  //! make cover image optional
   /**
    * Gets a single playlist by ID.
    * @param id - The ID of the playlist to get.
@@ -168,6 +175,7 @@ export default class PlaylistRepository {
         );
       }
 
+      playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
       playlist.type = "playlist";
       return playlist;
     } catch (error) {
@@ -176,6 +184,7 @@ export default class PlaylistRepository {
     }
   }
 
+  //! cover images
   /**
    * Gets multiple playlists.
    * @param options - Options for pagination and including related data.

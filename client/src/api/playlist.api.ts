@@ -1,7 +1,21 @@
 import api from "./api";
-import type { PlaylistSong, UUID } from "@types";
+import type { PlaylistSong, Playlist, UUID } from "@types";
 
 export const playlistApi = {
+  async getPlaylistById(
+    id: UUID,
+    options?: {
+      includeUser?: boolean;
+      includeLikes?: boolean;
+      includeSongCount?: boolean;
+    }
+  ) {
+    const response = await api.get<Playlist>(`/playlists/${id}`, {
+      params: options,
+    });
+    return response.data;
+  },
+
   async getSongs(
     id: UUID,
     options?: {

@@ -1,6 +1,11 @@
 import { Album, Artist, ArtistSong, Song, UUID } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const API_URL = process.env.API_URL;
 
 export default class ArtistRepository {
   /**
@@ -666,6 +671,7 @@ export default class ArtistRepository {
     }
   }
 
+  //! include cover image - expensive so make it optional
   /**
    * Fetches playlists that feature songs by the given artist.
    * @param artistId The ID of the artist.
@@ -688,19 +694,7 @@ export default class ArtistRepository {
       const playlists = await query(
         `SELECT DISTINCT ON (p.id) p.*,
          CASE WHEN $1 THEN row_to_json(u.*) 
-         ELSE NULL END as user,
-         (
-           SELECT json_agg(image_url)
-           FROM (
-             SELECT s.image_url
-             FROM playlist_songs ps
-             JOIN songs s ON ps.song_id = s.id
-             WHERE ps.playlist_id = p.id
-             AND s.image_url IS NOT NULL
-             ORDER BY ps.added_at
-             LIMIT 4
-           ) AS limited_images
-         ) as song_images
+         ELSE NULL END as user
          FROM playlists p
          JOIN playlist_songs ps ON p.id = ps.playlist_id
          JOIN songs s ON ps.song_id = s.id
@@ -716,12 +710,13 @@ export default class ArtistRepository {
 
       const processedPlaylists = await Promise.all(
         playlists.map(async (playlist) => {
-          if (playlist.song_images && playlist.song_images.length > 0) {
-            playlist.image_url = `/api/playlists/${playlist.id}/cover-image`;
+          if (playlist.user && playlist.user.profile_picture_url) {
+            playlist.user.profile_picture_url = getBlobUrl(
+              playlist.user.profile_picture_url
+            );
           }
 
-          delete playlist.song_images;
-
+          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
           playlist.type = "playlist";
           return playlist;
         })

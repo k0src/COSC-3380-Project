@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { PlaylistRepository } from "@repositories";
-import { generatePlaylistImage } from "../util/playlistImage.util.js";
+import { generatePlaylistImage } from "@util/playlistImage.util";
 
 const router = express.Router();
 
@@ -100,11 +100,8 @@ router.get(
       }
 
       const songImageUrls = await PlaylistRepository.getCoverImageUrls(id, 4);
-
       if (songImageUrls.length === 0) {
-        res
-          .status(404)
-          .json({ error: "No songs with images found in playlist" });
+        res.status(204).send();
         return;
       }
 
@@ -118,14 +115,16 @@ router.get(
         "Content-Type": "image/jpeg",
         "Cache-Control": "public, max-age=3600",
         ETag: `"${id}-${songImageUrls.length}"`,
+        "Cross-Origin-Resource-Policy": "cross-origin",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
       });
 
       res.send(imageBuffer);
     } catch (error) {
       console.error("Error in GET /playlists/:id/cover-image:", error);
-      res
-        .status(500)
-        .json({ error: "Failed to generate playlist cover image" });
+      res.status(204).send();
     }
   }
 );
