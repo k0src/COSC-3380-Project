@@ -75,6 +75,38 @@ const NowPlayingBar: React.FC = () => {
     }
   }, [user?.id, currentSong?.id]);
 
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (
+        e.code === "Space" &&
+        e.target instanceof HTMLElement &&
+        !["INPUT", "TEXTAREA"].includes(e.target.tagName)
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (currentSong) {
+          if (isPlaying) {
+            actions.pause();
+          } else {
+            actions.resume();
+          }
+        }
+      }
+    },
+    [currentSong, isPlaying, actions]
+  );
+
+  useEffect(() => {
+    if (!currentSong) return;
+
+    window.addEventListener("keydown", handleKeyPress, { capture: true });
+    return () =>
+      window.removeEventListener("keydown", handleKeyPress, {
+        capture: true,
+      });
+  }, [handleKeyPress, currentSong]);
+
   const handleToggleLike = useCallback(async () => {
     try {
       if (!isAuthenticated) return navigate("/login");
