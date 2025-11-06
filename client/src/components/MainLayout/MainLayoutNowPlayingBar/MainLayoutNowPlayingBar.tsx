@@ -7,7 +7,7 @@ import React, {
   useRef,
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useLikeStatus } from "@hooks";
+import { useLikeStatus, useStreamTracking } from "@hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, useAudioQueue } from "@contexts";
 import { formatPlaybackTime, getMainArtist } from "@util";
@@ -40,6 +40,8 @@ const NowPlayingBar: React.FC = () => {
   const { state, actions } = useAudioQueue();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  useStreamTracking();
 
   const {
     isPlaying,

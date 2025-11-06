@@ -1,5 +1,4 @@
 import { useMemo, useCallback, memo, useState } from "react";
-import { useStreamTracking } from "@hooks";
 import { WaveformPlayer, CoverLightbox } from "@components";
 import type { Song, CoverGradient, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
@@ -23,7 +22,6 @@ const SongContainer: React.FC<SongContainerProps> = ({
 }) => {
   const { actions } = useAudioQueue();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  useStreamTracking();
 
   const gradientStyle = useMemo(
     () =>
