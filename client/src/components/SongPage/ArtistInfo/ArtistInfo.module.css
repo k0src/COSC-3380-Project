@@ -53,12 +53,12 @@
 }
 
 .artistFollowButton:hover {
-  background-color: var(--color-red-700);
+  background-color: var(--color-red-800);
   color: var(--color-red-300);
 }
 
 .artistFollowButtonActive {
-  background-color: var(--color-red-700);
+  background-color: var(--color-red-800);
   color: var(--color-red-300);
 }
 

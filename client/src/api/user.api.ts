@@ -19,7 +19,7 @@ export const userApi = {
 
   async checkLikeStatus(id: UUID, entityId: UUID, entityType: EntityType) {
     const response = await api.get(
-      `/users/${id}/likes?entityType=${entityType}&entityId=${entityId}`
+      `/users/${id}/likes/check?entityType=${entityType}&entityId=${entityId}`
     );
     return response.data;
   },
@@ -28,6 +28,13 @@ export const userApi = {
     const response = await api.post(`/users/${followerId}/following`, {
       followingId,
     });
+    return response.data;
+  },
+
+  async checkFollowStatus(followerId: UUID, followingId: UUID) {
+    const response = await api.get(
+      `/users/${followerId}/following/check?followingId=${followingId}`
+    );
     return response.data;
   },
 };

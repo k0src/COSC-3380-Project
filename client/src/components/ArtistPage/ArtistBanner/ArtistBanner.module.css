@@ -132,7 +132,7 @@
 }
 
 .artistLocation {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   color: var(--dynamic-text-color, var(--color-white));
   font-weight: 500;
 }

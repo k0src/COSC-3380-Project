@@ -99,28 +99,31 @@ router.post(
   }
 );
 
-// GET /api/users/:id/likes?entityType=song&entityId=123
-router.get("/:id/likes", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const { entityType, entityId } = req.query;
+// GET /api/users/:id/likes/check
+router.get(
+  "/:id/likes/check",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { entityType, entityId } = req.query;
 
-  if (!id || !entityType || !entityId) {
-    res.status(400).json({ error: "Missing required parameters" });
-    return;
-  }
+    if (!id || !entityType || !entityId) {
+      res.status(400).json({ error: "Missing required parameters" });
+      return;
+    }
 
-  try {
-    const isLiked = await LikeService.hasUserLiked(
-      id,
-      entityId as string,
-      entityType as any
-    );
-    res.status(200).json({ isLiked });
-  } catch (error) {
-    console.error("Error in GET /users/:id/likes:", error);
-    res.status(500).json({ error: "Internal server error" });
+    try {
+      const isLiked = await LikeService.hasUserLiked(
+        id,
+        entityId as string,
+        entityType as any
+      );
+      res.status(200).json({ isLiked });
+    } catch (error) {
+      console.error("Error in GET /users/:id/likes:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
   }
-});
+);
 
 // POST /api/users/:id/following
 router.post(
@@ -139,6 +142,30 @@ router.post(
       res.status(200).json({ message: `User ${result} sucessfully` });
     } catch (error) {
       console.error("Error in POST /users/:id/following:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/following/check
+router.get(
+  "/:id/following/check",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { followingId } = req.query;
+    if (!id || !followingId) {
+      res.status(400).json({ error: "Missing required parameters" });
+      return;
+    }
+
+    try {
+      const isFollowing = await FollowService.isFollowing(
+        id,
+        followingId as string
+      );
+      res.status(200).json({ isFollowing });
+    } catch (error) {
+      console.error("Error in GET /users/:id/following/check:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   }

@@ -2,7 +2,7 @@ import { useState, memo, useMemo, useCallback } from "react";
 import { PuffLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
-import { useAsyncData } from "@hooks";
+import { useAsyncData, useFollowStatus } from "@hooks";
 import { formatNumber } from "@util";
 import { artistApi, userApi } from "@api";
 import { ShareModal } from "@components";
@@ -53,8 +53,17 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
 }) => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const [isFollowed, setIsFollowed] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const {
+    isFollowed,
+    toggleFollow,
+    isLoading: isFollowLoading,
+  } = useFollowStatus({
+    userId: user?.id || "",
+    followingUserId: userId,
+    isAuthenticated,
+  });
 
   const asyncConfig = useMemo(
     () => ({
@@ -83,16 +92,15 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
 
   const handleFollowArtist = useCallback(async () => {
     try {
-      if (isAuthenticated && user && user.id) {
-        userApi.toggleFollowUser(user?.id, userId);
-        setIsFollowed((prev) => !prev);
-      } else {
+      if (!isAuthenticated) {
         navigate("/login");
+        return;
       }
+      await toggleFollow();
     } catch (error) {
       console.error("Toggling follow artist failed:", error);
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, toggleFollow]);
 
   const handleShare = useCallback(() => {
     setIsShareModalOpen(true);
@@ -125,6 +133,7 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
             className={classNames(styles.actionButton, {
               [styles.followed]: isFollowed,
             })}
+            disabled={isFollowLoading}
             onClick={handleFollowArtist}
           >
             {isFollowed ? (
