@@ -67,10 +67,11 @@
 }
 
 .songTitle {
-  font-weight: 600;
+  font-weight: 600; /* semi-bold */
   color: #ffffff;
   margin-bottom: 4px;
   font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
 }
 
 .songArtist {

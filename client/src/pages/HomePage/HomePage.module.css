@@ -48,7 +48,8 @@
 
 .sectionTitle {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 600; /* semi-bold */
+  font-family: 'Inter', sans-serif;
   margin: 0;
 }
 
@@ -57,10 +58,8 @@
   text-decoration: none;
   font-size: 14px;
   transition: color 0.2s ease;
-}
-
-.viewMore:hover {
-  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-weight: 600; /* semi-bold */
 }
 
 /* Horizontal scrollable container */
@@ -149,6 +148,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: 'Inter', sans-serif; /* ensure Inter font */
 }
 
 .compactCard .artistName {

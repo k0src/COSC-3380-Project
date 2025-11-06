@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import homeStyles from "../HomePage/HomePage.module.css";
+import styles from "./SearchResultsPage.module.css";
 import Sidebar from "../../components/SideBar/sidebar";
 import Topbar from "../../components/TopBar/topBar";
 import PlayerBar from "../../components/PlayerBar/playerBar";
@@ -48,7 +49,7 @@ export default function SearchResultsPage() {
 
       <main className={homeStyles.contentArea}>
         <div className={homeStyles.contentWrapper}>
-          {loading && <p>Loading...</p>}
+          {loading && <p className={styles.loading}>Loading...</p>}
           {error && <p style={{ color: "red" }}>{error}</p>}
 
           {!loading && !error && (
@@ -56,7 +57,6 @@ export default function SearchResultsPage() {
               <section className={homeStyles.recentlyPlayedColumn}>
                 <div className={homeStyles.sectionHeader}>
                   <h2 className={homeStyles.sectionTitle}>Songs</h2>
-                  <a href="#" className={homeStyles.viewMore}>View More</a>
                 </div>
                 <div className={homeStyles.verticalCardsList}>
                   {songs.map((song, index) => (
@@ -75,7 +75,6 @@ export default function SearchResultsPage() {
               <section className={homeStyles.section}>
                 <div className={homeStyles.sectionHeader}>
                   <h2 className={homeStyles.sectionTitle}>Artists</h2>
-                  <a href="#" className={homeStyles.viewMore}>View More</a>
                 </div>
                 <div className={homeStyles.cardsContainer}>
                   {artists.map((artist, index) => (
@@ -97,7 +96,6 @@ export default function SearchResultsPage() {
               <section className={homeStyles.section}>
                 <div className={homeStyles.sectionHeader}>
                   <h2 className={homeStyles.sectionTitle}>Albums</h2>
-                  <a href="#" className={homeStyles.viewMore}>View More</a>
                 </div>
                 <div className={homeStyles.cardsContainer}>
                   {albums.map((album, index) => (
@@ -119,7 +117,6 @@ export default function SearchResultsPage() {
               <section className={homeStyles.section}>
                 <div className={homeStyles.sectionHeader}>
                   <h2 className={homeStyles.sectionTitle}>Playlists</h2>
-                  <a href="#" className={homeStyles.viewMore}>View More</a>
                 </div>
                 <div className={homeStyles.cardsContainer}>
                   {playlists.map((pl, index) => (
