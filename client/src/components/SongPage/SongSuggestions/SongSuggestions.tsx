@@ -3,7 +3,7 @@ import { useAsyncData } from "@hooks";
 import { PuffLoader } from "react-spinners";
 import { useAuth } from "@contexts";
 import { songApi, artistApi } from "@api";
-import { formatDateString } from "@util";
+import { formatDateString, getMainArtist } from "@util";
 import { EntityItem } from "@components";
 import type { Song, Album, Artist, ArtistSong, SuggestedSong } from "@types";
 import styles from "./SongSuggestions.module.css";
@@ -95,7 +95,10 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
               <EntityItem
                 key={songItem.id}
                 imageUrl={songItem.image_url}
-                author={mainArtist?.display_name || "Unknown Artist"}
+                author={
+                  getMainArtist(songItem.artists ?? [])?.display_name ||
+                  "Unknown Artist"
+                }
                 title={songItem.title}
                 linkTo={`/songs/${songItem.id}`}
                 subtitle={formatDateString(songItem.release_date)}
@@ -115,7 +118,10 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
               <EntityItem
                 key={songItem.id}
                 imageUrl={songItem.image_url}
-                author={songItem.main_artist?.display_name || "Unknown Artist"}
+                author={
+                  getMainArtist(songItem.artists ?? [])?.display_name ||
+                  "Unknown Artist"
+                }
                 title={songItem.title}
                 linkTo={`/songs/${songItem.id}`}
                 subtitle={formatDateString(songItem.release_date)}

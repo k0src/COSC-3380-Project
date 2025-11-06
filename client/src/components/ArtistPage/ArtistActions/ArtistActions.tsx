@@ -1,11 +1,12 @@
-import { useState, memo, useMemo, useCallback } from "react";
+import { useState, memo, useMemo, useCallback, useEffect } from "react";
 import { PuffLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
 import { useAsyncData, useFollowStatus } from "@hooks";
 import { formatNumber } from "@util";
-import { artistApi, userApi } from "@api";
+import { artistApi } from "@api";
 import { ShareModal } from "@components";
+import { useQueryClient } from "@tanstack/react-query";
 import styles from "./ArtistActions.module.css";
 import classNames from "classnames";
 import {
@@ -53,6 +54,7 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
 }) => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  const queryClient = useQueryClient();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const {
@@ -64,6 +66,14 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
     followingUserId: userId,
     isAuthenticated,
   });
+
+  useEffect(() => {
+    if (user?.id && userId) {
+      queryClient.invalidateQueries({
+        queryKey: ["followStatus", user.id, userId],
+      });
+    }
+  }, [user?.id, userId, queryClient]);
 
   const asyncConfig = useMemo(
     () => ({

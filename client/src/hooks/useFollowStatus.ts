@@ -18,7 +18,7 @@ export function useFollowStatus({
     queryKey: ["followStatus", userId, followingUserId],
     queryFn: async () => {
       const response = await userApi.checkFollowStatus(userId, followingUserId);
-      return response.isFollowed;
+      return response.isFollowing;
     },
     enabled: !!userId && !!followingUserId && isAuthenticated,
     refetchOnMount: true,
