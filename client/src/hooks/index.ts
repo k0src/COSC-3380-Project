@@ -9,4 +9,8 @@ export type {
 } from "./useAudioManager.js";
 export { useLikeStatus } from "./useLikeStatus.js";
 export { useFollowStatus } from "./useFollowStatus.js";
+export {
+  useKeyboardShortcuts,
+  keyboardShortcuts,
+} from "./useKeyboardShortcuts.js";
 export { useTextContrast } from "./useTextContrast.js";

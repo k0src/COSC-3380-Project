@@ -1,4 +1,4 @@
-import { useState, memo } from "react";
+import { useState, memo, useEffect } from "react";
 import { FaXTwitter, FaFacebook, FaReddit, FaEnvelope } from "react-icons/fa6";
 import { LuCopy, LuX } from "react-icons/lu";
 import styles from "./ShareModal.module.css";
@@ -17,6 +17,19 @@ const ShareModal: React.FC<ShareModalProps> = ({
   pageTitle = document.title,
 }) => {
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

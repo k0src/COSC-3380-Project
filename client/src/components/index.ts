@@ -47,6 +47,7 @@ export { default as SlidingCardList } from "./SlidingCardList/SlidingCardList.js
 
 /* ================================= Modals ================================= */
 export { default as ShareModal } from "./ShareModal/ShareModal.js";
+export { default as KeyboardShortcutsModal } from "./KeyboardShortcutsModal/KeyboardShortcutsModal.js";
 export { default as QueueMenu } from "./QueueMenu/QueueMenu.js";
 export { default as CoverLightbox } from "./CoverLightbox/CoverLightbox.js";
 export { default as QueueManager } from "./MainLayout/QueueManager/QueueManager.js";

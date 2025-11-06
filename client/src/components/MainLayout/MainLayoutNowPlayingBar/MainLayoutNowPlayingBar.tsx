@@ -7,11 +7,11 @@ import React, {
   useRef,
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useLikeStatus, useStreamTracking } from "@hooks";
+import { useLikeStatus, useStreamTracking, useKeyboardShortcuts } from "@hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, useAudioQueue } from "@contexts";
 import { formatPlaybackTime, getMainArtist } from "@util";
-import { ShareModal, CoverLightbox } from "@components";
+import { ShareModal, CoverLightbox, KeyboardShortcutsModal } from "@components";
 import { QueueManager } from "@components";
 import classNames from "classnames";
 import styles from "./MainLayoutNowPlayingBar.module.css";
@@ -34,6 +34,7 @@ const NowPlayingBar: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isQueueManagerOpen, setIsQueueManagerOpen] = useState(false);
+  const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const queueButtonRef = useRef<HTMLButtonElement>(null);
 
   const { user, isAuthenticated } = useAuth();
@@ -74,38 +75,6 @@ const NowPlayingBar: React.FC = () => {
       });
     }
   }, [user?.id, currentSong?.id]);
-
-  const handleKeyPress = useCallback(
-    (e: KeyboardEvent) => {
-      if (
-        e.code === "Space" &&
-        e.target instanceof HTMLElement &&
-        !["INPUT", "TEXTAREA"].includes(e.target.tagName)
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (currentSong) {
-          if (isPlaying) {
-            actions.pause();
-          } else {
-            actions.resume();
-          }
-        }
-      }
-    },
-    [currentSong, isPlaying, actions]
-  );
-
-  useEffect(() => {
-    if (!currentSong) return;
-
-    window.addEventListener("keydown", handleKeyPress, { capture: true });
-    return () =>
-      window.removeEventListener("keydown", handleKeyPress, {
-        capture: true,
-      });
-  }, [handleKeyPress, currentSong]);
 
   const handleToggleLike = useCallback(async () => {
     try {
@@ -198,6 +167,13 @@ const NowPlayingBar: React.FC = () => {
       }
     );
   }, [currentSong]);
+
+  useKeyboardShortcuts({
+    onToggleLike: handleToggleLike,
+    onToggleQueue: handleManageQueue,
+    onShowShortcuts: () => setIsShortcutsModalOpen(true),
+    isAuthenticated,
+  });
 
   return (
     <>
@@ -390,6 +366,11 @@ const NowPlayingBar: React.FC = () => {
         onClose={() => setIsShareModalOpen(false)}
         pageUrl={`${window.location.origin}/songs/${currentSong?.id}`}
         pageTitle={currentSong?.title}
+      />
+
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsModalOpen}
+        onClose={() => setIsShortcutsModalOpen(false)}
       />
 
       {currentSong && currentSong.image_url && (
