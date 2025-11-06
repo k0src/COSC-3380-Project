@@ -32,7 +32,7 @@ import {
   createDebouncedSave,
   isLocalStorageAvailable,
 } from "@util";
-import { songApi, playlistApi, albumApi } from "@api";
+import { songApi, playlistApi, albumApi, artistApi } from "@api";
 import { AUDIO_QUEUE_STORAGE_KEYS, AUDIO_CONSTANTS } from "@constants";
 
 const isSong = (entity: PlayableEntity): entity is Song => {
@@ -706,6 +706,33 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
         } else {
           console.warn("Invalid playable entity provided to play");
         }
+      } catch (err) {
+        console.error("Failed to play audio:", err);
+        dispatch({
+          type: "SET_ERROR",
+          error: "Failed to load audio. The file may be unavailable.",
+        });
+        dispatch({ type: "SET_PLAYING", isPlaying: false });
+      }
+    },
+
+    playArtist: async (artistId: string) => {
+      try {
+        // TODO: pagination
+        const songs = await artistApi.getSongs(artistId, {
+          includeArtists: true,
+          orderByColumn: "streams",
+          orderByDirection: "DESC",
+        });
+
+        if (songs.length === 0) {
+          console.warn("No songs found for artist");
+          return;
+        }
+
+        dispatch({ type: "PLAY_LIST", songs });
+        await audioManager.play(songs[0]);
+        dispatch({ type: "SET_PLAYING", isPlaying: true });
       } catch (err) {
         console.error("Failed to play audio:", err);
         dispatch({

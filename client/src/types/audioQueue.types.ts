@@ -44,6 +44,7 @@ export type PlayableEntity = Song | Song[] | Playlist | Album;
  */
 export interface AudioQueueActions {
   play: (songs: PlayableEntity) => Promise<void>;
+  playArtist: (artistId: string) => Promise<void>;
   pause: () => void;
   resume: () => void;
   next: () => Promise<void>;

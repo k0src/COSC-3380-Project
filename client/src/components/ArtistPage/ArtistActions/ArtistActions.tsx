@@ -2,6 +2,7 @@ import { useState, memo, useMemo, useCallback, useEffect } from "react";
 import { PuffLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
+import { useAudioQueue } from "@contexts";
 import { useAsyncData, useFollowStatus } from "@hooks";
 import { formatNumber } from "@util";
 import { artistApi } from "@api";
@@ -54,6 +55,7 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
 }) => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  const { actions } = useAudioQueue();
   const queryClient = useQueryClient();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
@@ -124,9 +126,13 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
     setIsShareModalOpen(false);
   }, []);
 
-  const handlePlayAll = useCallback(() => {
-    //todo: make new action - playArtist + make util function to get all songs by artist sorted by streams
-  }, []);
+  const handlePlayAll = useCallback(async () => {
+    try {
+      await actions.playArtist(artistId);
+    } catch (error) {
+      console.error("Failed to play artist:", error);
+    }
+  }, [actions, artistId]);
 
   return loading ? (
     <div className={styles.loaderContainer}>
