@@ -78,6 +78,7 @@ router.put(
 );
 
 // POST /api/users/:id/likes
+//! todo: no toggle method - post route for adding like, delete for removing
 router.post(
   "/:id/likes",
   async (req: Request, res: Response): Promise<void> => {
@@ -126,6 +127,7 @@ router.get(
 );
 
 // POST /api/users/:id/following
+//! post following, delete following
 router.post(
   "/:id/following",
   async (req: Request, res: Response): Promise<void> => {

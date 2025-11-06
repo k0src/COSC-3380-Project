@@ -756,4 +756,48 @@ export default class ArtistRepository {
       throw error;
     }
   }
+
+  /**
+   * Verifies an artist.
+   * @param artistId The ID of the artist to verify.
+   * @returns True if the artist was successfully verified.
+   * @throws Error if the operation fails.
+   */
+  static async verifyArtist(artistId: UUID): Promise<boolean> {
+    try {
+      const res = await query(
+        `UPDATE artists SET verified = TRUE 
+        WHERE id = $1 
+        RETURNING verified`,
+        [artistId]
+      );
+
+      return res[0]?.verified ?? false;
+    } catch (error) {
+      console.error("Error verifying artist:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Unverifies an artist.
+   * @param artistId The ID of the artist to unverify.
+   * @returns True if the artist was successfully unverified.
+   * @throws Error if the operation fails.
+   */
+  static async unverifyArtist(artistId: UUID): Promise<boolean> {
+    try {
+      const res = await query(
+        `UPDATE artists SET verified = FALSE
+        WHERE id = $1
+        RETURNING verified`,
+        [artistId]
+      );
+
+      return res[0]?.verified === false;
+    } catch (error) {
+      console.error("Error unverifying artist:", error);
+      throw error;
+    }
+  }
 }
