@@ -1,0 +1,44 @@
+body {
+  font-family: "Inter", sans-serif;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  font-size: var(--font-size-md);
+}
+
+/* Layout Container */
+.layoutContainer {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  padding: var(--spacing-sm);
+}
+
+/* Main Content */
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-left: var(--spacing-sm);
+  position: relative;
+}
+
+/* Content Area */
+.contentArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-xl) calc(var(--spacing-xl) - var(--spacing-sm))
+    calc(var(--now-playing-height) + var(--spacing-xl))
+    calc(var(--spacing-xl) - var(--spacing-sm));
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0;
+  }
+
+  .mainContent {
+    padding-left: 0;
+  }
+}

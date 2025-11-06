@@ -1,0 +1,129 @@
+.comment {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+}
+
+.commentListUserPfp {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+}
+
+.commentContentWrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-width: 0;
+  width: 100%;
+}
+
+.commentContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  width: 100%;
+  padding-right: var(--spacing-md);
+}
+
+.commentHeader {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+  gap: 0;
+}
+
+.commentSeparator {
+  margin: 0 var(--spacing-xs);
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.commentUsername {
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.commentTimestamp {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.commentText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray-light);
+  line-height: 1.2;
+}
+
+.commentTag {
+  color: var(--color-red) !important;
+  font-weight: 600;
+  text-decoration: underline transparent !important;
+  transition: text-decoration var(--transition-speed) ease-in-out;
+}
+
+.commentTag:hover {
+  text-decoration: underline var(--color-red) !important;
+}
+
+.commentLikesContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: none;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-panel-border);
+  padding: var(--spacing-sm);
+  min-width: 6.4rem;
+}
+
+.commentLikesContainerActive {
+  background-color: var(--color-panel-gray-dark);
+}
+
+.commentLikeCount {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray-light);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+.commentLikeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  color: var(--color-text-gray-light);
+  border: none;
+  font-size: var(--icon-size-sm);
+  transition: color var(--transition-speed) ease-in-out;
+  cursor: pointer;
+}
+
+.commentLikeButton:hover {
+  color: var(--color-red);
+}
+
+.commentLikeButtonActive {
+  color: var(--color-red);
+}

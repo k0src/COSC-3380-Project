@@ -1,0 +1,42 @@
+.banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--color-red);
+  color: var(--color-white);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.text {
+  flex: 1;
+  text-align: center;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-white);
+  cursor: pointer;
+  transition: color var(--transition-speed) ease-in-out;
+  font-size: var(--icon-size-xs);
+}
+
+.closeButton:hover {
+  color: var(--color-white-hover);
+}
+
+.closeButton:active {
+  color: var(--color-white-hover);
+}

@@ -1,0 +1,97 @@
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: 15vh;
+}
+
+.error {
+  text-align: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
+
+.artistActionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-md);
+  border: 2px solid var(--color-panel-border);
+  padding: var(--spacing-md);
+  min-width: 0;
+}
+
+.actionsLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  align-items: center;
+  row-gap: var(--spacing-md);
+  column-gap: var(--spacing-sm);
+}
+
+.actionButton,
+.actionButtonAlt {
+  font-family: "Inter", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: background-color var(--transition-speed) ease-in-out;
+}
+
+.actionButton {
+  background: var(--color-red);
+  border: 1px solid var(--color-red);
+  border: none;
+  color: var(--color-red-200);
+}
+
+.actionButton:hover {
+  background-color: var(--color-red-700);
+}
+
+.actionButtonAlt {
+  background: var(--color-gray-button);
+  border: 1px solid var(--color-gray-button-border);
+  color: var(--color-white);
+}
+
+.actionButtonAlt:hover {
+  background-color: var(--color-gray-button-hover);
+}
+
+.artistStat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+}
+
+.artistStatLarge {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.artistStatLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  font-weight: 500;
+}
+
+.artistStatLarge,
+.artistStatLabel {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}

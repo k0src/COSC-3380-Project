@@ -1,0 +1,222 @@
+.queueManager {
+  position: absolute;
+  bottom: calc(var(--now-playing-height) - var(--spacing-md));
+  right: 0;
+  background: var(--color-panel-gray);
+  border: 2px solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 1000;
+  animation: menuFadeIn var(--transition-speed) ease-out;
+  width: 32rem;
+  max-height: 40rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overflow-x: hidden;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-panel-border);
+}
+
+.headerButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-white);
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-speed) ease;
+}
+
+.closeButton:hover {
+  color: var(--color-white);
+  background: var(--color-panel-border);
+}
+
+.clearButton {
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs);
+  transition: all var(--transition-speed) ease;
+}
+
+.clearButton:hover {
+  color: var(--color-red);
+}
+
+.clearButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.clearButton:disabled:hover {
+  color: var(--color-text-gray);
+  background: none;
+}
+
+.queueContent {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.emptyQueue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+}
+
+.emptyText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  font-weight: 500;
+}
+
+.queueList {
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 32rem;
+}
+
+.queueItem {
+  background: var(--color-panel-gray);
+  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  cursor: grab;
+  transition: all var(--transition-speed) ease;
+  user-select: none;
+  border-bottom: 1px solid var(--color-panel-border);
+}
+
+.queueItem:hover {
+  background: var(--color-panel-border);
+}
+
+.queueItem:last-child {
+  border-bottom: none;
+}
+
+.queueItemUserQueued {
+  background: var(--color-gray-button);
+}
+
+.queueItemUserQueued:hover {
+  background: var(--color-gray-button-hover);
+}
+
+.queueItemDragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.queueItemDragOver {
+  background: var(--color-gray-button-hover);
+  border-top: 2px solid var(--color-red);
+}
+
+.dragHandle {
+  color: var(--color-text-gray);
+  font-size: var(--font-size-md);
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  transition: color var(--transition-speed) ease;
+}
+
+.queueItem:hover .dragHandle {
+  color: var(--color-white);
+}
+
+.queueItemDragging .dragHandle {
+  cursor: grabbing;
+}
+
+.songInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.artistName {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.songTitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.removeButton {
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-speed) ease;
+}
+
+.removeButton:hover {
+  color: var(--color-red);
+  background: rgba(213, 49, 49, 0.1);
+}
