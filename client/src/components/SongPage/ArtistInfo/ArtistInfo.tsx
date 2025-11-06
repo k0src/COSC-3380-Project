@@ -4,6 +4,7 @@ import type { SongArtist } from "@types";
 import { useAuth } from "@contexts";
 import styles from "./ArtistInfo.module.css";
 import { HorizontalRule } from "@components";
+import { userApi } from "@api";
 import classNames from "classnames";
 import userPlaceholder from "@assets/user-placeholder.png";
 import {
@@ -22,8 +23,7 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   mainArtist,
   otherArtists,
 }) => {
-  //! user
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   const [isFollowed, setIsFollowed] = useState(false);
@@ -31,8 +31,8 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
 
   const handleFollowArtist = useCallback(async () => {
     try {
-      if (isAuthenticated) {
-        //! send request here
+      if (isAuthenticated && user && user.id && mainArtist) {
+        userApi.toggleFollowUser(user?.id, mainArtist.user_id);
         setIsFollowed((prev) => !prev);
       } else {
         navigate("/login");

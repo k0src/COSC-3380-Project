@@ -23,4 +23,11 @@ export const userApi = {
     );
     return response.data;
   },
+
+  async toggleFollowUser(followerId: UUID, followingId: UUID) {
+    const response = await api.post(`/users/${followerId}/following`, {
+      followingId,
+    });
+    return response.data;
+  },
 };

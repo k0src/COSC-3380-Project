@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { UserRepository } from "@repositories";
-import { HistoryService, LikeService } from "@services";
+import { FollowService, HistoryService, LikeService } from "@services";
 
 const router = express.Router();
 
@@ -121,5 +121,27 @@ router.get("/:id/likes", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// POST /api/users/:id/following
+router.post(
+  "/:id/following",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { followingId } = req.body;
+
+    if (!id || !followingId) {
+      res.status(400).json({ error: "Missing required parameters" });
+      return;
+    }
+
+    try {
+      const result = await FollowService.toggleFollow(id, followingId);
+      res.status(200).json({ message: `User ${result} sucessfully` });
+    } catch (error) {
+      console.error("Error in POST /users/:id/following:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
 
 export default router;

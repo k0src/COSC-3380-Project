@@ -54,9 +54,6 @@ export default class LikeService {
         throw new Error("Invalid entity type");
       }
 
-      // Use PG RPC function to toggle like and return action
-      // action is either "liked" or "unliked"
-      // Atomic and thread safe
       const res = await query(`SELECT action FROM ${fn}($1, $2)`, [
         userId,
         entityId,

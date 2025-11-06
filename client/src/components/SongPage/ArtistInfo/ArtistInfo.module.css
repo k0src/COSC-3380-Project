@@ -49,15 +49,17 @@
   cursor: pointer;
   font-size: var(--font-size-sm);
   padding: var(--spacing-sm) var(--spacing-md);
-  transition: color var(--transition-speed) ease-in-out;
+  transition: all var(--transition-speed) ease-in-out;
 }
 
 .artistFollowButton:hover {
   background-color: var(--color-red-700);
+  color: var(--color-red-300);
 }
 
 .artistFollowButtonActive {
   background-color: var(--color-red-700);
+  color: var(--color-red-300);
 }
 
 .artistInfoRight {

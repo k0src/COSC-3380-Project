@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
 import { formatNumber } from "@util";
-import { artistApi } from "@api";
+import { artistApi, userApi } from "@api";
 import { ShareModal } from "@components";
 import styles from "./ArtistActions.module.css";
+import classNames from "classnames";
 import {
   LuCirclePlay,
   LuUserRoundPlus,
@@ -51,7 +52,7 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
   shareLink,
 }) => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [isFollowed, setIsFollowed] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
@@ -82,8 +83,8 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
 
   const handleFollowArtist = useCallback(async () => {
     try {
-      if (isAuthenticated) {
-        //! send request here
+      if (isAuthenticated && user && user.id) {
+        userApi.toggleFollowUser(user?.id, userId);
         setIsFollowed((prev) => !prev);
       } else {
         navigate("/login");
@@ -120,10 +121,15 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
           <button className={styles.actionButton} onClick={handlePlayAll}>
             Play <LuCirclePlay />
           </button>
-          <button className={styles.actionButton} onClick={handleFollowArtist}>
+          <button
+            className={classNames(styles.actionButton, {
+              [styles.followed]: isFollowed,
+            })}
+            onClick={handleFollowArtist}
+          >
             {isFollowed ? (
               <>
-                Followed <LuUserRoundCheck />
+                Follow <LuUserRoundCheck />
               </>
             ) : (
               <>
