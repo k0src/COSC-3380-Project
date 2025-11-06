@@ -59,8 +59,8 @@ export default function SearchResultsPage() {
                   <h2 className={homeStyles.sectionTitle}>Songs</h2>
                 </div>
                 <div className={homeStyles.verticalCardsList}>
-                  {songs.map((song, index) => (
-                    <div key={index} className={homeStyles.compactCard}>
+                  {songs.map((song) => (
+                    <div key={song.id} className={homeStyles.compactCard}>
                       <img src={song.image} alt={song.title} />
                       <div className={homeStyles.songInfo}>
                         <h3 className={homeStyles.songTitle}>{song.title}</h3>

@@ -39,11 +39,15 @@
   color: #fff;
   margin: 0;
   font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
 }
 
 .playerSong span {
   color: #a7a7a7;
   font-size: 12px;
+  font-weight: 400;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Center section - Controls */

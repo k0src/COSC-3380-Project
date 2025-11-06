@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { getBlobUrl } from "../config/blobStorage.js";
+import { getBlobUrl } from "../config/blobStorage.js"; // Used to resolve blob URLs
 import { pool } from "../config/database.js";
 
 const router = express.Router();
@@ -45,7 +45,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     const rows = await safeQuery(songsQuery, [searchTerm, limitNum, offsetNum]);
     results.songs = rows.map((row: any) => ({
       ...row,
-      image: row.image ? getBlobUrl(row.image) : "/PlayerBar/Mask group.png",
+      image: row.image ? getBlobUrl(row.image) : "/PlayerBar/Mask group.png", // Resolving blob URL
     }));
   }
 
