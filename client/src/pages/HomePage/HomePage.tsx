@@ -3,8 +3,39 @@ import styles from "./HomePage.module.css";
 import Sidebar from "../../components/SideBar/sidebar";
 import Topbar from "../../components/TopBar/topBar";
 import PlayerBar from "../../components/PlayerBar/playerBar";
-import FeaturedSection from "./sections/FeaturedSection";
 import SongCard from "../../components/SongCard/SongCard";
+
+// Local FeaturedSection component to replace missing import/file
+function FeaturedSection({
+  title,
+  description,
+  image,
+  likes,
+  tracks,
+  duration,
+}: {
+  title: string;
+  description: string;
+  image: string;
+  likes: number;
+  tracks: number;
+  duration: string;
+}) {
+  return (
+    <div className={styles.featuredSection}>
+      <h2 className={styles.sectionTitle}>{title}</h2>
+      <p>{description}</p>
+      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+        <img src={image} alt={title} style={{ width: 120, height: 120, borderRadius: 8, objectFit: "cover" }} />
+        <div>
+          <p>Likes: {likes.toLocaleString()}</p>
+          <p>Tracks: {tracks}</p>
+          <p>Duration: {duration}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const HomePage: React.FC = () => {
   // Mock data
@@ -37,7 +68,7 @@ const HomePage: React.FC = () => {
               <FeaturedSection
                 title="Chill Vibes"
                 description="Smooth beats and ambient tunes to keep you relaxed."
-                image="/images/featured.jpg"
+                image="/PlayerBar/Mask group.png"
                 likes={10234}
                 tracks={58}
                 duration="2h 15min"
@@ -72,7 +103,16 @@ const HomePage: React.FC = () => {
             </div>
             <div className={styles.cardsContainer}>
               {newSongs.map((song, index) => (
-                <SongCard key={index} {...song} />
+                <SongCard
+                  key={index}
+                  image={song.image}
+                  title={song.title}
+                  artist={song.artist}
+                  plays={0}
+                  likes={0}
+                  comments={0}
+                  showStats={false}
+                />
               ))}
             </div>
           </section>

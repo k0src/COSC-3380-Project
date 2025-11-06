@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import homeStyles from "../HomePage/HomePage.module.css";
 import styles from "./SearchResultsPage.module.css";
 import Sidebar from "../../components/SideBar/sidebar";
@@ -59,12 +59,23 @@ export default function SearchResultsPage() {
                   <h2 className={homeStyles.sectionTitle}>Songs</h2>
                 </div>
                 <div className={homeStyles.verticalCardsList}>
-                  {songs.map((song) => (
-                    <div key={song.id} className={homeStyles.compactCard}>
+                  {songs.map((song, index) => (
+                    <div key={index} className={homeStyles.compactCard}>
                       <img src={song.image} alt={song.title} />
                       <div className={homeStyles.songInfo}>
                         <h3 className={homeStyles.songTitle}>{song.title}</h3>
-                        <p className={homeStyles.artistName}>{song.artist}</p>
+                        <p className={homeStyles.artistName}>
+                          {song.artists && song.artists.length > 0 ? (
+                            song.artists.map((a, i) => (
+                              <span key={String(a.id)}>
+                                <Link to={`/artists/${a.id}`}>{a.name}</Link>
+                                {i < song.artists!.length - 1 ? ", " : ""}
+                              </span>
+                            ))
+                          ) : (
+                            song.artist || ""
+                          )}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -83,7 +94,7 @@ export default function SearchResultsPage() {
                       title={artist.name}
                       artist={""}
                       image={artist.image}
-                      plays={artist.plays}
+                      plays={artist.plays ?? 0}
                       likes={artist.likes ?? 0}
                       comments={artist.comments ?? 0}
                       showStats={false}

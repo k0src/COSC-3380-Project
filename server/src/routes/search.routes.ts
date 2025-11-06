@@ -30,18 +30,28 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 
   const results: any = {};
 
-  // Songs
+  // Songs (include artists)
   if (type === "all" || type === "songs") {
     const songsQuery = `
       SELECT
-        title,
-        image_url AS image,
-        genre
-      FROM songs
-      WHERE title ILIKE $1 OR genre ILIKE $1
-      ORDER BY title ASC
+        s.id,
+        s.title,
+        s.image_url AS image,
+        s.genre,
+        COALESCE(
+          (
+            SELECT json_agg(json_build_object('id', ar.user_id, 'name', ar.display_name))
+            FROM song_artists sa
+            JOIN artists ar ON sa.artist_id = ar.id
+            WHERE sa.song_id = s.id
+          ), '[]'::json
+        ) AS artists
+      FROM songs s
+      WHERE s.title ILIKE $1 OR s.genre ILIKE $1
+      ORDER BY s.title ASC
       LIMIT $2 OFFSET $3
     `;
+
     const rows = await safeQuery(songsQuery, [searchTerm, limitNum, offsetNum]);
     results.songs = rows.map((row: any) => ({
       ...row,
