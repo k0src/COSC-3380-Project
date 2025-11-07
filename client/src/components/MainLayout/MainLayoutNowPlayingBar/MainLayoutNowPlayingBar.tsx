@@ -36,6 +36,7 @@ const NowPlayingBar: React.FC = () => {
   const [isQueueManagerOpen, setIsQueueManagerOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const queueButtonRef = useRef<HTMLButtonElement>(null);
+  const volumeControlRef = useRef<HTMLDivElement>(null);
 
   const { user, isAuthenticated } = useAuth();
   const { state, actions } = useAudioQueue();
@@ -143,6 +144,26 @@ const NowPlayingBar: React.FC = () => {
     },
     [actions]
   );
+
+  const handleVolumeWheel = useCallback(
+    (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.05 : 0.05;
+      const newVolume = Math.max(0, Math.min(1, volume + delta));
+      actions.setVolume(newVolume);
+    },
+    [volume, actions]
+  );
+
+  useEffect(() => {
+    const volumeControl = volumeControlRef.current;
+    if (!volumeControl) return;
+
+    volumeControl.addEventListener("wheel", handleVolumeWheel, {
+      passive: false,
+    });
+    return () => volumeControl.removeEventListener("wheel", handleVolumeWheel);
+  }, [handleVolumeWheel]);
 
   const handleShare = useCallback(() => {
     if (!currentSong) return;
@@ -332,7 +353,7 @@ const NowPlayingBar: React.FC = () => {
           >
             <LuListPlus />
           </button>
-          <div className={styles.volumeControl}>
+          <div ref={volumeControlRef} className={styles.volumeControl}>
             <LuVolume2 className={styles.volumeIcon} />
             <input
               type="range"
