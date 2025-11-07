@@ -58,3 +58,6 @@ export { default as ErrorPage } from "./ErrorPage/ErrorPage.js";
 
 /* ================================ Dev Tools =============================== */
 export { default as DevBanner } from "./DevBanner/DevBanner.js";
+
+/* ================================== Audio ================================= */
+export { default as SoundVisualizer } from "./SoundVisualizer/SoundVisualizer.js";
