@@ -35,9 +35,18 @@ export { default as ArtistActions } from "./ArtistPage/ArtistActions/ArtistActio
 export { default as ArtistPlaylists } from "./ArtistPage/ArtistPlaylists/ArtistPlaylists.js";
 export { default as ArtistAbout } from "./ArtistPage/ArtistAbout/ArtistAbout.js";
 
+/* ============================== PlaylistPage ============================== */
+export { default as RelatedPlaylists } from "./PlaylistPage/RelatedPlaylists/RelatedPlaylists.js";
+export { default as PlaylistContainer } from "./PlaylistPage/PlaylistContainer/PlaylistContainer.js";
+export { default as PlaylistPlayButton } from "./PlaylistPage/PlaylistPlayButton/PlaylistPlayButton.js";
+export { default as PlaylistUser } from "./PlaylistPage/PlaylistUser/PlaylistUser.js";
+export { default as PlaylistDescription } from "./PlaylistPage/PlaylistDescription/PlaylistDescription.js";
+export { default as PlaylistActions } from "./PlaylistPage/PlaylistActions/PlaylistActions.js";
+
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";
 export { default as FollowProfiles } from "./FollowProfiles/FollowProfiles.js";
+export { default as LikeProfiles } from "./LikeProfiles/LikeProfiles.js";
 
 /* ================================== Cards ================================== */
 export { default as SongCard } from "./SongCard/SongCard.js";

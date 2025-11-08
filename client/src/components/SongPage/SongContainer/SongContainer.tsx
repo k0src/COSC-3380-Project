@@ -65,14 +65,12 @@ const SongContainer: React.FC<SongContainerProps> = ({
           <span className={styles.artistName}>{mainArtist?.display_name}</span>
           <span className={styles.songTitle}>{song.title}</span>
           <div className={styles.interactionsContainer}>
-            <div className={styles.interactionsContainer}>
-              <InteractionStat icon={LuPlay} value={song.streams ?? 0} />
-              <InteractionStat icon={LuThumbsUp} value={song.likes ?? 0} />
-              <InteractionStat
-                icon={LuMessageSquareText}
-                value={numberComments ?? 0}
-              />
-            </div>
+            <InteractionStat icon={LuPlay} value={song.streams ?? 0} />
+            <InteractionStat icon={LuThumbsUp} value={song.likes ?? 0} />
+            <InteractionStat
+              icon={LuMessageSquareText}
+              value={numberComments ?? 0}
+            />
           </div>
         </div>
         {song.audio_url && (

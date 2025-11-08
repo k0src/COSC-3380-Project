@@ -1,0 +1,106 @@
+.loaderContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    min-height: 10vh;
+}
+
+.error {
+    text-align: center;
+    color: var(--color-text-gray);
+    font-size: var(--font-size-sm);
+}
+
+.sectionTitle {
+    font-size: var(--font-size-lg);
+    color: var(--color-white);
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.likeContainer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    min-width: 0;
+    width: 100%;
+}
+
+.avatarStack {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    position: relative;
+}
+
+.avatarLink {
+    position: relative;
+    margin-left: calc(-1 * var(--spacing-md));
+}
+
+.avatarLink:first-child {
+    margin-left: 0;
+}
+
+.avatarLink::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0);
+    transition: background-color var(--transition-speed) ease;
+    pointer-events: none;
+}
+
+.avatarLink:hover::after {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.avatar {
+    width: var(--icon-size-3xl);
+    height: var(--icon-size-3xl);
+    border-radius: 50%;
+    object-fit: cover;
+    border: 0.2rem solid var(--color-black);
+    display: block;
+}
+
+.avatarMore {
+    position: relative;
+    width: var(--icon-size-3xl);
+    height: var(--icon-size-3xl);
+    border-radius: 50%;
+    background-color: #2f2f2f;
+    border: 0.2rem solid var(--color-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #454545;
+    font-size: 2rem;
+    margin-left: calc(-1 * var(--spacing-md));
+}
+
+.avatarMore::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0);
+    transition: background-color var(--transition-speed) ease;
+    pointer-events: none;
+}
+
+.avatarMore:hover::after {
+    background-color: rgba(0, 0, 0, 0.2);
+}

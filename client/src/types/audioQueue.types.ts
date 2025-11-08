@@ -10,6 +10,8 @@ export interface QueueItem {
   originalIndex?: number;
   queueType?: "next" | "last";
   relativePosition?: number; // Position relative to current song when queued
+  sourceId?: string; // ID of the playlist/album this item came from
+  sourceType?: "playlist" | "album"; // Type of source entity
 }
 
 /**
@@ -53,6 +55,8 @@ export interface AudioQueueActions {
   setVolume: (volume: number) => void;
   queueNext: (song: Song) => void;
   queueLast: (song: Song) => void;
+  queueListNext: (entity: Playlist | Album) => Promise<void>;
+  queueListLast: (entity: Playlist | Album) => Promise<void>;
   clearQueue: (preserveQueued?: boolean, preserveCurrentSong?: boolean) => void;
   replaceQueue: (songs: Song[], preserveQueued?: boolean) => void;
   stop: () => void;
@@ -93,9 +97,16 @@ export interface PersistedAudioState {
  */
 export type QueueOperation =
   | { type: "PLAY_SONG"; song: Song }
-  | { type: "PLAY_LIST"; songs: Song[] }
+  | {
+      type: "PLAY_LIST";
+      songs: Song[];
+      sourceId?: string;
+      sourceType?: "playlist" | "album";
+    }
   | { type: "QUEUE_NEXT"; song: Song }
   | { type: "QUEUE_LAST"; song: Song }
+  | { type: "QUEUE_LIST_NEXT"; songs: Song[] }
+  | { type: "QUEUE_LIST_LAST"; songs: Song[] }
   | {
       type: "CLEAR_QUEUE";
       preserveQueued?: boolean;

@@ -1,28 +1,25 @@
-import React, { memo, useEffect, useState, useRef } from "react";
+import { memo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Song } from "@types";
-import { useLikeStatus } from "@hooks";
+import type { Playlist } from "@types";
 import { useAuth } from "@contexts";
-import { ShareModal, QueueMenu } from "@components";
-import { useQueryClient } from "@tanstack/react-query";
-import styles from "./SongActions.module.css";
-import classNames from "classnames";
+import { useLikeStatus } from "@hooks";
+import { QueueMenu, ShareModal } from "@components";
 import {
   LuThumbsUp,
-  LuListPlus,
   LuListEnd,
+  LuListRestart,
   LuShare,
   LuCircleAlert,
 } from "react-icons/lu";
+import styles from "./PlaylistActions.module.css";
+import classNames from "classnames";
 
-export interface SongActionsProps {
-  song: Song;
-  songUrl?: string;
+export interface PlaylistActionsProps {
+  playlist: Playlist;
 }
 
-const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
+const PlaylistActions: React.FC<PlaylistActionsProps> = ({ playlist }) => {
   const { user, isAuthenticated } = useAuth();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const {
     isLiked,
@@ -30,8 +27,8 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
     isLoading: isLikeLoading,
   } = useLikeStatus({
     userId: user?.id || "",
-    entityId: song.id,
-    entityType: "song",
+    entityId: playlist.id,
+    entityType: "playlist",
     isAuthenticated,
   });
 
@@ -40,37 +37,19 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
 
   const queueButtonRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    if (user?.id && song?.id) {
-      queryClient.invalidateQueries({
-        queryKey: ["likeStatus", user.id, song.id, "song"],
-      });
-    }
-  }, [user?.id, song?.id]);
-
-  const handleToggleSongLike = async () => {
+  const handleTogglePlaylistLike = useCallback(async () => {
     try {
-      if (!isAuthenticated) return navigate("/login");
+      if (!isAuthenticated) {
+        navigate("/login");
+        return;
+      }
       await toggleLike();
     } catch (error) {
-      console.error("Toggling song like failed:", error);
+      console.error("Toggling playlist like failed:", error);
     }
-  };
+  }, [isAuthenticated, navigate, toggleLike]);
 
-  const handleAddToPlaylist = async () => {
-    try {
-      if (isAuthenticated) {
-        //! send request here
-        console.log("added to playlist: " + song.id);
-      } else {
-        navigate("/login");
-      }
-    } catch (error) {
-      console.error("Adding to playlist failed:", error);
-    }
-  };
-
-  const handleAddToQueue = async () => {
+  const handleAddToQueue = useCallback(() => {
     try {
       if (isAuthenticated) {
         setQueueMenuOpen((prev) => !prev);
@@ -80,30 +59,37 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
     } catch (error) {
       console.error("Adding to queue failed:", error);
     }
-  };
+  }, [isAuthenticated, navigate]);
 
-  const handleShare = () => {
+  const handleShare = useCallback(() => {
     setIsShareModalOpen(true);
-  };
+  }, []);
 
-  const handleReport = () => {
-    //! open report modal...
-  };
+  const handleReport = useCallback(async () => {
+    //!: open report modal...
+  }, []);
+
+  const handleRemix = useCallback(async () => {
+    //!: open remix modal...
+  }, []);
+
+  const handleCloseQueueMenu = useCallback(() => setQueueMenuOpen(false), []);
+  const handleCloseShareModal = useCallback(
+    () => setIsShareModalOpen(false),
+    []
+  );
 
   return (
     <>
-      <div className={styles.songActionsContainer}>
+      <div className={styles.actionContainer}>
         <button
           className={classNames(styles.actionButton, {
             [styles.actionButtonActive]: isLiked,
           })}
           disabled={isLikeLoading}
-          onClick={handleToggleSongLike}
+          onClick={handleTogglePlaylistLike}
         >
           <LuThumbsUp />
-        </button>
-        <button className={styles.actionButton} onClick={handleAddToPlaylist}>
-          <LuListPlus />
         </button>
         <div className={styles.queueButtonContainer}>
           <button
@@ -115,12 +101,15 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
           </button>
           <QueueMenu
             isOpen={queueMenuOpen}
-            onClose={() => setQueueMenuOpen(false)}
-            entity={song}
-            entityType="song"
+            onClose={handleCloseQueueMenu}
+            entityType="list"
+            entity={playlist}
             buttonRef={queueButtonRef}
           />
         </div>
+        <button className={styles.remixButton} onClick={handleRemix}>
+          <LuListRestart />
+        </button>
         <button className={styles.actionButton} onClick={handleShare}>
           <LuShare />
         </button>
@@ -131,12 +120,12 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
 
       <ShareModal
         isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        pageUrl={songUrl}
-        pageTitle={song.title}
+        onClose={handleCloseShareModal}
+        pageUrl={window.location.href}
+        pageTitle={playlist.title}
       />
     </>
   );
 };
 
-export default memo(SongActions);
+export default memo(PlaylistActions);

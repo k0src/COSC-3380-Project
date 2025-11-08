@@ -1,12 +1,21 @@
-import { memo, useMemo } from "react";
+import { memo, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "react-router-dom";
 import type { UUID } from "@types";
 import { useAsyncData } from "@hooks";
 import { playlistApi } from "@api";
-import { ErrorPage, PageLoader } from "@components";
+import {
+  ErrorPage,
+  PageLoader,
+  SongsList,
+  LikeProfiles,
+  RelatedPlaylists,
+  PlaylistContainer,
+  PlaylistUser,
+  PlaylistDescription,
+  PlaylistActions,
+} from "@components";
 import styles from "./PlaylistPage.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
 
 const PlaylistPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
@@ -27,12 +36,7 @@ const PlaylistPage: React.FC = () => {
           includeUser: true,
           includeSongCount: true,
           includeLikes: true,
-        }),
-      songs: () =>
-        playlistApi.getSongs(id, {
-          includeAlbums: true,
-          includeArtists: true,
-          //! paginate me
+          includeRuntime: true,
         }),
     },
     [id],
@@ -43,7 +47,12 @@ const PlaylistPage: React.FC = () => {
   );
 
   const playlist = data?.playlist;
-  const songs = data?.songs || [];
+
+  const fetchSongs = useCallback(
+    () =>
+      playlistApi.getSongs(id, { includeArtists: true, includeAlbums: true }),
+    [id]
+  );
 
   if (error) {
     return (
@@ -72,22 +81,45 @@ const PlaylistPage: React.FC = () => {
       ) : (
         <div className={styles.playlistLayout}>
           <div className={styles.playlistLayoutTop}>
-            <div className={styles.playlistContainer}>
-              <img
-                src={playlist.image_url || musicPlaceholder}
-                alt={`${playlist.title} Cover`}
-                className={styles.coverImage}
-                loading="lazy"
-              />
-            </div>
+            <PlaylistContainer playlist={playlist} />
             <div className={styles.playlistLayoutTopRight}>
-              {/* info and actions */}
+              {playlist?.user && <PlaylistUser user={playlist.user} />}
+              <PlaylistDescription
+                description={playlist?.description}
+                updatedAt={playlist.updated_at}
+              />
+              <PlaylistActions playlist={playlist} />
             </div>
           </div>
           <div className={styles.playlistLayoutBottom}>
-            {/* song list */}
-            <div className={styles.playlistLayoutBottomRight}>
-              {/* other playlists by user, related playlists */}
+            {(playlist.song_count ?? 0) > 0 ? (
+              <SongsList
+                fetchData={fetchSongs}
+                cacheKey={`playlist_${id}_songs`}
+                dependencies={[id]}
+              />
+            ) : (
+              <div className={styles.noSongsMessage}>
+                This playlist has no songs.
+              </div>
+            )}
+            <div className={styles.suggestionsContainer}>
+              <LikeProfiles
+                title="Liked By"
+                entityId={playlist.id}
+                entityType="playlist"
+                profileMin={4}
+                profileLimit={8}
+              />
+              {playlist.user?.id && (
+                <RelatedPlaylists
+                  mode="user"
+                  userId={playlist.user.id}
+                  username={playlist.user.username}
+                  playlistId={playlist.id}
+                />
+              )}
+              <RelatedPlaylists mode="related" playlistId={playlist.id} />
             </div>
           </div>
         </div>

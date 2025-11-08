@@ -74,7 +74,7 @@ router.put(
       console.error("Error in PUT /users/:id/history:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 // POST /api/users/:id/likes
@@ -97,7 +97,7 @@ router.post(
       console.error("Error in POST /users/:id/likes:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 // GET /api/users/:id/likes/check
@@ -116,14 +116,14 @@ router.get(
       const isLiked = await LikeService.hasUserLiked(
         id,
         entityId as string,
-        entityType as any
+        entityType as any,
       );
       res.status(200).json({ isLiked });
     } catch (error) {
       console.error("Error in GET /users/:id/likes:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 // POST /api/users/:id/following
@@ -146,7 +146,7 @@ router.post(
       console.error("Error in POST /users/:id/following:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 // GET /api/users/:id/following/check
@@ -163,14 +163,44 @@ router.get(
     try {
       const isFollowing = await FollowService.isFollowing(
         id,
-        followingId as string
+        followingId as string,
       );
       res.status(200).json({ isFollowing });
     } catch (error) {
       console.error("Error in GET /users/:id/following/check:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
+);
+
+// GET /api/users/:id/playlists
+router.get(
+  "/:id/playlists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { includeLikes, includeSongCount, includeRuntime, limit, offset } =
+        req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const playlists = await UserRepository.getPlaylists(id, {
+        includeLikes: includeLikes === "true",
+        includeSongCount: includeSongCount === "true",
+        includeRuntime: includeRuntime === "true",
+        limit: limit ? parseInt(limit as string) : undefined,
+        offset: offset ? parseInt(offset as string) : undefined,
+      });
+
+      res.status(200).json(playlists);
+    } catch (error) {
+      console.error("Error in GET /users/:id/playlists:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
 );
 
 export default router;

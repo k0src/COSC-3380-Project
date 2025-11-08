@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { AlbumRepository } from "@repositories";
+import { LikeService } from "@services";
 
 const router = express.Router();
 
@@ -92,5 +93,30 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// GET /api/albums/:id/liked-by
+router.get(
+  "/:id/liked-by",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { limit, offset } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "Album ID is required!" });
+        return;
+      }
+
+      const users = await LikeService.getUsersWhoLiked(id, "album", {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+      res.status(200).json(users);
+    } catch (error) {
+      console.error("Error in GET /api/albums/:id/liked-by:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
 
 export default router;

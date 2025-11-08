@@ -2,6 +2,11 @@ import { User, Playlist, UUID } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
 import bcrypt from "bcrypt";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const API_URL = process.env.API_URL;
 
 export default class UserRepository {
   /**
@@ -34,11 +39,18 @@ export default class UserRepository {
       const password_hash = await bcrypt.hash(password, saltRounds);
 
       const result = await query(
-        `INSERT INTO users 
+        `INSERT INTO users
           (username, email, password_hash, authenticated_with, role, profile_picture_url)
         VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *`,
-        [username, email, password_hash, "CoogMusic", role, profile_picture_url]
+        [
+          username,
+          email,
+          password_hash,
+          "CoogMusic",
+          role,
+          profile_picture_url,
+        ],
       );
 
       return result[0] ?? null;
@@ -77,7 +89,7 @@ export default class UserRepository {
       authenticated_with?: string;
       role?: string;
       profile_picture_url?: string;
-    }
+    },
   ): Promise<User | null> {
     try {
       const fields: string[] = [];
@@ -139,7 +151,7 @@ export default class UserRepository {
       const res = await withTransaction(async (client) => {
         const del = await client.query(
           `DELETE FROM users WHERE id = $1 RETURNING *`,
-          [id]
+          [id],
         );
         return del.rows[0] ?? null;
       });
@@ -165,13 +177,13 @@ export default class UserRepository {
     options?: {
       includeFollowerCount?: boolean;
       includeFollowingCount?: boolean;
-    }
+    },
   ): Promise<User | null> {
     try {
       const sql = `
         SELECT u.*,
         CASE WHEN $1 THEN (SELECT COUNT(*) FROM user_followers uf
-          WHERE uf.following_id = u.id) 
+          WHERE uf.following_id = u.id)
         ELSE NULL END AS follower_count,
         CASE WHEN $2 THEN (SELECT COUNT(*) FROM user_followers uf
           WHERE uf.follower_id = u.id)
@@ -226,7 +238,7 @@ export default class UserRepository {
       const sql = `
         SELECT u.*,
         CASE WHEN $1 THEN (SELECT COUNT(*) FROM user_followers uf
-          WHERE uf.following_id = u.id) 
+          WHERE uf.following_id = u.id)
         ELSE NULL END AS follower_count,
         CASE WHEN $2 THEN (SELECT COUNT(*) FROM user_followers uf
           WHERE uf.follower_id = u.id)
@@ -254,7 +266,7 @@ export default class UserRepository {
             user.profile_picture_url = getBlobUrl(user.profile_picture_url);
           }
           return user;
-        })
+        }),
       );
 
       return processedUsers;
@@ -320,12 +332,13 @@ export default class UserRepository {
 
   /**
    * Gets the playlists created by a user.
-   * @param userId - The ID of the user.
-   * @param options - Options for pagination.
-   * @param options.includeLikes - Option to include the like count for each playlist.
-   * @param options.includeSongCount - Option to include the total number of songs on each playlist.
-   * @param options.limit - Maximum number of playlists to return.
-   * @param options.offset - Number of playlists to skip.
+   * @param userId The ID of the user.
+   * @param options Options for pagination.
+   * @param options.includeLikes Option to include the like count for each playlist.
+   * @param options.includeSongCount Option to include the total number of songs on each playlist.
+   * @param options.limit Maximum number of playlists to return.
+   * @param options.offset Number of playlists to skip.
+   * @param options.includeRuntime Option to include the total runtime of the playlist.
    * @return A list of playlists created by the user.
    * @throws Error if the operation fails.
    */
@@ -334,9 +347,10 @@ export default class UserRepository {
     options?: {
       includeLikes?: boolean;
       includeSongCount?: boolean;
+      includeRuntime?: boolean;
       limit?: number;
       offset?: number;
-    }
+    },
   ): Promise<Playlist[]> {
     try {
       const limit = options?.limit ?? 50;
@@ -344,21 +358,26 @@ export default class UserRepository {
 
       const sql = `
         SELECT p.*,
-        CASE WHEN $1 THEN (SELECT COUNT(*) FROM playlist_likes pl 
+        CASE WHEN $1 THEN (SELECT COUNT(*) FROM playlist_likes pl
           WHERE pl.playlist_id = p.id)
         ELSE NULL END as likes,
         CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_songs ps
           WHERE ps.playlist_id = p.id)
-        ELSE NULL END as song_count
+        ELSE NULL END as song_count,
+        CASE WHEN $3 THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
+          JOIN playlist_songs ps ON ps.song_id = s.id
+          WHERE ps.playlist_id = p.id)
+        ELSE NULL END as runtime
         FROM playlists p
-        WHERE p.created_by = $3
+        WHERE p.created_by = $4
         ORDER BY p.created_at DESC
-        LIMIT $4 OFFSET $5
+        LIMIT $5 OFFSET $6
       `;
 
       const params = [
         options?.includeLikes ?? false,
         options?.includeSongCount ?? false,
+        options?.includeRuntime ?? false,
         userId,
         limit,
         offset,
@@ -371,6 +390,7 @@ export default class UserRepository {
 
       const processedPlaylists = playlists.map((playlist: Playlist) => {
         playlist.type = "playlist";
+        playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
         return playlist;
       });
 
@@ -398,12 +418,12 @@ export default class UserRepository {
 
   static async validateCredentials(
     email: string,
-    password: string
+    password: string,
   ): Promise<User | null> {
     try {
       const result = await query(
         `SELECT * FROM users WHERE email = $1 AND authenticated_with = 'CoogMusic'`,
-        [email]
+        [email],
       );
 
       if (!result || result.length === 0) {

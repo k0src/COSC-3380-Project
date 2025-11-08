@@ -62,7 +62,8 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
               <QueueMenu
                 isOpen={queueMenuOpen}
                 onClose={() => setQueueMenuOpen(false)}
-                song={entity as Song}
+                entity={entity as Song}
+                entityType="song"
                 buttonRef={queueButtonRef}
                 justification="right"
               />
@@ -91,7 +92,8 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
             <QueueMenu
               isOpen={queueMenuOpen}
               onClose={() => setQueueMenuOpen(false)}
-              song={entity as Song}
+              entity={entity as Song}
+              entityType="song"
               buttonRef={queueButtonRef}
               justification="right"
             />
@@ -104,7 +106,7 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
         )}
       </div>
     );
-  }
+  },
 );
 
 type EntityItemProps =

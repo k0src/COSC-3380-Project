@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { SongRepository as SongRepo } from "@repositories";
 import { parseSongForm } from "@infra/form-parser";
 import getCoverGradient from "@util/colors.util";
-import { CommentService, StatsService } from "@services";
+import { CommentService, StatsService, LikeService } from "@services";
 import { validateOrderBy } from "@validators";
 
 const router = express.Router();
@@ -114,7 +114,7 @@ router.get(
       console.error("Error in GET /songs/:id/suggestions:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 router.get(
@@ -142,7 +142,7 @@ router.get(
       console.error("Error in GET /songs/:id/comments:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 router.post(
@@ -166,14 +166,14 @@ router.post(
       const commentId = await CommentService.addComment(
         userId,
         id,
-        commentText
+        commentText,
       );
       res.status(201).json({ id: commentId });
     } catch (error) {
       console.error("Error in POST /songs/:id/comments:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 router.get(
@@ -205,7 +205,7 @@ router.get(
       console.error("Error in GET /songs/:id/cover-gradient:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 // POST /api/songs/ -> create new song
@@ -315,7 +315,7 @@ router.put(
       console.error("Error in PUT /api/songs/:id/streams:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 // PUT /api/songs/:id/artist -> add artist to song
@@ -347,7 +347,7 @@ router.put(
       console.error("Error in PUT /api/songs/:id/artist:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 // DELETE /api/songs/:id/artist -> remove artist from song
@@ -381,7 +381,7 @@ router.delete(
       console.error("Error in DELETE /api/songs/:id/artist:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 // GET /api/songs/count
@@ -442,7 +442,7 @@ router.get(
       console.error("Error in GET /api/songs/:id/album:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 // GET /api/songs/:id/artists
@@ -483,7 +483,7 @@ router.get(
       console.error("Error in GET /api/songs/:id/artists:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 // GET /api/songs/:id/weekly-plays
@@ -503,7 +503,31 @@ router.get(
       console.error("Error in GET /api/songs/:id/weekly-plays:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
+);
+
+// GET /api/songs/:id/liked-by
+router.get(
+  "/:id/liked-by",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { limit, offset } = req.query;
+      if (!id) {
+        res.status(400).json({ error: "Song ID is required!" });
+        return;
+      }
+
+      const users = await LikeService.getUsersWhoLiked(id, "song", {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+      res.status(200).json(users);
+    } catch (error) {
+      console.error("Error in GET /api/songs/:id/liked-by:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
 );
 
 export default router;

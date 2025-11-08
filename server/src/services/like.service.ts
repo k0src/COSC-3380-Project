@@ -1,5 +1,6 @@
 import type { UUID, Song, Album, Playlist, User, Comment } from "@types";
 import { query } from "@config/database.js";
+import { getBlobUrl } from "@config/blobStorage.js";
 
 type LikeableEntity = "song" | "album" | "playlist" | "comment";
 
@@ -46,7 +47,7 @@ export default class LikeService {
   static async toggleLike(
     userId: UUID,
     entityId: UUID,
-    entity: LikeableEntity
+    entity: LikeableEntity,
   ): Promise<string> {
     try {
       const fn = LIKE_FUNCTIONS[entity];
@@ -74,7 +75,7 @@ export default class LikeService {
    */
   static async getLikeCount(
     entityId: UUID,
-    entity: LikeableEntity
+    entity: LikeableEntity,
   ): Promise<number> {
     try {
       const table = LIKE_TABLES[entity];
@@ -84,7 +85,7 @@ export default class LikeService {
 
       const res = await query(
         `SELECT COUNT(*) FROM ${table} WHERE ${entity}_id = $1`,
-        [entityId]
+        [entityId],
       );
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
@@ -102,7 +103,7 @@ export default class LikeService {
    */
   static async getLikedByUser<K extends keyof LikeableEntitiesMap>(
     userId: UUID,
-    entity: K
+    entity: K,
   ): Promise<LikeableEntitiesMap[K][]> {
     const table = LIKEABLE_ENTITY_TABLES[entity];
     const likeTable = LIKE_TABLES[entity];
@@ -111,7 +112,7 @@ export default class LikeService {
       `SELECT e.* FROM ${table} e
      JOIN ${likeTable} l ON e.id = l.${entity}_id
      WHERE l.user_id = $1`,
-      [userId]
+      [userId],
     );
 
     return res as LikeableEntitiesMap[K][];
@@ -130,7 +131,7 @@ export default class LikeService {
   static async getUsersWhoLiked<K extends keyof LikeableEntitiesMap>(
     entityId: UUID,
     entity: K,
-    options?: { limit?: number; offset?: number }
+    options?: { limit?: number; offset?: number },
   ): Promise<User[]> {
     const likeTable = LIKE_TABLES[entity];
     if (!likeTable) {
@@ -145,8 +146,21 @@ export default class LikeService {
       LIMIT $2 OFFSET $3
     `;
 
-    const res = await query(sql, params);
-    return res as User[];
+    const users = await query(sql, params);
+    if (!users || users.length === 0) {
+      return [];
+    }
+
+    const processedUsers = await Promise.all(
+      users.map(async (user: User) => {
+        if (user.profile_picture_url) {
+          user.profile_picture_url = getBlobUrl(user.profile_picture_url);
+        }
+        return user;
+      }),
+    );
+
+    return processedUsers;
   }
 
   /**
@@ -160,7 +174,7 @@ export default class LikeService {
   static async hasUserLiked<K extends keyof LikeableEntitiesMap>(
     userId: UUID,
     entityId: UUID,
-    entity: K
+    entity: K,
   ): Promise<boolean> {
     try {
       const table = LIKE_TABLES[entity];
@@ -169,9 +183,9 @@ export default class LikeService {
       }
 
       const res = await query(
-        `SELECT 1 FROM ${table} 
+        `SELECT 1 FROM ${table}
         WHERE user_id = $1 AND ${entity}_id = $2`,
-        [userId, entityId]
+        [userId, entityId],
       );
       return res.length > 0;
     } catch (error) {

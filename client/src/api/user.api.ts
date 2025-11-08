@@ -1,5 +1,5 @@
 import api from "./api";
-import type { UUID, EntityType } from "@types";
+import type { UUID, EntityType, Playlist } from "@types";
 
 export const userApi = {
   async addToHistory(id: UUID, entityId: UUID, entityType: EntityType) {
@@ -35,6 +35,22 @@ export const userApi = {
     const response = await api.get(
       `/users/${followerId}/following/check?followingId=${followingId}`
     );
+    return response.data;
+  },
+
+  async getPlaylists(
+    id: UUID,
+    options?: {
+      includeLikes?: boolean;
+      includeSongCount?: boolean;
+      includeRuntime?: boolean;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    const response = await api.get<Playlist[]>(`/users/${id}/playlists`, {
+      params: options,
+    });
     return response.data;
   },
 };
