@@ -136,7 +136,7 @@ router.get(
       console.error("Error in GET /playlists/:id/cover-image:", error);
       res.status(204).send();
     }
-  }
+  },
 );
 
 // GET /api/playlists/:id/liked-by
@@ -160,7 +160,7 @@ router.get(
       console.error("Error in GET /api/playlists/:id/liked-by:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 // GET /api/playlists/:id/related
@@ -197,7 +197,34 @@ router.get(
       console.error("Error in GET /playlists/:id/related:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
+);
+
+// POST /api/playlists/:id/remix
+router.post(
+  "/:id/remix",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { userId, numberOfSongs } = req.body;
+
+      if (!id) {
+        res.status(400).json({ error: "Playlist ID is required" });
+        return;
+      }
+
+      const remixPlaylistId = await PlaylistRepository.createRemixPlaylist(
+        userId,
+        id,
+        numberOfSongs,
+      );
+
+      res.status(200).json({ remixPlaylistId });
+    } catch (error) {
+      console.error("Error in POST /playlists/:id/remix:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
 );
 
 export default router;

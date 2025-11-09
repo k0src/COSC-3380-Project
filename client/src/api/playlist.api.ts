@@ -9,7 +9,7 @@ export const playlistApi = {
       includeLikes?: boolean;
       includeSongCount?: boolean;
       includeRuntime?: boolean;
-    }
+    },
   ) {
     const response = await api.get<Playlist>(`/playlists/${id}`, {
       params: options,
@@ -25,7 +25,7 @@ export const playlistApi = {
       includeLikes?: boolean;
       limit?: number;
       offset?: number;
-    }
+    },
   ) {
     const response = await api.get<PlaylistSong[]>(`/playlists/${id}/songs`, {
       params: options,
@@ -38,7 +38,7 @@ export const playlistApi = {
     options?: {
       limit?: number;
       offset?: number;
-    }
+    },
   ) {
     const response = await api.get<User[]>(`/playlists/${id}/liked-by`, {
       params: options,
@@ -55,11 +55,26 @@ export const playlistApi = {
       includeRuntime?: boolean;
       limit?: number;
       offset?: number;
-    }
+    },
   ) {
     const response = await api.get<Playlist[]>(`/playlists/${id}/related`, {
       params: options,
     });
     return response.data;
+  },
+
+  async createRemixPlaylist(
+    playlistId: UUID,
+    userId: UUID,
+    numberOfSongs: number,
+  ) {
+    const response = await api.post<{ remixPlaylistId: UUID }>(
+      `/playlists/${playlistId}/remix`,
+      {
+        userId,
+        numberOfSongs,
+      },
+    );
+    return response.data.remixPlaylistId;
   },
 };

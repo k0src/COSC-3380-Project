@@ -1,9 +1,10 @@
 import { memo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Playlist } from "@types";
+import type { Playlist, UUID } from "@types";
 import { useAuth } from "@contexts";
 import { useLikeStatus } from "@hooks";
-import { QueueMenu, ShareModal } from "@components";
+import { QueueMenu, ShareModal, RemixDialog } from "@components";
+import { playlistApi } from "@api";
 import {
   LuThumbsUp,
   LuListEnd,
@@ -34,8 +35,13 @@ const PlaylistActions: React.FC<PlaylistActionsProps> = ({ playlist }) => {
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [queueMenuOpen, setQueueMenuOpen] = useState(false);
+  const [isRemixDialogOpen, setIsRemixDialogOpen] = useState(false);
+  const [isRemixing, setIsRemixing] = useState(false);
+  const [remixedPlaylistId, setRemixedPlaylistId] = useState<UUID | null>(null);
+  const [remixedPlaylistTitle, setRemixedPlaylistTitle] = useState<string>("");
 
   const queueButtonRef = useRef<HTMLButtonElement>(null);
+  const remixButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleTogglePlaylistLike = useCallback(async () => {
     try {
@@ -69,14 +75,57 @@ const PlaylistActions: React.FC<PlaylistActionsProps> = ({ playlist }) => {
     //!: open report modal...
   }, []);
 
+  const handleRemixClick = useCallback(() => {
+    if (!isAuthenticated || !user) {
+      navigate("/login");
+      return;
+    }
+
+    if (isRemixDialogOpen) {
+      setIsRemixDialogOpen(false);
+      setIsRemixing(false);
+      setRemixedPlaylistId(null);
+      setRemixedPlaylistTitle("");
+    } else {
+      setIsRemixDialogOpen(true);
+      setIsRemixing(false);
+      setRemixedPlaylistId(null);
+      setRemixedPlaylistTitle("");
+    }
+  }, [isAuthenticated, user, navigate, isRemixDialogOpen]);
+
   const handleRemix = useCallback(async () => {
-    //!: open remix modal...
+    try {
+      if (!user) return;
+
+      setIsRemixing(true);
+
+      const remixedId = await playlistApi.createRemixPlaylist(
+        playlist.id,
+        user.id,
+        20,
+      );
+
+      setRemixedPlaylistId(remixedId);
+      setRemixedPlaylistTitle(`${playlist.title} - Remix`);
+      setIsRemixing(false);
+    } catch (error) {
+      console.error("Remixing playlist failed:", error);
+      setIsRemixing(false);
+    }
+  }, [user, playlist.id, playlist.title]);
+
+  const handleCloseRemixDialog = useCallback(() => {
+    setIsRemixDialogOpen(false);
+    setIsRemixing(false);
+    setRemixedPlaylistId(null);
+    setRemixedPlaylistTitle("");
   }, []);
 
   const handleCloseQueueMenu = useCallback(() => setQueueMenuOpen(false), []);
   const handleCloseShareModal = useCallback(
     () => setIsShareModalOpen(false),
-    []
+    [],
   );
 
   return (
@@ -107,9 +156,24 @@ const PlaylistActions: React.FC<PlaylistActionsProps> = ({ playlist }) => {
             buttonRef={queueButtonRef}
           />
         </div>
-        <button className={styles.remixButton} onClick={handleRemix}>
-          <LuListRestart />
-        </button>
+        <div className={styles.remixButtonContainer}>
+          <button
+            ref={remixButtonRef}
+            className={styles.remixButton}
+            onClick={handleRemixClick}
+          >
+            <LuListRestart />
+          </button>
+          <RemixDialog
+            isOpen={isRemixDialogOpen}
+            isLoading={isRemixing}
+            playlistTitle={remixedPlaylistTitle}
+            playlistId={remixedPlaylistId}
+            onClose={handleCloseRemixDialog}
+            onRemix={handleRemix}
+            buttonRef={remixButtonRef}
+          />
+        </div>
         <button className={styles.actionButton} onClick={handleShare}>
           <LuShare />
         </button>

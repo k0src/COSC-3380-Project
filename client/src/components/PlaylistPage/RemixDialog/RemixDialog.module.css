@@ -1,0 +1,126 @@
+.remixDialog {
+  position: absolute;
+  top: calc(100% + var(--spacing-sm));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-white);
+  color: var(--color-black);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  white-space: normal;
+  pointer-events: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  animation: remixDialogFadeIn 0.2s ease-out forwards;
+  display: flex;
+  align-items: flex-start;
+  min-width: 300px;
+  max-width: 400px;
+}
+
+.remixDialog::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: var(--color-white);
+}
+
+@keyframes remixDialogFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.dialogContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.description {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--color-black);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.remixButton {
+  font-family: "Inter", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-red);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-red);
+  color: var(--color-white);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: all var(--transition-speed) ease-in-out;
+  flex: 1;
+}
+
+.remixButton:hover:not(:disabled) {
+  background-color: var(--color-red-800);
+  color: var(--color-red-300);
+}
+
+.remixButton:disabled {
+  color: var(--color-red-300);
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  font-family: "Inter", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-gray-button);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-gray-button-border);
+  color: var(--color-white-hover);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: all var(--transition-speed) ease-in-out;
+  flex: 1;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: var(--color-gray-button-border);
+}
+
+.cancelButton:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.remixLink {
+  color: var(--color-red) !important;
+  font-weight: 600;
+  transition: text-decoration var(--transition-speed) ease-in-out;
+}
+
+.remixLink:hover {
+  text-decoration: underline;
+}

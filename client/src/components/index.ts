@@ -42,6 +42,7 @@ export { default as PlaylistPlayButton } from "./PlaylistPage/PlaylistPlayButton
 export { default as PlaylistUser } from "./PlaylistPage/PlaylistUser/PlaylistUser.js";
 export { default as PlaylistDescription } from "./PlaylistPage/PlaylistDescription/PlaylistDescription.js";
 export { default as PlaylistActions } from "./PlaylistPage/PlaylistActions/PlaylistActions.js";
+export { default as RemixDialog } from "./PlaylistPage/RemixDialog/RemixDialog.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

@@ -10,10 +10,10 @@ const API_URL = process.env.API_URL;
 export default class PlaylistRepository {
   /**
    * Creates a new playlist.
-   * @param playlistData - The data for the new playlist.
-   * @param playlist.title - The title of the playlist.
-   * @param playlist.description - The description of the playlist.
-   * @param playlist.created_by - The ID of the user who created the playlist.
+   * @param playlistData The data for the new playlist.
+   * @param playlist.title The title of the playlist.
+   * @param playlist.description The description of the playlist.
+   * @param playlist.created_by The ID of the user who created the playlist.
    * @returns The created playlist, or null if creation fails.
    * @throws Error if the operation fails.
    */
@@ -43,11 +43,11 @@ export default class PlaylistRepository {
 
   /**
    * Updates a playlist.
-   * @param id - The ID of the playlist to update.
-   * @param playlistData - The new data for the playlist.
-   * @param playlist.title - The new title of the playlist (optional).
-   * @param playlist.description - The new description of the playlist (optional).
-   * @param playlist.created_by - The new ID of the user who created the playlist (optional).
+   * @param id The ID of the playlist to update.
+   * @param playlistData The new data for the playlist.
+   * @param playlist.title The new title of the playlist (optional).
+   * @param playlist.description The new description of the playlist (optional).
+   * @param playlist.created_by The new ID of the user who created the playlist (optional).
    * @returns The updated playlist, or null if the update fails.
    * @throws Error if the operation fails.
    */
@@ -98,7 +98,7 @@ export default class PlaylistRepository {
 
   /**
    * Deletes a playlist.
-   * @param id - The ID of the playlist to delete.
+   * @param id The ID of the playlist to delete.
    * @returns The deleted playlist, or null if the deletion fails.
    * @throws Error if the operation fails.
    */
@@ -191,7 +191,6 @@ export default class PlaylistRepository {
     }
   }
 
-  //! cover images
   /**
    * Gets multiple playlists.
    * @param options Options for pagination and including related data.
@@ -273,12 +272,12 @@ export default class PlaylistRepository {
   /**
    * Fetches all songs in a specific playlist.
    * @param playlistId The ID of the playlist.
-   * @param options - Options for pagination and including related data.
-   * @param options.includeAlbums - Option to include the albums data.
-   * @param options.includeArtists - Option to include the artists data.
-   * @param options.includeLikes - Option to include the like count.
-   * @param options.limit - Maximum number of songs to return.
-   * @param options.offset - Number of songs to skip.
+   * @param options Options for pagination and including related data.
+   * @param options.includeAlbums Option to include the albums data.
+   * @param options.includeArtists Option to include the artists data.
+   * @param options.includeLikes Option to include the like count.
+   * @param options.limit Maximum number of songs to return.
+   * @param options.offset Number of songs to skip.
    * @returns An array of songs in the playlist, with added_at timestamp.
    * @throws Error if the operation fails
    */
@@ -454,8 +453,8 @@ export default class PlaylistRepository {
 
   /**
    * Fetches song image URLs from a playlist for cover generation.
-   * @param playlistId - The ID of the playlist.
-   * @param limit - Maximum number of song images to fetch (default: 4).
+   * @param playlistId The ID of the playlist.
+   * @param limit Maximum number of song images to fetch (default: 4).
    * @returns An array of song image URLs with SAS tokens.
    * @throws Error if the operation fails.
    */
@@ -486,6 +485,19 @@ export default class PlaylistRepository {
     }
   }
 
+  /**
+   * Fetches related playlists for a given playlist.
+   * @param playlistId The ID of the playlist.
+   * @param options Options for pagination and including related data.
+   * @param options.includeUser Option to include the user who created each playlist.
+   * @param options.includeLikes Option to include the like count for each playlist.
+   * @param options.includeSongCount Option to include the total number of songs on each playlist.
+   * @param options.includeRuntime Option to include the total runtime of the playlist.
+   * @param options.limit Maximum number of playlists to return.
+   * @param options.offset Number of playlists to skip.
+   * @returns A list of related playlists.
+   * @throws Error if the operation fails.
+   */
   static async getRelatedPlaylists(
     playlistId: UUID,
     options?: {
@@ -534,6 +546,32 @@ export default class PlaylistRepository {
       return processedPlaylists;
     } catch (error) {
       console.error("Error fetching related playlists:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Creates a remix playlist based on an existing playlist.
+   * @param userId The ID of the user creating the remix.
+   * @param playlistId The ID of the original playlist to remix.
+   * @param numberOfSongs The number of songs to include in the remix playlist (default: 30).
+   * @returns The ID of the newly created remix playlist.
+   * @throws Error if the operation fails.
+   */
+  static async createRemixPlaylist(
+    userId: UUID,
+    playlistId: UUID,
+    numberOfSongs: number = 30
+  ): Promise<UUID> {
+    try {
+      const remixPlaylistId = await query(
+        "SELECT create_remix_playlist($1, $2, $3)",
+        [userId, playlistId, numberOfSongs]
+      );
+
+      return remixPlaylistId[0].create_remix_playlist;
+    } catch (error) {
+      console.error("Error creating remix playlist:", error);
       throw error;
     }
   }
