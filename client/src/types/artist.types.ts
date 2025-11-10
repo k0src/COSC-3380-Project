@@ -10,6 +10,7 @@ export interface Artist {
   streams: number;
   location?: string;
   banner_image_url?: string;
+  banner_image_url_blurhash?: string;
 
   user?: User;
 

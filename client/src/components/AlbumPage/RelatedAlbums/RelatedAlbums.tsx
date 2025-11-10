@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import { PuffLoader } from "react-spinners";
-import type { UUID } from "@types";
+import type { Album, UUID } from "@types";
 import { useAsyncData } from "@hooks";
 import { albumApi, artistApi } from "@api";
 import { EntityItem } from "@components";
@@ -64,6 +64,15 @@ const RelatedAlbums: React.FC<RelatedAlbumsProps> = ({
     [albums, albumId]
   );
 
+  const albumAuthor = useMemo(() => {
+    if (mode === "related") {
+      return (album: Album) => album.artist?.display_name || "Unknown";
+    } else {
+      return (album: Album) =>
+        `${album.song_count ?? 0} ${pluralize(album.song_count ?? 0, "song")}`;
+    }
+  }, [mode]);
+
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
@@ -89,18 +98,12 @@ const RelatedAlbums: React.FC<RelatedAlbumsProps> = ({
         {filteredAlbums.map((album) => (
           <EntityItem
             key={album.id}
-            type="list"
-            author={
-              mode === "related"
-                ? album.artist?.display_name || "Unknown"
-                : `${album.song_count ?? 0} ${pluralize(
-                    album.song_count ?? 0,
-                    "song"
-                  )}`
-            }
+            type="album"
+            author={albumAuthor(album)}
             linkTo={`/albums/${album.id}`}
             title={album.title}
             imageUrl={album.image_url || musicPlaceholder}
+            blurHash={album.image_url_blurhash}
             entity={album}
           />
         ))}

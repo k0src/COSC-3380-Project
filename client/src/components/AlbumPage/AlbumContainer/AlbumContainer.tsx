@@ -2,7 +2,7 @@ import { memo, useCallback, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import type { Album } from "@types";
 import { formatRuntime, pluralize } from "@util";
-import { CoverLightbox, AlbumPlayButton } from "@components";
+import { CoverLightbox, AlbumPlayButton, LazyImg } from "@components";
 import { LuAudioLines, LuClock, LuThumbsUp } from "react-icons/lu";
 import styles from "./AlbumContainer.module.css";
 import classNames from "classnames";
@@ -55,13 +55,15 @@ const AlbumContainer: React.FC<AlbumContainerProps> = ({ album }) => {
   return (
     <>
       <div className={styles.albumContainer}>
-        <img
+        <LazyImg
           src={imageUrl}
+          blurHash={album.image_url_blurhash}
           alt={`${album.title} Cover`}
-          className={classNames(styles.coverImage, {
-            [styles.coverImageClickable]: !!imageUrl,
-          })}
-          loading="lazy"
+          imgClassNames={[
+            styles.coverImage,
+            imageUrl !== musicPlaceholder ? styles.coverImageClickable : "",
+          ]}
+          loading="eager"
           onClick={handleImageClick}
         />
         <div className={styles.albumRight}>

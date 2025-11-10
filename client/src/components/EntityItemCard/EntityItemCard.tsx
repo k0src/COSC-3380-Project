@@ -1,15 +1,15 @@
-import { memo, useState, useCallback, useRef, useEffect } from "react";
+import { memo, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAudioQueue, useAuth } from "@contexts";
 import type { Song, Playlist, Album } from "@types";
-import { QueueMenu } from "@components";
+import { QueueMenu, LazyImg } from "@components";
 import styles from "./EntityItemCard.module.css";
 import musicPlaceholder from "@assets/music-placeholder.png";
 import artistPlaceholder from "@assets/artist-placeholder.png";
 import { LuPlay, LuListEnd } from "react-icons/lu";
 
 interface EntityActionButtonsProps {
-  type: "song" | "list" | "artist";
+  type: "song" | "playlist" | "album" | "artist";
   entity?: Song | Playlist | Album;
   isHovered: boolean;
 }
@@ -67,14 +67,14 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
             />
           </div>
         )}
-        {(type === "song" || type === "list") && (
+        {(type === "song" || type === "playlist" || type === "album") && (
           <button onClick={handlePlay} className={styles.entityActionButton}>
             <LuPlay />
           </button>
         )}
       </div>
     );
-  },
+  }
 );
 
 type EntityItemCardProps =
@@ -85,31 +85,24 @@ type EntityItemCardProps =
       title: string;
       subtitle: string;
       imageUrl?: string;
+      blurHash?: string;
       entity?: never;
     }
   | {
-      type: "song" | "list";
+      type: "song" | "playlist" | "album";
       linkTo: string;
       author: string;
       title: string;
       subtitle: string;
       imageUrl?: string;
+      blurHash?: string;
       entity: Song | Playlist | Album;
     };
 
-/**
- * @param EntityItemProps
- * @param entity The entity object to play when clicking play (Song, Playlist, or Album)
- * @param imageUrl Image URL for the entity
- * @param linkTo Link to navigate to when clicking the title
- * @param author Author name to display (text above title)
- * @param title Title of the entity
- * @param subtitle Subtitle text to display (text below title)
- * @param type Type of entity: "song", "list", or "artist"
- */
 const EntityItemCard: React.FC<EntityItemCardProps> = ({
   entity,
   imageUrl,
+  blurHash,
   linkTo,
   author,
   title,
@@ -118,6 +111,17 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  const imgSrc = useMemo(() => {
+    if (type === "artist") {
+      return imageUrl || artistPlaceholder;
+    }
+    return imageUrl || musicPlaceholder;
+  }, [type, imageUrl]);
+
+  const imgAlt = useMemo(() => {
+    return `${title} ${type === "artist" ? "Image" : "Cover"}`;
+  }, [title, type]);
+
   return (
     <div
       className={styles.entityItemCard}
@@ -125,14 +129,11 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className={styles.entityImageContainer}>
-        <img
-          src={
-            imageUrl ||
-            (type === "artist" ? artistPlaceholder : musicPlaceholder)
-          }
-          alt={`${title} ${type === "artist" ? "Image" : "Cover"}`}
-          className={styles.entityImage}
-          loading="lazy"
+        <LazyImg
+          src={imgSrc}
+          alt={imgAlt}
+          imgClassNames={[styles.entityImage]}
+          blurHash={blurHash}
         />
         <EntityActionButtons
           type={type}

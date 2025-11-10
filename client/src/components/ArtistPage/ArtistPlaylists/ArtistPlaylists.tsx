@@ -55,11 +55,12 @@ const ArtistPlaylists: React.FC<ArtistPlaylistsProps> = ({
         {data?.playlists?.map((playlist) => (
           <EntityItem
             key={playlist.id}
-            type="list"
+            type="playlist"
             author={playlist.user?.username || "Unknown"}
             linkTo={`/playlists/${playlist.id}`}
             title={playlist.title}
             imageUrl={playlist.image_url || musicPlaceholder}
+            //! blurHash={playlist.image_url_blurhash}
             entity={playlist}
           />
         ))}

@@ -3,6 +3,7 @@ import { PuffLoader } from "react-spinners";
 import { Link } from "react-router-dom";
 import { LuPlus } from "react-icons/lu";
 import { songApi, albumApi, playlistApi } from "@api";
+import { LazyImg } from "@components";
 import { useAsyncData } from "@hooks";
 import type { UUID } from "@types";
 import styles from "./LikeProfiles.module.css";
@@ -45,7 +46,7 @@ const LikeProfiles: React.FC<LikeProfilesProps> = ({
     {
       cacheKey: `likes_${entityType}_${entityId}`,
       hasBlobUrl: true,
-    },
+    }
   );
 
   const profiles = data?.profiles;
@@ -91,11 +92,11 @@ const LikeProfiles: React.FC<LikeProfilesProps> = ({
             to={`/users/${profile.id}`}
             className={styles.avatarLink}
           >
-            <img
+            <LazyImg
               src={profile.profile_picture_url || userPlaceholder}
+              blurHash={profile.pfp_blurhash}
               alt={`${profile.username ?? "User"}'s profile picture`}
-              className={styles.avatar}
-              loading="lazy"
+              imgClassNames={[styles.avatar]}
             />
           </Link>
         ))}

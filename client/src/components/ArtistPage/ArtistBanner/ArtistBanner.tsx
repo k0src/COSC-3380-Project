@@ -1,14 +1,15 @@
 import { useState, useCallback, memo, useMemo } from "react";
-import { CoverLightbox } from "@components";
+import { CoverLightbox, LazyImg, LazyBannerImg } from "@components";
 import { useTextContrast } from "@hooks";
 import styles from "./ArtistBanner.module.css";
-import classNames from "classnames";
 import { LuBadgeCheck } from "react-icons/lu";
 import artistPlaceholder from "@assets/artist-placeholder.png";
 
 export interface ArtistBannerProps {
   bannerImageUrl?: string;
   artistImageUrl?: string;
+  artistImgBlurHash?: string;
+  bannerImgBlurHash?: string;
   artistName: string;
   artistLocation?: string;
   isVerified?: boolean;
@@ -16,12 +17,14 @@ export interface ArtistBannerProps {
 
 const ArtistBanner: React.FC<ArtistBannerProps> = ({
   bannerImageUrl,
+  bannerImgBlurHash,
   artistImageUrl,
+  artistImgBlurHash,
   artistName,
   artistLocation,
   isVerified,
 }) => {
-  const { textColor, loading } = useTextContrast(bannerImageUrl);
+  const { textColor } = useTextContrast(bannerImageUrl);
 
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -46,24 +49,26 @@ const ArtistBanner: React.FC<ArtistBannerProps> = ({
   return (
     <>
       <header className={styles.artistBanner} style={bannerStyle}>
-        {bannerImageUrl && !loading && (
-          <img
+        {bannerImageUrl && (
+          <LazyBannerImg
             src={bannerImageUrl}
+            blurHash={bannerImgBlurHash}
             alt={`${artistName} Banner`}
-            loading="lazy"
-            className={styles.bannerImage}
           />
         )}
         <div className={styles.artistInfo}>
-          <img
+          <LazyImg
             src={artistImageUrl || artistPlaceholder}
+            blurHash={artistImgBlurHash}
             alt={`${artistName} Image`}
-            className={classNames(styles.artistImage, {
-              [styles.artistImageClickable]: !!artistImageUrl,
-            })}
-            loading="lazy"
+            imgClassNames={[
+              styles.artistImage,
+              artistImageUrl ? styles.artistImageClickable : "",
+            ]}
+            loading="eager"
             onClick={handleImageClick}
           />
+
           <div className={styles.artistInfoRight}>
             <div className={styles.artistNameContainer}>
               <h1 className={styles.artistName}>{artistName}</h1>

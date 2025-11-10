@@ -5,6 +5,7 @@ import { LuPlus } from "react-icons/lu";
 import { artistApi } from "@api";
 import { useAsyncData } from "@hooks";
 import type { UUID } from "@types";
+import { LazyImg } from "@components";
 import styles from "./FollowProfiles.module.css";
 import userPlaceholder from "@assets/user-placeholder.png";
 
@@ -80,11 +81,11 @@ const FollowProfiles: React.FC<FollowProfilesProps> = ({
             to={`/users/${profile.id}`}
             className={styles.avatarLink}
           >
-            <img
+            <LazyImg
               src={profile.profile_picture_url || userPlaceholder}
+              blurHash={profile.pfp_blurhash}
               alt={`${profile.username ?? "User"}'s profile picture`}
-              className={styles.avatar}
-              loading="lazy"
+              imgClassNames={[styles.avatar]}
             />
           </Link>
         ))}

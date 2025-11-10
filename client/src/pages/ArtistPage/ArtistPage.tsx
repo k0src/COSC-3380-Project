@@ -98,12 +98,13 @@ const ArtistPage: React.FC = () => {
         <div className={styles.artistLayout}>
           <ArtistBanner
             bannerImageUrl={artist.banner_image_url}
+            bannerImgBlurHash={artist.banner_image_url_blurhash}
             artistImageUrl={artist.user?.profile_picture_url}
+            artistImgBlurHash={artist.user?.pfp_blurhash}
             artistName={artist.display_name}
             artistLocation={artist.location}
             isVerified={artist.verified}
           />
-
           <div className={styles.artistLayoutBottom}>
             <div className={styles.artistLayoutBottomTop}>
               <div className={styles.artistLayoutBottomLeft}>

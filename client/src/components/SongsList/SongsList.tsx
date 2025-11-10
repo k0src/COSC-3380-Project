@@ -80,6 +80,7 @@ const SongsList: React.FC<SongsListProps> = ({
             title={song.title}
             subtitle={song.albums?.[0]?.title || ""}
             imageUrl={song.image_url}
+            blurHash={song.image_url_blurhash}
             entity={song}
             isSmall={false}
             index={i + 1}

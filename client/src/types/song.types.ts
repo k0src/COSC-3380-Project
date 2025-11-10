@@ -8,6 +8,7 @@ export interface Song {
   genre: string;
   release_date: string;
   image_url?: string;
+  image_url_blurhash?: string;
   audio_url: string;
   created_at: string;
   streams?: number;

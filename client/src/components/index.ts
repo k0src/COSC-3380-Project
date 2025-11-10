@@ -34,6 +34,7 @@ export { default as RelatedArtists } from "./ArtistPage/RelatedArtists/RelatedAr
 export { default as ArtistActions } from "./ArtistPage/ArtistActions/ArtistActions.js";
 export { default as ArtistPlaylists } from "./ArtistPage/ArtistPlaylists/ArtistPlaylists.js";
 export { default as ArtistAbout } from "./ArtistPage/ArtistAbout/ArtistAbout.js";
+export { default as LazyBannerImg } from "./ArtistPage/LazyBannerImg/LazyBannerImg.js";
 
 /* ============================== PlaylistPage ============================== */
 export { default as RelatedPlaylists } from "./PlaylistPage/RelatedPlaylists/RelatedPlaylists.js";
@@ -79,3 +80,6 @@ export { default as DevBanner } from "./DevBanner/DevBanner.js";
 
 /* ================================== Audio ================================= */
 export { default as SoundVisualizer } from "./SoundVisualizer/SoundVisualizer.js";
+
+/* ================================= Images ================================= */
+export { default as LazyImg } from "./LazyImg/LazyImg.js";

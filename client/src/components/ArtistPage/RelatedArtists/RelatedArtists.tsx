@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import type { UUID } from "@types";
 import { artistApi } from "@api";
 import { useAsyncData } from "@hooks";
+import { LazyImg } from "@components";
 import styles from "./RelatedArtists.module.css";
 import artistPlaceholder from "@assets/artist-placeholder.png";
 
@@ -49,11 +50,11 @@ const RelatedArtists: React.FC<RelatedArtistsProps> = ({ artistId }) => {
         {relatedArtists.map((related) => (
           <div key={related.id} className={styles.relatedArtistItem}>
             <Link to={`/artists/${related.id}`}>
-              <img
+              <LazyImg
                 src={related.user?.profile_picture_url || artistPlaceholder}
+                blurHash={related.user?.pfp_blurhash}
                 alt={`${related.display_name}'s profile picture`}
-                className={styles.relatedArtistImage}
-                loading="lazy"
+                imgClassNames={[styles.relatedArtistImage]}
               />
             </Link>
             <Link

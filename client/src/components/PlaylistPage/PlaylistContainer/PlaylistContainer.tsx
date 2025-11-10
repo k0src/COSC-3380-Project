@@ -2,7 +2,7 @@ import { memo, useCallback, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import type { Playlist } from "@types";
 import { formatRuntime, pluralize } from "@util";
-import { CoverLightbox, PlaylistPlayButton } from "@components";
+import { CoverLightbox, PlaylistPlayButton, LazyImg } from "@components";
 import { LuAudioLines, LuClock, LuThumbsUp } from "react-icons/lu";
 import styles from "./PlaylistContainer.module.css";
 import classNames from "classnames";
@@ -58,14 +58,15 @@ const PlaylistContainer: React.FC<PlaylistContainerProps> = ({ playlist }) => {
   return (
     <>
       <div className={styles.playlistContainer}>
-        <img
+        <LazyImg
           src={imageUrl}
           alt={`${playlist.title} Cover`}
-          className={classNames(styles.coverImage, {
-            [styles.coverImageClickable]: !!imageUrl,
-          })}
-          loading="lazy"
+          imgClassNames={[
+            styles.coverImage,
+            imageUrl !== musicPlaceholder ? styles.coverImageClickable : "",
+          ]}
           onClick={handleImageClick}
+          loading="eager"
         />
         <div className={styles.playlistRight}>
           <div className={styles.playlistInfoContainer}>

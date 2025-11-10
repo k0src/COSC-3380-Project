@@ -73,11 +73,12 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
               <EntityItem
                 key={album.id}
                 imageUrl={album.image_url}
+                blurHash={album.image_url_blurhash}
                 author={album.artist?.display_name || "Unknown Artist"}
                 title={album.title}
                 linkTo={`/albums/${album.id}`}
                 subtitle={formatDateString(album.release_date)}
-                type="list"
+                type="album"
                 entity={album}
               />
             ))}
@@ -95,6 +96,7 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
               <EntityItem
                 key={songItem.id}
                 imageUrl={songItem.image_url}
+                blurHash={songItem.image_url_blurhash}
                 author={
                   getMainArtist(songItem.artists ?? [])?.display_name ||
                   "Unknown Artist"
@@ -118,6 +120,7 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
               <EntityItem
                 key={songItem.id}
                 imageUrl={songItem.image_url}
+                blurHash={songItem.image_url_blurhash}
                 author={
                   getMainArtist(songItem.artists ?? [])?.display_name ||
                   "Unknown Artist"

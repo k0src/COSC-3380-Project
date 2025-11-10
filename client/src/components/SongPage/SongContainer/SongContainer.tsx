@@ -1,5 +1,5 @@
 import { useMemo, useCallback, memo, useState } from "react";
-import { WaveformPlayer, CoverLightbox } from "@components";
+import { WaveformPlayer, CoverLightbox, LazyImg } from "@components";
 import type { Song, CoverGradient, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
 import { LuPlay, LuThumbsUp, LuMessageSquareText } from "react-icons/lu";
@@ -51,13 +51,15 @@ const SongContainer: React.FC<SongContainerProps> = ({
 
   return (
     <div className={styles.songContainer} style={gradientStyle}>
-      <img
+      <LazyImg
         src={song.image_url || musicPlaceholder}
+        blurHash={song.image_url_blurhash}
         alt={`${song.title} Cover`}
-        className={classNames(styles.coverImage, {
-          [styles.coverImageClickable]: !!song.image_url,
-        })}
-        loading="lazy"
+        imgClassNames={[
+          styles.coverImage,
+          song.image_url ? styles.coverImageClickable : "",
+        ]}
+        loading="eager"
         onClick={handleImageClick}
       />
       <div className={styles.songRight}>

@@ -1,4 +1,5 @@
 import { memo, useEffect } from "react";
+import { LazyImg } from "@components";
 import { LuX } from "react-icons/lu";
 import styles from "./CoverLightbox.module.css";
 
@@ -41,7 +42,12 @@ const CoverLightbox: React.FC<CoverLightboxProps> = ({
         <LuX />
       </button>
       <div className={styles.lightbox} onClick={(e) => e.stopPropagation()}>
-        <img src={imageUrl} alt={altText} className={styles.coverImage} />
+        <LazyImg
+          src={imageUrl}
+          alt={altText}
+          imgClassNames={[styles.coverImage]}
+          loading="eager"
+        />
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import {
   PageLoader,
   CoverLightbox,
   EntityItemCard,
+  LazyImg,
 } from "@components";
 import {
   formatDateString,
@@ -17,7 +18,6 @@ import {
   pluralize,
 } from "@util";
 import styles from "./ArtistDiscography.module.css";
-import classNames from "classnames";
 import artistPlaceholder from "@assets/artist-placeholder.png";
 import musicPlaceholder from "@assets/music-placeholder.png";
 
@@ -111,13 +111,14 @@ const ArtistDiscography: React.FC = () => {
         <>
           <div className={styles.artistDiscographyLayout}>
             <header className={styles.discoHeader}>
-              <img
+              <LazyImg
                 src={artistImageUrl || artistPlaceholder}
                 alt={`${artist.display_name} Image`}
-                loading="lazy"
-                className={classNames(styles.artistImage, {
-                  [styles.artistImageClickable]: !!artistImageUrl,
-                })}
+                imgClassNames={[
+                  styles.artistImage,
+                  artistImageUrl ? styles.artistImageClickable : "",
+                ]}
+                loading="eager"
                 onClick={handleImageClick}
               />
               <div className={styles.artistInfo}>
@@ -163,12 +164,13 @@ const ArtistDiscography: React.FC = () => {
                       <EntityItemCard
                         entity={album}
                         key={album.id}
-                        type="list"
+                        type="album"
                         linkTo={`/albums/${album.id}`}
                         author={artist.display_name}
                         title={album.title}
                         subtitle={formatDateString(album.release_date)}
                         imageUrl={album.image_url || musicPlaceholder}
+                        blurHash={album.image_url_blurhash}
                       />
                     ))}
                   </div>
@@ -191,6 +193,7 @@ const ArtistDiscography: React.FC = () => {
                         title={single.title}
                         subtitle={formatDateString(single.release_date)}
                         imageUrl={single.image_url || musicPlaceholder}
+                        blurHash={single.image_url_blurhash}
                       />
                     ))}
                   </div>

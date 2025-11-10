@@ -4,7 +4,7 @@ import { useAsyncData } from "@hooks";
 import { useAuth } from "@contexts";
 import { PuffLoader } from "react-spinners";
 import { commentApi } from "@api";
-import { CommentItem, HorizontalRule } from "@components";
+import { CommentItem, HorizontalRule, LazyImg } from "@components";
 import styles from "./SongComments.module.css";
 import userPlaceholder from "@assets/user-placeholder.png";
 import { LuSend } from "react-icons/lu";
@@ -83,13 +83,12 @@ const SongComments: React.FC<SongCommentsProps> = ({ songId }) => {
   return (
     <div className={styles.commentsContainer}>
       <div className={styles.commentsContainerTop}>
-        <img
+        <LazyImg
           src={userProfilePic}
+          blurHash={user?.pfp_blurhash}
           alt={user?.username || "User"}
-          loading="lazy"
-          className={styles.commentUserPfp}
+          imgClassNames={[styles.commentUserPfp]}
         />
-
         <div className={styles.commentInputContainer}>
           <input
             type="text"

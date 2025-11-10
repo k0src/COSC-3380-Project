@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import type { User } from "@types";
 import { useAuth } from "@contexts";
 import { useFollowStatus } from "@hooks";
+import { LazyImg } from "@components";
 import { LuUserRoundCheck, LuUserRoundPlus } from "react-icons/lu";
 import styles from "./PlaylistUser.module.css";
 import classNames from "classnames";
@@ -55,12 +56,12 @@ const PlaylistUser: React.FC<PlaylistUserProps> = ({ user }) => {
 
   return (
     <div className={styles.userContainer}>
-      <img
+      <LazyImg
         src={profilePicUrl}
+        blurHash={user.pfp_blurhash}
         alt={`${user.username} Image`}
-        className={styles.userProfilePicture}
+        imgClassNames={[styles.userProfilePicture]}
         onClick={handleFollow}
-        loading="lazy"
       />
       <div className={styles.usernameContainer}>
         <Link className={styles.usernameText} to={`/users/${user.id}`}>
