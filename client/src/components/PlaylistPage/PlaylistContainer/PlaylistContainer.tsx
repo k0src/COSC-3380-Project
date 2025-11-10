@@ -5,7 +5,6 @@ import { formatRuntime, pluralize } from "@util";
 import { CoverLightbox, PlaylistPlayButton, LazyImg } from "@components";
 import { LuAudioLines, LuClock, LuThumbsUp } from "react-icons/lu";
 import styles from "./PlaylistContainer.module.css";
-import classNames from "classnames";
 import musicPlaceholder from "@assets/music-placeholder.png";
 
 const PlaylistStat = memo(
