@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef } from "react";
 import { LuListStart, LuListEnd } from "react-icons/lu";
 import { useAudioQueue } from "@contexts";
-import type { Song } from "@types";
+import type { Song, Playlist, Album } from "@types";
 import styles from "./QueueMenu.module.css";
 import { useCallback } from "react";
 import classNames from "classnames";
@@ -9,7 +9,8 @@ import classNames from "classnames";
 interface QueueMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  song: Song;
+  entity: Song | Playlist | Album;
+  entityType: "song" | "list";
   buttonRef: React.RefObject<HTMLButtonElement | null>;
   justification?: "left" | "center" | "right";
 }
@@ -17,7 +18,8 @@ interface QueueMenuProps {
 const QueueMenu: React.FC<QueueMenuProps> = ({
   isOpen,
   onClose,
-  song,
+  entity,
+  entityType,
   buttonRef,
   justification = "center",
 }) => {
@@ -30,7 +32,7 @@ const QueueMenu: React.FC<QueueMenuProps> = ({
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   const handleClickOutside = useCallback(
@@ -44,7 +46,7 @@ const QueueMenu: React.FC<QueueMenuProps> = ({
         onClose();
       }
     },
-    [onClose, buttonRef]
+    [onClose, buttonRef],
   );
 
   useEffect(() => {
@@ -59,13 +61,21 @@ const QueueMenu: React.FC<QueueMenuProps> = ({
     };
   }, [isOpen, handleEscape, handleClickOutside]);
 
-  const handleQueueNext = () => {
-    actions.queueNext(song);
+  const handleQueueNext = async () => {
+    if (entityType === "song") {
+      actions.queueNext(entity as Song);
+    } else {
+      await actions.queueListNext(entity as Playlist | Album);
+    }
     onClose();
   };
 
-  const handleQueueLast = () => {
-    actions.queueLast(song);
+  const handleQueueLast = async () => {
+    if (entityType === "song") {
+      actions.queueLast(entity as Song);
+    } else {
+      await actions.queueListLast(entity as Playlist | Album);
+    }
     onClose();
   };
 

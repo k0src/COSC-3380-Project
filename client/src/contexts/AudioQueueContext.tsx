@@ -32,7 +32,7 @@ import {
   createDebouncedSave,
   isLocalStorageAvailable,
 } from "@util";
-import { songApi, playlistApi, albumApi } from "@api";
+import { songApi, playlistApi, albumApi, artistApi } from "@api";
 import { AUDIO_QUEUE_STORAGE_KEYS, AUDIO_CONSTANTS } from "@constants";
 
 const isSong = (entity: PlayableEntity): entity is Song => {
@@ -79,7 +79,12 @@ function audioQueueReducer(
         };
       }
 
-      const newQueueItems = createQueueItems(action.songs, false);
+      const newQueueItems = createQueueItems(
+        action.songs,
+        false,
+        action.sourceId,
+        action.sourceType
+      );
       return {
         ...state,
         queue: newQueueItems,
@@ -146,6 +151,63 @@ function audioQueueReducer(
       return {
         ...state,
         queue: [...state.queue, newQueueItem],
+      };
+    }
+
+    case "QUEUE_LIST_NEXT": {
+      if (action.songs.length === 0) {
+        return state;
+      }
+
+      const insertPosition = state.currentIndex + 1;
+      const newQueueItems = action.songs.map((song, index) =>
+        createQueueItem(song, true, undefined, "next", index + 1)
+      );
+
+      if (state.queue.length === 0) {
+        return {
+          ...state,
+          queue: newQueueItems,
+          currentIndex: 0,
+          currentSong: action.songs[0],
+          currentQueueId: newQueueItems[0].queueId,
+        };
+      }
+
+      const newQueue = insertItemsAtPosition(
+        state.queue,
+        newQueueItems,
+        insertPosition
+      );
+
+      return {
+        ...state,
+        queue: newQueue,
+      };
+    }
+
+    case "QUEUE_LIST_LAST": {
+      if (action.songs.length === 0) {
+        return state;
+      }
+
+      const newQueueItems = action.songs.map((song) =>
+        createQueueItem(song, true, undefined, "last", undefined)
+      );
+
+      if (state.queue.length === 0) {
+        return {
+          ...state,
+          queue: newQueueItems,
+          currentIndex: 0,
+          currentSong: action.songs[0],
+          currentQueueId: newQueueItems[0].queueId,
+        };
+      }
+
+      return {
+        ...state,
+        queue: [...state.queue, ...newQueueItems],
       };
     }
 
@@ -689,7 +751,12 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
           const songs = await playlistApi.getSongs(playable.id, {
             includeArtists: true,
           });
-          dispatch({ type: "PLAY_LIST", songs });
+          dispatch({
+            type: "PLAY_LIST",
+            songs,
+            sourceId: playable.id,
+            sourceType: "playlist",
+          });
           if (songs.length > 0) {
             await audioManager.play(songs[0]);
             dispatch({ type: "SET_PLAYING", isPlaying: true });
@@ -698,14 +765,44 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
           const songs = await albumApi.getSongs(playable.id, {
             includeArtists: true,
           });
-          dispatch({ type: "PLAY_LIST", songs });
+          dispatch({
+            type: "PLAY_LIST",
+            songs,
+            sourceId: playable.id,
+            sourceType: "album",
+          });
           if (songs.length > 0) {
             await audioManager.play(songs[0]);
             dispatch({ type: "SET_PLAYING", isPlaying: true });
           }
-        } else {
-          console.warn("Invalid playable entity provided to play");
         }
+      } catch (err) {
+        console.error("Failed to play audio:", err);
+        dispatch({
+          type: "SET_ERROR",
+          error: "Failed to load audio. The file may be unavailable.",
+        });
+        dispatch({ type: "SET_PLAYING", isPlaying: false });
+      }
+    },
+
+    playArtist: async (artistId: string) => {
+      try {
+        // TODO: pagination
+        const songs = await artistApi.getSongs(artistId, {
+          includeArtists: true,
+          orderByColumn: "streams",
+          orderByDirection: "DESC",
+        });
+
+        if (songs.length === 0) {
+          console.warn("No songs found for artist");
+          return;
+        }
+
+        dispatch({ type: "PLAY_LIST", songs });
+        await audioManager.play(songs[0]);
+        dispatch({ type: "SET_PLAYING", isPlaying: true });
       } catch (err) {
         console.error("Failed to play audio:", err);
         dispatch({
@@ -784,6 +881,56 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
         return;
       }
       dispatch({ type: "QUEUE_LAST", song });
+    },
+
+    queueListNext: async (entity: Playlist | Album) => {
+      try {
+        let songs: Song[] = [];
+
+        if (isPlaylist(entity)) {
+          songs = await playlistApi.getSongs(entity.id, {
+            includeArtists: true,
+          });
+        } else if (isAlbum(entity)) {
+          songs = await albumApi.getSongs(entity.id, {
+            includeArtists: true,
+          });
+        }
+
+        if (songs.length === 0) {
+          console.warn("No songs found in the list");
+          return;
+        }
+
+        dispatch({ type: "QUEUE_LIST_NEXT", songs });
+      } catch (error) {
+        console.error("Failed to queue list next:", error);
+      }
+    },
+
+    queueListLast: async (entity: Playlist | Album) => {
+      try {
+        let songs: Song[] = [];
+
+        if (isPlaylist(entity)) {
+          songs = await playlistApi.getSongs(entity.id, {
+            includeArtists: true,
+          });
+        } else if (isAlbum(entity)) {
+          songs = await albumApi.getSongs(entity.id, {
+            includeArtists: true,
+          });
+        }
+
+        if (songs.length === 0) {
+          console.warn("No songs found in the list");
+          return;
+        }
+
+        dispatch({ type: "QUEUE_LIST_LAST", songs });
+      } catch (error) {
+        console.error("Failed to queue list last:", error);
+      }
     },
 
     clearQueue: (

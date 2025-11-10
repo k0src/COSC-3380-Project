@@ -16,14 +16,12 @@ const SKELETON_PADDING = 8;
 
 export interface WaveformPlayerProps {
   audioSrc: string;
-  captureKeyboard?: boolean;
   onPlay?: () => void;
   disabled?: boolean;
 }
 
 const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
   audioSrc,
-  captureKeyboard,
   onPlay,
   disabled,
 }) => {
@@ -97,28 +95,6 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
     console.error("WaveSurfer error:", error);
     setIsReady(false);
   }, []);
-
-  useEffect(() => {
-    if (!captureKeyboard || !isCurrentSong) return;
-
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (
-        e.code === "Space" &&
-        e.target instanceof HTMLElement &&
-        !["INPUT", "TEXTAREA"].includes(e.target.tagName)
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        togglePlay();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress, { capture: true });
-    return () =>
-      window.removeEventListener("keydown", handleKeyPress, {
-        capture: true,
-      });
-  }, [captureKeyboard, togglePlay, isCurrentSong]);
 
   useEffect(() => {
     setShowSkeleton(true);

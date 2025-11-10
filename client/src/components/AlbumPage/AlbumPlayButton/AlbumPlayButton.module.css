@@ -1,0 +1,29 @@
+.playButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-white);
+  cursor: pointer;
+  font-size: var(--icon-size-md);
+  transition: color var(--transition-speed) ease-in-out;
+  font-size: 6.4rem;
+}
+
+.playButton:hover {
+  color: var(--color-red);
+}
+
+.playButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.playButtonActive {
+  color: var(--color-red);
+}
+
+.playButton svg {
+  padding: 0;
+}

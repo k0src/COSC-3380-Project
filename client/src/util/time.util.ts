@@ -48,3 +48,16 @@ export const formatRelativeDate = (dateString: string): string => {
   const years = Math.floor(days / 365);
   return `${years} ${years === 1 ? "year" : "years"} ago`;
 };
+
+/**
+ * Formats runtime in seconds into HH hr MM min format.
+ * @param seconds The runtime in seconds.
+ * @returns Formatted runtime string.
+ */
+export const formatRuntime = (seconds: number) => {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const hrsPart = hrs > 0 ? `${hrs} hr ` : "";
+  const minsPart = `${mins} min`;
+  return `${hrsPart}${minsPart}`.trim();
+};

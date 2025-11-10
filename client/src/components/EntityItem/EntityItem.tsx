@@ -2,7 +2,7 @@ import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAudioQueue, useAuth } from "@contexts";
 import type { Song, Playlist, Album } from "@types";
-import { QueueMenu } from "@components";
+import { QueueMenu, SoundVisualizer } from "@components";
 import styles from "./EntityItem.module.css";
 import musicPlaceholder from "@assets/music-placeholder.png";
 import artistPlaceholder from "@assets/artist-placeholder.png";
@@ -62,7 +62,8 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
               <QueueMenu
                 isOpen={queueMenuOpen}
                 onClose={() => setQueueMenuOpen(false)}
-                song={entity as Song}
+                entity={entity as Song}
+                entityType="song"
                 buttonRef={queueButtonRef}
                 justification="right"
               />
@@ -91,7 +92,8 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
             <QueueMenu
               isOpen={queueMenuOpen}
               onClose={() => setQueueMenuOpen(false)}
-              song={entity as Song}
+              entity={entity as Song}
+              entityType="song"
               buttonRef={queueButtonRef}
               justification="right"
             />
@@ -104,7 +106,7 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
         )}
       </div>
     );
-  }
+  },
 );
 
 type EntityItemProps =
@@ -155,6 +157,11 @@ const EntityItem: React.FC<EntityItemProps> = ({
   index,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { state } = useAudioQueue();
+
+  const isCurrentSong =
+    type === "song" && entity && state.currentSong?.id === (entity as Song).id;
+  const showVisualizer = !isSmall && type === "song" && isCurrentSong;
 
   return (
     <div
@@ -163,7 +170,15 @@ const EntityItem: React.FC<EntityItemProps> = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       {!isSmall && index !== undefined && (
-        <span className={styles.entityIndex}>{index}</span>
+        <>
+          {showVisualizer ? (
+            <div className={styles.entityIndex}>
+              <SoundVisualizer isPlaying={state.isPlaying} />
+            </div>
+          ) : (
+            <span className={styles.entityIndex}>{index}</span>
+          )}
+        </>
       )}
       <img
         src={

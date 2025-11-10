@@ -1,0 +1,57 @@
+.detailsContainer {
+  background-color: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  border: 2px solid var(--color-panel-border);
+  color: var(--color-white);
+  padding: var(--spacing-md);
+  display: grid;
+  grid-template-columns: 1fr 2rem 1fr;
+  column-gap: 0.4rem;
+  align-items: center;
+  flex: 1;
+}
+
+.detailsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: flex-start;
+  min-width: 0;
+  width: 100%;
+}
+
+.detailLabel {
+  color: var(--color-text-gray);
+}
+
+.detailWrapper {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+}
+
+.detailIcon {
+  font-size: var(--font-size-lg);
+  min-width: var(--font-size-lg);
+  color: var(--color-text-gray);
+}
+
+.detailName {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.genreName {
+  transition: color var(--transition-speed) ease-in-out;
+  cursor: pointer;
+}
+
+.genreName:hover {
+  color: var(--color-red);
+}

@@ -1,5 +1,4 @@
 import { useMemo, useCallback, memo, useState } from "react";
-import { useStreamTracking } from "@hooks";
 import { WaveformPlayer, CoverLightbox } from "@components";
 import type { Song, CoverGradient, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
@@ -23,7 +22,6 @@ const SongContainer: React.FC<SongContainerProps> = ({
 }) => {
   const { actions } = useAudioQueue();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  useStreamTracking();
 
   const gradientStyle = useMemo(
     () =>
@@ -67,22 +65,16 @@ const SongContainer: React.FC<SongContainerProps> = ({
           <span className={styles.artistName}>{mainArtist?.display_name}</span>
           <span className={styles.songTitle}>{song.title}</span>
           <div className={styles.interactionsContainer}>
-            <div className={styles.interactionsContainer}>
-              <InteractionStat icon={LuPlay} value={song.streams ?? 0} />
-              <InteractionStat icon={LuThumbsUp} value={song.likes ?? 0} />
-              <InteractionStat
-                icon={LuMessageSquareText}
-                value={numberComments ?? 0}
-              />
-            </div>
+            <InteractionStat icon={LuPlay} value={song.streams ?? 0} />
+            <InteractionStat icon={LuThumbsUp} value={song.likes ?? 0} />
+            <InteractionStat
+              icon={LuMessageSquareText}
+              value={numberComments ?? 0}
+            />
           </div>
         </div>
         {song.audio_url && (
-          <WaveformPlayer
-            audioSrc={song.audio_url}
-            captureKeyboard={false}
-            onPlay={handlePlay}
-          />
+          <WaveformPlayer audioSrc={song.audio_url} onPlay={handlePlay} />
         )}
       </div>
 

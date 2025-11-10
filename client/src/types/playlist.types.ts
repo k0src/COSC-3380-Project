@@ -6,10 +6,12 @@ export interface Playlist {
   description: string;
   created_by: UUID;
   created_at: string;
+  updated_at: string;
 
   song_count?: number;
   user?: User;
   likes?: number;
+  runtime?: number;
   image_url?: string;
 
   type: "playlist";

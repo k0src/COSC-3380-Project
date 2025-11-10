@@ -1,0 +1,42 @@
+.playlistLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+}
+
+.playlistLayoutTop {
+  display: grid;
+  grid-template-columns: 1fr 36rem;
+  gap: var(--layout-gap-hor);
+}
+
+.playlistLayoutTopRight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  justify-content: space-between;
+}
+
+.playlistLayoutBottom {
+  display: grid;
+  grid-template-columns: 1fr 36rem;
+  gap: var(--layout-gap-hor);
+}
+
+.noSongsMessage {
+  text-align: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
+
+.playlistLayoutBottomRight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.suggestionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}

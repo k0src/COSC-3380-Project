@@ -5,6 +5,7 @@ import type {
   CoverGradient,
   SuggestedSong,
   WeeklyPlays,
+  User,
 } from "@types";
 
 export const songApi = {
@@ -15,9 +16,23 @@ export const songApi = {
       includeArtists?: boolean;
       includeLikes?: boolean;
       includeComments?: boolean;
-    }
+    },
   ) {
     const response = await api.get<Song>(`/songs/${id}`, {
+      params: options,
+    });
+    return response.data;
+  },
+
+  async getMany(options?: {
+    includeAlbums?: boolean;
+    includeArtists?: boolean;
+    includeLikes?: boolean;
+    includeComments?: boolean;
+    limit?: number;
+    offset?: number;
+  }) {
+    const response = await api.get<Song[]>(`/songs`, {
       params: options,
     });
     return response.data;
@@ -33,13 +48,13 @@ export const songApi = {
       includeComments?: boolean;
       limit?: number;
       offset?: number;
-    }
+    },
   ) {
     const response = await api.get<SuggestedSong[]>(
       `/songs/${id}/suggestions`,
       {
         params: options,
-      }
+      },
     );
     return response.data;
   },
@@ -50,13 +65,26 @@ export const songApi = {
 
   async getCoverGradient(id: UUID) {
     const response = await api.get<CoverGradient>(
-      `/songs/${id}/cover-gradient`
+      `/songs/${id}/cover-gradient`,
     );
     return response.data;
   },
 
   async getWeeklyPlays(id: UUID) {
     const response = await api.get<WeeklyPlays>(`/songs/${id}/weekly-plays`);
+    return response.data;
+  },
+
+  async getLikedBy(
+    id: UUID,
+    options?: {
+      limit?: number;
+      offset?: number;
+    },
+  ) {
+    const response = await api.get<User[]>(`/songs/${id}/liked-by`, {
+      params: options,
+    });
     return response.data;
   },
 };

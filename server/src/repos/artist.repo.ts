@@ -1,6 +1,11 @@
 import { Album, Artist, ArtistSong, Song, UUID } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const API_URL = process.env.API_URL;
 
 export default class ArtistRepository {
   /**
@@ -420,6 +425,7 @@ export default class ArtistRepository {
    * Fetches albums for a given artist.
    * @param artistId The ID of the artist.
    * @param options Options for pagination and related data.
+   * @param options.includeArtist Option to include the artist data with user.
    * @param options.includeLikes Option to include the like count.
    * @param options.includeRuntime Option to include the total runtime of the album.
    * @param options.includeSongCount Option to include the total number of songs on the album.
@@ -434,6 +440,7 @@ export default class ArtistRepository {
   static async getAlbums(
     artistId: UUID,
     options?: {
+      includeArtist?: boolean;
       includeLikes?: boolean;
       includeRuntime?: boolean;
       includeSongCount?: boolean;
@@ -468,24 +475,34 @@ export default class ArtistRepository {
 
       const sql = `
         SELECT a.*,
-        CASE WHEN $1 THEN (SELECT COUNT(*) FROM album_likes al 
+        CASE WHEN $1 THEN 
+          (SELECT row_to_json(artist_with_user)
+          FROM (
+            SELECT ar.*,
+              row_to_json(u) AS user
+            FROM artists ar
+            LEFT JOIN users u ON ar.user_id = u.id
+            WHERE ar.id = a.created_by
+          ) AS artist_with_user)
+        ELSE NULL END AS artist,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al 
           WHERE al.album_id = a.id)
         ELSE NULL END as likes,
-        CASE WHEN $2 THEN (SELECT SUM(s.duration) FROM songs s
+        CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s
           JOIN album_songs als ON s.id = als.song_id 
           WHERE als.album_id = a.id)
         ELSE NULL END as runtime,
-        CASE WHEN $3 THEN (SELECT COUNT(*) FROM album_songs als 
+        CASE WHEN $4 THEN (SELECT COUNT(*) FROM album_songs als 
           WHERE als.album_id = a.id)
         ELSE NULL END as song_count
         FROM albums a
-        LEFT JOIN artists ar ON a.created_by = ar.id
-        WHERE ar.id = $4
+        WHERE a.created_by = $5
         ORDER BY ${sqlOrderByColumn} ${orderByDirection}
-        LIMIT $5 OFFSET $6
+        LIMIT $6 OFFSET $7
       `;
 
       const params = [
+        options?.includeArtist ?? false,
         options?.includeLikes ?? false,
         options?.includeRuntime ?? false,
         options?.includeSongCount ?? false,
@@ -503,6 +520,14 @@ export default class ArtistRepository {
         albums.map(async (album) => {
           if (album.image_url) {
             album.image_url = getBlobUrl(album.image_url);
+          }
+          if (album.artist) {
+            if (album.artist.user && album.artist.user.profile_picture_url) {
+              album.artist.user.profile_picture_url = getBlobUrl(
+                album.artist.user.profile_picture_url
+              );
+            }
+            album.artist.type = "artist";
           }
           album.type = "album";
           return album;
@@ -666,6 +691,7 @@ export default class ArtistRepository {
     }
   }
 
+  //! include cover image - expensive so make it optional
   /**
    * Fetches playlists that feature songs by the given artist.
    * @param artistId The ID of the artist.
@@ -688,19 +714,7 @@ export default class ArtistRepository {
       const playlists = await query(
         `SELECT DISTINCT ON (p.id) p.*,
          CASE WHEN $1 THEN row_to_json(u.*) 
-         ELSE NULL END as user,
-         (
-           SELECT json_agg(image_url)
-           FROM (
-             SELECT s.image_url
-             FROM playlist_songs ps
-             JOIN songs s ON ps.song_id = s.id
-             WHERE ps.playlist_id = p.id
-             AND s.image_url IS NOT NULL
-             ORDER BY ps.added_at
-             LIMIT 4
-           ) AS limited_images
-         ) as song_images
+         ELSE NULL END as user
          FROM playlists p
          JOIN playlist_songs ps ON p.id = ps.playlist_id
          JOIN songs s ON ps.song_id = s.id
@@ -716,12 +730,13 @@ export default class ArtistRepository {
 
       const processedPlaylists = await Promise.all(
         playlists.map(async (playlist) => {
-          if (playlist.song_images && playlist.song_images.length > 0) {
-            playlist.image_url = `/api/playlists/${playlist.id}/cover-image`;
+          if (playlist.user && playlist.user.profile_picture_url) {
+            playlist.user.profile_picture_url = getBlobUrl(
+              playlist.user.profile_picture_url
+            );
           }
 
-          delete playlist.song_images;
-
+          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
           playlist.type = "playlist";
           return playlist;
         })
@@ -753,6 +768,50 @@ export default class ArtistRepository {
       return parseInt(res[0]?.monthly_listeners ?? "0", 10);
     } catch (error) {
       console.error("Error fetching monthly listeners for artist:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verifies an artist.
+   * @param artistId The ID of the artist to verify.
+   * @returns True if the artist was successfully verified.
+   * @throws Error if the operation fails.
+   */
+  static async verifyArtist(artistId: UUID): Promise<boolean> {
+    try {
+      const res = await query(
+        `UPDATE artists SET verified = TRUE 
+        WHERE id = $1 
+        RETURNING verified`,
+        [artistId]
+      );
+
+      return res[0]?.verified ?? false;
+    } catch (error) {
+      console.error("Error verifying artist:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Unverifies an artist.
+   * @param artistId The ID of the artist to unverify.
+   * @returns True if the artist was successfully unverified.
+   * @throws Error if the operation fails.
+   */
+  static async unverifyArtist(artistId: UUID): Promise<boolean> {
+    try {
+      const res = await query(
+        `UPDATE artists SET verified = FALSE
+        WHERE id = $1
+        RETURNING verified`,
+        [artistId]
+      );
+
+      return res[0]?.verified === false;
+    } catch (error) {
+      console.error("Error unverifying artist:", error);
       throw error;
     }
   }

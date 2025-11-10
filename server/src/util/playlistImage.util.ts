@@ -55,7 +55,8 @@ export async function generatePlaylistImage(
 ): Promise<Buffer> {
   const { playlistId, songImageUrls, size = 640 } = options;
 
-  const sortedUrls = [...songImageUrls].sort();
+  const baseUrls = songImageUrls.map((url) => url.split("?")[0]);
+  const sortedUrls = [...baseUrls].sort();
   const cacheKey = `${playlistId}:${sortedUrls.join(",")}`;
 
   if (imageCache.has(cacheKey)) {
@@ -116,7 +117,6 @@ export async function generatePlaylistImage(
     }
 
     imageCache.set(cacheKey, compositeImage);
-
     if (imageCache.size > 1000) {
       const firstKey = imageCache.keys().next().value;
       if (firstKey) {
@@ -130,3 +130,8 @@ export async function generatePlaylistImage(
     throw new Error("Failed to generate playlist image");
   }
 }
+
+/**
+ * Clears the playlist image cache
+ */
+export const clearImageCache = async () => imageCache.clear();

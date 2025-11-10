@@ -35,9 +35,27 @@ export { default as ArtistActions } from "./ArtistPage/ArtistActions/ArtistActio
 export { default as ArtistPlaylists } from "./ArtistPage/ArtistPlaylists/ArtistPlaylists.js";
 export { default as ArtistAbout } from "./ArtistPage/ArtistAbout/ArtistAbout.js";
 
+/* ============================== PlaylistPage ============================== */
+export { default as RelatedPlaylists } from "./PlaylistPage/RelatedPlaylists/RelatedPlaylists.js";
+export { default as PlaylistContainer } from "./PlaylistPage/PlaylistContainer/PlaylistContainer.js";
+export { default as PlaylistPlayButton } from "./PlaylistPage/PlaylistPlayButton/PlaylistPlayButton.js";
+export { default as PlaylistUser } from "./PlaylistPage/PlaylistUser/PlaylistUser.js";
+export { default as PlaylistDescription } from "./PlaylistPage/PlaylistDescription/PlaylistDescription.js";
+export { default as PlaylistActions } from "./PlaylistPage/PlaylistActions/PlaylistActions.js";
+export { default as RemixDialog } from "./PlaylistPage/RemixDialog/RemixDialog.js";
+
+/* =============================== Album Page =============================== */
+export { default as AlbumContainer } from "./AlbumPage/AlbumContainer/AlbumContainer.js";
+export { default as AlbumPlayButton } from "./AlbumPage/AlbumPlayButton/AlbumPlayButton.js";
+export { default as AlbumArtist } from "./AlbumPage/AlbumArtist/AlbumArtist.js";
+export { default as AlbumInfo } from "./AlbumPage/AlbumInfo/AlbumInfo.js";
+export { default as AlbumActions } from "./AlbumPage/AlbumActions/AlbumActions.js";
+export { default as RelatedAlbums } from "./AlbumPage/RelatedAlbums/RelatedAlbums.js";
+
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";
 export { default as FollowProfiles } from "./FollowProfiles/FollowProfiles.js";
+export { default as LikeProfiles } from "./LikeProfiles/LikeProfiles.js";
 
 /* ================================== Cards ================================== */
 export { default as SongCard } from "./SongCard/SongCard.js";
@@ -47,6 +65,7 @@ export { default as SlidingCardList } from "./SlidingCardList/SlidingCardList.js
 
 /* ================================= Modals ================================= */
 export { default as ShareModal } from "./ShareModal/ShareModal.js";
+export { default as KeyboardShortcutsModal } from "./KeyboardShortcutsModal/KeyboardShortcutsModal.js";
 export { default as QueueMenu } from "./QueueMenu/QueueMenu.js";
 export { default as CoverLightbox } from "./CoverLightbox/CoverLightbox.js";
 export { default as QueueManager } from "./MainLayout/QueueManager/QueueManager.js";
@@ -57,3 +76,6 @@ export { default as ErrorPage } from "./ErrorPage/ErrorPage.js";
 
 /* ================================ Dev Tools =============================== */
 export { default as DevBanner } from "./DevBanner/DevBanner.js";
+
+/* ================================== Audio ================================= */
+export { default as SoundVisualizer } from "./SoundVisualizer/SoundVisualizer.js";
