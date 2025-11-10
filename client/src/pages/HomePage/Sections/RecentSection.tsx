@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./Sections.module.css";
-import { SongCard } from "@components";
+import SongCard from "../../../components/SongCard/SongCard";
 
 interface Song {
   image: string;
@@ -16,10 +16,7 @@ interface RecentSongsSectionProps {
   songs: Song[];
 }
 
-const RecentSongsSection: React.FC<RecentSongsSectionProps> = ({
-  title,
-  songs,
-}) => (
+const RecentSongsSection: React.FC<RecentSongsSectionProps> = ({ title, songs }) => (
   <section className={styles.section}>
     <div className={styles.sectionHeader}>
       <h2>{title}</h2>

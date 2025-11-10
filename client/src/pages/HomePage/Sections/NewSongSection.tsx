@@ -16,11 +16,7 @@ const NewSongsSection: React.FC<NewSongsSectionProps> = ({ title, songs }) => (
     <div className={styles.newSongsRow}>
       {songs.map((song, index) => (
         <div key={index} className={styles.newSongCard}>
-          <img
-            src={song.image}
-            alt={song.title}
-            className={styles.newSongImage}
-          />
+          <img src={song.image} alt={song.title} className={styles.newSongImage} />
           <p className={styles.newSongTitle}>{song.title}</p>
         </div>
       ))}
