@@ -467,17 +467,17 @@ export default class SongRepository {
 
   /**
    * Fetches albums for a given song.
-   * @param songId - The ID of the song.
-   * @param options - Options for pagination and including related data.
-   * @param options.includeArtist - Option to include the artist data.
-   * @param options.includeLikes - Option to include the like count.
-   * @param options.includeRuntime - Option to include the total runtime of the album.
-   * @param options.includeSongCount - Option to include the total number of songs on the album.
+   * @param songId The ID of the song.
+   * @param options Options for pagination and including related data.
+   * @param options.includeArtist Option to include the artist data.
+   * @param options.includeLikes Option to include the like count.
+   * @param options.includeRuntime Option to include the total runtime of the album.
+   * @param options.includeSongCount Option to include the total number of songs on the album.
    * @param options.orderBy Object specifying the column and direction to order by.
    * @param options.orderBy.column The column to order by.
    * @param options.orderBy.direction The direction to order by (ASC or DESC).
-   * @param options.limit - Maximum number of albums to return.
-   * @param options.offset - Number of albums to skip.
+   * @param options.limit Maximum number of albums to return.
+   * @param options.offset Number of albums to skip.
    * @returns A list of albums that contain the song.
    * @throws Error if the operation fails.
    */
@@ -519,7 +519,15 @@ export default class SongRepository {
 
       const sql = `
         SELECT a.*,
-        CASE WHEN $1 THEN row_to_json(ar)
+        CASE WHEN $1 THEN 
+          (SELECT row_to_json(artist_with_user)
+          FROM (
+            SELECT ar.*,
+              row_to_json(u) AS user
+            FROM artists ar
+            LEFT JOIN users u ON ar.user_id = u.id
+            WHERE ar.id = a.created_by
+          ) AS artist_with_user)
         ELSE NULL END AS artist,
         CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al
           WHERE al.album_id = a.id)
@@ -532,7 +540,6 @@ export default class SongRepository {
           WHERE als.album_id = a.id)
         ELSE NULL END AS song_count
         FROM albums a
-        LEFT JOIN artists ar ON a.created_by = ar.id
         JOIN album_songs als ON als.album_id = a.id
         WHERE als.song_id = $5
         ORDER BY ${sqlOrderByColumn} ${orderByDirection}
@@ -560,6 +567,11 @@ export default class SongRepository {
             album.image_url = getBlobUrl(album.image_url);
           }
           if (album.artist) {
+            if (album.artist.user && album.artist.user.profile_picture_url) {
+              album.artist.user.profile_picture_url = getBlobUrl(
+                album.artist.user.profile_picture_url
+              );
+            }
             album.artist.type = "artist";
           }
           album.type = "album";

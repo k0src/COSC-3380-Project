@@ -425,6 +425,7 @@ export default class ArtistRepository {
    * Fetches albums for a given artist.
    * @param artistId The ID of the artist.
    * @param options Options for pagination and related data.
+   * @param options.includeArtist Option to include the artist data with user.
    * @param options.includeLikes Option to include the like count.
    * @param options.includeRuntime Option to include the total runtime of the album.
    * @param options.includeSongCount Option to include the total number of songs on the album.
@@ -439,6 +440,7 @@ export default class ArtistRepository {
   static async getAlbums(
     artistId: UUID,
     options?: {
+      includeArtist?: boolean;
       includeLikes?: boolean;
       includeRuntime?: boolean;
       includeSongCount?: boolean;
@@ -473,24 +475,34 @@ export default class ArtistRepository {
 
       const sql = `
         SELECT a.*,
-        CASE WHEN $1 THEN (SELECT COUNT(*) FROM album_likes al 
+        CASE WHEN $1 THEN 
+          (SELECT row_to_json(artist_with_user)
+          FROM (
+            SELECT ar.*,
+              row_to_json(u) AS user
+            FROM artists ar
+            LEFT JOIN users u ON ar.user_id = u.id
+            WHERE ar.id = a.created_by
+          ) AS artist_with_user)
+        ELSE NULL END AS artist,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al 
           WHERE al.album_id = a.id)
         ELSE NULL END as likes,
-        CASE WHEN $2 THEN (SELECT SUM(s.duration) FROM songs s
+        CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s
           JOIN album_songs als ON s.id = als.song_id 
           WHERE als.album_id = a.id)
         ELSE NULL END as runtime,
-        CASE WHEN $3 THEN (SELECT COUNT(*) FROM album_songs als 
+        CASE WHEN $4 THEN (SELECT COUNT(*) FROM album_songs als 
           WHERE als.album_id = a.id)
         ELSE NULL END as song_count
         FROM albums a
-        LEFT JOIN artists ar ON a.created_by = ar.id
-        WHERE ar.id = $4
+        WHERE a.created_by = $5
         ORDER BY ${sqlOrderByColumn} ${orderByDirection}
-        LIMIT $5 OFFSET $6
+        LIMIT $6 OFFSET $7
       `;
 
       const params = [
+        options?.includeArtist ?? false,
         options?.includeLikes ?? false,
         options?.includeRuntime ?? false,
         options?.includeSongCount ?? false,
@@ -508,6 +520,14 @@ export default class ArtistRepository {
         albums.map(async (album) => {
           if (album.image_url) {
             album.image_url = getBlobUrl(album.image_url);
+          }
+          if (album.artist) {
+            if (album.artist.user && album.artist.user.profile_picture_url) {
+              album.artist.user.profile_picture_url = getBlobUrl(
+                album.artist.user.profile_picture_url
+              );
+            }
+            album.artist.type = "artist";
           }
           album.type = "album";
           return album;

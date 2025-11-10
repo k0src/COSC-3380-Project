@@ -76,7 +76,7 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
     return <div className={styles.error}>Failed to load playlists.</div>;
   }
 
-  if (!playlists || playlists.length === 0) {
+  if (!filteredPlaylists || filteredPlaylists.length === 0) {
     return null;
   }
 

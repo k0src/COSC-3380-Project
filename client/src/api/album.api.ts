@@ -1,7 +1,22 @@
 import api from "./api";
-import type { AlbumSong, UUID, User } from "@types";
+import type { Album, AlbumSong, UUID, User } from "@types";
 
 export const albumApi = {
+  async getAlbumById(
+    id: UUID,
+    options?: {
+      includeArtist?: boolean;
+      includeLikes?: boolean;
+      includeSongCount?: boolean;
+      includeRuntime?: boolean;
+    }
+  ) {
+    const response = await api.get(`/albums/${id}`, {
+      params: options,
+    });
+    return response.data;
+  },
+
   async getSongs(
     id: UUID,
     options?: {
@@ -9,7 +24,7 @@ export const albumApi = {
       includeLikes?: boolean;
       limit?: number;
       offset?: number;
-    },
+    }
   ) {
     const response = await api.get<AlbumSong[]>(`/albums/${id}/songs`, {
       params: options,
@@ -22,9 +37,26 @@ export const albumApi = {
     options?: {
       limit?: number;
       offset?: number;
-    },
+    }
   ) {
     const response = await api.get<User[]>(`/albums/${id}/liked-by`, {
+      params: options,
+    });
+    return response.data;
+  },
+
+  async getRelatedAlbums(
+    id: UUID,
+    options?: {
+      includeArtist?: boolean;
+      includeLikes?: boolean;
+      includeSongCount?: boolean;
+      includeRuntime?: boolean;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    const response = await api.get<Album[]>(`/albums/${id}/related`, {
       params: options,
     });
     return response.data;

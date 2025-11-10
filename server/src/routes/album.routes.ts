@@ -116,7 +116,44 @@ router.get(
       console.error("Error in GET /api/albums/:id/liked-by:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
+);
+
+// GET /api/albums/:id/related
+router.get(
+  "/:id/related",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const {
+        includeArtist,
+        includeLikes,
+        includeSongCount,
+        includeRuntime,
+        limit,
+        offset,
+      } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "Album ID is required" });
+        return;
+      }
+
+      const albums = await AlbumRepository.getRelatedAlbums(id, {
+        includeArtist: includeArtist === "true",
+        includeLikes: includeLikes === "true",
+        includeSongCount: includeSongCount === "true",
+        includeRuntime: includeRuntime === "true",
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(albums);
+    } catch (error) {
+      console.error("Error in GET /albums/:id/related:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
 );
 
 export default router;

@@ -44,6 +44,14 @@ export { default as PlaylistDescription } from "./PlaylistPage/PlaylistDescripti
 export { default as PlaylistActions } from "./PlaylistPage/PlaylistActions/PlaylistActions.js";
 export { default as RemixDialog } from "./PlaylistPage/RemixDialog/RemixDialog.js";
 
+/* =============================== Album Page =============================== */
+export { default as AlbumContainer } from "./AlbumPage/AlbumContainer/AlbumContainer.js";
+export { default as AlbumPlayButton } from "./AlbumPage/AlbumPlayButton/AlbumPlayButton.js";
+export { default as AlbumArtist } from "./AlbumPage/AlbumArtist/AlbumArtist.js";
+export { default as AlbumInfo } from "./AlbumPage/AlbumInfo/AlbumInfo.js";
+export { default as AlbumActions } from "./AlbumPage/AlbumActions/AlbumActions.js";
+export { default as RelatedAlbums } from "./AlbumPage/RelatedAlbums/RelatedAlbums.js";
+
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";
 export { default as FollowProfiles } from "./FollowProfiles/FollowProfiles.js";

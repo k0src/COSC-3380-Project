@@ -8,6 +8,7 @@ export interface Album {
   image_url?: string;
   audio_url: string;
   created_at: string;
+  genre: string;
 
   song_count?: number;
   artist?: Artist;

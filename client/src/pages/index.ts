@@ -7,6 +7,7 @@ export { default as SongPage } from "./SongPage/SongPage.js";
 export { default as ArtistPage } from "./ArtistPage/ArtistPage.js";
 export { default as ArtistDiscography } from "./ArtistPage/ArtistDiscography/ArtistDiscography.js";
 export { default as PlaylistPage } from "./PlaylistPage/PlaylistPage.js";
+export { default as AlbumPage } from "./AlbumPage/AlbumPage.js";
 
 export { default as LoginPage } from "./LoginPage/LoginPage.js";
 export { default as SignupPage } from "./SignupPage/SignupPage.js";
