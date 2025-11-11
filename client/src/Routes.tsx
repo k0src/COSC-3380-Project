@@ -3,7 +3,6 @@ import * as Pages from "./pages";
 import { AppLayout, MainLayout } from "@components";
 
 export default function AppRoutes() {
-  const { isAuthenticated, isLoading } = useAuth();
   return (
     <Routes>
       <Route path="/login" element={<Pages.LoginPage />} />
@@ -15,6 +14,14 @@ export default function AppRoutes() {
           element={
             <MainLayout>
               <Pages.HomePage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <MainLayout>
+              <Pages.SearchResultsPage />
             </MainLayout>
           }
         />

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./topBar.module.css"
 ;
 const HomeButton = "../../../public/TopBar/HomeButton.svg";
@@ -9,6 +10,19 @@ const ProfileButton = "../../../public/TopBar/ProfileButton.svg";
 
 
 const TopBar: React.FC = () => {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+
+  const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
+    if (e.key === "Enter") {
+      const q = query.trim();
+      if (q.length > 0) {
+        e.preventDefault();
+        navigate(`/search?q=${encodeURIComponent(q)}`);
+      }
+    }
+  };
+
   return (
     <header className={styles.topBarContainer}>
       {/*  Navigation Buttons  */}
@@ -30,6 +44,9 @@ const TopBar: React.FC = () => {
           className={styles.searchInput}
           type="text"
           placeholder="Search for songs, artists, albums, playlists..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={onKeyDown}
         />
       </div>
 

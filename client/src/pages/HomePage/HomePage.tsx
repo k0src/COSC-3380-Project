@@ -3,7 +3,7 @@ import styles from "./HomePage.module.css";
 import Sidebar from "../../components/SideBar/sidebar";
 import Topbar from "../../components/TopBar/topBar";
 import PlayerBar from "../../components/PlayerBar/playerBar";
-import FeaturedSection from "./sections/FeaturedSection";
+import FeaturedSection from "./Sections/FeaturedSection";
 import SongCard from "../../components/SongCard/SongCard";
 
 const HomePage: React.FC = () => {

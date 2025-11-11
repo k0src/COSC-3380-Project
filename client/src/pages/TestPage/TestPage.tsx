@@ -63,7 +63,7 @@ const TestPage: React.FC = () => {
                 <span className={styles.songInfoText}>ID: {song.id}</span>
                 <span className={styles.songInfoText}>Title: {song.title}</span>
                 <span className={styles.songInfoText}>
-                  Release Year: {song.release_year}
+                  Release Year: {new Date(song.release_date).getFullYear()}
                 </span>
                 <span className={styles.songInfoText}>
                   Image URL: {song.image_url}

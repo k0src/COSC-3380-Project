@@ -1,7 +1,13 @@
 import { Pool, PoolClient } from "pg";
 import dotenv from "dotenv";
+import path from "path";
 
-dotenv.config();
+// Load env from server/.env, then fallback to project root .env if needed
+const loaded = dotenv.config();
+if (loaded.error) {
+  const fallbackPath = path.resolve(process.cwd(), "../.env");
+  dotenv.config({ path: fallbackPath });
+}
 
 const {
   PGHOST,
@@ -11,23 +17,35 @@ const {
   PGDATABASE,
   PGPOOLSIZE,
   PGSSLMODE,
+  NODE_ENV,
 } = process.env;
 
-if (!PGHOST || !PGUSER || !PGPASSWORD || !PGDATABASE) {
+// Provide development fallbacks to avoid hard-crashing local server
+const isProduction = NODE_ENV === "production";
+const host = PGHOST || (isProduction ? undefined : "localhost");
+const port = PGPORT ? parseInt(PGPORT, 10) : 5432;
+const user = PGUSER || (isProduction ? undefined : "postgres");
+const password = PGPASSWORD || (isProduction ? undefined : "postgres");
+const database = PGDATABASE || (isProduction ? undefined : "postgres");
+
+if (isProduction && (!host || !user || !password || !database)) {
   throw new Error("Missing required Postgres environment variables.");
 }
 
-// ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : { rejectUnauthorized: false }, not working idek fix later
+// SSL handling: disable locally by default unless explicitly requested
+const sslSetting =
+  isProduction || (PGSSLMODE && PGSSLMODE.toLowerCase() !== "disable")
+    ? { rejectUnauthorized: false }
+    : false;
+
 const pool = new Pool({
-  host: PGHOST,
-  port: PGPORT ? parseInt(PGPORT, 10) : 5432,
-  user: PGUSER,
-  password: PGPASSWORD,
-  database: PGDATABASE,
+  host,
+  port,
+  user,
+  password,
+  database,
   max: PGPOOLSIZE ? parseInt(PGPOOLSIZE, 10) : undefined,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: sslSetting as any,
 });
 
 export async function query<T = any>(
