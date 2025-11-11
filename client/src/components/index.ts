@@ -25,7 +25,9 @@ export { default as SongDetails } from "./SongPage/SongDetails/SongDetails.js";
 export { default as SongActions } from "./SongPage/SongActions/SongActions.js";
 export { default as ArtistInfo } from "./SongPage/ArtistInfo/ArtistInfo.js";
 export { default as SongComments } from "./SongPage/SongComments/SongComments.js";
-export { default as CommentItem } from "./SongPage/CommentItem/CommentItem.js";
+export { default as CommentItem } from "./SongPage/SongComments/CommentItem/CommentItem.js";
+export { default as CommentInput } from "./SongPage/SongComments/CommentInput/CommentInput.js";
+export { default as CommentsList } from "./SongPage/SongComments/CommentsList/CommentsList.js";
 export { default as SongSuggestions } from "./SongPage/SongSuggestions/SongSuggestions.js";
 
 /* =============================== ArtistPage =============================== */
