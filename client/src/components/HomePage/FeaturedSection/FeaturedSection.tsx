@@ -1,5 +1,6 @@
 import React from "react";
-import styles from "./Sections.module.css";
+import styles from "./FeaturedSection.module.css";
+
 
 interface FeaturedSectionProps {
   title: string;
@@ -25,16 +26,17 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({
       <p className={styles.featuredDescription}>{description}</p>
       <div className={styles.featuredMeta}>
         <img className={styles.metaIcon} />
-        <span>{likes.toLocaleString()} likes</span>
-        <span>• {tracks} tracks</span>
-        <span>• {duration}</span>
+            <span>{likes.toLocaleString()} likes</span>
+            <span>• {tracks} tracks</span>
+            <span>• {duration}</span>
       </div>
     </div>
 
     <div className={styles.featuredRight}>
       <div className={styles.featuredImageContainer}>
         <img src={image} alt={title} className={styles.featuredImage} />
-        <button className={styles.playButton}></button>
+        <button className={styles.playButton}>
+        </button>
       </div>
     </div>
   </section>

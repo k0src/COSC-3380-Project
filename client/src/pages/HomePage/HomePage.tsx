@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./HomePage.module.css";
 import SongCard from "../../components/SongCard/SongCard";
-import FeaturedSection from "./Sections/FeaturedSection";
+import FeaturedSection from "../../components/HomePage/FeaturedSection/FeaturedSection"
 
 const HomePage: React.FC = () => {
   // Mock data
@@ -27,10 +27,11 @@ const HomePage: React.FC = () => {
         <div className={styles.topGrid}>
           {/* Featured Column */}
           <section className={styles.section}>
+            {/* Featured Section */}
             <FeaturedSection
               title="Chill Vibes"
               description="Smooth beats and ambient tunes to keep you relaxed."
-              image="/images/featured.jpg"
+              image= "https://placehold.co/600x400"
               likes={10234}
               tracks={58}
               duration="2h 15min"
