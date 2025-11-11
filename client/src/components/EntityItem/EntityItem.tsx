@@ -6,7 +6,8 @@ import { QueueMenu, SoundVisualizer, LazyImg } from "@components";
 import styles from "./EntityItem.module.css";
 import musicPlaceholder from "@assets/music-placeholder.png";
 import artistPlaceholder from "@assets/artist-placeholder.png";
-import { LuPlay, LuListEnd } from "react-icons/lu";
+import { LuPlay, LuPause, LuListEnd } from "react-icons/lu";
+import classNames from "classnames";
 
 interface EntityActionButtonsProps {
   type: "song" | "playlist" | "album" | "artist";
@@ -17,7 +18,7 @@ interface EntityActionButtonsProps {
 
 const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
   ({ type, entity, isHovered, isSmall }) => {
-    const { actions } = useAudioQueue();
+    const { state, actions } = useAudioQueue();
     const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
@@ -30,10 +31,47 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
       }
     }, [isHovered, queueMenuOpen]);
 
-    const handlePlay = useCallback(() => {
+    const currentQueueItem = useMemo(() => {
+      if (state.currentIndex < 0 || state.currentIndex >= state.queue.length) {
+        return null;
+      }
+      return state.queue[state.currentIndex];
+    }, [state.currentIndex, state.queue]);
+
+    const isEntityPlaying = useMemo(() => {
+      if (!entity || !currentQueueItem) return false;
+
+      if (type === "song") {
+        return currentQueueItem.song.id === (entity as Song).id;
+      } else if (type === "playlist") {
+        return (
+          !currentQueueItem.isQueued &&
+          currentQueueItem.sourceId === (entity as Playlist).id &&
+          currentQueueItem.sourceType === "playlist"
+        );
+      } else if (type === "album") {
+        return (
+          !currentQueueItem.isQueued &&
+          currentQueueItem.sourceId === (entity as Album).id &&
+          currentQueueItem.sourceType === "album"
+        );
+      }
+      return false;
+    }, [entity, currentQueueItem, type]);
+
+    const handlePlayPause = useCallback(() => {
       if (!entity) return;
-      actions.play(entity);
-    }, [actions, entity]);
+
+      if (isEntityPlaying) {
+        if (state.isPlaying) {
+          actions.pause();
+        } else {
+          actions.resume();
+        }
+      } else {
+        actions.play(entity);
+      }
+    }, [entity, isEntityPlaying, state.isPlaying, actions]);
 
     const handleAddToQueue = useCallback(async () => {
       try {
@@ -70,8 +108,14 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
             </div>
           )}
           {(type === "song" || type === "playlist" || type === "album") && (
-            <button onClick={handlePlay} className={styles.entityActionButton}>
-              <LuPlay />
+            <button
+              onClick={handlePlayPause}
+              className={classNames(styles.entityActionButton, {
+                [styles.entityActionButtonActive]:
+                  isEntityPlaying && state.isPlaying,
+              })}
+            >
+              {isEntityPlaying && state.isPlaying ? <LuPause /> : <LuPlay />}
             </button>
           )}
         </div>
@@ -100,8 +144,14 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
           </div>
         )}
         {(type === "song" || type === "playlist" || type === "album") && (
-          <button onClick={handlePlay} className={styles.entityActionButton}>
-            <LuPlay />
+          <button
+            onClick={handlePlayPause}
+            className={classNames(styles.entityActionButton, {
+              [styles.entityActionButtonActive]:
+                isEntityPlaying && state.isPlaying,
+            })}
+          >
+            {isEntityPlaying && state.isPlaying ? <LuPause /> : <LuPlay />}
           </button>
         )}
       </div>

@@ -77,6 +77,10 @@
   color: var(--color-red);
 }
 
+.entityActionButtonActive {
+  color: var(--color-red);
+}
+
 .queueButtonContainer {
   position: relative;
 }
