@@ -11,7 +11,12 @@ import { useLikeStatus, useStreamTracking, useKeyboardShortcuts } from "@hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, useAudioQueue } from "@contexts";
 import { formatPlaybackTime, getMainArtist } from "@util";
-import { ShareModal, CoverLightbox, KeyboardShortcutsModal } from "@components";
+import {
+  ShareModal,
+  CoverLightbox,
+  KeyboardShortcutsModal,
+  LazyImg,
+} from "@components";
 import { QueueManager } from "@components";
 import classNames from "classnames";
 import styles from "./MainLayoutNowPlayingBar.module.css";
@@ -174,17 +179,27 @@ const NowPlayingBar: React.FC = () => {
     setIsQueueManagerOpen((prev) => !prev);
   }, []);
 
+  const handleOpenLightBox = useCallback(() => {
+    if (currentSong?.image_url) {
+      setIsLightboxOpen(true);
+    }
+  }, [currentSong]);
+
+  const handleCloseLightBox = useCallback(() => {
+    setIsLightboxOpen(false);
+  }, []);
+
   const mainArtist = useMemo(() => {
-    if (!currentSong) return { id: "", display_name: "Unknown Artist" };
+    if (!currentSong) return { id: "", display_name: "" };
 
     if (!currentSong.artists || currentSong.artists.length === 0) {
-      return { id: "", display_name: "Unknown Artist" };
+      return { id: "", display_name: "" };
     }
 
     return (
       getMainArtist(currentSong.artists) ?? {
         id: "",
-        display_name: "Unknown Artist",
+        display_name: "",
       }
     );
   }, [currentSong]);
@@ -200,12 +215,12 @@ const NowPlayingBar: React.FC = () => {
     <>
       <div className={styles.nowPlayingBar}>
         <div className={styles.nowPlayingInfo}>
-          <img
+          <LazyImg
             src={currentSong?.image_url || musicPlaceholder}
+            blurHash={currentSong?.image_url_blurhash}
             alt={`${currentSong?.title} album art`}
-            className={styles.albumArt}
-            loading="lazy"
-            onClick={() => setIsLightboxOpen(true)}
+            imgClassNames={[styles.albumArt]}
+            onClick={handleOpenLightBox}
           />
           <div className={styles.songInfo}>
             {mainArtist.id ? (
@@ -213,15 +228,15 @@ const NowPlayingBar: React.FC = () => {
                 to={`/artists/${mainArtist.id}`}
                 className={styles.artistName}
               >
-                {mainArtist.display_name || "Unknown Artist"}
+                {mainArtist.display_name || ""}
               </Link>
             ) : (
               <span className={styles.artistName}>
-                {mainArtist.display_name || "Unknown Artist"}
+                {mainArtist.display_name || ""}
               </span>
             )}
             <Link to={`/songs/${currentSong?.id}`} className={styles.songTitle}>
-              {currentSong?.title || "Unknown Song"}
+              {currentSong?.title || ""}
             </Link>
           </div>
         </div>
@@ -397,7 +412,7 @@ const NowPlayingBar: React.FC = () => {
       {currentSong && currentSong.image_url && (
         <CoverLightbox
           isOpen={isLightboxOpen}
-          onClose={() => setIsLightboxOpen(false)}
+          onClose={handleCloseLightBox}
           imageUrl={currentSong.image_url}
           altText={`${currentSong.title} Cover`}
         />
