@@ -42,11 +42,16 @@
   position: relative;
   display: flex;
   align-items: center;
+  transition: border-color var(--transition-speed) ease-in-out;
+}
+
+.commentInputContainer.overLimit {
+  border-color: var(--color-red);
 }
 
 .commentInput {
   font-family: "Inter", sans-serif;
-  width: 96%;
+  width: 55rem;
   padding: var(--spacing-md);
   background-color: transparent;
   border: none;
@@ -56,8 +61,30 @@
   outline: none;
 }
 
+.commentInputCharCounter {
+  width: 52.5rem !important;
+}
+
 .commentInput::placeholder {
   color: var(--color-text-gray);
+}
+
+.charCounter {
+  position: absolute;
+  right: calc(
+    var(--spacing-sm) * 2 + var(--icon-size-md) + var(--spacing-sm) * 2
+  );
+  font-size: var(--font-size-xs);
+  color: var(--color-white-hover);
+  padding: var(--spacing-2xs);
+  border-radius: var(--border-radius-xs);
+  user-select: none;
+  pointer-events: none;
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.charCounterOverLimit {
+  color: var(--color-red);
 }
 
 .commentButton {
@@ -74,16 +101,18 @@
   color: var(--color-red-200);
   cursor: pointer;
   padding: var(--spacing-sm);
-  transition: color var(--transition-speed) ease-in-out;
+  transition: all var(--transition-speed) ease-in-out;
 }
 
 .commentButton:disabled {
-  opacity: 0.5;
+  background-color: var(--color-red-800);
+  color: var(--color-red-300);
   cursor: not-allowed;
 }
 
 .commentButton:not(:disabled):hover {
-  color: var(--color-red-950) !important;
+  background-color: var(--color-red-800);
+  color: var(--color-red-300);
 }
 
 .commentLoaderContainer {

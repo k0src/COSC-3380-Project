@@ -16,7 +16,7 @@ export const songApi = {
       includeArtists?: boolean;
       includeLikes?: boolean;
       includeComments?: boolean;
-    },
+    }
   ) {
     const response = await api.get<Song>(`/songs/${id}`, {
       params: options,
@@ -48,13 +48,13 @@ export const songApi = {
       includeComments?: boolean;
       limit?: number;
       offset?: number;
-    },
+    }
   ) {
     const response = await api.get<SuggestedSong[]>(
       `/songs/${id}/suggestions`,
       {
         params: options,
-      },
+      }
     );
     return response.data;
   },
@@ -65,7 +65,7 @@ export const songApi = {
 
   async getCoverGradient(id: UUID) {
     const response = await api.get<CoverGradient>(
-      `/songs/${id}/cover-gradient`,
+      `/songs/${id}/cover-gradient`
     );
     return response.data;
   },
@@ -80,7 +80,7 @@ export const songApi = {
     options?: {
       limit?: number;
       offset?: number;
-    },
+    }
   ) {
     const response = await api.get<User[]>(`/songs/${id}/liked-by`, {
       params: options,

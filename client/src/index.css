@@ -66,6 +66,7 @@ html {
   --layout-gap-ver: 3.6rem;
 
   /* Border Radius */
+  --border-radius-xs: 0.2rem;
   --border-radius-sm: 0.4rem;
   --border-radius-md: 0.8rem;
   --border-radius-lg: 1.2rem;
