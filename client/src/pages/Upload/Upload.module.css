@@ -128,7 +128,7 @@
 
 .progressInner {
   height: 100%;
-  background: linear-gradient(90deg,#00e6b8,#00a7ff);
+  background: linear-gradient(90deg, #dc3545, #ff6b6b);
   width: 0%;
   transition: width 200ms linear;
 }
@@ -207,16 +207,115 @@
   color: #fff;
 }
 
-/* small toast */
+/* Success modal overlay */
+.successOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.successModal {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.15), rgba(255, 107, 107, 0.15));
+  border: 2px solid rgba(220, 53, 69, 0.4);
+  border-radius: 20px;
+  padding: 40px 48px;
+  text-align: center;
+  color: #fff;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.4s ease-out;
+}
+
+.successIcon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #dc3545, #ff6b6b);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bounce 0.6s ease-out;
+}
+
+.successTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #fff;
+}
+
+.successMessage {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 24px;
+}
+
+.successButton {
+  background: linear-gradient(135deg, #dc3545, #ff6b6b);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.successButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(-20px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Legacy toast for other messages (keeping for backward compatibility but smaller) */
 .toast {
   position: fixed;
   right: 20px;
   bottom: 96px;
   background: rgba(17,24,27,0.95);
   color: #fff;
-  padding: 10px 14px;
-  border-radius: 8px;
-  box-shadow: 0 8px 30px rgba(2,6,14,0.6);
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(2,6,14,0.4);
   z-index: 2000;
-  font-weight: 600;
+  font-size: 14px;
 }
