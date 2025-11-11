@@ -193,7 +193,12 @@
 }
 
 .srStatus { margin-top: 8px; min-height: 20px; }
-.errorText { color: #ffb4b4; }
+.errorText { 
+  color: #ffb4b4; 
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 4px;
+}
 
 /* audio preview */
 .audioPreview {
