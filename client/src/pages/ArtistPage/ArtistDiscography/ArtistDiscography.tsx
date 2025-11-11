@@ -38,7 +38,11 @@ const ArtistDiscography: React.FC = () => {
     {
       artist: () => artistApi.getArtistById(id || "", { includeUser: true }),
       albums: () => artistApi.getAlbums(id || ""),
-      singles: () => artistApi.getSongs(id || "", { onlySingles: true }),
+      singles: () =>
+        artistApi.getSongs(id || "", {
+          includeArtists: true,
+          onlySingles: true,
+        }),
       numberOfSongs: () => artistApi.getNumberOfSongs(id || ""),
       numberOfAlbums: () => artistApi.getNumberOfAlbums(id || ""),
       numberOfSingles: () => artistApi.getNumberOfSingles(id || ""),
@@ -63,7 +67,7 @@ const ArtistDiscography: React.FC = () => {
   );
 
   const noDiscography = useMemo(
-    () => numberOfAlbums === 0 && numberOfSingles === 0 && numberOfSongs === 0,
+    () => numberOfAlbums === 0 && numberOfSingles === 0,
     [numberOfAlbums, numberOfSingles, numberOfSongs]
   );
 
@@ -194,7 +198,7 @@ const ArtistDiscography: React.FC = () => {
                         linkTo={`/songs/${single.id}`}
                         author={
                           getMainArtist(single.artists || [])?.display_name ||
-                          artist.display_name
+                          "Unknown Artist"
                         }
                         title={single.title}
                         subtitle={formatDateString(single.release_date)}

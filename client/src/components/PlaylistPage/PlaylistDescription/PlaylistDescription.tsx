@@ -17,10 +17,12 @@ const PlaylistDescription: React.FC<PlaylistDescriptionProps> = ({
       <span className={styles.descriptionText}>
         {description || "This playlist has no description yet."}
       </span>
-      <HorizontalRule />
-      <span className={styles.updatedText}>
-        Updated {formatRelativeDate(updatedAt)}
-      </span>
+      <div className={styles.descriptionBottom}>
+        <HorizontalRule />
+        <span className={styles.updatedText}>
+          Updated {formatRelativeDate(updatedAt)}
+        </span>
+      </div>
     </div>
   );
 };

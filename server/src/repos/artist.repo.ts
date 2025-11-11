@@ -634,9 +634,8 @@ export default class ArtistRepository {
   static async getNumberOfAlbums(artistId: UUID): Promise<number> {
     try {
       const res = await query(
-        `SELECT COUNT(DISTINCT als.album_id) FROM album_songs als
-         JOIN song_artists sa ON als.song_id = sa.song_id
-         WHERE sa.artist_id = $1`,
+        `SELECT COUNT(*) FROM albums a
+         WHERE a.created_by = $1`,
         [artistId]
       );
       return parseInt(res[0]?.count ?? "0", 10);
