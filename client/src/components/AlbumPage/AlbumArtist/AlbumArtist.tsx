@@ -9,7 +9,7 @@ import { LuUserRoundCheck, LuUserRoundPlus } from "react-icons/lu";
 import { HorizontalRule, LazyImg } from "@components";
 import styles from "./AlbumArtist.module.css";
 import classNames from "classnames";
-import artistPlaceholder from "@assets/artist-placeholder.png";
+import artistPlaceholder from "@assets/artist-placeholder.webp";
 
 export interface AlbumArtistProps {
   artist: Artist;

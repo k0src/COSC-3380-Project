@@ -15,7 +15,7 @@ import {
   UserInfoLiked,
 } from "@components";
 import styles from "./UserInfoPage.module.css";
-import userPlaceholder from "@assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.webp";
 import classNames from "classnames";
 import { LuArrowLeft } from "react-icons/lu";
 

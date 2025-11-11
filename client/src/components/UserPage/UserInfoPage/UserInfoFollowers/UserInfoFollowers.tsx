@@ -6,7 +6,7 @@ import { LazyImg } from "@components";
 import { userApi } from "@api";
 import { useAsyncData } from "@hooks";
 import styles from "./UserInfoFollowers.module.css";
-import userPlaceholder from "@assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.webp";
 
 const UserInfoFollowers: React.FC<{ userId: UUID; username: string }> = ({
   userId,

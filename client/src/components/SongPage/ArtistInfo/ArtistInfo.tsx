@@ -14,7 +14,7 @@ import styles from "./ArtistInfo.module.css";
 import { HorizontalRule, LazyImg } from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
-import userPlaceholder from "@assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.webp";
 import {
   LuUserRoundCheck,
   LuUserRoundPlus,

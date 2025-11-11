@@ -6,7 +6,7 @@ import { useAsyncData } from "@hooks";
 import { EntityItemCard } from "@components";
 import { formatDateString, getMainArtist } from "@util";
 import styles from "./SlidingCardList.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 
 type CardEntityType = "song" | "album" | "playlist";
 

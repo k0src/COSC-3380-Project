@@ -6,7 +6,7 @@ import { formatDateString, getMainArtist } from "@util";
 import { userApi } from "@api";
 import { EntityItemCard } from "@components";
 import styles from "./UserInfoLiked.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 
 const UserInfoLiked: React.FC<{ userId: UUID }> = ({ userId }) => {
   const { data, loading, error } = useAsyncData(

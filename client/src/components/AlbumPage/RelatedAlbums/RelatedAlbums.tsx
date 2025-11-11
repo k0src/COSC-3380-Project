@@ -5,7 +5,7 @@ import { useAsyncData } from "@hooks";
 import { albumApi, artistApi } from "@api";
 import { EntityItem } from "@components";
 import styles from "./RelatedAlbums.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 import { pluralize } from "@util";
 
 export type RelatedAlbumsProps =

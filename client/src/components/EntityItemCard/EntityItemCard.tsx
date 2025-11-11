@@ -4,8 +4,8 @@ import { useAudioQueue, useAuth } from "@contexts";
 import type { Song, Playlist, Album } from "@types";
 import { QueueMenu, LazyImg } from "@components";
 import styles from "./EntityItemCard.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
-import artistPlaceholder from "@assets/artist-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
+import artistPlaceholder from "@assets/artist-placeholder.webp";
 import { LuPlay, LuPause, LuListEnd } from "react-icons/lu";
 import classNames from "classnames";
 

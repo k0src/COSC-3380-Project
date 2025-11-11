@@ -1,14 +1,17 @@
 import { BrowserRouter as Router } from "react-router-dom";
 import AppRoutes from "./Routes";
 import { AuthProvider } from "./contexts";
+import { ErrorBoundary } from "@components";
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

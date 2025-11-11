@@ -7,7 +7,7 @@ import { LazyImg } from "@components";
 import { LuUserRoundCheck, LuUserRoundPlus } from "react-icons/lu";
 import styles from "./PlaylistUser.module.css";
 import classNames from "classnames";
-import userPlaceholder from "@assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.webp";
 import { useQueryClient } from "@tanstack/react-query";
 
 export interface PlaylistUserProps {

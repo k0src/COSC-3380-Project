@@ -6,7 +6,7 @@ import { artistApi } from "@api";
 import { useAsyncData } from "@hooks";
 import { LazyImg } from "@components";
 import styles from "./RelatedArtists.module.css";
-import artistPlaceholder from "@assets/artist-placeholder.png";
+import artistPlaceholder from "@assets/artist-placeholder.webp";
 
 export interface RelatedArtistsProps {
   artistId: UUID;

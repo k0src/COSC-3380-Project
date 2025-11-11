@@ -6,7 +6,7 @@ import { useAuth } from "@contexts";
 import { useLikeStatus } from "@hooks";
 import { formatRelativeDate } from "@util";
 import type { Comment } from "@types";
-import userPlaceholder from "@assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.webp";
 import styles from "./CommentItem.module.css";
 import classNames from "classnames";
 import { LuThumbsUp } from "react-icons/lu";

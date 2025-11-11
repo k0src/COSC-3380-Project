@@ -5,7 +5,7 @@ import { useAsyncData } from "@hooks";
 import { artistApi } from "@api";
 import { EntityItem } from "@components";
 import styles from "./ArtistPlaylists.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 
 export interface ArtistPlaylistsProps {
   artistId: UUID;

@@ -7,7 +7,7 @@ import { useAsyncData } from "@hooks";
 import type { UUID } from "@types";
 import { LazyImg } from "@components";
 import styles from "./FollowProfiles.module.css";
-import userPlaceholder from "@assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.webp";
 
 export interface FollowProfilesProps {
   title: string;

@@ -80,6 +80,7 @@ export { default as QueueManager } from "./MainLayout/QueueManager/QueueManager.
 /* =============================== Page States ============================== */
 export { default as PageLoader } from "./PageLoader/PageLoader.js";
 export { default as ErrorPage } from "./ErrorPage/ErrorPage.js";
+export { default as ErrorBoundary } from "./ErrorBoundary/ErrorBoundary.js";
 
 /* ================================ Dev Tools =============================== */
 export { default as DevBanner } from "./DevBanner/DevBanner.js";

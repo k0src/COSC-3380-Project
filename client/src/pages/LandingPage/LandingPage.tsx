@@ -6,7 +6,7 @@ import { useAsyncData } from "@hooks";
 import { songApi } from "@api";
 import type { Song } from "@types";
 import { Link } from "react-router-dom";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 import { getMainArtist } from "@util";
 
 const LandingPage: React.FC = () => {

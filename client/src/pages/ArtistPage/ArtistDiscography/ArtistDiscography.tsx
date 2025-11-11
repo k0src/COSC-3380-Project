@@ -18,8 +18,8 @@ import {
   pluralize,
 } from "@util";
 import styles from "./ArtistDiscography.module.css";
-import artistPlaceholder from "@assets/artist-placeholder.png";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import artistPlaceholder from "@assets/artist-placeholder.webp";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 import { LuArrowLeft } from "react-icons/lu";
 
 const StatItem = memo(({ value, label }: { value: number; label: string }) => (
@@ -47,7 +47,7 @@ const ArtistDiscography: React.FC = () => {
     {
       cacheKey: `artist_discography_${id}`,
       hasBlobUrl: true,
-    },
+    }
   );
 
   const artist = data?.artist;
@@ -59,12 +59,12 @@ const ArtistDiscography: React.FC = () => {
 
   const artistImageUrl = useMemo(
     () => artist?.user?.profile_picture_url || artistPlaceholder,
-    [artist],
+    [artist]
   );
 
   const noDiscography = useMemo(
     () => numberOfAlbums === 0 && numberOfSingles === 0 && numberOfSongs === 0,
-    [numberOfAlbums, numberOfSingles, numberOfSongs],
+    [numberOfAlbums, numberOfSingles, numberOfSongs]
   );
 
   const handleLightboxClose = useCallback(() => setIsLightboxOpen(false), []);

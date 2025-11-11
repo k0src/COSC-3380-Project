@@ -7,7 +7,7 @@ import { LazyImg } from "@components";
 import { useAsyncData } from "@hooks";
 import type { UUID } from "@types";
 import styles from "./LikeProfiles.module.css";
-import userPlaceholder from "@assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.webp";
 
 export interface LikeProfilesProps {
   title: string;

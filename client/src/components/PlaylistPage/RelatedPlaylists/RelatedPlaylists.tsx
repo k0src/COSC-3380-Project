@@ -6,7 +6,7 @@ import type { Playlist } from "@types";
 import { playlistApi, userApi } from "@api";
 import { EntityItem } from "@components";
 import styles from "./RelatedPlaylists.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 import { pluralize } from "@util";
 
 export type RelatedPlaylistsProps =

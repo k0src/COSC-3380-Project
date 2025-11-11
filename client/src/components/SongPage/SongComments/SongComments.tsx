@@ -7,7 +7,7 @@ import { commentApi } from "@api";
 import { CommentItem, HorizontalRule, LazyImg } from "@components";
 import styles from "./SongComments.module.css";
 import classNames from "classnames";
-import userPlaceholder from "@assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.webp";
 import { LuSend } from "react-icons/lu";
 
 const MAX_COMMENT_LENGTH = 255;

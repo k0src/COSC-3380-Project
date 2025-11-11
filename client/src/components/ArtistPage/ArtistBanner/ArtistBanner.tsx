@@ -3,7 +3,7 @@ import { CoverLightbox, LazyImg, LazyBannerImg } from "@components";
 import { useTextContrast } from "@hooks";
 import styles from "./ArtistBanner.module.css";
 import { LuBadgeCheck } from "react-icons/lu";
-import artistPlaceholder from "@assets/artist-placeholder.png";
+import artistPlaceholder from "@assets/artist-placeholder.webp";
 
 export interface ArtistBannerProps {
   bannerImageUrl?: string;

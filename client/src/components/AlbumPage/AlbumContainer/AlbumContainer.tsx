@@ -5,7 +5,7 @@ import { formatRuntime, pluralize } from "@util";
 import { CoverLightbox, AlbumPlayButton, LazyImg } from "@components";
 import { LuAudioLines, LuClock, LuThumbsUp } from "react-icons/lu";
 import styles from "./AlbumContainer.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 
 const AlbumStat = memo(
   ({

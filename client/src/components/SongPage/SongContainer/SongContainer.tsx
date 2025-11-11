@@ -4,7 +4,7 @@ import type { Song, CoverGradient, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
 import { LuPlay, LuThumbsUp, LuMessageSquareText } from "react-icons/lu";
 import styles from "./SongContainer.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 
 export interface SongContainerProps {
   coverGradient: CoverGradient;

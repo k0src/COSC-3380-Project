@@ -33,7 +33,7 @@ import {
   LuShare,
   LuListEnd,
 } from "react-icons/lu";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 
 const NowPlayingBar: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
