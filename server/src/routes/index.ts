@@ -4,3 +4,7 @@ export { default as authRoutes } from "./auth.routes.js";
 export { default as playlistRoutes } from "./playlist.routes.js";
 export { default as songRoutes } from "./song.routes.js";
 export { default as userRoutes } from "./user.routes.js";
+export { default as adminRoutes } from "./admin.routes.js";
+export { default as reportRoutes } from "./reports.routes.js";
+export { default as dataReportsRoutes } from "./dataReports.routes.js";
+export { default as adminAppealsRoutes } from "./adminAppeals.routes.js";

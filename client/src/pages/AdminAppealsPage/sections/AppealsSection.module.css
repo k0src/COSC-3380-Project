@@ -1,0 +1,241 @@
+/* Root variables */
+:root {
+  --background-dark: #0d0d0d;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --content-padding: 16px;
+  --color-success: #10b981;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+}
+
+/* Dropdown container styling */
+.appealsDropdownContainer {
+  position: relative;
+  display: inline-block;
+  background: rgba(15, 12, 12, 0.05);
+  padding: var(--content-padding);
+  border-radius: 8px;
+  color: var(--text-primary);
+}
+
+.dropdownButton {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.dropdownButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: rgb(124, 0, 0);
+  border-radius: 8px;
+  margin-top: 8px;
+  z-index: 10;
+  padding: 8px 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  min-width: 200px;
+}
+
+.dropdownItem {
+  padding: 8px 16px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.dropdownItem:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.activeDropdownItem {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Appeals list section styling */
+.appealsListSection {
+  background: rgba(255, 255, 255, 0.05);
+  padding: var(--content-padding);
+  border-radius: 8px;
+  color: var(--text-primary);
+}
+
+.appealsListTitle {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.appealsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.appealsListItem {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  transition: background-color 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.appealsListItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.appealRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.appealDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.appealHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.appealHeader p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.appealContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.appealContent p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.appealStatus {
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+/* Action buttons container */
+.appealActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 100px;
+}
+
+/* Action button styling */
+.actionButton {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.approveButton {
+  background: var(--color-success);
+}
+
+.approveButton:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.rejectButton {
+  background: var(--color-danger);
+}
+
+.rejectButton:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.actionButton:active {
+  transform: translateY(0);
+}
+
+/* Status messages */
+.loading, .error, .empty {
+  padding: 20px;
+  text-align: center;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.loading {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+}
+
+.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.empty {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .appealRow {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .appealActions {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .actionButton {
+    flex: 1;
+  }
+
+  .appealsListItem {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .appealActions {
+    flex-direction: column;
+  }
+
+  .dropdownMenu {
+    min-width: 180px;
+  }
+}

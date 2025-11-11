@@ -5,9 +5,32 @@ import { MainLayout } from "@components";
 export default function AppRoutes() {
   return (
     <Routes>
+      <Route path="/Home" element={
+        <MainLayout>
+          < Pages.HomePage />
+        </MainLayout>
+      } />
+      <Route path="/Admin" element={
+        <MainLayout>
+          < Pages.AdminPage />
+        </MainLayout>} />
+      <Route path="/admin/reports" element={
+        <MainLayout>
+          < Pages.AdminReportPage />
+        </MainLayout>} />
+      <Route path="/admin/data-reports" element={
+        <MainLayout>
+          < Pages.dataReport />
+        </MainLayout>} />
+      <Route path="/admin/appeals" element={
+        <MainLayout>
+          < Pages.AdminAppealsPage />
+        </MainLayout>} />
       <Route path="/login" element={<Pages.LoginPage />} />
       <Route path="/signup" element={<Pages.SignupPage />} />
       <Route path="/" element={<Pages.TestPage />} />
+      <Route path="/report" element={ <Pages.ReportPage />}/>
+      <Route path="/appeals" element={ <Pages.AppealsPage />}/>
       <Route
         path="/songs/:id"
         element={

@@ -8,3 +8,4 @@ export { default as MainLayoutSidebar } from "./MainLayout/MainLayoutSidebar/Mai
 export { default as MainLayoutSearchBar } from "./MainLayout/MainLayoutSearchBar/MainLayoutSearchBar.js";
 export { default as MainLayoutNowPlayingBar } from "./MainLayout/MainLayoutNowPlayingBar/MainLayoutNowPlayingBar.js";
 export { default as WaveformPlayer } from "./SongPage/WaveformPlayer/WaveformPlayer.js";
+export { default as AppealButton } from "./AppealButton/AppealButton.js";

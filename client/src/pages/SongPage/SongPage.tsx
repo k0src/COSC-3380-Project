@@ -18,7 +18,7 @@ import type {
 } from "../../types";
 import styles from "./SongPage.module.css";
 import { useAsyncData } from "../../hooks";
-import { PageLoader } from "@components";
+import { PageLoader, AppealButton } from "@components";
 import {
   LuThumbsUp,
   LuPlay,

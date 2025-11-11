@@ -1,0 +1,292 @@
+/* Back Button */
+.backButton {
+  position: fixed;
+  top: calc(var(--header-height) + var(--spacing-2xl));
+  left: calc(var(--sidebar-width) + var(--spacing-2xl));
+  z-index: 1000;
+  background: var(--color-panel-gray);
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.backButton:hover {
+  background-color: var(--color-red);
+  border-color: var(--color-red);
+}
+
+.contentArea {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  background-color: var(--color-panel-gray-dark);
+  min-height: calc(100vh - var(--header-height));
+  color: var(--color-white);
+  font-family: "Inter", sans-serif;
+}
+
+.contentWrapper {
+  width: 100%;
+  max-width: 110rem;
+  background-color: var(--color-panel-gray);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  padding-top: calc(var(--spacing-xl) + 6rem); /* Extra space for back button */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+.pageTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-bottom: var(--spacing-xl);
+  color: var(--color-white);
+  letter-spacing: 0.5px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background: var(--color-panel-gray-dark);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-panel-border);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  align-items: center;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray-light);
+  gap: var(--spacing-xs);
+  min-width: 18rem;
+}
+
+select,
+input[type="date"] {
+  padding: var(--spacing-sm);
+  background-color: var(--color-panel-gray);
+  color: var(--color-white);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-md);
+  transition: border var(--transition-speed);
+}
+
+select:focus,
+input:focus {
+  border-color: var(--color-red);
+}
+
+.submitButton {
+  align-self: flex-end;
+  background-color: var(--color-red);
+  color: var(--color-white);
+  font-weight: 600;
+  border: none;
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+}
+
+.submitButton:hover {
+  background-color: var(--color-red-500);
+}
+
+.tableContainer {
+  background-color: var(--color-panel-gray-dark);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  overflow-x: auto;
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: var(--spacing-md);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-panel-border);
+}
+
+.table th {
+  background-color: var(--color-panel-gray);
+  color: var(--color-text-gray-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+}
+
+.table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.loading,
+.error,
+.placeholder {
+  margin-top: var(--spacing-lg);
+  font-size: var(--font-size-md);
+  text-align: center;
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+}
+
+.loading {
+  color: var(--color-text-gray-light);
+}
+
+.error {
+  color: var(--color-red-400);
+  background-color: var(--color-red-950);
+}
+
+.placeholder {
+  color: var(--color-text-gray-light);
+  border: 1px dashed var(--color-panel-border);
+}
+
+/* New Enhanced Report Styles */
+.reportContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+  margin-top: var(--spacing-lg);
+}
+
+.summaryCard {
+  background: var(--color-panel-gray);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+}
+
+.summaryCard h3 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--color-red);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.summaryLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summaryValue {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.tableWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-white);
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--color-red);
+}
+
+.positive {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.negative {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.repeatOffendersSection {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-panel-border);
+}
+
+.repeatOffendersSection h4 {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: var(--spacing-md);
+}
+
+.miniTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.miniTable th {
+  background-color: var(--color-panel-gray-dark);
+  color: var(--color-text-gray-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: left;
+  border-bottom: 1px solid var(--color-panel-border);
+}
+
+.miniTable td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-white);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.miniTable tr:hover td {
+  background-color: rgba(255, 255, 255, 0.02);
+}
