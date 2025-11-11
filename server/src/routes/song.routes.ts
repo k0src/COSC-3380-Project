@@ -7,7 +7,28 @@ import crypto from "crypto";
 
 const router = express.Router();
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+const upload = multer({ 
+  storage: multer.memoryStorage(), 
+  limits: { 
+    fileSize: 10 * 1024 * 1024,  // 10 MB for audio files
+    files: 2  // max 2 files (audio + cover)
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === 'file') {
+      const audioTypes = ['audio/mpeg', 'audio/wav', 'audio/flac', 'audio/ogg', 'audio/x-wav', 'audio/mp3'];
+      const isValid = audioTypes.includes(file.mimetype) || /\.(mp3|wav|flac|ogg)$/i.test(file.originalname);
+      cb(null, isValid);
+      if (!isValid) cb(new Error('Invalid audio file type'));
+    } else if (file.fieldname === 'cover') {
+      const imageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      const isValid = imageTypes.includes(file.mimetype) || /\.(jpg|jpeg|png|webp|gif)$/i.test(file.originalname);
+      cb(null, isValid);
+      if (!isValid) cb(new Error('Invalid cover image type'));
+    } else {
+      cb(new Error('Unexpected field: ' + file.fieldname));
+    }
+  }
+});
 
 // GET /api/songs
 router.get("/", async (_req: Request, res: Response): Promise<void> => {
@@ -49,24 +70,19 @@ export default router;
 // POST /api/songs - upload a song file and create a DB record
 router.post(
   "/",
-  upload.single("file"),
+  // accept one audio file (field 'file') and an optional cover image (field 'cover')
+  upload.fields([
+    { name: "file", maxCount: 1 },
+    { name: "cover", maxCount: 1 },
+  ]),
   async (req: Request, res: Response): Promise<void> => {
     try {
-      // Debug logging: show incoming request details to help troubleshoot 500 errors
-      try {
-        console.log("POST /api/songs incoming headers:", {
-          origin: req.headers.origin,
-          "content-type": req.headers["content-type"],
-          "content-length": req.headers["content-length"],
-        });
-        console.log("req.body keys:", Object.keys(req.body || {}));
-      } catch (logErr) {
-        console.warn("Failed to log request meta:", logErr);
-      }
+      const files = (req as any).files as { [field: string]: Express.Multer.File[] } | undefined;
+      const file = files?.file?.[0];
+      const cover = files?.cover?.[0];
 
-      const file = (req as any).file as Express.Multer.File | undefined;
-      // Log whether multer parsed a file
-      console.log("multer file:", file ? { originalname: file.originalname, size: file.size } : null);
+      console.log("Upload request - Audio:", file?.originalname, "Cover:", cover?.originalname);
+
       const title = (req.body?.title || (file && file.originalname) || "Untitled").toString();
 
       if (!file) {
@@ -76,31 +92,39 @@ router.post(
 
       // generate a UUID for the DB id and blob filename
       const id = crypto.randomUUID();
-      const ext = (file.originalname.match(/\.[^.]+$/) || [""])[0];
-      const blobName = `audio/${id}${ext}`;
 
-      // upload to blob storage
-      await uploadBlob(blobName, file.buffer);
+      const audioExt = (file.originalname.match(/\.[^.]+$/) || [""])[0];
+      const audioBlobName = `audio/${id}${audioExt}`;
 
-  // insert DB record (provide required fields that have no defaults)
-  // supply basic defaults for genre, duration and release_date to satisfy NOT NULL columns
-  const sql = `INSERT INTO songs (id, title, audio_url, genre, duration, release_date, created_at) VALUES ($1,$2,$3,$4,$5,NOW()::date,NOW()) RETURNING *`;
-  const rows = await query(sql, [id, title, blobName, 'Unknown', 0]);
+      // upload audio to blob storage
+      await uploadBlob(audioBlobName, file.buffer);
+
+      // handle optional cover image
+      let imageBlobName: string | null = null;
+      if (cover) {
+        // Additional size check for cover images (5 MB limit)
+        const maxCoverSize = 5 * 1024 * 1024;
+        if (cover.size > maxCoverSize) {
+          res.status(400).json({ error: "Cover image is too large. Maximum size is 5 MB." });
+          return;
+        }
+        
+        const imgExt = (cover.originalname.match(/\.[^.]+$/) || [""])[0];
+        imageBlobName = `image/${id}${imgExt}`;
+        await uploadBlob(imageBlobName, cover.buffer);
+      }
+
+      // use provided genre/duration if present, otherwise sensible defaults
+      const genreVal = (req.body?.genre || "Unknown").toString();
+      const durationVal = Number(req.body?.duration) || 0;
+
+      // insert DB record (provide required fields that have no defaults)
+      const sql = `INSERT INTO songs (id, title, audio_url, image_url, genre, duration, release_date, created_at) VALUES ($1,$2,$3,$4,$5,$6,NOW()::date,NOW()) RETURNING *`;
+      const rows = await query(sql, [id, title, audioBlobName, imageBlobName, genreVal, durationVal]);
 
       res.status(201).json(rows[0]);
     } catch (error) {
-      // Log error and include request context
-      try {
-        console.error("Error in POST /songs:", error);
-        console.error("Request headers:", {
-          origin: req.headers.origin,
-          "content-type": req.headers["content-type"],
-          "content-length": req.headers["content-length"],
-        });
-        console.error("req.body (keys):", Object.keys(req.body || {}));
-      } catch (logErr) {
-        console.error("Error while logging failure context:", logErr);
-      }
+      console.error("Error in POST /songs:", error);
       res.status(500).json({ error: "Failed to upload song" });
     }
   }
