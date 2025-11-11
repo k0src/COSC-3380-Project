@@ -101,13 +101,9 @@ const LikeProfiles: React.FC<LikeProfilesProps> = ({
           </Link>
         ))}
         {hasMore && (
-          <Link
-            to={`/${entityType}s/${entityId}/liked-by`}
-            className={styles.avatarMore}
-            aria-label={`View all ${profiles.length} ${title.toLowerCase()}`}
-          >
+          <div className={styles.avatarMore}>
             <LuPlus aria-hidden="true" />
-          </Link>
+          </div>
         )}
       </div>
     </div>

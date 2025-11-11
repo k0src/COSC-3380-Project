@@ -11,3 +11,5 @@ export { default as AlbumPage } from "./AlbumPage/AlbumPage.js";
 
 export { default as LoginPage } from "./LoginPage/LoginPage.js";
 export { default as SignupPage } from "./SignupPage/SignupPage.js";
+
+export { default as UserInfoPage } from "./UserPage/UserInfoPage/UserInfoPage.js";

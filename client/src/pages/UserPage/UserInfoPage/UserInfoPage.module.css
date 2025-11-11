@@ -1,4 +1,4 @@
-.artistDiscographyLayout {
+.userInfoLayout {
   display: flex;
   flex-direction: column;
   gap: var(--layout-gap-ver);
@@ -25,7 +25,7 @@
   color: var(--color-white) !important;
 }
 
-.discoHeader {
+.userInfoHeader {
   position: relative;
   display: flex;
   align-items: center;
@@ -38,7 +38,7 @@
   overflow: hidden;
 }
 
-.discoHeader::before {
+.userInfoHeader::before {
   content: "";
   position: absolute;
   top: 0;
@@ -55,7 +55,7 @@
   border-radius: var(--border-radius-sm);
 }
 
-.artistImage {
+.userImage {
   width: 24rem;
   height: 24rem;
   border-radius: 50%;
@@ -66,84 +66,73 @@
   transition: box-shadow var(--transition-speed) ease;
 }
 
-.artistImageClickable {
+.userImageClickable {
   cursor: pointer;
 }
 
-.artistImage:hover {
+.userImage:hover {
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
 }
 
-.artistInfo {
+.userInfo {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
   flex: 1;
 }
 
-.discoTitle {
+.userInfoTitle {
   font-size: 4.2rem;
   color: var(--color-white);
   font-weight: 700;
 }
 
-.artistStats {
-  display: flex;
-  min-width: 0;
-  gap: var(--spacing-sm);
+.artistLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-white) !important;
+  font-weight: 500;
+  transition: all var(--transition-speed) ease-in-out;
 }
 
-.statItem {
-  font-size: var(--font-size-lg);
-  color: var(--color-text-gray-light);
-  font-weight: 500;
+.artistLink:hover {
+  color: var(--color-red) !important;
+  text-decoration: underline;
+}
+
+.infoSection {
   display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.switcherContainer {
+  display: flex;
+  gap: var(--spacing-lg);
   align-items: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: 100%;
 }
 
-.statsBullet {
-  color: var(--color-text-gray-light);
-  font-weight: 500;
-}
-
-.discoSection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--layout-gap-ver);
-}
-
-.sectionContainer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  min-width: 0;
-  width: 100%;
-}
-
-.sectionTitle {
-  font-size: var(--font-size-lg);
+.switcherButton {
+  font-family: "Inter", sans-serif;
+  border: none;
+  background: none;
   color: var(--color-white);
-  font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: 100%;
-}
-
-.itemsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-  gap: var(--spacing-md);
-}
-
-.noDiscography {
   font-size: var(--font-size-md);
-  color: var(--color-text-gray);
   font-weight: 500;
-  padding: var(--spacing-lg);
-  text-align: center;
+  transition: all var(--transition-speed) ease-in-out;
+  cursor: pointer;
+}
+
+.switcherButton:hover {
+  color: var(--color-red);
+  text-decoration: underline;
+}
+
+.switcherButtonActive {
+  color: var(--color-red);
+  text-decoration: underline;
+}
+
+.switcherButtonActive:hover {
+  color: var(--color-red-800) !important;
+  text-decoration: none !important;
 }

@@ -73,7 +73,16 @@ const FollowProfiles: React.FC<FollowProfilesProps> = ({
 
   return (
     <div className={styles.followContainer}>
-      <span className={styles.sectionTitle}>{title}</span>
+      <Link
+        to={
+          following
+            ? `/users/${userId}/info/following`
+            : `/users/${userId}/info/followers`
+        }
+        className={styles.sectionTitle}
+      >
+        {title}
+      </Link>
       <div className={styles.avatarStack}>
         {displayProfiles.map((profile) => (
           <Link
@@ -90,13 +99,9 @@ const FollowProfiles: React.FC<FollowProfilesProps> = ({
           </Link>
         ))}
         {hasMore && (
-          <Link
-            to={`/users/${userId}/${following ? "following" : "followers"}`}
-            className={styles.avatarMore}
-            aria-label={`View all ${profiles.length} ${title.toLowerCase()}`}
-          >
+          <div className={styles.avatarMore}>
             <LuPlus aria-hidden="true" />
-          </Link>
+          </div>
         )}
       </div>
     </div>

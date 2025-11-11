@@ -53,6 +53,12 @@ export { default as AlbumInfo } from "./AlbumPage/AlbumInfo/AlbumInfo.js";
 export { default as AlbumActions } from "./AlbumPage/AlbumActions/AlbumActions.js";
 export { default as RelatedAlbums } from "./AlbumPage/RelatedAlbums/RelatedAlbums.js";
 
+/* ================================ User Page =============================== */
+export { default as UserInfoStats } from "./UserPage/UserInfoPage/UserInfoStats/UserInfoStats.js";
+export { default as UserInfoFollowers } from "./UserPage/UserInfoPage/UserInfoFollowers/UserInfoFollowers.js";
+export { default as UserInfoFollowing } from "./UserPage/UserInfoPage/UserInfoFollowing/UserInfoFollowing.js";
+export { default as UserInfoLiked } from "./UserPage/UserInfoPage/UserInfoLiked/UserInfoLiked.js";
+
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";
 export { default as FollowProfiles } from "./FollowProfiles/FollowProfiles.js";

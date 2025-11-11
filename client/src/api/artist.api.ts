@@ -135,14 +135,14 @@ export const artistApi = {
 
   async getFollowerCount(id: UUID) {
     const response = await api.get<{ followerCount: number }>(
-      `/artists/${id}/follower-count`
+      `/artists/${id}/followers/count`
     );
     return response.data.followerCount;
   },
 
   async getFollowingCount(id: UUID) {
     const response = await api.get<{ followingCount: number }>(
-      `/artists/${id}/following-count`
+      `/artists/${id}/following/count`
     );
     return response.data.followingCount;
   },

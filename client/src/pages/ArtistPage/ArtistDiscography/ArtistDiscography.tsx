@@ -1,5 +1,5 @@
 import { memo, useState, useCallback, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { artistApi } from "@api";
 import type { UUID } from "@types";
@@ -20,6 +20,7 @@ import {
 import styles from "./ArtistDiscography.module.css";
 import artistPlaceholder from "@assets/artist-placeholder.png";
 import musicPlaceholder from "@assets/music-placeholder.png";
+import { LuArrowLeft } from "react-icons/lu";
 
 const StatItem = memo(({ value, label }: { value: number; label: string }) => (
   <div className={styles.statItem}>
@@ -32,30 +33,21 @@ const ArtistDiscography: React.FC = () => {
 
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-  if (!id) {
-    return (
-      <ErrorPage
-        title="Artist Not Found"
-        message="The requested artist does not exist."
-      />
-    );
-  }
-
   //! ADD LIMITS AND PAGINATION
   const { data, loading, error } = useAsyncData(
     {
-      artist: () => artistApi.getArtistById(id, { includeUser: true }),
-      albums: () => artistApi.getAlbums(id),
-      singles: () => artistApi.getSongs(id, { onlySingles: true }),
-      numberOfSongs: () => artistApi.getNumberOfSongs(id),
-      numberOfAlbums: () => artistApi.getNumberOfAlbums(id),
-      numberOfSingles: () => artistApi.getNumberOfSingles(id),
+      artist: () => artistApi.getArtistById(id || "", { includeUser: true }),
+      albums: () => artistApi.getAlbums(id || ""),
+      singles: () => artistApi.getSongs(id || "", { onlySingles: true }),
+      numberOfSongs: () => artistApi.getNumberOfSongs(id || ""),
+      numberOfAlbums: () => artistApi.getNumberOfAlbums(id || ""),
+      numberOfSingles: () => artistApi.getNumberOfSingles(id || ""),
     },
     [id],
     {
       cacheKey: `artist_discography_${id}`,
       hasBlobUrl: true,
-    }
+    },
   );
 
   const artist = data?.artist;
@@ -67,13 +59,28 @@ const ArtistDiscography: React.FC = () => {
 
   const artistImageUrl = useMemo(
     () => artist?.user?.profile_picture_url || artistPlaceholder,
-    [artist]
+    [artist],
   );
 
   const noDiscography = useMemo(
-    () => numberOfAlbums === 0 && numberOfSingles === 0,
-    [numberOfAlbums, numberOfSingles]
+    () => numberOfAlbums === 0 && numberOfSingles === 0 && numberOfSongs === 0,
+    [numberOfAlbums, numberOfSingles, numberOfSongs],
   );
+
+  const handleLightboxClose = useCallback(() => setIsLightboxOpen(false), []);
+
+  const handleImageClick = useCallback(() => {
+    setIsLightboxOpen(true);
+  }, []);
+
+  if (!id) {
+    return (
+      <ErrorPage
+        title="Artist Not Found"
+        message="The requested artist does not exist."
+      />
+    );
+  }
 
   if (error) {
     return (
@@ -83,12 +90,6 @@ const ArtistDiscography: React.FC = () => {
       />
     );
   }
-
-  const handleLightboxClose = useCallback(() => setIsLightboxOpen(false), []);
-
-  const handleImageClick = useCallback(() => {
-    setIsLightboxOpen(true);
-  }, []);
 
   return (
     <>
@@ -110,50 +111,55 @@ const ArtistDiscography: React.FC = () => {
       ) : (
         <>
           <div className={styles.artistDiscographyLayout}>
-            <header className={styles.discoHeader}>
-              <LazyImg
-                src={artistImageUrl || artistPlaceholder}
-                alt={`${artist.display_name} Image`}
-                imgClassNames={[
-                  styles.artistImage,
-                  artistImageUrl ? styles.artistImageClickable : "",
-                ]}
-                loading="eager"
-                onClick={handleImageClick}
-              />
-              <div className={styles.artistInfo}>
-                <h1 className={styles.discoTitle}>
-                  {artist.display_name}'s Discography
-                </h1>
+            <div className={styles.headerContainer}>
+              <Link to={`/artists/${id}`} className={styles.backLink}>
+                <LuArrowLeft /> Back to artist page
+              </Link>
+              <header className={styles.discoHeader}>
+                <LazyImg
+                  src={artistImageUrl || artistPlaceholder}
+                  alt={`${artist.display_name} Image`}
+                  imgClassNames={[
+                    styles.artistImage,
+                    artistImageUrl ? styles.artistImageClickable : "",
+                  ]}
+                  loading="eager"
+                  onClick={handleImageClick}
+                />
+                <div className={styles.artistInfo}>
+                  <h1 className={styles.discoTitle}>
+                    {artist.display_name}'s Discography
+                  </h1>
 
-                <div className={styles.artistStats}>
-                  {numberOfSongs > 0 && (
-                    <StatItem
-                      value={numberOfSongs}
-                      label={pluralize(numberOfSongs, "Song")}
-                    />
-                  )}
-                  {numberOfAlbums > 0 && (
-                    <>
-                      <span className={styles.statsBullet}>&bull;</span>
+                  <div className={styles.artistStats}>
+                    {numberOfSongs > 0 && (
                       <StatItem
-                        value={numberOfAlbums}
-                        label={pluralize(numberOfAlbums, "Album")}
+                        value={numberOfSongs}
+                        label={pluralize(numberOfSongs, "Song")}
                       />
-                    </>
-                  )}
-                  {numberOfSingles > 0 && (
-                    <>
-                      <span className={styles.statsBullet}>&bull;</span>
-                      <StatItem
-                        value={numberOfSingles}
-                        label={pluralize(numberOfSingles, "Single")}
-                      />
-                    </>
-                  )}
+                    )}
+                    {numberOfAlbums > 0 && (
+                      <>
+                        <span className={styles.statsBullet}>&bull;</span>
+                        <StatItem
+                          value={numberOfAlbums}
+                          label={pluralize(numberOfAlbums, "Album")}
+                        />
+                      </>
+                    )}
+                    {numberOfSingles > 0 && (
+                      <>
+                        <span className={styles.statsBullet}>&bull;</span>
+                        <StatItem
+                          value={numberOfSingles}
+                          label={pluralize(numberOfSingles, "Single")}
+                        />
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </header>
+              </header>
+            </div>
 
             <div className={styles.discoSection}>
               {albums && albums.length > 0 && (

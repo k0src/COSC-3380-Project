@@ -67,77 +67,85 @@ export default function AppRoutes() {
                 </MainLayout>
               }
             />
+            <Route
+              path="/users/:id/info/:tab?"
+              element={
+                <MainLayout>
+                  <Pages.UserInfoPage />
+                </MainLayout>
+              }
+            />
           </Route>
 
-          {/* <Route 
-        path="/library" 
+          {/* <Route
+        path="/library"
         element={
           <MainLayout>
             <ProtectedRoute>
               <Pages.LibraryPage />
             </ProtectedRoute>
           </MainLayout>
-        } 
+        }
       /> */}
-          {/* <Route 
-        path="/library/playlists" 
+          {/* <Route
+        path="/library/playlists"
         element={
           <MainLayout>
             <ProtectedRoute></ProtectedRoute>
               <Pages.PlaylistsPage />
             </ProtectedRoute>
           </MainLayout>
-        } 
+        }
       /> */}
-          {/* <Route 
-        path="/library/songs" 
+          {/* <Route
+        path="/library/songs"
         element={
           <MainLayout>
             <ProtectedRoute>
               <Pages.LibrarySongsPage />
             </ProtectedRoute>
           </MainLayout>
-        } 
+        }
       /> */}
-          {/* <Route 
-        path="/library/history" 
+          {/* <Route
+        path="/library/history"
         element={
           <MainLayout>
             <ProtectedRoute>
               <Pages.HistoryPage />
             </ProtectedRoute>
           </MainLayout>
-        } 
+        }
       /> */}
-          {/* <Route 
-        path="/artist-dashboard" 
+          {/* <Route
+        path="/artist-dashboard"
         element={
           <MainLayout>
             <ProtectedRoute>
               <Pages.ArtistDashboardPage />
             </ProtectedRoute>
           </MainLayout>
-        } 
+        }
       /> */}
-          {/* <Route 
-        path="/me" 
+          {/* <Route
+        path="/me"
         element={
           <MainLayout>
             <ProtectedRoute>
               <Pages.ProfilePage />
             </ProtectedRoute>
           </MainLayout>
-        } 
+        }
       /> */}
-          {/* <Route 
-        path="/settings" 
+          {/* <Route
+        path="/settings"
         element={
           <MainLayout>
             <ProtectedRoute>
               <Pages.SettingsPage />
             </ProtectedRoute>
           </MainLayout>
-        } 
+        }
       /> */}
         </Routes>
       )}
