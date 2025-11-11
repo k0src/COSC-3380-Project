@@ -11,6 +11,7 @@ const Upload: React.FC = () => {
   const [dragOver, setDragOver] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<number | null>(null);
+  const [fileObj, setFileObj] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [title, setTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +40,7 @@ const Upload: React.FC = () => {
   // file object kept only as URL preview; no separate state needed
     setFileName(file.name);
     setFileSize(file.size);
+    setFileObj(file);
     setProgress(0);
 
     // auto-fill title if empty
@@ -192,43 +194,69 @@ const Upload: React.FC = () => {
                     className={`${styles.btnPrimary} ${fileName ? styles.btnDanger : ""}`}
                     type="button"
                     onClick={async () => {
-                      // simulate upload progress
+                      if (!fileObj) return;
                       setError(null);
                       setProgress(0);
-                      const total = 100;
-                      // simple simulated progress loop
-                      while (progress < total) {
-                        // increment by a small random amount
-                        const step = Math.max(4, Math.round(Math.random() * 12));
-                        setProgress((p) => Math.min(total, p + step));
-                        // wait a bit
-                        // eslint-disable-next-line no-await-in-loop
-                        await new Promise((r) => setTimeout(r, 120));
+
+                      // real upload via XHR to track progress
+                      try {
+                        await new Promise<void>((resolve, reject) => {
+                          const form = new FormData();
+                          form.append("file", fileObj, fileObj.name);
+                          form.append("title", title || fileObj.name);
+
+                          const xhr = new XMLHttpRequest();
+                          xhr.open("POST", "/api/songs");
+                          xhr.withCredentials = true;
+                          xhr.upload.onprogress = (e) => {
+                            if (e.lengthComputable) {
+                              const percent = Math.round((e.loaded / e.total) * 100);
+                              setProgress(percent);
+                            }
+                          };
+                          xhr.onload = () => {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                              resolve();
+                            } else {
+                              reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+                            }
+                          };
+                          xhr.onerror = () => reject(new Error("Network error"));
+                          xhr.send(form);
+                        });
+
+                        setProgress(100);
+                        setToastMessage("Upload successful");
+                        setShowToast(true);
+
+                        // clear form after short delay
+                        setTimeout(() => {
+                          if (inputRef.current) inputRef.current.value = "";
+                          setFileName(null);
+                          setFileSize(null);
+                          setFileObj(null);
+                          setProgress(0);
+                          setTitle("");
+                          setError(null);
+                          if (audioPreviewUrl) {
+                            URL.revokeObjectURL(audioPreviewUrl);
+                          }
+                          setAudioPreviewUrl(null);
+                          // clear canvas
+                          const c = canvasRef.current;
+                          if (c) {
+                            const ctx = c.getContext("2d");
+                            if (ctx) ctx.clearRect(0, 0, c.width, c.height);
+                          }
+                        }, 700);
+
+                        // hide toast after a bit
+                        setTimeout(() => setShowToast(false), 3000);
+                      } catch (err: any) {
+                        console.error(err);
+                        setError(err?.message || "Upload failed");
+                        setShowToast(false);
                       }
-                      setProgress(100);
-                      setToastMessage('Upload successful');
-                      setShowToast(true);
-                      // clear form after short delay
-                      setTimeout(() => {
-                        if (inputRef.current) inputRef.current.value = '';
-                        setFileName(null);
-                        setFileSize(null);
-                        setProgress(0);
-                        setTitle('');
-                        setError(null);
-                        if (audioPreviewUrl) {
-                          URL.revokeObjectURL(audioPreviewUrl);
-                        }
-                        setAudioPreviewUrl(null);
-                        // clear canvas
-                        const c = canvasRef.current;
-                        if (c) {
-                          const ctx = c.getContext('2d');
-                          if (ctx) ctx.clearRect(0, 0, c.width, c.height);
-                        }
-                      }, 700);
-                      // hide toast after a bit
-                      setTimeout(() => setShowToast(false), 3000);
                     }}
                     disabled={!fileName || !title || !!error}
                   >
