@@ -1,6 +1,6 @@
 export type UUID = string;
 export type UserRole = "USER" | "ARTIST" | "ADMIN";
-export type EntityType = "song" | "album" | "artist" | "playlist";
+export type EntityType = "song" | "album" | "artist" | "playlist" | "comment";
 export type UserStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
 
 export interface Comment {
@@ -13,7 +13,6 @@ export interface Comment {
   commented_at: string;
 
   likes?: number;
-  user_liked?: boolean;
 
   tags?: Array<{
     user_id: string;

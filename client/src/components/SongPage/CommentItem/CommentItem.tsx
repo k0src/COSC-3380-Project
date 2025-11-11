@@ -1,7 +1,9 @@
 import { memo, useCallback, useMemo, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@contexts";
+import { useLikeStatus } from "@hooks";
 import { formatRelativeDate } from "@util";
 import type { Comment } from "@types";
 import userPlaceholder from "@assets/user-placeholder.png";
@@ -10,32 +12,47 @@ import classNames from "classnames";
 import { LuThumbsUp } from "react-icons/lu";
 
 const CommentItem: React.FC<{ comment: Comment }> = ({ comment }) => {
-  const [isLiked, setIsLiked] = useState(comment.user_liked ?? false);
   const [likeCount, setLikeCount] = useState(Number(comment.likes) || 0);
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  //! send request here too
-  const toggleCommentLike = useCallback(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-
-    if (isLiked) {
-      setLikeCount((prev) => prev - 1);
-      setIsLiked(false);
-    } else {
-      setLikeCount((prev) => prev + 1);
-      setIsLiked(true);
-    }
-  }, [isAuthenticated, navigate, isLiked]);
+  const {
+    isLiked,
+    toggleLike,
+    isLoading: isLikeLoading,
+  } = useLikeStatus({
+    userId: user?.id || "",
+    entityId: comment.id,
+    entityType: "comment",
+    isAuthenticated,
+  });
 
   useEffect(() => {
-    setIsLiked(comment.user_liked ?? false);
+    if (user?.id && comment?.id) {
+      queryClient.invalidateQueries({
+        queryKey: ["likeStatus", user.id, comment.id, "comment"],
+      });
+    }
+  }, [user?.id, comment?.id]);
+
+  const handleToggleCommentLike = useCallback(async () => {
+    try {
+      if (!isAuthenticated) return navigate("/login");
+      await toggleLike();
+      if (isLiked) {
+        setLikeCount((prev) => prev - 1);
+      } else {
+        setLikeCount((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error("Toggling comment like failed:", error);
+    }
+  }, [isAuthenticated, navigate, toggleLike, isLiked]);
+
+  useEffect(() => {
     setLikeCount(Number(comment.likes) || 0);
-  }, [comment.id, comment.user_liked, comment.likes]);
+  }, [comment.id, comment.likes]);
 
   const { comment_text, tags } = comment;
 
@@ -113,8 +130,9 @@ const CommentItem: React.FC<{ comment: Comment }> = ({ comment }) => {
             className={classNames(styles.commentLikeButton, {
               [styles.commentLikeButtonActive]: isLiked,
             })}
-            onClick={toggleCommentLike}
+            onClick={handleToggleCommentLike}
             aria-label={isLiked ? "Unlike comment" : "Like comment"}
+            disabled={isLikeLoading}
           >
             <LuThumbsUp />
           </button>

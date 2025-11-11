@@ -114,7 +114,7 @@ router.get(
       console.error("Error in GET /songs/:id/suggestions:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 router.get(
@@ -129,7 +129,6 @@ router.get(
 
       const comments = await CommentService.getCommentsBySongId(id, {
         includeLikes: req.query.includeLikes === "true",
-        currentUserId: req.query.currentUserId as string | undefined,
         limit: req.query.limit
           ? parseInt(req.query.limit as string, 10)
           : undefined,
@@ -142,7 +141,7 @@ router.get(
       console.error("Error in GET /songs/:id/comments:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 router.post(
@@ -166,14 +165,14 @@ router.post(
       const commentId = await CommentService.addComment(
         userId,
         id,
-        commentText,
+        commentText
       );
       res.status(201).json({ id: commentId });
     } catch (error) {
       console.error("Error in POST /songs/:id/comments:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 router.get(
@@ -205,7 +204,7 @@ router.get(
       console.error("Error in GET /songs/:id/cover-gradient:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 // POST /api/songs/ -> create new song
@@ -315,7 +314,7 @@ router.put(
       console.error("Error in PUT /api/songs/:id/streams:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 // PUT /api/songs/:id/artist -> add artist to song
@@ -347,7 +346,7 @@ router.put(
       console.error("Error in PUT /api/songs/:id/artist:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 // DELETE /api/songs/:id/artist -> remove artist from song
@@ -381,7 +380,7 @@ router.delete(
       console.error("Error in DELETE /api/songs/:id/artist:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 // GET /api/songs/count
@@ -442,7 +441,7 @@ router.get(
       console.error("Error in GET /api/songs/:id/album:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 // GET /api/songs/:id/artists
@@ -483,7 +482,7 @@ router.get(
       console.error("Error in GET /api/songs/:id/artists:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 // GET /api/songs/:id/weekly-plays
@@ -503,7 +502,7 @@ router.get(
       console.error("Error in GET /api/songs/:id/weekly-plays:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 // GET /api/songs/:id/liked-by
@@ -527,7 +526,7 @@ router.get(
       console.error("Error in GET /api/songs/:id/liked-by:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 export default router;

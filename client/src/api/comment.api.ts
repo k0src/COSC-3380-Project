@@ -1,5 +1,5 @@
 import api from "./api";
-import type { Comment, UUID } from "../types";
+import type { Comment, UUID } from "@types";
 
 export const commentApi = {
   async getCommentsBySongId(
