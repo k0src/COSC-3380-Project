@@ -209,33 +209,6 @@ const Upload: React.FC = () => {
       setProgress(100);
       setShowSuccessModal(true);
 
-      // clear form after short delay
-      setTimeout(() => {
-        if (inputRef.current) inputRef.current.value = "";
-        setFileName(null);
-        setFileSize(null);
-        setFileObj(null);
-        setProgress(0);
-        setTitle("");
-        setError(null);
-        if (audioPreviewUrl) {
-          URL.revokeObjectURL(audioPreviewUrl);
-        }
-        setAudioPreviewUrl(null);
-        // clear canvas
-        const c = canvasRef.current;
-        if (c) {
-          const ctx = c.getContext("2d");
-          if (ctx) ctx.clearRect(0, 0, c.width, c.height);
-        }
-
-        if (coverPreviewUrl) URL.revokeObjectURL(coverPreviewUrl);
-        setCoverPreviewUrl(null);
-        setCoverFile(null);
-        setDuration(null);
-        setGenre("");
-      }, 700);
-
     } catch (err: any) {
       console.error(err);
       const msg = err?.message || "Upload failed";
@@ -397,16 +370,11 @@ const Upload: React.FC = () => {
                     type="button"
                     className={styles.btnSecondary}
                     onClick={() => {
-                      if (inputRef.current) {
-                        inputRef.current.value = "";
-                      }
-                      // revoke audio preview url
-                      if (audioPreviewUrl) {
-                        URL.revokeObjectURL(audioPreviewUrl);
-                      }
-                      if (coverPreviewUrl) {
-                        URL.revokeObjectURL(coverPreviewUrl);
-                      }
+                      // Clear form and reset all states
+                      if (inputRef.current) inputRef.current.value = "";
+                      if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
+                      if (coverPreviewUrl) URL.revokeObjectURL(coverPreviewUrl);
+                      
                       setFileName(null);
                       setFileSize(null);
                       setFileObj(null);
@@ -420,11 +388,12 @@ const Upload: React.FC = () => {
                       setDuration(null);
                       setGenre("");
                       setIsUploading(false);
-                      // clear canvas
-                      const c = canvasRef.current;
-                      if (c) {
-                        const ctx = c.getContext("2d");
-                        if (ctx) ctx.clearRect(0, 0, c.width, c.height);
+                      
+                      // Clear canvas
+                      const canvas = canvasRef.current;
+                      if (canvas) {
+                        const ctx = canvas.getContext("2d");
+                        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
                       }
                     }}
                   >
@@ -443,16 +412,7 @@ const Upload: React.FC = () => {
             </div>
           </div>
 
-          <div className={styles.titleBox}>
-            <div className={styles.titleLabel}>Title</div>
-            <input
-              className={`${styles.titleField} ${styles.titleInput}`}
-              placeholder="Enter title for the uploaded file"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={!fileName}
-            />
-          </div>
+
         </div>
       </main>
 
@@ -470,7 +430,33 @@ const Upload: React.FC = () => {
             </p>
             <button 
               className={styles.successButton}
-              onClick={() => setShowSuccessModal(false)}
+              onClick={() => {
+                setShowSuccessModal(false);
+                // Clear form after success
+                if (inputRef.current) inputRef.current.value = "";
+                if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
+                if (coverPreviewUrl) URL.revokeObjectURL(coverPreviewUrl);
+                
+                setFileName(null);
+                setFileSize(null);
+                setFileObj(null);
+                setProgress(0);
+                setTitle("");
+                setError(null);
+                setUploadError(null);
+                setAudioPreviewUrl(null);
+                setCoverPreviewUrl(null);
+                setCoverFile(null);
+                setDuration(null);
+                setGenre("");
+                
+                // Clear canvas
+                const canvas = canvasRef.current;
+                if (canvas) {
+                  const ctx = canvas.getContext("2d");
+                  if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+              }}
             >
               Continue
             </button>
