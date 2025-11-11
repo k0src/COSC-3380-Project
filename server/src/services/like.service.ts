@@ -25,13 +25,6 @@ const LIKE_TABLES: Record<LikeableEntity, string> = {
   comment: "comment_likes",
 };
 
-const LIKEABLE_ENTITY_TABLES: Record<LikeableEntity, string> = {
-  song: "songs",
-  album: "albums",
-  playlist: "playlists",
-  comment: "comments",
-};
-
 /**
  * Service for managing likes on songs, albums, playlists, and comments.
  */
