@@ -1,5 +1,5 @@
-import { memo, useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { memo, useState, useMemo, useEffect, useCallback } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import {
@@ -24,48 +24,72 @@ import {
 
 type TabType = "recent" | "playlists" | "songs" | "albums" | "artists";
 
+const VALID_TABS = [
+  "recent",
+  "playlists",
+  "songs",
+  "albums",
+  "artists",
+] as const;
+
+const TabButton = memo(
+  ({
+    tab,
+    isActive,
+    onClick,
+  }: {
+    tab: { id: TabType; icon: React.ElementType; label: string };
+    isActive: boolean;
+    onClick: (id: TabType) => void;
+  }) => (
+    <button
+      className={classNames(styles.librarySwitcherButton, {
+        [styles.librarySwitcherButtonActive]: isActive,
+      })}
+      onClick={() => onClick(tab.id)}
+    >
+      <tab.icon /> {tab.label}
+    </button>
+  )
+);
+
 const LibraryPage: React.FC = () => {
   const { tab } = useParams<{ tab?: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
 
-  const [searchText, setSearchText] = useState("");
+  const isValidTab = (tab: string | undefined): tab is TabType => {
+    return VALID_TABS.includes(tab as TabType);
+  };
 
   const [activeTab, setActiveTab] = useState<TabType>(() => {
-    if (
-      tab === "recent" ||
-      tab === "playlists" ||
-      tab === "songs" ||
-      tab === "albums" ||
-      tab === "artists"
-    )
-      return tab;
-    return "recent";
+    return isValidTab(tab) ? tab : "recent";
   });
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
-    if (
-      tab === "recent" ||
-      tab === "playlists" ||
-      tab === "songs" ||
-      tab === "albums" ||
-      tab === "artists"
-    ) {
+    if (isValidTab(tab)) {
       setActiveTab(tab);
+      setSearchText("");
     } else if (!tab) {
       setActiveTab("recent");
     }
   }, [tab]);
 
-  if (!isAuthenticated || !user) {
-    navigate("/login");
-    return null;
-  }
+  const tabs = useMemo(
+    () => [
+      { id: "recent" as const, icon: LuHistory, label: "Recent" },
+      { id: "playlists" as const, icon: LuListMusic, label: "Playlists" },
+      { id: "songs" as const, icon: LuDisc3, label: "Songs" },
+      { id: "albums" as const, icon: LuDiscAlbum, label: "Albums" },
+      { id: "artists" as const, icon: LuMicVocal, label: "Artists" },
+    ],
+    []
+  );
 
   const handleTabClick = useCallback(
     (tab: TabType) => {
       navigate(`/library/${tab}`);
-      setActiveTab(tab);
     },
     [navigate]
   );
@@ -86,10 +110,15 @@ const LibraryPage: React.FC = () => {
     []
   );
 
+  if (!isAuthenticated || !user) {
+    navigate("/login");
+    return null;
+  }
+
   return (
     <>
       <Helmet>
-        <title>My Library</title>
+        <title>My Library - CoogMusic</title>
       </Helmet>
 
       <div className={styles.libraryLayout}>
@@ -97,46 +126,14 @@ const LibraryPage: React.FC = () => {
 
         <div className={styles.libraryActions}>
           <div className={styles.switcherContainer}>
-            <button
-              className={classNames(styles.librarySwitcherButton, {
-                [styles.librarySwitcherButtonActive]: activeTab === "recent",
-              })}
-              onClick={() => handleTabClick("recent")}
-            >
-              <LuHistory /> Recent
-            </button>
-            <button
-              className={classNames(styles.librarySwitcherButton, {
-                [styles.librarySwitcherButtonActive]: activeTab === "playlists",
-              })}
-              onClick={() => handleTabClick("playlists")}
-            >
-              <LuListMusic /> Playlists
-            </button>
-            <button
-              className={classNames(styles.librarySwitcherButton, {
-                [styles.librarySwitcherButtonActive]: activeTab === "songs",
-              })}
-              onClick={() => handleTabClick("songs")}
-            >
-              <LuDisc3 /> Songs
-            </button>
-            <button
-              className={classNames(styles.librarySwitcherButton, {
-                [styles.librarySwitcherButtonActive]: activeTab === "albums",
-              })}
-              onClick={() => handleTabClick("albums")}
-            >
-              <LuDiscAlbum /> Albums
-            </button>
-            <button
-              className={classNames(styles.librarySwitcherButton, {
-                [styles.librarySwitcherButtonActive]: activeTab === "artists",
-              })}
-              onClick={() => handleTabClick("artists")}
-            >
-              <LuMicVocal /> Artists
-            </button>
+            {tabs.map((tab) => (
+              <TabButton
+                key={tab.id}
+                tab={tab}
+                isActive={activeTab === tab.id}
+                onClick={handleTabClick}
+              />
+            ))}
           </div>
 
           <div className={styles.libraryActionsRight}>
@@ -162,12 +159,28 @@ const LibraryPage: React.FC = () => {
         </div>
 
         {activeTab === "recent" && (
-          <LibraryRecent userId={user.id} maxItems={20} />
+          <LibraryRecent
+            userId={user.id}
+            maxItems={20}
+            searchFilter={searchText}
+          />
         )}
-        {activeTab === "playlists" && <LibraryPlaylists userId={user.id} />}
-        {activeTab === "songs" && <LibrarySongs userId={user.id} />}
-        {activeTab === "albums" && <LibraryAlbums userId={user.id} />}
-        {activeTab === "artists" && <LibraryArtists userId={user.id} />}
+        {activeTab === "playlists" && (
+          <LibraryPlaylists userId={user.id} searchFilter={searchText} />
+        )}
+        {activeTab === "songs" && (
+          <LibrarySongs userId={user.id} searchFilter={searchText} />
+        )}
+        {activeTab === "albums" && (
+          <LibraryAlbums userId={user.id} searchFilter={searchText} />
+        )}
+        {activeTab === "artists" && (
+          <LibraryArtists userId={user.id} searchFilter={searchText} />
+        )}
+
+        <Link className={styles.historyLink} to="/library/history">
+          View Full History
+        </Link>
       </div>
     </>
   );

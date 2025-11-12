@@ -70,7 +70,6 @@ const UserInfoPage: React.FC = () => {
     (tab: TabType) => {
       const urlTab = tab === "liked" ? "likes" : tab;
       navigate(`/users/${id}/info/${urlTab}`);
-      setActiveTab(tab);
     },
     [id, navigate]
   );

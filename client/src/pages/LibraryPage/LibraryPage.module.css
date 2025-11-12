@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--layout-gap-ver);
+  min-height: 100%;
+  position: relative;
 }
 
 .libraryTitle {
@@ -117,4 +119,16 @@
 
 .searchClear:hover {
   color: var(--color-white);
+}
+
+.historyLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray) !important;
+  text-align: center;
+  transition: color var(--transition-speed) ease-in-out;
+  margin-top: auto;
+}
+
+.historyLink:hover {
+  color: var(--color-white) !important;
 }

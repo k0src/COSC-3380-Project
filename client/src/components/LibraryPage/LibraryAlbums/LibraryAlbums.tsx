@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
 import type { UUID } from "@types";
 import { EntityItemCard } from "@components";
@@ -8,7 +8,10 @@ import { useAsyncData } from "@hooks";
 import styles from "./LibraryAlbums.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 
-const LibraryAlbums: React.FC<{ userId: UUID }> = ({ userId }) => {
+const LibraryAlbums: React.FC<{
+  userId: UUID;
+  searchFilter?: string;
+}> = ({ userId, searchFilter = "" }) => {
   const { data, loading, error } = useAsyncData(
     {
       albums: () => libraryApi.getLibraryAlbums(userId),
@@ -20,7 +23,18 @@ const LibraryAlbums: React.FC<{ userId: UUID }> = ({ userId }) => {
     }
   );
 
-  const albums = data?.albums || [];
+  const albums = data?.albums ?? [];
+
+  const filteredAlbums = useMemo(() => {
+    if (!searchFilter.trim()) {
+      return albums;
+    }
+
+    const lowerFilter = searchFilter.toLowerCase();
+    return albums.filter((album) =>
+      album.title.toLowerCase().includes(lowerFilter)
+    );
+  }, [albums, searchFilter]);
 
   if (loading) {
     return (
@@ -36,20 +50,26 @@ const LibraryAlbums: React.FC<{ userId: UUID }> = ({ userId }) => {
 
   return (
     <>
-      {albums.length === 0 ? (
-        <span className={styles.noAlbums}>No liked albums yet.</span>
+      {filteredAlbums.length === 0 ? (
+        <span className={styles.noAlbums}>
+          {searchFilter.trim()
+            ? "No albums match your search."
+            : "No liked albums yet."}
+        </span>
       ) : (
         <div className={styles.sectionContainer}>
           <span className={styles.sectionTitle}>Liked Albums</span>
           <div className={styles.itemsGrid}>
-            {albums.map((album) => (
+            {filteredAlbums.map((album) => (
               <EntityItemCard
                 key={album.id}
                 entity={album}
                 type="album"
                 linkTo={`/albums/${album.id}`}
                 author={album.artist?.display_name || "Unknown"}
-                authorLinkTo={`/artists/${album.artist?.id}`}
+                authorLinkTo={
+                  album.artist?.id ? `/artists/${album.artist.id}` : undefined
+                }
                 title={album.title}
                 subtitle={formatDateString(album.release_date)}
                 imageUrl={album.image_url || musicPlaceholder}

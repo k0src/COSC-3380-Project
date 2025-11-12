@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
 import type { UUID } from "@types";
 import { EntityItemCard } from "@components";
@@ -8,7 +8,10 @@ import { useAsyncData } from "@hooks";
 import styles from "./LibrarySongs.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 
-const LibrarySongs: React.FC<{ userId: UUID }> = ({ userId }) => {
+const LibrarySongs: React.FC<{
+  userId: UUID;
+  searchFilter?: string;
+}> = ({ userId, searchFilter = "" }) => {
   const { data, loading, error } = useAsyncData(
     {
       songs: () => libraryApi.getLibrarySongs(userId),
@@ -20,7 +23,18 @@ const LibrarySongs: React.FC<{ userId: UUID }> = ({ userId }) => {
     }
   );
 
-  const songs = data?.songs || [];
+  const songs = data?.songs ?? [];
+
+  const filteredSongs = useMemo(() => {
+    if (!searchFilter.trim()) {
+      return songs;
+    }
+
+    const lowerFilter = searchFilter.toLowerCase();
+    return songs.filter((song) =>
+      song.title.toLowerCase().includes(lowerFilter)
+    );
+  }, [songs, searchFilter]);
 
   if (loading) {
     return (
@@ -36,30 +50,36 @@ const LibrarySongs: React.FC<{ userId: UUID }> = ({ userId }) => {
 
   return (
     <>
-      {songs.length === 0 ? (
-        <span className={styles.noSongs}>No liked songs yet.</span>
+      {filteredSongs.length === 0 ? (
+        <span className={styles.noSongs}>
+          {searchFilter.trim()
+            ? "No songs match your search."
+            : "No liked songs yet."}
+        </span>
       ) : (
         <div className={styles.sectionContainer}>
           <span className={styles.sectionTitle}>Liked Songs</span>
           <div className={styles.itemsGrid}>
-            {songs.map((song) => (
-              <EntityItemCard
-                key={song.id}
-                entity={song}
-                type="song"
-                linkTo={`/songs/${song.id}`}
-                author={
-                  getMainArtist(song.artists || [])?.display_name || "Unknown"
-                }
-                authorLinkTo={`/artists/${
-                  getMainArtist(song.artists || [])?.id
-                }`}
-                title={song.title}
-                subtitle={formatDateString(song.release_date)}
-                imageUrl={song.image_url || musicPlaceholder}
-                blurHash={song.image_url_blurhash}
-              />
-            ))}
+            {filteredSongs.map((song) => {
+              const mainArtist = getMainArtist(song.artists || []);
+
+              return (
+                <EntityItemCard
+                  key={song.id}
+                  entity={song}
+                  type="song"
+                  linkTo={`/songs/${song.id}`}
+                  author={mainArtist?.display_name || "Unknown Artist"}
+                  authorLinkTo={
+                    mainArtist?.id ? `/artists/${mainArtist.id}` : undefined
+                  }
+                  title={song.title}
+                  subtitle={formatDateString(song.release_date)}
+                  imageUrl={song.image_url || musicPlaceholder}
+                  blurHash={song.image_url_blurhash}
+                />
+              );
+            })}
           </div>
         </div>
       )}

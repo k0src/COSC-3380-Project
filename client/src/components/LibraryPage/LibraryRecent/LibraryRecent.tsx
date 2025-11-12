@@ -1,6 +1,5 @@
 import { memo, useMemo } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
-import { Link } from "react-router-dom";
 import type { UUID } from "@types";
 import { EntityItemCard, LibraryArtist } from "@components";
 import { libraryApi } from "@api";
@@ -10,10 +9,32 @@ import styles from "./LibraryRecent.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 import { LuPin } from "react-icons/lu";
 
-const LibraryRecent: React.FC<{ userId: UUID; maxItems: number }> = ({
-  userId,
-  maxItems,
-}) => {
+const RecentSection = memo(
+  ({
+    title,
+    items,
+    renderItem,
+  }: {
+    title: string;
+    items: any[];
+    renderItem: (item: any) => React.ReactNode;
+  }) => {
+    if (!items?.length) return null;
+
+    return (
+      <div className={styles.sectionContainer}>
+        <h2 className={styles.sectionTitle}>{title}</h2>
+        <div className={styles.itemsGrid}>{items.map(renderItem)}</div>
+      </div>
+    );
+  }
+);
+
+const LibraryRecent: React.FC<{
+  userId: UUID;
+  maxItems: number;
+  searchFilter?: string;
+}> = ({ userId, maxItems, searchFilter = "" }) => {
   const { data, loading, error } = useAsyncData(
     {
       recentlyPlayed: () => libraryApi.getRecentlyPlayed(userId, maxItems),
@@ -25,12 +46,48 @@ const LibraryRecent: React.FC<{ userId: UUID; maxItems: number }> = ({
     }
   );
 
-  const recentlyPlayed = data?.recentlyPlayed || {};
+  const recentlyPlayed = data?.recentlyPlayed ?? {};
+
+  const filteredRecentlyPlayed = useMemo(() => {
+    if (!searchFilter.trim()) {
+      return recentlyPlayed;
+    }
+
+    const lowerFilter = searchFilter.toLowerCase();
+
+    return {
+      playlists:
+        recentlyPlayed.playlists?.filter((playlist) =>
+          playlist.title.toLowerCase().includes(lowerFilter)
+        ) || [],
+      songs:
+        recentlyPlayed.songs?.filter((song) =>
+          song.title.toLowerCase().includes(lowerFilter)
+        ) || [],
+      albums:
+        recentlyPlayed.albums?.filter((album) =>
+          album.title.toLowerCase().includes(lowerFilter)
+        ) || [],
+      artists:
+        recentlyPlayed.artists?.filter((artist) =>
+          artist.display_name.toLowerCase().includes(lowerFilter)
+        ) || [],
+    };
+  }, [recentlyPlayed, searchFilter]);
 
   const noRecent = useMemo(
     () => Object.keys(recentlyPlayed).length === 0,
     [recentlyPlayed]
   );
+
+  const noFilteredResults = useMemo(() => {
+    return (
+      !filteredRecentlyPlayed.playlists?.length &&
+      !filteredRecentlyPlayed.songs?.length &&
+      !filteredRecentlyPlayed.albums?.length &&
+      !filteredRecentlyPlayed.artists?.length
+    );
+  }, [filteredRecentlyPlayed]);
 
   if (loading) {
     return (
@@ -50,13 +107,18 @@ const LibraryRecent: React.FC<{ userId: UUID; maxItems: number }> = ({
     <>
       {noRecent ? (
         <span className={styles.noRecent}>No recently played items.</span>
+      ) : noFilteredResults ? (
+        <span className={styles.noRecent}>
+          No recently played items match your search.
+        </span>
       ) : (
         <div className={styles.recentContainer}>
-          {recentlyPlayed.playlists && recentlyPlayed.playlists.length > 0 && (
-            <div className={styles.sectionContainer}>
-              <span className={styles.sectionTitle}>Recent Playlists</span>
-              <div className={styles.itemsGrid}>
-                {recentlyPlayed.playlists.map((playlist) => (
+          {filteredRecentlyPlayed.playlists &&
+            filteredRecentlyPlayed.playlists.length > 0 && (
+              <RecentSection
+                title="Recent Playlists"
+                items={filteredRecentlyPlayed.playlists}
+                renderItem={(playlist) => (
                   <div className={styles.playlistContainer}>
                     {playlist.is_pinned && (
                       <div className={styles.pinnedIconContainer}>
@@ -69,71 +131,80 @@ const LibraryRecent: React.FC<{ userId: UUID; maxItems: number }> = ({
                       type="playlist"
                       linkTo={`/playlists/${playlist.id}`}
                       author={playlist.user?.username || "Unknown"}
-                      authorLinkTo={`/users/${playlist.user?.id}`}
+                      authorLinkTo={
+                        playlist.user?.id
+                          ? `/users/${playlist.user.id}`
+                          : undefined
+                      }
                       title={playlist.title}
                       subtitle={`${playlist.song_count} songs`}
                       imageUrl={playlist.image_url || musicPlaceholder}
                     />
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                )}
+              />
+            )}
 
-          {recentlyPlayed.songs && recentlyPlayed.songs.length > 0 && (
-            <div className={styles.sectionContainer}>
-              <span className={styles.sectionTitle}>Recent Songs</span>
-              <div className={styles.itemsGrid}>
-                {recentlyPlayed.songs.map((song) => (
-                  <EntityItemCard
-                    key={song.id}
-                    entity={song}
-                    type="song"
-                    linkTo={`/songs/${song.id}`}
-                    author={
-                      getMainArtist(song.artists || [])?.display_name ||
-                      "Unknown"
-                    }
-                    authorLinkTo={`/artists/${
-                      getMainArtist(song.artists || [])?.id
-                    }`}
-                    title={song.title}
-                    subtitle={formatDateString(song.release_date)}
-                    imageUrl={song.image_url || musicPlaceholder}
-                    blurHash={song.image_url_blurhash}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+          {filteredRecentlyPlayed.songs &&
+            filteredRecentlyPlayed.songs.length > 0 && (
+              <RecentSection
+                title="Recent Songs"
+                items={filteredRecentlyPlayed.songs}
+                renderItem={(song) => {
+                  const mainArtist = getMainArtist(song.artists || []);
 
-          {recentlyPlayed.albums && recentlyPlayed.albums.length > 0 && (
-            <div className={styles.sectionContainer}>
-              <span className={styles.sectionTitle}>Recent Albums</span>
-              <div className={styles.itemsGrid}>
-                {recentlyPlayed.albums.map((album) => (
+                  return (
+                    <EntityItemCard
+                      key={song.id}
+                      entity={song}
+                      type="song"
+                      linkTo={`/songs/${song.id}`}
+                      author={mainArtist?.display_name || "Unknown Artist"}
+                      authorLinkTo={
+                        mainArtist?.id ? `/artists/${mainArtist.id}` : undefined
+                      }
+                      title={song.title}
+                      subtitle={formatDateString(song.release_date)}
+                      imageUrl={song.image_url || musicPlaceholder}
+                      blurHash={song.image_url_blurhash}
+                    />
+                  );
+                }}
+              />
+            )}
+
+          {filteredRecentlyPlayed.albums &&
+            filteredRecentlyPlayed.albums.length > 0 && (
+              <RecentSection
+                title="Recent Albums"
+                items={filteredRecentlyPlayed.albums}
+                renderItem={(album) => (
                   <EntityItemCard
                     key={album.id}
                     entity={album}
                     type="album"
                     linkTo={`/albums/${album.id}`}
                     author={album.artist?.display_name || "Unknown"}
-                    authorLinkTo={`/artists/${album.artist?.id}`}
+                    authorLinkTo={
+                      album.artist?.id
+                        ? `/artists/${album.artist.id}`
+                        : undefined
+                    }
                     title={album.title}
                     subtitle={formatDateString(album.release_date)}
                     imageUrl={album.image_url || musicPlaceholder}
                     blurHash={album.image_url_blurhash}
                   />
-                ))}
-              </div>
-            </div>
-          )}
+                )}
+              />
+            )}
 
-          {recentlyPlayed.artists && recentlyPlayed.artists.length > 0 && (
-            <div className={styles.sectionContainer}>
-              <span className={styles.sectionTitle}>Recent Artists</span>
-              <div className={styles.itemsGrid}>
-                {recentlyPlayed.artists.map((artist) => (
+          {filteredRecentlyPlayed.artists &&
+            filteredRecentlyPlayed.artists.length > 0 && (
+              <RecentSection
+                title="Recent Artists"
+                items={filteredRecentlyPlayed.artists}
+                renderItem={(artist) => (
                   <LibraryArtist
                     key={artist.id}
                     artistId={artist.id}
@@ -141,14 +212,9 @@ const LibraryRecent: React.FC<{ userId: UUID; maxItems: number }> = ({
                     artistBlurHash={artist.user?.pfp_blurhash}
                     artistName={artist.display_name}
                   />
-                ))}
-              </div>
-            </div>
-          )}
-
-          <Link className={styles.historyLink} to="/library/history">
-            View Full History
-          </Link>
+                )}
+              />
+            )}
         </div>
       )}
     </>

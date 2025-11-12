@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
 import type { UUID } from "@types";
 import { LibraryArtist } from "@components";
@@ -6,7 +6,10 @@ import { libraryApi } from "@api";
 import { useAsyncData } from "@hooks";
 import styles from "./LibraryArtists.module.css";
 
-const LibraryArtists: React.FC<{ userId: UUID }> = ({ userId }) => {
+const LibraryArtists: React.FC<{
+  userId: UUID;
+  searchFilter?: string;
+}> = ({ userId, searchFilter = "" }) => {
   const { data, loading, error } = useAsyncData(
     {
       artists: () => libraryApi.getLibraryArtists(userId),
@@ -18,7 +21,18 @@ const LibraryArtists: React.FC<{ userId: UUID }> = ({ userId }) => {
     }
   );
 
-  const artists = data?.artists || [];
+  const artists = data?.artists ?? [];
+
+  const filteredArtists = useMemo(() => {
+    if (!searchFilter.trim()) {
+      return artists;
+    }
+
+    const lowerFilter = searchFilter.toLowerCase();
+    return artists.filter((artist) =>
+      artist.display_name.toLowerCase().includes(lowerFilter)
+    );
+  }, [artists, searchFilter]);
 
   if (loading) {
     return (
@@ -34,13 +48,17 @@ const LibraryArtists: React.FC<{ userId: UUID }> = ({ userId }) => {
 
   return (
     <>
-      {artists.length === 0 ? (
-        <span className={styles.noArtists}>No liked artists yet.</span>
+      {filteredArtists.length === 0 ? (
+        <span className={styles.noArtists}>
+          {searchFilter.trim()
+            ? "No artists match your search."
+            : "No liked artists yet."}
+        </span>
       ) : (
         <div className={styles.sectionContainer}>
           <span className={styles.sectionTitle}>Followed Artists</span>
           <div className={styles.itemsGrid}>
-            {artists.map((artist) => (
+            {filteredArtists.map((artist) => (
               <LibraryArtist
                 key={artist.id}
                 artistId={artist.id}
