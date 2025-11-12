@@ -18,71 +18,99 @@ export const useTextContrast = (imageUrl?: string): TextContrastResult => {
 
   const analyzeImageBrightness = useCallback(
     (url: string): Promise<"white" | "black"> => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         if (imageContrastCache.has(url)) {
           resolve(imageContrastCache.get(url)!);
           return;
         }
 
-        const img = new Image();
-        img.crossOrigin = "anonymous";
+        const tryAnalysis = (useCrossOrigin: boolean) => {
+          const img = new Image();
 
-        img.onload = () => {
-          try {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-
-            if (!ctx) {
-              reject(new Error("Could not get canvas context"));
-              return;
-            }
-
-            const maxSize = 100;
-            const scale = Math.min(maxSize / img.width, maxSize / img.height);
-            canvas.width = img.width * scale;
-            canvas.height = img.height * scale;
-
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            const imageData = ctx.getImageData(
-              0,
-              0,
-              canvas.width,
-              canvas.height
-            );
-            const data = imageData.data;
-
-            let totalBrightness = 0;
-            let pixelCount = 0;
-
-            for (let i = 0; i < data.length; i += 16) {
-              const r = data[i];
-              const g = data[i + 1];
-              const b = data[i + 2];
-              const alpha = data[i + 3];
-
-              if (alpha < 128) continue;
-
-              const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-              totalBrightness += brightness;
-              pixelCount++;
-            }
-
-            const averageBrightness = totalBrightness / pixelCount;
-            const result = averageBrightness > 140 ? "black" : "white";
-
-            imageContrastCache.set(url, result);
-            resolve(result);
-          } catch (error) {
-            reject(error);
+          if (useCrossOrigin) {
+            img.crossOrigin = "anonymous";
           }
+
+          img.onload = () => {
+            try {
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
+
+              if (!ctx) {
+                const defaultResult = "white";
+                imageContrastCache.set(url, defaultResult);
+                resolve(defaultResult);
+                return;
+              }
+
+              const maxSize = 100;
+              const scale = Math.min(maxSize / img.width, maxSize / img.height);
+              canvas.width = img.width * scale;
+              canvas.height = img.height * scale;
+
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+              try {
+                const imageData = ctx.getImageData(
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height
+                );
+                const data = imageData.data;
+
+                let totalBrightness = 0;
+                let pixelCount = 0;
+
+                for (let i = 0; i < data.length; i += 16) {
+                  const r = data[i];
+                  const g = data[i + 1];
+                  const b = data[i + 2];
+                  const alpha = data[i + 3];
+
+                  if (alpha < 128) continue;
+
+                  const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+                  totalBrightness += brightness;
+                  pixelCount++;
+                }
+
+                const averageBrightness = totalBrightness / pixelCount;
+                const result = averageBrightness > 140 ? "black" : "white";
+
+                imageContrastCache.set(url, result);
+                resolve(result);
+              } catch {
+                if (useCrossOrigin) {
+                  tryAnalysis(false);
+                } else {
+                  const defaultResult = "white";
+                  imageContrastCache.set(url, defaultResult);
+                  resolve(defaultResult);
+                }
+              }
+            } catch (error) {
+              console.warn("Error analyzing image:", error);
+              const defaultResult = "white";
+              imageContrastCache.set(url, defaultResult);
+              resolve(defaultResult);
+            }
+          };
+
+          img.onerror = () => {
+            if (useCrossOrigin) {
+              tryAnalysis(false);
+            } else {
+              const defaultResult = "white";
+              imageContrastCache.set(url, defaultResult);
+              resolve(defaultResult);
+            }
+          };
+
+          img.src = url;
         };
 
-        img.onerror = () => {
-          reject(new Error("Failed to load image"));
-        };
-
-        img.src = url;
+        tryAnalysis(true);
       });
     },
     []
