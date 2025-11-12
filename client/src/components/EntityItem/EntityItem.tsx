@@ -179,7 +179,7 @@ type EntityItemProps =
       author?: string;
       authorLinkTo?: string;
       title: string;
-      subtitle: string;
+      subtitle?: string;
       imageUrl?: string;
       blurHash?: string;
       entity: Song | Playlist | Album;
