@@ -450,6 +450,32 @@ router.get(
   }
 );
 
+    // GET /api/users/:id/history/songs
+    router.get(
+      "/:id/history/songs",
+      async (req: Request, res: Response): Promise<void> => {
+        try {
+          const { id } = req.params;
+          const { limit, offset } = req.query;
+
+          if (!id) {
+            res.status(400).json({ error: "User ID is required" });
+            return;
+          }
+
+          const songs = await HistoryService.getHistory(id, "song", {
+            limit: limit ? parseInt(limit as string) : undefined,
+            offset: offset ? parseInt(offset as string) : undefined,
+          });
+
+          res.status(200).json(songs);
+        } catch (error) {
+          console.error("Error in GET /users/:id/history/songs:", error);
+          res.status(500).json({ error: "Internal server error" });
+        }
+      }
+    );
+
     // GET /api/users/:id/history/albums
     router.get(
       "/:id/history/albums",

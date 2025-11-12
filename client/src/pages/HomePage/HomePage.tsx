@@ -15,12 +15,7 @@ const HomePage: React.FC = () => {
 
   const FEATURED_PLAYLIST_ID: UUID = "0b44c6a2-6dc5-42ef-a847-85b291df8eb5"; //hardcoded for now
 
-  // Mock data for recently played (fallback)
-  const recentSongsMock = Array(4).fill({
-    title: "Song Title",
-    artist: "Artist Name",
-    image: "/PlayerBar/Mask group.png",
-  });
+  // No mock recent songs; we'll show a friendly empty state when user has no history
 
   // Fetch a popular song and then get its suggestions
   const asyncConfig = useMemo(
@@ -57,6 +52,7 @@ const HomePage: React.FC = () => {
           includeUser: true, // To show "Created by..."
           includeLikes: true,
           includeSongCount: true, // To show "X songs"
+          includeRuntime: true, // To show total runtime
         });
       },
 
@@ -65,6 +61,7 @@ const HomePage: React.FC = () => {
         if (!isAuthenticated || !user) return [];
         try {
           const songs = await userApi.getHistorySongs(user.id, { limit: 10 });
+          console.log("Fetched recent songs:", songs);
           return songs;
         } catch (err) {
           return [];
@@ -75,10 +72,14 @@ const HomePage: React.FC = () => {
     [isAuthenticated, user]
   );
 
+  
+
   const { data, loading, error } = useAsyncData(asyncConfig, [isAuthenticated, user], {
     cacheKey: "homepage_data", // <-- Renamed from "homepage_suggestions"
     hasBlobUrl: true,
   });
+
+  const playlist = data?.featuredPlaylist;
 
   const handleToggleExpand = (event: React.MouseEvent<HTMLAnchorElement>) => {
     // Stop the <a> tag from refreshing the page
@@ -116,7 +117,7 @@ const HomePage: React.FC = () => {
       }));
     }
 
-    return recentSongsMock;
+    return [];
   }, [data?.recentSongs]);
 
   return (
@@ -140,8 +141,8 @@ const HomePage: React.FC = () => {
               </div>
             )}
             {/* On success, render the card */}
-            {!loading && !error && data?.featuredPlaylist && (
-              <FeaturedSection playlist={data.featuredPlaylist as Playlist} />
+            {!loading && !error && playlist && (
+              <FeaturedSection playlist={playlist} />
             )}
           </section>
 
@@ -151,19 +152,25 @@ const HomePage: React.FC = () => {
               <h2 className={styles.sectionTitle}>Recently Played</h2>
             </div>
             <div className={styles.verticalCardsList}>
-              {recentSongsDisplay.map((song) => (
-                <Link
-                  key={song.id || song.title}
-                  to={song.id ? `/songs/${song.id}` : "#"}
-                  className={styles.compactCard}
-                >
-                  <img src={song.image} alt={song.title} />
-                  <div className={styles.songInfo}>
-                    <h3 className={styles.songTitle}>{song.title}</h3>
-                    <p className={styles.artistName}>{song.artist}</p>
-                  </div>
-                </Link>
-              ))}
+              {recentSongsDisplay.length === 0 ? (
+                <div className={styles.emptyRecent}>
+                  You haven't played any songs yet.
+                </div>
+              ) : (
+                recentSongsDisplay.map((song) => (
+                  <Link
+                    key={song.id || song.title}
+                    to={song.id ? `/songs/${song.id}` : "#"}
+                    className={styles.compactCard}
+                  >
+                    <img src={song.image} alt={song.title} />
+                    <div className={styles.songInfo}>
+                      <h3 className={styles.songTitle}>{song.title}</h3>
+                      <p className={styles.artistName}>{song.artist}</p>
+                    </div>
+                  </Link>
+                ))
+              )}
             </div>
           </section>
         </div>

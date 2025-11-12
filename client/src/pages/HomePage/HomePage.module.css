@@ -134,8 +134,14 @@
   padding-right: 16px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  
 }
+.emptyRecent {
+  padding: 24px;
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: 14px;
+}
+ 
 
 /* Compact song card style for sidebar */
 .compactCard {
