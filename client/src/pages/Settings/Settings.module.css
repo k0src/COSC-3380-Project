@@ -218,3 +218,168 @@ body {
 }
 .deleteBtn:active { transform: scale(0.98); }
 .deleteBtn:focus { box-shadow: 0 6px 18px rgba(0,0,0,0.6); }
+
+/* Success modal overlay */
+.successOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.successModal {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(102, 187, 106, 0.15));
+  border: 2px solid rgba(76, 175, 80, 0.4);
+  border-radius: 20px;
+  padding: 40px 48px;
+  text-align: center;
+  color: #fff;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.4s ease-out;
+}
+
+.successIcon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #4cb050, #66bb6a);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bounce 0.6s ease-out;
+}
+
+.successTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #fff;
+}
+
+.successMessage {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 24px;
+}
+
+.successButton {
+  background: linear-gradient(135deg, #4cb050, #66bb6a);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.successButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(-20px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Delete success modal - red/pink theme */
+.deleteSuccessOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.deleteSuccessModal {
+  background: linear-gradient(135deg, rgba(211, 47, 47, 0.15), rgba(229, 57, 53, 0.15));
+  border: 2px solid rgba(211, 47, 47, 0.4);
+  border-radius: 20px;
+  padding: 40px 48px;
+  text-align: center;
+  color: #fff;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.4s ease-out;
+}
+
+.deleteSuccessIcon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #d32f2f, #e53935);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bounce 0.6s ease-out;
+}
+
+.deleteSuccessTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #fff;
+}
+
+.deleteSuccessMessage {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 16px;
+}
+
+.deleteCountdown {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  font-style: italic;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}

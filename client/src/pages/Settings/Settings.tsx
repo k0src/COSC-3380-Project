@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import api from "@api/api";
 import styles from "./Settings.module.css";
 
 const Settings: React.FC = () => {
   
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [changeOpen, setChangeOpen] = useState(false);
+  const [showPasswordSuccess, setShowPasswordSuccess] = useState(false);
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -113,16 +116,9 @@ const Settings: React.FC = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const res = await fetch("/api/users/settings", {
-          method: "GET",
-          credentials: 'include',
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          setNotifications(data.notifications ?? true);
-          setIsPrivate(data.isPrivate ?? false);
-        }
+        const response = await api.get("/users/settings");
+        setNotifications(response.data.notifications ?? true);
+        setIsPrivate(response.data.isPrivate ?? false);
       } catch (err) {
         console.warn("Failed to load settings:", err);
       }
@@ -136,46 +132,29 @@ const Settings: React.FC = () => {
       const body: any = {};
       body[setting] = value;
 
-      const res = await fetch("/api/users/settings", {
-        method: "POST",
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
+      await api.post("/users/settings", body);
 
-      if (res.ok) {
-        if (setting === "notifications") setNotifications(value);
-        if (setting === "isPrivate") setIsPrivate(value);
-      } else {
-        alert("Failed to update setting");
-      }
+      if (setting === "notifications") setNotifications(value);
+      if (setting === "isPrivate") setIsPrivate(value);
     } catch (err) {
       console.error("Error updating setting:", err);
-      alert("Network error while updating setting");
+      alert("Failed to update setting");
     }
   };
 
   const handleDelete = async () => {
     try {
-      const res = await fetch("/api/users/account", {
-        method: "DELETE",
-        credentials: 'include',
-      });
-
-      if (res.ok) {
-        setConfirmOpen(false);
-        alert("Account deleted successfully!");
-        // Redirect to login or home page
+      await api.delete("/users/account");
+      setConfirmOpen(false);
+      setShowDeleteSuccess(true);
+      
+      // Redirect after 3 seconds to let user see the modal
+      setTimeout(() => {
         window.location.href = "/";
-      } else {
-        const data = await res.json().catch(() => null);
-        alert(data?.error || "Failed to delete account");
-      }
+      }, 3000);
     } catch (err) {
       console.error("Error deleting account:", err);
-      alert("Network error while deleting account");
+      alert("Failed to delete account");
     }
   };
 
@@ -196,29 +175,15 @@ const Settings: React.FC = () => {
     }
 
     try {
-      // attempt to call backend change-password endpoint
-      const res = await fetch("/api/users/change-password", {
-        method: "POST",
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-
-      if (res.ok) {
-        setChangeOpen(false);
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        alert("Password changed successfully.");
-      } else {
-        const data = await res.json().catch(() => null);
-        alert((data && data.error) || "Failed to change password.");
-      }
+      await api.post("/users/change-password", { currentPassword, newPassword });
+      setShowPasswordSuccess(true);
+      setChangeOpen(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (err) {
       console.error(err);
-      alert("Network error while changing password.");
+      alert("Failed to change password.");
     }
   };
 
@@ -282,7 +247,7 @@ const Settings: React.FC = () => {
               />
             </div>
             <div style={{ marginTop: 12, color: "#fff" }}>
-              Makes account invisible to other users
+              (Makes account invisible to other users)
             </div>
           </section>
         </div>
@@ -455,6 +420,53 @@ const Settings: React.FC = () => {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showPasswordSuccess && (
+        <div
+          className={styles.successOverlay}
+          onClick={() => setShowPasswordSuccess(false)}
+        >
+          <div className={styles.successModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.successIcon}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h2 className={styles.successTitle}>Password Changed!</h2>
+            <p className={styles.successMessage}>
+              Your password has been updated successfully.
+            </p>
+            <button
+              className={styles.successButton}
+              onClick={() => setShowPasswordSuccess(false)}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showDeleteSuccess && (
+        <div
+          className={styles.deleteSuccessOverlay}
+          onClick={() => {}}
+        >
+          <div className={styles.deleteSuccessModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.deleteSuccessIcon}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h2 className={styles.deleteSuccessTitle}>Account Deleted</h2>
+            <p className={styles.deleteSuccessMessage}>
+              Your account has been successfully deleted. We hope to see you again soon!
+            </p>
+            <p className={styles.deleteCountdown}>
+              Redirecting in a moment...
+            </p>
           </div>
         </div>
       )}

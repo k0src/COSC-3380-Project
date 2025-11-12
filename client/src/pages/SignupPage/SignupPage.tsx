@@ -147,9 +147,11 @@ const SignupPage: React.FC = () => {
                 <option value="USER">User</option>
                 <option value="ARTIST">Artist</option>
               </select>
-              <span className={styles.inputHintText}>
-                Artists can upload music and create artist profiles
-              </span>
+              {formData.role === "ARTIST" && (
+                <span className={styles.inputHintText}>
+                  Artists can upload music and create artist profiles
+                </span>
+              )}
             </div>
             <InputGroup
               label="Password"
