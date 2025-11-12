@@ -57,6 +57,7 @@ const LazyBannerImg: React.FC<LazyBannerImgProps> = ({
         className={classNames(styles.img, className, loaded && styles.loaded)}
         loading="lazy"
         onLoad={handleOnLoad}
+        crossOrigin="anonymous"
       />
     </>
   );

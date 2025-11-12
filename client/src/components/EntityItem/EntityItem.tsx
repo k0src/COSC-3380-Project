@@ -164,6 +164,7 @@ type EntityItemProps =
       type: "artist";
       linkTo: string;
       author?: string;
+      authorLinkTo?: string;
       title: string;
       subtitle?: string;
       imageUrl?: string;
@@ -176,6 +177,7 @@ type EntityItemProps =
       type: "song" | "playlist" | "album";
       linkTo: string;
       author?: string;
+      authorLinkTo?: string;
       title: string;
       subtitle?: string;
       imageUrl?: string;
@@ -191,6 +193,7 @@ const EntityItem: React.FC<EntityItemProps> = ({
   blurHash,
   linkTo,
   author,
+  authorLinkTo,
   title,
   subtitle,
   type,
@@ -239,7 +242,21 @@ const EntityItem: React.FC<EntityItemProps> = ({
         imgClassNames={[styles.entityImage]}
       />
       <div className={styles.entityInfo}>
-        {author && <span className={styles.entityAuthor}>{author}</span>}
+        {author &&
+          (authorLinkTo ? (
+            <Link
+              to={authorLinkTo}
+              className={classNames(
+                styles.entityAuthor,
+                styles.entityAuthorLink
+              )}
+            >
+              {author}
+            </Link>
+          ) : (
+            <span className={styles.entityAuthor}>{author}</span>
+          ))}
+
         <Link className={styles.entityTitle} to={linkTo}>
           {title}
         </Link>

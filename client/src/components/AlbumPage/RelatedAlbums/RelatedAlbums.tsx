@@ -73,6 +73,15 @@ const RelatedAlbums: React.FC<RelatedAlbumsProps> = ({
     }
   }, [mode]);
 
+  const albumAuthorLink = useMemo(() => {
+    if (mode === "related") {
+      return (album: Album) =>
+        album.artist ? `/artists/${album.artist.id}` : undefined;
+    } else {
+      return undefined;
+    }
+  }, [mode]);
+
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
@@ -100,6 +109,7 @@ const RelatedAlbums: React.FC<RelatedAlbumsProps> = ({
             key={album.id}
             type="album"
             author={albumAuthor(album)}
+            authorLinkTo={albumAuthorLink?.(album)}
             linkTo={`/albums/${album.id}`}
             title={album.title}
             imageUrl={album.image_url || musicPlaceholder}

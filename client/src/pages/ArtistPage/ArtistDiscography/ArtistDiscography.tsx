@@ -71,6 +71,27 @@ const ArtistDiscography: React.FC = () => {
     [numberOfAlbums, numberOfSingles, numberOfSongs]
   );
 
+  const albumAuthor = useMemo(
+    () => artist?.display_name || "",
+    [artist?.display_name]
+  );
+
+  const albumAuthorLink = useMemo(
+    () => (artist ? `/artists/${artist.id}` : undefined),
+    [artist]
+  );
+
+  const singleAuthor = useCallback(
+    (single: (typeof singles)[0]) =>
+      getMainArtist(single.artists || [])?.display_name || "Unknown Artist",
+    []
+  );
+
+  const singleAuthorLink = useCallback((single: (typeof singles)[0]) => {
+    const mainArtist = getMainArtist(single.artists || []);
+    return mainArtist ? `/artists/${mainArtist.id}` : undefined;
+  }, []);
+
   const handleLightboxClose = useCallback(() => setIsLightboxOpen(false), []);
 
   const handleImageClick = useCallback(() => {
@@ -176,7 +197,8 @@ const ArtistDiscography: React.FC = () => {
                         key={album.id}
                         type="album"
                         linkTo={`/albums/${album.id}`}
-                        author={artist.display_name}
+                        author={albumAuthor}
+                        authorLinkTo={albumAuthorLink}
                         title={album.title}
                         subtitle={formatDateString(album.release_date)}
                         imageUrl={album.image_url || musicPlaceholder}
@@ -196,10 +218,8 @@ const ArtistDiscography: React.FC = () => {
                         key={single.id}
                         type="song"
                         linkTo={`/songs/${single.id}`}
-                        author={
-                          getMainArtist(single.artists || [])?.display_name ||
-                          "Unknown Artist"
-                        }
+                        author={singleAuthor(single)}
+                        authorLinkTo={singleAuthorLink(single)}
                         title={single.title}
                         subtitle={formatDateString(single.release_date)}
                         imageUrl={single.image_url || musicPlaceholder}
