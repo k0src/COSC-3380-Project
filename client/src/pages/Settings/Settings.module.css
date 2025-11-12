@@ -1,0 +1,385 @@
+body {
+  background-color: #000;
+  color: #fff;
+}
+
+.contentWrapper {
+  padding-top: 120px; /* pushes Settings section down safely below topbar */
+  padding-right: 32px;
+  padding-left: 32px;
+  padding-bottom: 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+  background-color: #000;
+  min-height: calc(100vh - 160px);
+  color: #fff;
+}
+
+
+/* Optional: more centered layout for tall screens */
+@media (min-height: 900px) {
+  .contentWrapper {
+    padding-top: 220px;
+  }
+}
+
+
+.header {
+  margin-bottom: 28px;
+  color: #fff;
+}
+
+.headingPrimary {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0;
+  color: #fff;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 32px;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 24px 20px;
+  border-radius: 10px;
+  color: #fff;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  transform: translateY(-2px);
+}
+
+.sectionTitle {
+  font-weight: 600;
+  font-size: 18px;
+  color: #fff;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 6px;
+}
+
+.listItem {
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  color: #fff;
+}
+
+.link {
+  color: #9fb4ff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: #c6d4ff;
+}
+
+.deleteBtn {
+  background: transparent;
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.deleteBtn:hover {
+  background: rgba(255, 107, 107, 0.15);
+  border-color: rgba(255, 107, 107, 0.6);
+}
+
+/* POPUP OVERLAY FIX */
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* above topbar/playerbar */
+}
+
+/* POPUP BOX */
+.confirmBox {
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 24px 32px;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.8);
+  max-width: 360px;
+  text-align: center;
+  animation: fadeIn 0.2s ease-out;
+  color: #fff;
+}
+
+.confirmBox p {
+  margin-bottom: 18px;
+  font-size: 15px;
+  color: #fff;
+}
+
+.confirmButtons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btnPrimary {
+  background: #e74c3c;
+  border: none;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnPrimary:hover {
+  background: #ff4b3e;
+}
+
+.btnSecondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnSecondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* overlay fade */
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* dialog slide up */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* when open, animate overlay and box */
+.confirmOverlay {
+  animation: overlayFade 220ms ease-out both;
+}
+
+.confirmBox {
+  animation: slideUp 240ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+/* subtle focus styles */
+.confirmBox :where(button):focus {
+  outline: 2px solid rgba(159,180,255,0.28);
+  outline-offset: 2px;
+}
+
+/* prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .confirmOverlay, .confirmBox {
+    animation: none !important;
+  }
+}
+
+/* small polish on delete button */
+.deleteBtn {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.deleteBtn:active { transform: scale(0.98); }
+.deleteBtn:focus { box-shadow: 0 6px 18px rgba(0,0,0,0.6); }
+
+/* Success modal overlay */
+.successOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.successModal {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(102, 187, 106, 0.15));
+  border: 2px solid rgba(76, 175, 80, 0.4);
+  border-radius: 20px;
+  padding: 40px 48px;
+  text-align: center;
+  color: #fff;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.4s ease-out;
+}
+
+.successIcon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #4cb050, #66bb6a);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bounce 0.6s ease-out;
+}
+
+.successTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #fff;
+}
+
+.successMessage {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 24px;
+}
+
+.successButton {
+  background: linear-gradient(135deg, #4cb050, #66bb6a);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.successButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(-20px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Delete success modal - red/pink theme */
+.deleteSuccessOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.deleteSuccessModal {
+  background: linear-gradient(135deg, rgba(211, 47, 47, 0.15), rgba(229, 57, 53, 0.15));
+  border: 2px solid rgba(211, 47, 47, 0.4);
+  border-radius: 20px;
+  padding: 40px 48px;
+  text-align: center;
+  color: #fff;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.4s ease-out;
+}
+
+.deleteSuccessIcon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #d32f2f, #e53935);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bounce 0.6s ease-out;
+}
+
+.deleteSuccessTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #fff;
+}
+
+.deleteSuccessMessage {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 16px;
+}
+
+.deleteCountdown {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  font-style: italic;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}

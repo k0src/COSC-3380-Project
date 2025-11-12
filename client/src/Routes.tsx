@@ -75,6 +75,14 @@ export default function AppRoutes() {
                 </MainLayout>
               }
             />
+            <Route
+              path="/upload"
+              element={
+                <MainLayout>
+                  <Pages.UploadPage />
+                </MainLayout>
+              }
+            />
           </Route>
 
           {/* <Route
@@ -137,16 +145,14 @@ export default function AppRoutes() {
           </MainLayout>
         }
       /> */}
-          {/* <Route
-        path="/settings"
-        element={
-          <MainLayout>
-            <ProtectedRoute>
-              <Pages.SettingsPage />
-            </ProtectedRoute>
-          </MainLayout>
-        }
-      /> */}
+          <Route
+            path="/settings"
+            element={
+              <MainLayout>
+                <Pages.SettingsPage />
+              </MainLayout>
+            }
+          />
         </Routes>
       )}
     </>

@@ -84,3 +84,44 @@
 .footerLink:hover {
   color: var(--color-red);
 }
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.formLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-gray);
+  padding-left: var(--spacing-2xs);
+}
+
+.select {
+  font-family: "Inter", sans-serif;
+  padding: 1.2rem;
+  background-color: var(--color-panel-gray-dark);
+  border: 2px solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  width: 100%;
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: none;
+}
+
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.inputHintText {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+  font-style: italic;
+  padding-left: var(--spacing-2xs);
+}

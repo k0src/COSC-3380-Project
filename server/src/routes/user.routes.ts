@@ -1,8 +1,136 @@
 import express, { Request, Response } from "express";
+import bcrypt from "bcrypt";
 import { UserRepository } from "@repositories";
+import { UserSettingsRepository } from "@repositories/userSettings.repository";
 import { FollowService, HistoryService, LikeService } from "@services";
+import { authenticateToken } from "@middleware/auth.middleware";
 
 const router = express.Router();
+
+// GET /api/users/settings - get user settings (must be before /:id route)
+router.get("/settings", authenticateToken, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+    
+    if (!userId) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    const settings = await UserSettingsRepository.getOrCreate(userId);
+    
+    res.status(200).json({
+      notifications: settings.notifications_enabled,
+      isPrivate: settings.is_private,
+    });
+  } catch (error) {
+    console.error("Error in GET /users/settings:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /api/users/settings - save user settings (must be before /:id route)
+router.post("/settings", authenticateToken, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+    
+    if (!userId) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    const { notifications, isPrivate } = req.body;
+
+    const updated = await UserSettingsRepository.update(userId, {
+      notifications_enabled: notifications,
+      is_private: isPrivate,
+    });
+
+    res.status(200).json({
+      message: "Settings updated successfully",
+      notifications: updated.notifications_enabled,
+      isPrivate: updated.is_private,
+    });
+  } catch (error) {
+    console.error("Error in POST /users/settings:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// DELETE /api/users/account - delete user account (must be before /:id route)
+router.delete("/account", authenticateToken, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+    
+    if (!userId) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    // Delete user and all associated data (cascading delete handles related records)
+    const deleted = await UserRepository.delete(userId);
+
+    if (!deleted) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error in DELETE /users/account:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /api/users/change-password - change user password (must be before /:id route)
+router.post("/change-password", authenticateToken, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!userId) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({ error: "Current password and new password are required" });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      res.status(400).json({ error: "New password must be at least 8 characters" });
+      return;
+    }
+
+    // Get the user
+    const user = await UserRepository.getOne(userId);
+    
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    // Validate current password using the email from authenticated user
+    const validatedUser = await UserRepository.validateCredentials(user.email, currentPassword);
+    
+    if (!validatedUser) {
+      res.status(401).json({ error: "Current password is incorrect" });
+      return;
+    }
+
+    // Hash new password and update
+    const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || "12", 10);
+    const password_hash = await bcrypt.hash(newPassword, saltRounds);
+
+    await UserRepository.update(userId, { password_hash });
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error in POST /users/change-password:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // GET /api/users
 // Example:

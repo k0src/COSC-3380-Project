@@ -325,7 +325,7 @@ const NowPlayingBar: React.FC = () => {
                 value={progress}
                 onChange={handleSeek}
                 className={styles.progressSlider}
-                disabled={isLoading || duration === 0}
+                disabled={isLoading}
                 aria-label="Seek position"
               />
             </div>
