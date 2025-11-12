@@ -34,6 +34,21 @@ const SongsList: React.FC<SongsListProps> = ({
     hasBlobUrl: true,
   });
 
+  const songs = data?.songs;
+
+  const songAuthor = useMemo(
+    () => (song: Song) => getMainArtist(song.artists ?? [])?.display_name || "",
+    []
+  );
+
+  const songAuthorLink = useMemo(
+    () => (song: Song) => {
+      const artist = getMainArtist(song.artists ?? []);
+      return artist ? `/artists/${artist.id}` : undefined;
+    },
+    []
+  );
+
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
@@ -49,8 +64,6 @@ const SongsList: React.FC<SongsListProps> = ({
       </div>
     );
   }
-
-  const songs = data?.songs;
 
   if (!songs || songs.length === 0) {
     return null;
@@ -76,7 +89,8 @@ const SongsList: React.FC<SongsListProps> = ({
             key={song.id}
             type="song"
             linkTo={`/songs/${song.id}`}
-            author={getMainArtist(song.artists ?? [])?.display_name || ""}
+            author={songAuthor(song)}
+            authorLinkTo={songAuthorLink(song)}
             title={song.title}
             subtitle={song.albums?.[0]?.title || ""}
             imageUrl={song.image_url}

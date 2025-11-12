@@ -1,7 +1,7 @@
 import { memo, useCallback, useState, useMemo, useRef, useEffect } from "react";
 import { PuffLoader } from "react-spinners";
 import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
-import type { Song, Album, Playlist } from "@types";
+import type { Song, Album, Playlist, UUID } from "@types";
 import { useAsyncData } from "@hooks";
 import { EntityItemCard } from "@components";
 import { formatDateString, getMainArtist } from "@util";
@@ -17,6 +17,7 @@ const SCROLL_TRANSITION_DURATION = 300;
 export interface SlidingCardListProps {
   title: string;
   artistName?: string;
+  artistId?: UUID;
   fetchData: () => Promise<Song[] | Album[] | Playlist[]>;
   type: CardEntityType;
   itemsPerView?: number;
@@ -27,6 +28,7 @@ export interface SlidingCardListProps {
 const SlidingCardList: React.FC<SlidingCardListProps> = ({
   title,
   artistName,
+  artistId,
   fetchData,
   type,
   itemsPerView = 6,
@@ -106,6 +108,38 @@ const SlidingCardList: React.FC<SlidingCardListProps> = ({
     setScrollPosition(0);
   }, [cacheKey]);
 
+  const songAuthor = useCallback(
+    (song: Song) =>
+      getMainArtist(song.artists ?? [])?.display_name || artistName || "",
+    [artistName]
+  );
+
+  const songAuthorLink = useCallback((song: Song) => {
+    const mainArtist = getMainArtist(song.artists ?? []);
+    return mainArtist ? `/artists/${mainArtist.id}` : undefined;
+  }, []);
+
+  const albumAuthor = useCallback(
+    (album: Album) => album.artist?.display_name || artistName || "",
+    [artistName]
+  );
+
+  const albumAuthorLink = useMemo(
+    () => `${artistId ? `/artists/${artistId}` : undefined}`,
+    [artistId]
+  );
+
+  const playlistAuthor = useCallback(
+    (playlist: Playlist) => playlist.user?.username || "Unknown",
+    []
+  );
+
+  const playlistAuthorLink = useCallback(
+    (playlist: Playlist) =>
+      playlist.user ? `/users/${playlist.user.id}` : undefined,
+    []
+  );
+
   const getEntityProps = useCallback(
     (item: Song | Album | Playlist) => {
       switch (type) {
@@ -114,10 +148,8 @@ const SlidingCardList: React.FC<SlidingCardListProps> = ({
           return {
             type: "song" as const,
             linkTo: `/songs/${song.id}`,
-            author:
-              getMainArtist(song.artists ?? [])?.display_name ||
-              artistName ||
-              "",
+            author: songAuthor(song),
+            authorLinkTo: songAuthorLink(song),
             title: song.title,
             subtitle: formatDateString(song.release_date),
             imageUrl: song.image_url || musicPlaceholder,
@@ -130,7 +162,8 @@ const SlidingCardList: React.FC<SlidingCardListProps> = ({
           return {
             type: "album" as const,
             linkTo: `/albums/${album.id}`,
-            author: artistName || "",
+            author: albumAuthor(album),
+            authorLinkTo: albumAuthorLink,
             title: album.title,
             subtitle: formatDateString(album.release_date),
             imageUrl: album.image_url || musicPlaceholder,
@@ -143,7 +176,8 @@ const SlidingCardList: React.FC<SlidingCardListProps> = ({
           return {
             type: "playlist" as const,
             linkTo: `/playlists/${playlist.id}`,
-            author: playlist.user?.username || "Unknown",
+            author: playlistAuthor(playlist),
+            authorLinkTo: playlistAuthorLink(playlist),
             title: playlist.title,
             subtitle: "",
             imageUrl: playlist.image_url || musicPlaceholder,
@@ -154,7 +188,15 @@ const SlidingCardList: React.FC<SlidingCardListProps> = ({
           throw new Error(`Unknown entity type: ${type}`);
       }
     },
-    [type, artistName]
+    [
+      type,
+      songAuthor,
+      songAuthorLink,
+      albumAuthor,
+      albumAuthorLink,
+      playlistAuthor,
+      playlistAuthorLink,
+    ]
   );
 
   if (loading) {
