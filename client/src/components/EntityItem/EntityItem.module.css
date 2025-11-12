@@ -26,9 +26,14 @@
 }
 
 .entityAuthor {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-gray);
+  font-size: var(--font-size-sm) !important;
+  color: var(--color-text-gray) !important;
   font-weight: 500;
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.entityAuthorLink:hover {
+  color: var(--color-white) !important;
 }
 
 .entityTitle {

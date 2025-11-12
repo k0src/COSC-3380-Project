@@ -118,6 +118,7 @@ const ArtistPage: React.FC = () => {
                 <SlidingCardList
                   title="Albums"
                   artistName={artist.display_name}
+                  artistId={artist.id}
                   fetchData={fetchAlbums}
                   type="album"
                   itemsPerView={6}

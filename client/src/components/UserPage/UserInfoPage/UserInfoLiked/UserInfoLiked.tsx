@@ -1,6 +1,6 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useCallback } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
-import type { UUID } from "@types";
+import type { UUID, Song, Album, Playlist } from "@types";
 import { useAsyncData } from "@hooks";
 import { formatDateString, getMainArtist } from "@util";
 import { userApi } from "@api";
@@ -39,6 +39,39 @@ const UserInfoLiked: React.FC<{ userId: UUID }> = ({ userId }) => {
     [likedSongs, likedAlbums, likedPlaylists]
   );
 
+  const songAuthor = useCallback(
+    (song: Song) =>
+      getMainArtist(song.artists || [])?.display_name || "Unknown Artist",
+    []
+  );
+
+  const songAuthorLink = useCallback((song: Song) => {
+    const mainArtist = getMainArtist(song.artists || []);
+    return mainArtist ? `/artists/${mainArtist.id}` : undefined;
+  }, []);
+
+  const albumAuthor = useCallback(
+    (album: Album) => album.artist?.display_name || "Unknown Artist",
+    []
+  );
+
+  const albumAuthorLink = useCallback(
+    (album: Album) =>
+      album.artist ? `/artists/${album.artist.id}` : undefined,
+    []
+  );
+
+  const playlistAuthor = useCallback(
+    (playlist: Playlist) => playlist.user?.username || "Unknown User",
+    []
+  );
+
+  const playlistAuthorLink = useCallback(
+    (playlist: Playlist) =>
+      playlist.user ? `/users/${playlist.user.id}` : undefined,
+    []
+  );
+
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
@@ -63,10 +96,8 @@ const UserInfoLiked: React.FC<{ userId: UUID }> = ({ userId }) => {
                 entity={song}
                 type="song"
                 linkTo={`/songs/${song.id}`}
-                author={
-                  getMainArtist(song.artists || [])?.display_name ||
-                  "Unknown Artist"
-                }
+                author={songAuthor(song)}
+                authorLinkTo={songAuthorLink(song)}
                 title={song.title}
                 subtitle={formatDateString(song.release_date)}
                 imageUrl={song.image_url || musicPlaceholder}
@@ -86,7 +117,8 @@ const UserInfoLiked: React.FC<{ userId: UUID }> = ({ userId }) => {
                 entity={album}
                 type="album"
                 linkTo={`/albums/${album.id}`}
-                author={album.artist?.display_name || "Unknown Artist"}
+                author={albumAuthor(album)}
+                authorLinkTo={albumAuthorLink(album)}
                 title={album.title}
                 subtitle={formatDateString(album.release_date)}
                 imageUrl={album.image_url || musicPlaceholder}
@@ -106,7 +138,8 @@ const UserInfoLiked: React.FC<{ userId: UUID }> = ({ userId }) => {
                 entity={playlist}
                 type="playlist"
                 linkTo={`/playlists/${playlist.id}`}
-                author={playlist.user?.username || "Unknown User"}
+                author={playlistAuthor(playlist)}
+                authorLinkTo={playlistAuthorLink(playlist)}
                 title={playlist.title}
                 subtitle={`${playlist.song_count} songs`}
                 imageUrl={playlist.image_url || musicPlaceholder}

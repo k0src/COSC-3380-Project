@@ -125,7 +125,8 @@ type EntityItemCardProps =
   | {
       type: "artist";
       linkTo: string;
-      author: string;
+      author?: string;
+      authorLinkTo?: string;
       title: string;
       subtitle: string;
       imageUrl?: string;
@@ -135,7 +136,8 @@ type EntityItemCardProps =
   | {
       type: "song" | "playlist" | "album";
       linkTo: string;
-      author: string;
+      author?: string;
+      authorLinkTo?: string;
       title: string;
       subtitle: string;
       imageUrl?: string;
@@ -149,6 +151,7 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
   blurHash,
   linkTo,
   author,
+  authorLinkTo,
   title,
   subtitle,
   type,
@@ -186,7 +189,20 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
         />
       </div>
       <div className={styles.entityInfo}>
-        <span className={styles.entityAuthor}>{author}</span>
+        {author &&
+          (authorLinkTo ? (
+            <Link
+              to={authorLinkTo}
+              className={classNames(
+                styles.entityAuthor,
+                styles.entityAuthorLink
+              )}
+            >
+              {author}
+            </Link>
+          ) : (
+            <span className={styles.entityAuthor}>{author}</span>
+          ))}
         <Link to={linkTo} className={styles.entityTitle}>
           {title}
         </Link>

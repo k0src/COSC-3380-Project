@@ -77,6 +77,15 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
     }
   }, [mode]);
 
+  const playlistAuthorLink = useMemo(() => {
+    if (mode === "related") {
+      return (playlist: Playlist) =>
+        playlist.user ? `/users/${playlist.user.id}` : undefined;
+    } else {
+      return undefined;
+    }
+  }, [mode]);
+
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
@@ -106,6 +115,7 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
             key={playlist.id}
             type="playlist"
             author={playlistAuthor(playlist)}
+            authorLinkTo={playlistAuthorLink?.(playlist)}
             linkTo={`/playlists/${playlist.id}`}
             title={playlist.title}
             imageUrl={playlist.image_url || musicPlaceholder}
