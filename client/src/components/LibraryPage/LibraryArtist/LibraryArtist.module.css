@@ -29,10 +29,4 @@
   white-space: nowrap;
   overflow: hidden;
   max-width: 100%;
-  cursor: pointer;
-  transition: color var(--transition-speed) ease-in-out;
-}
-
-.artistName:hover {
-  color: var(--color-red);
 }

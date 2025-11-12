@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn var(--transition-speed) ease-out;
 }
 
 @keyframes fadeIn {
@@ -31,7 +31,7 @@
   padding: var(--spacing-lg);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: slideIn 0.2s ease-out;
+  animation: slideIn var(--transition-speed) ease-out;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);

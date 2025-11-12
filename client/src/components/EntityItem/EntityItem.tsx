@@ -1,6 +1,6 @@
 import { memo, useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAudioQueue, useAuth } from "@contexts";
+import { useAudioQueue, useAuth, useContextMenu } from "@contexts";
 import type { Song, Playlist, Album } from "@types";
 import { QueueMenu, SoundVisualizer, LazyImg } from "@components";
 import styles from "./EntityItem.module.css";
@@ -179,7 +179,7 @@ type EntityItemProps =
       author?: string;
       authorLinkTo?: string;
       title: string;
-      subtitle?: string;
+      subtitle: string;
       imageUrl?: string;
       blurHash?: string;
       entity: Song | Playlist | Album;
@@ -202,6 +202,7 @@ const EntityItem: React.FC<EntityItemProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const { state } = useAudioQueue();
+  const { openContextMenu } = useContextMenu();
 
   const isCurrentSong =
     type === "song" && entity && state.currentSong?.id === (entity as Song).id;
@@ -218,11 +219,21 @@ const EntityItem: React.FC<EntityItemProps> = ({
     [title, type]
   );
 
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!entity) return;
+      openContextMenu(e.clientX, e.clientY, entity, type);
+    },
+    [entity, type, openContextMenu]
+  );
+
   return (
     <div
       className={styles.entityItem}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onContextMenu={handleContextMenu}
     >
       {!isSmall && index !== undefined && (
         <>

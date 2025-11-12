@@ -1,7 +1,13 @@
 import { memo, useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { useAuth } from "@contexts";
+import { useAuth, useContextMenu } from "@contexts";
+import type {
+  ContextMenuAction,
+  ContextMenuEntity,
+  ContextMenuEntityType,
+} from "@contexts";
+import type { LibraryPlaylist } from "@types";
 import {
   LibraryRecent,
   LibraryPlaylists,
@@ -20,6 +26,9 @@ import {
   LuPlus,
   LuSearch,
   LuX,
+  LuPin,
+  LuPencil,
+  LuTrash,
 } from "react-icons/lu";
 
 type TabType = "recent" | "playlists" | "songs" | "albums" | "artists";
@@ -57,6 +66,7 @@ const LibraryPage: React.FC = () => {
   const { tab } = useParams<{ tab?: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const { setCustomActionsProvider } = useContextMenu();
 
   const isValidTab = (tab: string | undefined): tab is TabType => {
     return VALID_TABS.includes(tab as TabType);
@@ -94,10 +104,6 @@ const LibraryPage: React.FC = () => {
     [navigate]
   );
 
-  const handleCreatePlaylist = useCallback(() => {
-    navigate("/library/playlists/create");
-  }, [navigate]);
-
   const handleClearFilter = useCallback(() => {
     setSearchText("");
   }, []);
@@ -109,6 +115,78 @@ const LibraryPage: React.FC = () => {
     },
     []
   );
+
+  //! implement later
+  const handleCreatePlaylist = useCallback(() => {
+    console.log("Create Playlist");
+  }, []);
+
+  const handlePinPlaylist = useCallback((playlist: LibraryPlaylist) => {
+    console.log("Pin/Unpin Playlist", playlist);
+  }, []);
+
+  const handleEditPlaylist = useCallback((playlist: LibraryPlaylist) => {
+    console.log("Edit Playlist", playlist);
+  }, []);
+
+  const handleDeletePlaylist = useCallback((playlist: LibraryPlaylist) => {
+    console.log("Delete Playlist", playlist);
+  }, []);
+
+  const customActionsProvider = useCallback(
+    (
+      entity: ContextMenuEntity | null,
+      entityType: ContextMenuEntityType | null
+    ): ContextMenuAction[] => {
+      const playlist = entity as LibraryPlaylist;
+      const isOwner = user?.id === playlist.created_by;
+
+      return [
+        {
+          id: "create-playlist",
+          label: "Create Playlist",
+          icon: LuListMusic,
+          onClick: handleCreatePlaylist,
+          show: true,
+        },
+        {
+          id: "pin-playlist",
+          label: playlist.is_pinned ? "Unpin Playlist" : "Pin Playlist",
+          icon: LuPin,
+          onClick: () => handlePinPlaylist(playlist),
+          show: entityType === "playlist",
+        },
+        {
+          id: "edit-playlist",
+          label: "Edit Details",
+          icon: LuPencil,
+          onClick: () => handleEditPlaylist(playlist),
+          show: entityType === "playlist" && isOwner,
+        },
+        {
+          id: "delete-playlist",
+          label: "Delete Playlist",
+          icon: LuTrash,
+          onClick: () => handleDeletePlaylist(playlist),
+          show: entityType === "playlist" && isOwner,
+        },
+      ];
+    },
+    [
+      user?.id,
+      handleCreatePlaylist,
+      handlePinPlaylist,
+      handleEditPlaylist,
+      handleDeletePlaylist,
+    ]
+  );
+
+  useEffect(() => {
+    setCustomActionsProvider(customActionsProvider);
+    return () => {
+      setCustomActionsProvider(null);
+    };
+  }, [customActionsProvider, setCustomActionsProvider]);
 
   if (!isAuthenticated || !user) {
     navigate("/login");

@@ -65,6 +65,7 @@ const LibraryArtists: React.FC<{
                 artistImageUrl={artist.user?.profile_picture_url}
                 artistBlurHash={artist.user?.pfp_blurhash}
                 artistName={artist.display_name}
+                userId={artist.user_id}
               />
             ))}
           </div>

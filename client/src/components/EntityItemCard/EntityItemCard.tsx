@@ -1,6 +1,6 @@
 import { memo, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAudioQueue, useAuth } from "@contexts";
+import { useAudioQueue, useAuth, useContextMenu } from "@contexts";
 import type { Song, Playlist, Album } from "@types";
 import { QueueMenu, LazyImg } from "@components";
 import styles from "./EntityItemCard.module.css";
@@ -157,6 +157,7 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
   type,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { openContextMenu } = useContextMenu();
 
   const imgSrc = useMemo(() => {
     if (type === "artist") {
@@ -169,11 +170,21 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
     return `${title} ${type === "artist" ? "Image" : "Cover"}`;
   }, [title, type]);
 
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!entity) return;
+      openContextMenu(e.clientX, e.clientY, entity, type);
+    },
+    [entity, type, openContextMenu]
+  );
+
   return (
     <div
       className={styles.entityItemCard}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onContextMenu={handleContextMenu}
     >
       <div className={styles.entityImageContainer}>
         <LazyImg

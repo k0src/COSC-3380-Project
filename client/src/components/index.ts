@@ -86,6 +86,7 @@ export { default as KeyboardShortcutsModal } from "./KeyboardShortcutsModal/Keyb
 export { default as QueueMenu } from "./QueueMenu/QueueMenu.js";
 export { default as CoverLightbox } from "./CoverLightbox/CoverLightbox.js";
 export { default as QueueManager } from "./MainLayout/QueueManager/QueueManager.js";
+export { default as ContextMenu } from "./ContextMenu/ContextMenu.js";
 
 /* =============================== Page States ============================== */
 export { default as PageLoader } from "./PageLoader/PageLoader.js";

@@ -1,0 +1,62 @@
+.contextMenu {
+  position: fixed;
+  background: var(--color-panel-gray);
+  border: 2px solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5),
+    0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  z-index: 10000;
+  min-width: 16rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: fadeIn var(--transition-speed) ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.menuItem {
+  font-family: "Inter", sans-serif;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: var(--spacing-md) var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  text-align: left;
+}
+
+.menuItem:hover:not(:disabled) {
+  background: var(--color-panel-border);
+  color: var(--color-white);
+}
+
+.menuItem:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.menuIcon {
+  font-size: var(--icon-size-sm);
+  flex-shrink: 0;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-panel-border);
+}
