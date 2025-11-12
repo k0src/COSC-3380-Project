@@ -9,22 +9,6 @@ import type {
 } from "@types";
 
 export const songApi = {
-  async getSongs(options?: {
-    includeAlbums?: boolean;
-    includeArtists?: boolean;
-    includeLikes?: boolean;
-    includeComments?: boolean;
-    orderByColumn?: string;
-    orderByDirection?: "ASC" | "DESC";
-    limit?: number;
-    offset?: number;
-  }) {
-    const response = await api.get<Song[]>(`/songs`, {
-      params: options,
-    });
-    return response.data;
-  },
-
   async getSongById(
     id: UUID,
     options?: {
