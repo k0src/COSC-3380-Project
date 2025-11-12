@@ -27,10 +27,6 @@ export const useTextContrast = (imageUrl?: string): TextContrastResult => {
         const tryAnalysis = (useCrossOrigin: boolean) => {
           const img = new Image();
 
-          if (useCrossOrigin) {
-            img.crossOrigin = "anonymous";
-          }
-
           img.onload = () => {
             try {
               const canvas = document.createElement("canvas");
@@ -55,7 +51,7 @@ export const useTextContrast = (imageUrl?: string): TextContrastResult => {
                   0,
                   0,
                   canvas.width,
-                  canvas.height
+                  canvas.height,
                 );
                 const data = imageData.data;
 
@@ -113,7 +109,7 @@ export const useTextContrast = (imageUrl?: string): TextContrastResult => {
         tryAnalysis(true);
       });
     },
-    []
+    [],
   );
 
   const analyzeImage = useMemo(() => {
