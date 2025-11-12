@@ -2,7 +2,7 @@
 export { default as HorizontalRule } from "./Layout/HorizontalRule/HorizontalRule.js";
 export { default as VerticalRule } from "./Layout/VerticalRule/VerticalRule.js";
 
-/* =============================== MainLayout =============================== */
+/* =============================== Main Layout =============================== */
 export { default as MainLayout } from "./MainLayout/MainLayout.js";
 export { default as MainLayoutHeader } from "./MainLayout/MainLayoutHeader/MainLayoutHeader.js";
 export { default as MainLayoutSidebar } from "./MainLayout/MainLayoutSidebar/MainLayoutSidebar.js";
@@ -17,7 +17,7 @@ export { default as FormSubmitButton } from "./Forms/FormButton/FormSubmitButton
 export { default as ProtectedRoute } from "./ProtectedRoute/ProtectedRoute.js";
 export { default as AppLayout } from "./AppLayout/AppLayout.js";
 
-/* ================================ SongPage ================================ */
+/* ================================ Song Page ================================ */
 export { default as WaveformPlayer } from "./SongPage/WaveformPlayer/WaveformPlayer.js";
 export { default as SongContainer } from "./SongPage/SongContainer/SongContainer.js";
 export { default as SongStats } from "./SongPage/SongStats/SongStats.js";
@@ -30,7 +30,7 @@ export { default as CommentInput } from "./SongPage/SongComments/CommentInput/Co
 export { default as CommentsList } from "./SongPage/SongComments/CommentsList/CommentsList.js";
 export { default as SongSuggestions } from "./SongPage/SongSuggestions/SongSuggestions.js";
 
-/* =============================== ArtistPage =============================== */
+/* =============================== Artist Page =============================== */
 export { default as ArtistBanner } from "./ArtistPage/ArtistBanner/ArtistBanner.js";
 export { default as RelatedArtists } from "./ArtistPage/RelatedArtists/RelatedArtists.js";
 export { default as ArtistActions } from "./ArtistPage/ArtistActions/ArtistActions.js";
@@ -38,7 +38,7 @@ export { default as ArtistPlaylists } from "./ArtistPage/ArtistPlaylists/ArtistP
 export { default as ArtistAbout } from "./ArtistPage/ArtistAbout/ArtistAbout.js";
 export { default as LazyBannerImg } from "./ArtistPage/LazyBannerImg/LazyBannerImg.js";
 
-/* ============================== PlaylistPage ============================== */
+/* ============================== Playlist Page ============================== */
 export { default as RelatedPlaylists } from "./PlaylistPage/RelatedPlaylists/RelatedPlaylists.js";
 export { default as PlaylistContainer } from "./PlaylistPage/PlaylistContainer/PlaylistContainer.js";
 export { default as PlaylistPlayButton } from "./PlaylistPage/PlaylistPlayButton/PlaylistPlayButton.js";
@@ -60,6 +60,14 @@ export { default as UserInfoStats } from "./UserPage/UserInfoPage/UserInfoStats/
 export { default as UserInfoFollowers } from "./UserPage/UserInfoPage/UserInfoFollowers/UserInfoFollowers.js";
 export { default as UserInfoFollowing } from "./UserPage/UserInfoPage/UserInfoFollowing/UserInfoFollowing.js";
 export { default as UserInfoLiked } from "./UserPage/UserInfoPage/UserInfoLiked/UserInfoLiked.js";
+
+/* ============================== Library Page ============================== */
+export { default as LibraryRecent } from "./LibraryPage/LibraryRecent/LibraryRecent.js";
+export { default as LibraryArtist } from "./LibraryPage/LibraryArtist/LibraryArtist.js";
+export { default as LibraryPlaylists } from "./LibraryPage/LibraryPlaylists/LibraryPlaylists.js";
+export { default as LibrarySongs } from "./LibraryPage/LibrarySongs/LibrarySongs.js";
+export { default as LibraryAlbums } from "./LibraryPage/LibraryAlbums/LibraryAlbums.js";
+export { default as LibraryArtists } from "./LibraryPage/LibraryArtists/LibraryArtists.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

@@ -75,6 +75,14 @@ export default function AppRoutes() {
                 </MainLayout>
               }
             />
+            <Route
+              path="/library/:tab?"
+              element={
+                <MainLayout>
+                  <Pages.LibraryPage />
+                </MainLayout>
+              }
+            />
           </Route>
 
           {/* <Route

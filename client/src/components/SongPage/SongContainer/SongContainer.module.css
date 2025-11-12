@@ -66,11 +66,11 @@
   color: var(--color-text-gray-light);
   font-weight: 500;
   cursor: pointer;
-  transition: text-decoration var(--transition-speed) ease;
+  transition: color var(--transition-speed) ease;
 }
 
 .artistName:hover {
-  text-decoration: underline !important;
+  color: var(--color-white) !important;
 }
 
 .songTitle {

@@ -1,7 +1,7 @@
 .entityItemCard {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: 1.2rem;
   min-width: 0;
   width: 18rem;
   position: relative;
@@ -33,7 +33,7 @@
 }
 
 .entityAuthor {
-  font-size: var(--font-size-md) !important;
+  font-size: var(--font-size-sm) !important;
   color: var(--color-text-gray) !important;
   font-weight: 500;
   transition: color var(--transition-speed) ease-in-out;
@@ -44,7 +44,7 @@
 }
 
 .entityTitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   color: var(--color-white);
   font-weight: 500;
   transition: color var(--transition-speed) ease-in-out;
@@ -55,7 +55,7 @@
 }
 
 .entitySubtitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   color: var(--color-text-gray);
   font-weight: 500;
 }

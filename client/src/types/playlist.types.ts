@@ -16,3 +16,7 @@ export interface Playlist {
 
   type: "playlist";
 }
+
+export interface LibraryPlaylist extends Playlist {
+  is_pinned?: boolean;
+}

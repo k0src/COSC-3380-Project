@@ -9,6 +9,8 @@ export { default as ArtistDiscography } from "./ArtistPage/ArtistDiscography/Art
 export { default as PlaylistPage } from "./PlaylistPage/PlaylistPage.js";
 export { default as AlbumPage } from "./AlbumPage/AlbumPage.js";
 
+export { default as LibraryPage } from "./LibraryPage/LibraryPage.js";
+
 export { default as LoginPage } from "./LoginPage/LoginPage.js";
 export { default as SignupPage } from "./SignupPage/SignupPage.js";
 
