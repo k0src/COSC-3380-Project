@@ -55,6 +55,9 @@ export { default as AlbumInfo } from "./AlbumPage/AlbumInfo/AlbumInfo.js";
 export { default as AlbumActions } from "./AlbumPage/AlbumActions/AlbumActions.js";
 export { default as RelatedAlbums } from "./AlbumPage/RelatedAlbums/RelatedAlbums.js";
 
+/* =============================== HomePage ============================== */
+export { default as FeaturedSection } from "./HomePage/FeaturedSection/FeaturedSection.js";
+
 /* ================================ User Page =============================== */
 export { default as UserInfoStats } from "./UserPage/UserInfoPage/UserInfoStats/UserInfoStats.js";
 export { default as UserInfoFollowers } from "./UserPage/UserInfoPage/UserInfoFollowers/UserInfoFollowers.js";

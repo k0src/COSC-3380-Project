@@ -450,4 +450,81 @@ router.get(
   }
 );
 
+    // GET /api/users/:id/history/albums
+    router.get(
+      "/:id/history/albums",
+      async (req: Request, res: Response): Promise<void> => {
+        try {
+          const { id } = req.params;
+          const { limit, offset } = req.query;
+
+          if (!id) {
+            res.status(400).json({ error: "User ID is required" });
+            return;
+          }
+
+          const albums = await HistoryService.getHistory(id, "album", {
+            limit: limit ? parseInt(limit as string) : undefined,
+            offset: offset ? parseInt(offset as string) : undefined,
+          });
+
+          res.status(200).json(albums);
+        } catch (error) {
+          console.error("Error in GET /users/:id/history/albums:", error);
+          res.status(500).json({ error: "Internal server error" });
+        }
+      }
+    );
+
+    // GET /api/users/:id/history/playlists
+    router.get(
+      "/:id/history/playlists",
+      async (req: Request, res: Response): Promise<void> => {
+        try {
+          const { id } = req.params;
+          const { limit, offset } = req.query;
+
+          if (!id) {
+            res.status(400).json({ error: "User ID is required" });
+            return;
+          }
+
+          const playlists = await HistoryService.getHistory(id, "playlist", {
+            limit: limit ? parseInt(limit as string) : undefined,
+            offset: offset ? parseInt(offset as string) : undefined,
+          });
+
+          res.status(200).json(playlists);
+        } catch (error) {
+          console.error("Error in GET /users/:id/history/playlists:", error);
+          res.status(500).json({ error: "Internal server error" });
+        }
+      }
+    );
+
+    // GET /api/users/:id/history/artists
+    router.get(
+      "/:id/history/artists",
+      async (req: Request, res: Response): Promise<void> => {
+        try {
+          const { id } = req.params;
+          const { limit, offset } = req.query;
+
+          if (!id) {
+            res.status(400).json({ error: "User ID is required" });
+            return;
+          }
+
+          const artists = await HistoryService.getHistory(id, "artist", {
+            limit: limit ? parseInt(limit as string) : undefined,
+            offset: offset ? parseInt(offset as string) : undefined,
+          });
+
+          res.status(200).json(artists);
+        } catch (error) {
+          console.error("Error in GET /users/:id/history/artists:", error);
+          res.status(500).json({ error: "Internal server error" });
+        }
+      }
+    );
 export default router;

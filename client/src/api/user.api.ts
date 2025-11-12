@@ -24,6 +24,16 @@ export const userApi = {
     });
   },
 
+  async getHistorySongs(
+    id: UUID,
+    options?: { limit?: number; offset?: number }
+  ) {
+    const response = await api.get(`/users/${id}/history/songs`, {
+      params: options,
+    });
+    return response.data;
+  },
+
   async toggleLike(id: UUID, entityId: UUID, entityType: EntityType) {
     const response = await api.post(`/users/${id}/likes`, {
       entityId,
