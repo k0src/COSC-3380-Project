@@ -1,0 +1,42 @@
+.albumLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+}
+
+.albumLayoutTop {
+  display: grid;
+  grid-template-columns: 1fr 36rem;
+  gap: var(--layout-gap-hor);
+}
+
+.albumLayoutTopRight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  justify-content: space-between;
+}
+
+.albumLayoutBottom {
+  display: grid;
+  grid-template-columns: 1fr 36rem;
+  gap: var(--layout-gap-hor);
+}
+
+.noSongsMessage {
+  text-align: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
+
+.albumLayoutBottomRight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.suggestionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}

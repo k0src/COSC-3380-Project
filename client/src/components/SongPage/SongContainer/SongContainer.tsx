@@ -1,12 +1,10 @@
 import { useMemo, useCallback, memo, useState } from "react";
-import { useStreamTracking } from "@hooks";
-import { WaveformPlayer, CoverLightbox } from "@components";
+import { WaveformPlayer, CoverLightbox, LazyImg } from "@components";
 import type { Song, CoverGradient, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
 import { LuPlay, LuThumbsUp, LuMessageSquareText } from "react-icons/lu";
 import styles from "./SongContainer.module.css";
-import classNames from "classnames";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 
 export interface SongContainerProps {
   coverGradient: CoverGradient;
@@ -23,7 +21,6 @@ const SongContainer: React.FC<SongContainerProps> = ({
 }) => {
   const { actions } = useAudioQueue();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  useStreamTracking();
 
   const gradientStyle = useMemo(
     () =>
@@ -53,13 +50,15 @@ const SongContainer: React.FC<SongContainerProps> = ({
 
   return (
     <div className={styles.songContainer} style={gradientStyle}>
-      <img
+      <LazyImg
         src={song.image_url || musicPlaceholder}
+        blurHash={song.image_url_blurhash}
         alt={`${song.title} Cover`}
-        className={classNames(styles.coverImage, {
-          [styles.coverImageClickable]: !!song.image_url,
-        })}
-        loading="lazy"
+        imgClassNames={[
+          styles.coverImage,
+          song.image_url ? styles.coverImageClickable : "",
+        ]}
+        loading="eager"
         onClick={handleImageClick}
       />
       <div className={styles.songRight}>
@@ -67,22 +66,16 @@ const SongContainer: React.FC<SongContainerProps> = ({
           <span className={styles.artistName}>{mainArtist?.display_name}</span>
           <span className={styles.songTitle}>{song.title}</span>
           <div className={styles.interactionsContainer}>
-            <div className={styles.interactionsContainer}>
-              <InteractionStat icon={LuPlay} value={song.streams ?? 0} />
-              <InteractionStat icon={LuThumbsUp} value={song.likes ?? 0} />
-              <InteractionStat
-                icon={LuMessageSquareText}
-                value={numberComments ?? 0}
-              />
-            </div>
+            <InteractionStat icon={LuPlay} value={song.streams ?? 0} />
+            <InteractionStat icon={LuThumbsUp} value={song.likes ?? 0} />
+            <InteractionStat
+              icon={LuMessageSquareText}
+              value={numberComments ?? 0}
+            />
           </div>
         </div>
         {song.audio_url && (
-          <WaveformPlayer
-            audioSrc={song.audio_url}
-            captureKeyboard={false}
-            onPlay={handlePlay}
-          />
+          <WaveformPlayer audioSrc={song.audio_url} onPlay={handlePlay} />
         )}
       </div>
 

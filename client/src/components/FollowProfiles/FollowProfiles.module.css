@@ -20,6 +20,13 @@
   white-space: nowrap;
   overflow: hidden;
   max-width: 100%;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.sectionTitle:hover {
+  color: var(--color-red);
+  text-decoration: underline;
 }
 
 .followContainer {
@@ -99,8 +106,4 @@
   background-color: rgba(0, 0, 0, 0);
   transition: background-color var(--transition-speed) ease;
   pointer-events: none;
-}
-
-.avatarMore:hover::after {
-  background-color: rgba(0, 0, 0, 0.2);
 }

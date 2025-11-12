@@ -1,11 +1,20 @@
-import { useState, Fragment, memo, useCallback, useMemo } from "react";
+import {
+  useState,
+  Fragment,
+  memo,
+  useCallback,
+  useMemo,
+  useEffect,
+} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { SongArtist } from "@types";
 import { useAuth } from "@contexts";
+import { useFollowStatus } from "@hooks";
 import styles from "./ArtistInfo.module.css";
-import { HorizontalRule } from "@components";
+import { HorizontalRule, LazyImg } from "@components";
+import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
-import userPlaceholder from "@assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.webp";
 import {
   LuUserRoundCheck,
   LuUserRoundPlus,
@@ -22,25 +31,41 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   mainArtist,
   otherArtists,
 }) => {
-  //! user
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [isFollowed, setIsFollowed] = useState(false);
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
+
+  const {
+    isFollowed,
+    toggleFollow,
+    isLoading: isFollowLoading,
+  } = useFollowStatus({
+    userId: user?.id || "",
+    followingUserId: mainArtist?.user_id || "",
+    isAuthenticated,
+  });
+
+  useEffect(() => {
+    if (user?.id && mainArtist?.user_id) {
+      queryClient.invalidateQueries({
+        queryKey: ["followStatus", user.id, mainArtist.user_id],
+      });
+    }
+  }, [user?.id, mainArtist?.user_id, queryClient]);
 
   const handleFollowArtist = useCallback(async () => {
     try {
-      if (isAuthenticated) {
-        //! send request here
-        setIsFollowed((prev) => !prev);
-      } else {
+      if (!isAuthenticated) {
         navigate("/login");
+        return;
       }
+      await toggleFollow();
     } catch (error) {
       console.error("Toggling follow artist failed:", error);
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, toggleFollow]);
 
   const artistDisplayName = useMemo(
     () => mainArtist?.display_name || mainArtist?.user?.username,
@@ -72,20 +97,22 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
     <div className={styles.artistInfoLayout}>
       <div className={styles.artistInfoContainer}>
         <div className={styles.artistInfoLeft}>
-          <img
+          <LazyImg
             src={artistImageUrl}
+            blurHash={mainArtist.user?.pfp_blurhash}
             alt={`${artistDisplayName} Image`}
-            className={styles.artistImage}
+            imgClassNames={[styles.artistImage]}
           />
           <button
             className={classNames(styles.artistFollowButton, {
               [styles.artistFollowButtonActive]: isFollowed,
             })}
+            disabled={isFollowLoading}
             onClick={handleFollowArtist}
           >
             {isFollowed ? (
               <>
-                Followed <LuUserRoundCheck />
+                Follow <LuUserRoundCheck />
               </>
             ) : (
               <>

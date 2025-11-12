@@ -23,7 +23,9 @@ export function createQueueItem(
   isQueued: boolean = false,
   originalIndex?: number,
   queueType?: "next" | "last",
-  relativePosition?: number
+  relativePosition?: number,
+  sourceId?: string,
+  sourceType?: "playlist" | "album"
 ): QueueItem {
   return {
     song,
@@ -32,6 +34,8 @@ export function createQueueItem(
     originalIndex,
     queueType,
     relativePosition,
+    sourceId,
+    sourceType,
   };
 }
 
@@ -43,9 +47,21 @@ export function createQueueItem(
  */
 export function createQueueItems(
   songs: Song[],
-  isQueued: boolean = false
+  isQueued: boolean = false,
+  sourceId?: string,
+  sourceType?: "playlist" | "album"
 ): QueueItem[] {
-  return songs.map((song, index) => createQueueItem(song, isQueued, index));
+  return songs.map((song, index) =>
+    createQueueItem(
+      song,
+      isQueued,
+      index,
+      undefined,
+      undefined,
+      sourceId,
+      sourceType
+    )
+  );
 }
 
 /**

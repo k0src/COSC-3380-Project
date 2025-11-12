@@ -7,11 +7,16 @@ import React, {
   useRef,
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useLikeStatus } from "@hooks";
+import { useLikeStatus, useStreamTracking, useKeyboardShortcuts } from "@hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, useAudioQueue } from "@contexts";
 import { formatPlaybackTime, getMainArtist } from "@util";
-import { ShareModal, CoverLightbox } from "@components";
+import {
+  ShareModal,
+  CoverLightbox,
+  KeyboardShortcutsModal,
+  LazyImg,
+} from "@components";
 import { QueueManager } from "@components";
 import classNames from "classnames";
 import styles from "./MainLayoutNowPlayingBar.module.css";
@@ -28,18 +33,22 @@ import {
   LuShare,
   LuListEnd,
 } from "react-icons/lu";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 
 const NowPlayingBar: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isQueueManagerOpen, setIsQueueManagerOpen] = useState(false);
+  const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const queueButtonRef = useRef<HTMLButtonElement>(null);
+  const volumeControlRef = useRef<HTMLDivElement>(null);
 
   const { user, isAuthenticated } = useAuth();
   const { state, actions } = useAudioQueue();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  useStreamTracking();
 
   const {
     isPlaying,
@@ -141,6 +150,26 @@ const NowPlayingBar: React.FC = () => {
     [actions]
   );
 
+  const handleVolumeWheel = useCallback(
+    (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.05 : 0.05;
+      const newVolume = Math.max(0, Math.min(1, volume + delta));
+      actions.setVolume(newVolume);
+    },
+    [volume, actions]
+  );
+
+  useEffect(() => {
+    const volumeControl = volumeControlRef.current;
+    if (!volumeControl) return;
+
+    volumeControl.addEventListener("wheel", handleVolumeWheel, {
+      passive: false,
+    });
+    return () => volumeControl.removeEventListener("wheel", handleVolumeWheel);
+  }, [handleVolumeWheel]);
+
   const handleShare = useCallback(() => {
     if (!currentSong) return;
     setIsShareModalOpen(true);
@@ -150,31 +179,48 @@ const NowPlayingBar: React.FC = () => {
     setIsQueueManagerOpen((prev) => !prev);
   }, []);
 
+  const handleOpenLightBox = useCallback(() => {
+    if (currentSong?.image_url) {
+      setIsLightboxOpen(true);
+    }
+  }, [currentSong]);
+
+  const handleCloseLightBox = useCallback(() => {
+    setIsLightboxOpen(false);
+  }, []);
+
   const mainArtist = useMemo(() => {
-    if (!currentSong) return { id: "", display_name: "Unknown Artist" };
+    if (!currentSong) return { id: "", display_name: "" };
 
     if (!currentSong.artists || currentSong.artists.length === 0) {
-      return { id: "", display_name: "Unknown Artist" };
+      return { id: "", display_name: "" };
     }
 
     return (
       getMainArtist(currentSong.artists) ?? {
         id: "",
-        display_name: "Unknown Artist",
+        display_name: "",
       }
     );
   }, [currentSong]);
+
+  useKeyboardShortcuts({
+    onToggleLike: handleToggleLike,
+    onToggleQueue: handleManageQueue,
+    onShowShortcuts: () => setIsShortcutsModalOpen(true),
+    isAuthenticated,
+  });
 
   return (
     <>
       <div className={styles.nowPlayingBar}>
         <div className={styles.nowPlayingInfo}>
-          <img
+          <LazyImg
             src={currentSong?.image_url || musicPlaceholder}
+            blurHash={currentSong?.image_url_blurhash}
             alt={`${currentSong?.title} album art`}
-            className={styles.albumArt}
-            loading="lazy"
-            onClick={() => setIsLightboxOpen(true)}
+            imgClassNames={[styles.albumArt]}
+            onClick={handleOpenLightBox}
           />
           <div className={styles.songInfo}>
             {mainArtist.id ? (
@@ -182,15 +228,15 @@ const NowPlayingBar: React.FC = () => {
                 to={`/artists/${mainArtist.id}`}
                 className={styles.artistName}
               >
-                {mainArtist.display_name || "Unknown Artist"}
+                {mainArtist.display_name || ""}
               </Link>
             ) : (
               <span className={styles.artistName}>
-                {mainArtist.display_name || "Unknown Artist"}
+                {mainArtist.display_name || ""}
               </span>
             )}
             <Link to={`/songs/${currentSong?.id}`} className={styles.songTitle}>
-              {currentSong?.title || "Unknown Song"}
+              {currentSong?.title || ""}
             </Link>
           </div>
         </div>
@@ -322,7 +368,7 @@ const NowPlayingBar: React.FC = () => {
           >
             <LuListPlus />
           </button>
-          <div className={styles.volumeControl}>
+          <div ref={volumeControlRef} className={styles.volumeControl}>
             <LuVolume2 className={styles.volumeIcon} />
             <input
               type="range"
@@ -358,10 +404,15 @@ const NowPlayingBar: React.FC = () => {
         pageTitle={currentSong?.title}
       />
 
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsModalOpen}
+        onClose={() => setIsShortcutsModalOpen(false)}
+      />
+
       {currentSong && currentSong.image_url && (
         <CoverLightbox
           isOpen={isLightboxOpen}
-          onClose={() => setIsLightboxOpen(false)}
+          onClose={handleCloseLightBox}
           imageUrl={currentSong.image_url}
           altText={`${currentSong.title} Cover`}
         />

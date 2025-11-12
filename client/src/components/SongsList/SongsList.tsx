@@ -8,7 +8,7 @@ import styles from "./SongsList.module.css";
 import { Link } from "react-router-dom";
 
 export interface SongsListProps {
-  title: string;
+  title?: string;
   fetchData: () => Promise<Song[]>;
   cacheKey: string;
   dependencies?: any[];
@@ -44,7 +44,9 @@ const SongsList: React.FC<SongsListProps> = ({
 
   if (error) {
     return (
-      <div className={styles.error}>Failed to load {title.toLowerCase()}.</div>
+      <div className={styles.error}>
+        Failed to load {title?.toLowerCase() || "songs"}.
+      </div>
     );
   }
 
@@ -56,16 +58,17 @@ const SongsList: React.FC<SongsListProps> = ({
 
   return (
     <div className={styles.songsContainer}>
-      {viewMoreLink ? (
-        <div className={styles.sectionHeader}>
+      {title &&
+        (viewMoreLink ? (
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>{title}</h2>
+            <Link to={viewMoreLink} className={styles.viewMoreLink}>
+              View More
+            </Link>
+          </div>
+        ) : (
           <h2 className={styles.sectionTitle}>{title}</h2>
-          <Link to={viewMoreLink} className={styles.viewMoreLink}>
-            View More
-          </Link>
-        </div>
-      ) : (
-        <h2 className={styles.sectionTitle}>{title}</h2>
-      )}
+        ))}
 
       <div className={styles.songsList}>
         {songs.map((song, i) => (
@@ -77,6 +80,7 @@ const SongsList: React.FC<SongsListProps> = ({
             title={song.title}
             subtitle={song.albums?.[0]?.title || ""}
             imageUrl={song.image_url}
+            blurHash={song.image_url_blurhash}
             entity={song}
             isSmall={false}
             index={i + 1}

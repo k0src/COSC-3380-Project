@@ -6,7 +6,7 @@ import { useAsyncData } from "@hooks";
 import { EntityItemCard } from "@components";
 import { formatDateString, getMainArtist } from "@util";
 import styles from "./SlidingCardList.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 
 type CardEntityType = "song" | "album" | "playlist";
 
@@ -121,25 +121,27 @@ const SlidingCardList: React.FC<SlidingCardListProps> = ({
             title: song.title,
             subtitle: formatDateString(song.release_date),
             imageUrl: song.image_url || musicPlaceholder,
+            blurHash: song.image_url_blurhash,
             entity: song,
           };
         }
         case "album": {
           const album = item as Album;
           return {
-            type: "list" as const,
+            type: "album" as const,
             linkTo: `/albums/${album.id}`,
             author: artistName || "",
             title: album.title,
             subtitle: formatDateString(album.release_date),
             imageUrl: album.image_url || musicPlaceholder,
+            blurHash: album.image_url_blurhash,
             entity: album,
           };
         }
         case "playlist": {
           const playlist = item as Playlist;
           return {
-            type: "list" as const,
+            type: "playlist" as const,
             linkTo: `/playlists/${playlist.id}`,
             author: playlist.user?.username || "Unknown",
             title: playlist.title,

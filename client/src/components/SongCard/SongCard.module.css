@@ -9,8 +9,16 @@
   transition: background-color var(--transition-speed) ease,
     transform var(--transition-speed) ease;
   cursor: pointer;
-  min-width: 20rem;
-  max-width: 40rem;
+  /* min-width: 20rem;
+  max-width: 40rem; */
+
+  /* This makes snapping work */
+  scroll-snap-align: start; 
+  /* This stops cards from shrinking in the flex row */
+  flex-shrink: 0; 
+  /* Give your card a set width so it doesn't shrink */
+  width: 200px; /* <--- EXAMPLE: Set your card width */
+  
 }
 
 .songCard:hover {

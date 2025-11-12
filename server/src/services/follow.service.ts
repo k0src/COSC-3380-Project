@@ -7,39 +7,24 @@ import { getBlobUrl } from "@config/blobStorage";
  */
 export default class FollowService {
   /**
-   * Follow a user
-   * @param followerId The ID of the follower
-   * @param followingId The ID of the user to be followed
+   * Toggles whether a user is following another user.
+   * @param followerId The ID of the follower user.
+   * @param followingId The ID of the user to be followed/unfollowed.
+   * @returns A string indicating the action ("followed"/"unfollowed").
    * @throws Error if the operation fails.
    */
-  static async followUser(followerId: UUID, followingId: UUID) {
+  static async toggleFollow(
+    followerId: UUID,
+    followingId: UUID
+  ): Promise<string> {
     try {
-      await query(
-        `INSERT INTO user_followers (follower_id, following_id) 
-        VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-        [followerId, followingId]
-      );
+      const res = await query(`SELECT action FROM toggle_user_follow($1, $2)`, [
+        followerId,
+        followingId,
+      ]);
+      return res[0]?.action ?? null;
     } catch (error) {
-      console.error("Error following user:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Unfollow a user
-   * @param followerId The ID of the follower
-   * @param followingId The ID of the user to be unfollowed
-   * @throws Error if the operation fails.
-   */
-  static async unfollowUser(followerId: UUID, followingId: UUID) {
-    try {
-      await query(
-        `DELETE FROM user_followers 
-        WHERE follower_id = $1 AND following_id = $2`,
-        [followerId, followingId]
-      );
-    } catch (error) {
-      console.error("Error unfollowing user:", error);
+      console.error("Error toggle follow:", error);
       throw error;
     }
   }

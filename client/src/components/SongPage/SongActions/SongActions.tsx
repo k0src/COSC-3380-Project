@@ -116,7 +116,8 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
           <QueueMenu
             isOpen={queueMenuOpen}
             onClose={() => setQueueMenuOpen(false)}
-            song={song}
+            entity={song}
+            entityType="song"
             buttonRef={queueButtonRef}
           />
         </div>

@@ -4,3 +4,4 @@ export { default as LikeService } from "./like.service.js";
 export { default as CommentService } from "./comment.service.js";
 export { default as TokenBlacklistManager } from "./tokenBlacklist.service.js";
 export { default as StatsService } from "./stats.service.js";
+export { default as SearchService } from "./search.service.js";

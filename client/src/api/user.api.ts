@@ -23,4 +23,14 @@ export const userApi = {
     );
     return response.data;
   },
+
+  async getHistorySongs(
+    id: UUID,
+    options?: { limit?: number; offset?: number }
+  ) {
+    const response = await api.get(`/users/${id}/history/songs`, {
+      params: options,
+    });
+    return response.data;
+  },
 };
