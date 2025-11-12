@@ -14,8 +14,10 @@ import {
 } from "react-icons/lu";
 
 const MainLayoutSidebar: React.FC = () => {
-  const { logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+
+  const isArtist = user?.role === "ARTIST" || user?.role === "ADMIN";
 
   const handleLogout = useCallback(async () => {
     try {
@@ -45,9 +47,11 @@ const MainLayoutSidebar: React.FC = () => {
           <Link to="/artist/dashboard" className={styles.sidebarLink}>
             <LuUserPen className={styles.sidebarIcon} />
           </Link>
-          <Link to="/upload" className={styles.sidebarLink}>
-            <LuUpload className={styles.sidebarIcon} />
-          </Link>
+          {isArtist && (
+            <Link to="/upload" className={styles.sidebarLink} title="Upload music (Artists only)">
+              <LuUpload className={styles.sidebarIcon} />
+            </Link>
+          )}
           <Link to="/library/history" className={styles.sidebarLink}>
             <LuHistory className={styles.sidebarIcon} />
           </Link>

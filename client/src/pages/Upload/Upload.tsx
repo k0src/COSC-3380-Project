@@ -1,9 +1,21 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts";
 import styles from "./Upload.module.css";
 import { TbFileUpload } from "react-icons/tb";
 
 const Upload: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Redirect non-artists to home
+  useEffect(() => {
+    if (user && user.role !== "ARTIST" && user.role !== "ADMIN") {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
   const [dragOver, setDragOver] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<number | null>(null);
