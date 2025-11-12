@@ -4,8 +4,61 @@ import { parseSongForm } from "@infra/form-parser";
 import getCoverGradient from "@util/colors.util";
 import { CommentService, StatsService, LikeService } from "@services";
 import { validateOrderBy } from "@validators";
+import { query } from "../config/database";
+import multer from "multer";
+import { uploadBlob, getBlobUrl } from "../config/blobStorage";
+import crypto from "crypto";
+import { parseBuffer } from "music-metadata";
 
 const router = express.Router();
+
+const upload = multer({ 
+  storage: multer.memoryStorage(), 
+  limits: { 
+    fileSize: 10 * 1024 * 1024,  // 10 MB for audio files
+    files: 2  // max 2 files (audio + cover)
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === 'file') {
+      const audioTypes = ['audio/mpeg', 'audio/wav', 'audio/flac', 'audio/ogg', 'audio/x-wav', 'audio/mp3'];
+      const isValid = audioTypes.includes(file.mimetype) || /\.(mp3|wav|flac|ogg)$/i.test(file.originalname);
+      cb(null, isValid);
+      if (!isValid) cb(new Error('Invalid audio file type'));
+    } else if (file.fieldname === 'cover') {
+      const imageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      const isValid = imageTypes.includes(file.mimetype) || /\.(jpg|jpeg|png|webp|gif)$/i.test(file.originalname);
+      cb(null, isValid);
+      if (!isValid) cb(new Error('Invalid cover image type'));
+    } else {
+      cb(new Error('Unexpected field: ' + file.fieldname));
+    }
+  }
+});
+
+// Utility function to convert blob storage paths to accessible URLs
+function convertBlobPaths(song: any) {
+  if (!song) return song;
+  
+  // Convert audio_url if it's a blob storage path
+  if (song.audio_url && song.audio_url.startsWith('audio/')) {
+    try {
+      song.audio_url = getBlobUrl(song.audio_url);
+    } catch (error) {
+      console.warn(`Failed to generate SAS URL for audio: ${song.audio_url}`, error);
+    }
+  }
+  
+  // Convert image_url if it's a blob storage path
+  if (song.image_url && song.image_url.startsWith('image/')) {
+    try {
+      song.image_url = getBlobUrl(song.image_url);
+    } catch (error) {
+      console.warn(`Failed to generate SAS URL for image: ${song.image_url}`, error);
+    }
+  }
+  
+  return song;
+}
 
 // GET /api/songs
 // Example:
@@ -43,7 +96,10 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });
 
-    res.status(200).json(songs);
+    // Convert blob storage paths to accessible URLs
+    const songsWithUrls = songs.map(convertBlobPaths);
+
+    res.status(200).json(songsWithUrls);
   } catch (error) {
     console.error("Error in GET /songs/", error);
     res.status(500).json({ error: "Internal server error" });
@@ -74,7 +130,10 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    res.status(200).json(song);
+    // Convert blob storage paths to accessible URLs
+    const songWithUrls = convertBlobPaths(song);
+
+    res.status(200).json(songWithUrls);
   } catch (error) {
     console.error("Error in GET /songs/:id:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -109,7 +168,11 @@ router.get(
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
-      res.status(200).json(suggestions);
+
+      // Convert blob storage paths to accessible URLs
+      const suggestionsWithUrls = suggestions.map(convertBlobPaths);
+
+      res.status(200).json(suggestionsWithUrls);
     } catch (error) {
       console.error("Error in GET /songs/:id/suggestions:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -207,44 +270,97 @@ router.get(
   }
 );
 
-// POST /api/songs/ -> create new song
+// POST /api/songs - upload a song file and create a DB record
 // NEED auth protection
-router.post("/", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const songData = await parseSongForm(req, "upload");
-    let { title, duration, genre, release_date, audio_url, image_url } =
-      songData;
-    if (!title || !genre || !duration || !audio_url) {
-      res
-        .status(400)
-        .json({ error: "Missing or invalid required song fields." });
-      return;
-    }
+router.post(
+  "/",
+  // accept one audio file (field 'file') and an optional cover image (field 'cover')
+  upload.fields([
+    { name: "file", maxCount: 1 },
+    { name: "cover", maxCount: 1 },
+  ]),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const files = (req as any).files as { [field: string]: Express.Multer.File[] } | undefined;
+      const file = files?.file?.[0];
+      const cover = files?.cover?.[0];
 
-    // If we didn't get a release_date, set it to today
-    if (!release_date) {
-      release_date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-    }
+      console.log("Upload request - Audio:", file?.originalname, "Cover:", cover?.originalname);
 
-    const success = await SongRepo.insert({
-      title,
-      duration,
-      genre,
-      release_date,
-      audio_url,
-      image_url,
-    });
-    if (!success) {
-      res.status(500).json({ error: "Failed to create song" });
-      return;
-    }
+      const title = (req.body?.title || (file && file.originalname) || "Untitled").toString();
 
-    res.status(201).json({ message: "Song created successfully" });
-  } catch (error) {
-    console.error("Error in POST /songs/:", error);
-    res.status(500).json({ error: "Internal server error" });
+      if (!file) {
+        res.status(400).json({ error: "No file uploaded" });
+        return;
+      }
+
+      // generate a UUID for the DB id and blob filename
+      const id = crypto.randomUUID();
+
+      const audioExt = (file.originalname.match(/\.[^.]+$/) || [""])[0];
+      const audioBlobName = `audio/${id}${audioExt}`;
+
+      // Validate file size before uploading
+      if (file.size < 1000) {
+        res.status(400).json({ error: "Audio file is too small or corrupted." });
+        return;
+      }
+
+      // upload audio to blob storage
+      console.log(`Uploading audio file: ${audioBlobName}, size: ${file.size} bytes`);
+      await uploadBlob(audioBlobName, file.buffer);
+      console.log(`Audio upload completed: ${audioBlobName}`);
+
+      // handle optional cover image
+      let imageBlobName: string | null = null;
+      if (cover) {
+        // Additional size check for cover images (5 MB limit)
+        const maxCoverSize = 5 * 1024 * 1024;
+        if (cover.size > maxCoverSize) {
+          res.status(400).json({ error: "Cover image is too large. Maximum size is 5 MB." });
+          return;
+        }
+        
+        const imgExt = (cover.originalname.match(/\.[^.]+$/) || [""])[0];
+        imageBlobName = `image/${id}${imgExt}`;
+        console.log(`Uploading cover image: ${imageBlobName}, size: ${cover.size} bytes`);
+        await uploadBlob(imageBlobName, cover.buffer);
+        console.log(`Cover upload completed: ${imageBlobName}`);
+      }
+
+      // use provided genre/duration if present, otherwise sensible defaults
+      const genreVal = (req.body?.genre || "Unknown").toString();
+      let durationVal = Number(req.body?.duration) || 0;
+      
+      // If duration is 0 or invalid, try to extract from file metadata
+      if (durationVal <= 0) {
+        console.log("Duration not provided or invalid, attempting to extract from metadata");
+        try {
+          const metadata = await parseBuffer(file.buffer, file.mimetype);
+          if (metadata.format.duration) {
+            durationVal = Math.round(metadata.format.duration);
+            console.log(`Extracted duration from metadata: ${durationVal} seconds`);
+          } else {
+            console.warn(`Could not extract duration from metadata for: ${title}`);
+          }
+        } catch (metaError) {
+          console.warn(`Failed to parse metadata for ${title}:`, metaError instanceof Error ? metaError.message : String(metaError));
+        }
+      }
+      
+      console.log(`Creating DB record: title="${title}", duration=${durationVal}, genre="${genreVal}"`);
+
+      // insert DB record (provide required fields that have no defaults)
+      const sql = `INSERT INTO songs (id, title, audio_url, image_url, genre, duration, release_date, created_at) VALUES ($1,$2,$3,$4,$5,$6,NOW()::date,NOW()) RETURNING *`;
+      const rows = await query(sql, [id, title, audioBlobName, imageBlobName, genreVal, durationVal]);
+
+      res.status(201).json(rows[0]);
+    } catch (error) {
+      console.error("Error in POST /songs:", error);
+      res.status(500).json({ error: "Failed to upload song" });
+    }
   }
-});
+);
 
 // PUT /api/songs/:id -> update song
 // NEED auth protection

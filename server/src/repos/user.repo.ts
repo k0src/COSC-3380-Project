@@ -70,6 +70,7 @@ export default class UserRepository {
    * @param userData.authenticated_with - The new authentication method used (optional).
    * @param userData.role - The new role of the user (optional).
    * @param userData.profile_picture_url - The new profile picture URL of the user (optional).
+   * @param userData.artist_id - The artist ID associated with the user (optional).
    * @returns The updated user, or null if the update fails.
    * @throws Error if the operation fails.
    */
@@ -82,6 +83,7 @@ export default class UserRepository {
       authenticated_with,
       role,
       profile_picture_url,
+      artist_id,
     }: {
       username?: string;
       email?: string;
@@ -89,6 +91,7 @@ export default class UserRepository {
       authenticated_with?: string;
       role?: string;
       profile_picture_url?: string;
+      artist_id?: UUID;
     },
   ): Promise<User | null> {
     try {
@@ -118,6 +121,10 @@ export default class UserRepository {
       if (profile_picture_url !== undefined) {
         fields.push(`profile_picture_url = $${values.length + 1}`);
         values.push(profile_picture_url);
+      }
+      if (artist_id !== undefined) {
+        fields.push(`artist_id = $${values.length + 1}`);
+        values.push(artist_id);
       }
       if (fields.length === 0) {
         throw new Error("No fields provided to update.");

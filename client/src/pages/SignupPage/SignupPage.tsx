@@ -15,6 +15,7 @@ const SignupPage: React.FC = () => {
     username: "",
     email: "",
     password: "",
+    role: "USER",
   });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,7 +55,7 @@ const SignupPage: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
     if (name === "confirmPassword") {
@@ -131,6 +132,25 @@ const SignupPage: React.FC = () => {
               error={validationErrors.email}
               disabled={isSubmitting}
             />
+            <div className={styles.inputGroup}>
+              <label htmlFor="role" className={styles.formLabel}>
+                Account Type
+              </label>
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleInputChange}
+                className={styles.select}
+                disabled={isSubmitting}
+              >
+                <option value="USER">User</option>
+                <option value="ARTIST">Artist</option>
+              </select>
+              <span className={styles.inputHintText}>
+                Artists can upload music and create artist profiles
+              </span>
+            </div>
             <InputGroup
               label="Password"
               type="password"

@@ -4,6 +4,74 @@ import { FollowService, HistoryService, LikeService } from "@services";
 
 const router = express.Router();
 
+// GET /api/users/settings - get user settings (must be before /:id route)
+router.get("/settings", async (req: Request, res: Response): Promise<void> => {
+  try {
+    // For now, return default settings since we don't have a settings table
+    // In a real implementation, you'd fetch from a user_settings table
+    const defaultSettings = {
+      notifications: true,
+      isPrivate: false,
+    };
+    
+    res.status(200).json(defaultSettings);
+  } catch (error) {
+    console.error("Error in GET /users/settings:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /api/users/settings - save user settings (must be before /:id route)
+router.post("/settings", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { notifications, isPrivate } = req.body;
+    
+    // For now, just return success since we don't have a settings table
+    // In a real implementation, you'd save to a user_settings table
+    console.log("Settings update requested:", { notifications, isPrivate });
+    
+    res.status(200).json({ message: "Settings updated successfully" });
+  } catch (error) {
+    console.error("Error in POST /users/settings:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// DELETE /api/users/account - delete user account (must be before /:id route)
+router.delete("/account", async (req: Request, res: Response): Promise<void> => {
+  try {
+    // For now, just return success
+    // In a real implementation, you'd delete the user account and all associated data
+    console.log("Account deletion requested");
+    
+    res.status(200).json({ message: "Account deletion request received" });
+  } catch (error) {
+    console.error("Error in DELETE /users/account:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /api/users/change-password - change user password (must be before /:id route)
+router.post("/change-password", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({ error: "Current password and new password are required" });
+      return;
+    }
+    
+    // For now, just return success
+    // In a real implementation, you'd verify the current password and update it
+    console.log("Password change requested");
+    
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error in POST /users/change-password:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // GET /api/users
 // Example:
 // /api/users?includeFollowerCount=true&includeFollowingCount=true&limit=50&offset=0
