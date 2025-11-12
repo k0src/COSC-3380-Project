@@ -1,0 +1,518 @@
+import { Album, UUID, AlbumSong } from "@types";
+import { query, withTransaction } from "@config/database.js";
+import { getBlobUrl } from "@config/blobStorage.js";
+
+export default class AlbumRepository {
+  /**
+   * Creates a new album.
+   * @param albumData - The data for the new album.
+   * @param album.title - The title of the album.
+   * @param album.release_date - The release date of the album (optional).
+   * @param album.image_url - The image URL of the album (optional).
+   * @param album.created_by - The ID of the user who created the album.
+   * @returns The created album, or null if creation fails.
+   * @throws Error if the operation fails.
+   */
+  static async create({
+    title,
+    release_date,
+    image_url,
+    created_by,
+  }: {
+    title: string;
+    release_date?: number;
+    image_url?: string;
+    created_by: UUID;
+  }): Promise<Album | null> {
+    try {
+      const res = await query(
+        `INSERT INTO albums (title, release_date, image_url, created_by)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *`,
+        [title, release_date, image_url, created_by]
+      );
+      return res[0] ?? null;
+    } catch (error) {
+      console.error("Error creating album:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Updates an album.
+   * @param id - The ID of the album to update.
+   * @param albumData - The new data for the album.
+   * @param album.title - The new title of the album (optional).
+   * @param album.release_date - The new release date of the album (optional).
+   * @param album.image_url - The new image URL of the album (optional).
+   * @param album.created_by - The new user ID of the album artist (optional).
+   * @returns The updated album, or null if the update fails.
+   * @throws Error if the operation fails.
+   */
+  static async update(
+    id: UUID,
+    {
+      title,
+      release_date,
+      image_url,
+      created_by,
+    }: {
+      title?: string;
+      release_date?: number;
+      image_url?: string;
+      created_by?: UUID;
+    }
+  ): Promise<Album | null> {
+    try {
+      const fields: string[] = [];
+      const values: any[] = [];
+
+      if (title !== undefined) {
+        fields.push(`title = $${fields.length + 1}`);
+        values.push(title);
+      }
+      if (release_date !== undefined) {
+        fields.push(`release_date = $${fields.length + 1}`);
+        values.push(release_date);
+      }
+      if (image_url !== undefined) {
+        fields.push(`image_url = $${fields.length + 1}`);
+        values.push(image_url);
+      }
+      if (created_by !== undefined) {
+        fields.push(`created_by = $${fields.length + 1}`);
+        values.push(created_by);
+      }
+      if (fields.length === 0) {
+        throw new Error("No fields to update");
+      }
+
+      values.push(id);
+
+      const res = await withTransaction(async (client) => {
+        const sql = `UPDATE albums SET ${fields.join(", ")} WHERE id = $${
+          values.length
+        } RETURNING *`;
+        const res = await client.query(sql, values);
+        return res.rows[0] ?? null;
+      });
+
+      return res;
+    } catch (error) {
+      console.error("Error updating album:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Deletes an album.
+   * @param id - The ID of the album to delete.
+   * @returns The deleted album, or null if the deletion fails.
+   * @throws Error if the operation fails.
+   */
+  static async delete(id: UUID): Promise<Album | null> {
+    try {
+      const res = await withTransaction(async (client) => {
+        const del = await client.query(
+          "DELETE FROM albums WHERE id = $1 RETURNING *",
+          [id]
+        );
+        return del.rows[0] ?? null;
+      });
+
+      return res;
+    } catch (error) {
+      console.error("Error deleting album:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Gets a single album by ID.
+   * @param id - The ID of the album to get.
+   * @param options - Options for including related data.
+   * @param options.includeArtist - Option to include the artist data.
+   * @param options.includeLikes - Option to include the like count.
+   * @param options.includeRuntime - Option to include the total runtime of the album.
+   * @param options.includeSongCount - Option to include the total number of songs on the album.
+   * @returns The album, or null if not found.
+   * @throws Error if the operation fails.
+   */
+  static async getOne(
+    id: UUID,
+    options?: {
+      includeArtist?: boolean;
+      includeLikes?: boolean;
+      includeRuntime?: boolean;
+      includeSongCount?: boolean;
+    }
+  ): Promise<Album | null> {
+    try {
+      const sql = `
+        SELECT a.*,
+        CASE WHEN $1 THEN 
+          (SELECT row_to_json(artist_with_user)
+          FROM (
+            SELECT ar.*,
+              row_to_json(u) AS user
+            FROM artists ar
+            LEFT JOIN users u ON ar.user_id = u.id
+            WHERE ar.id = a.created_by
+          ) AS artist_with_user)
+        ELSE NULL END as artist,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al
+          WHERE al.album_id = a.id)
+        ELSE NULL END as likes,
+        CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s
+          JOIN album_songs als ON s.id = als.song_id WHERE als.album_id = a.id)
+        ELSE NULL END as runtime,
+        CASE WHEN $4 THEN (SELECT COUNT(*) FROM album_songs als
+          WHERE als.album_id = a.id)
+        ELSE NULL END as song_count
+        FROM albums a
+        WHERE a.id = $5
+        LIMIT 1
+      `;
+
+      const params = [
+        options?.includeArtist ?? false,
+        options?.includeLikes ?? false,
+        options?.includeRuntime ?? false,
+        options?.includeSongCount ?? false,
+        id,
+      ];
+
+      const res = await query(sql, params);
+      if (!res || res.length === 0) {
+        return null;
+      }
+
+      const album: Album = res[0];
+      if (album.image_url) {
+        album.image_url = getBlobUrl(album.image_url);
+      }
+
+      if (album.artist) {
+        if (album.artist.user && album.artist.user.profile_picture_url) {
+          album.artist.user.profile_picture_url = getBlobUrl(
+            album.artist.user.profile_picture_url
+          );
+        }
+        album.artist.type = "artist";
+      }
+
+      album.type = "album";
+      return album;
+    } catch (error) {
+      console.error("Error fetching album:", error);
+      throw error;
+    }
+  }
+
+  //! get user with artists get pfp
+  /**
+   * Gets multiple albums.
+   * @param options - Options for pagination and including related data.
+   * @param options.includeArtist - Option to include the artist data.
+   * @param options.includeLikes - Option to include the like count.
+   * @param options.includeRuntime - Option to include the total runtime of the album.
+   * @param options.includeSongCount - Option to include the total number of songs on the album.
+   * @param options.limit - Maximum number of albums to return.
+   * @param options.offset - Number of albums to skip.
+   * @returns A list of albums.
+   * @throws Error if the operation fails.
+   */
+  static async getMany(options?: {
+    includeArtist?: boolean;
+    includeLikes?: boolean;
+    includeRuntime?: boolean;
+    includeSongCount?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<Album[]> {
+    try {
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+
+      const sql = `
+        SELECT a.*,
+        CASE WHEN $1 THEN 
+          (SELECT row_to_json(artist_with_user)
+          FROM (
+            SELECT ar.*,
+              row_to_json(u) AS user
+            FROM artists ar
+            LEFT JOIN users u ON ar.user_id = u.id
+            WHERE ar.id = a.created_by
+          ) AS artist_with_user)
+        ELSE NULL END as artist,
+        CASE WHEN $2 THEN (SELECT COUNT(*) FROM album_likes al 
+          WHERE al.album_id = a.id) 
+        ELSE NULL END as likes,
+        CASE WHEN $3 THEN (SELECT SUM(s.duration) FROM songs s 
+          JOIN album_songs als ON s.id = als.song_id 
+          WHERE als.album_id = a.id) 
+        ELSE NULL END as runtime,
+        CASE WHEN $4 THEN (SELECT COUNT(*) FROM album_songs als 
+          WHERE als.album_id = a.id)
+        ELSE NULL END as song_count
+        FROM albums a
+        ORDER BY a.created_at DESC
+        LIMIT $5 OFFSET $6
+      `;
+
+      const params = [
+        options?.includeArtist ?? false,
+        options?.includeLikes ?? false,
+        options?.includeRuntime ?? false,
+        options?.includeSongCount ?? false,
+        limit,
+        offset,
+      ];
+
+      const albums = await query(sql, params);
+      if (!albums || albums.length === 0) {
+        return [];
+      }
+
+      const processedAlbums = await Promise.all(
+        albums.map(async (album: Album) => {
+          if (album.image_url) {
+            album.image_url = getBlobUrl(album.image_url);
+          }
+          if (album.artist) {
+            if (album.artist.user && album.artist.user.profile_picture_url) {
+              album.artist.user.profile_picture_url = getBlobUrl(
+                album.artist.user.profile_picture_url
+              );
+            }
+            album.artist.type = "artist";
+          }
+          album.type = "album";
+          return album;
+        })
+      );
+
+      return processedAlbums;
+    } catch (error) {
+      console.error("Error fetching albums:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Adds a song to an album
+   * @param albumId - The ID of the album
+   * @param songId - The ID of the song to add
+   * @param track_number - The track number of the song in the album
+   */
+  static async addSong(albumId: UUID, songId: UUID, track_number: number) {
+    try {
+      await query(
+        `INSERT INTO album_songs (album_id, song_id, track_number)
+        VALUES ($1, $2, $3)
+        RETURNING *`,
+        [albumId, songId, track_number]
+      );
+    } catch (error) {
+      console.error("Error adding song:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Removes a song from an album
+   * @param albumId - The ID of the album
+   * @param songId - The ID of the song to remove
+   */
+  static async removeSong(albumId: UUID, songId: UUID) {
+    try {
+      await query(
+        `DELETE FROM album_songs
+        WHERE album_id = $1 AND song_id = $2`,
+        [albumId, songId]
+      );
+    } catch (error) {
+      console.error("Error removing song:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetches songs for a given album.
+   * @param albumId - The ID of the album.
+   * @param options - Options for pagination.
+   * @param options.includeArtists - Option to include the artists data.
+   * @param options.includeLikes - Option to include the like count.
+   * @param options.limit - Maximum number of songs to return.
+   * @param options.offset - Number of songs to skip.
+   * @returns A list of songs in the album.
+   * @throws Error if the operation fails.
+   */
+  static async getSongs(
+    albumId: UUID,
+    options?: {
+      includeArtists?: boolean;
+      includeLikes?: boolean;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<AlbumSong[]> {
+    try {
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
+
+      const sql = `
+        SELECT s.*, als.track_number,
+        CASE WHEN $1 THEN 
+          (SELECT json_agg(row_to_json(ar_with_role))
+          FROM (
+            SELECT
+              ar.*,
+              sa.role,
+              row_to_json(u) AS user
+            FROM artists ar
+            JOIN users u ON u.artist_id = ar.id
+            JOIN song_artists sa ON sa.artist_id = ar.id
+            WHERE sa.song_id = s.id
+          ) AS ar_with_role)
+        ELSE NULL END AS artists,
+        CASE WHEN $2 THEN
+          (SELECT COUNT(*) FROM song_likes sl WHERE sl.song_id = s.id)
+        ELSE NULL END as likes
+        FROM songs s
+        LEFT JOIN album_songs als ON s.id = als.song_id
+        WHERE als.album_id = $3
+        ORDER BY als.track_number ASC
+        LIMIT $4 OFFSET $5
+      `;
+
+      const params = [
+        options?.includeArtists ?? false,
+        options?.includeLikes ?? false,
+        albumId,
+        limit,
+        offset,
+      ];
+
+      const songs = await query(sql, params);
+      if (!songs || songs.length === 0) {
+        return [];
+      }
+
+      const processedSongs = await Promise.all(
+        songs.map(async (song: AlbumSong) => {
+          if (song.image_url) {
+            song.image_url = getBlobUrl(song.image_url);
+          }
+          if (song.audio_url) {
+            song.audio_url = getBlobUrl(song.audio_url);
+          }
+          if (song.artists && song.artists?.length > 0) {
+            song.artists = song.artists.map((artist) => {
+              if (artist.user && artist.user.profile_picture_url) {
+                artist.user.profile_picture_url = getBlobUrl(
+                  artist.user.profile_picture_url
+                );
+              }
+              artist.type = "artist";
+              return artist;
+            });
+          }
+          song.type = "song";
+          return song;
+        })
+      );
+
+      return processedSongs;
+    } catch (error) {
+      console.error("Error fetching album songs:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Counts the total number of albums.
+   * @return The total number of albums.
+   * @throws Error if the operation fails.
+   */
+  static async count(): Promise<number> {
+    try {
+      const res = await query("SELECT COUNT(*) FROM albums");
+      return parseInt(res[0]?.count ?? "0", 10);
+    } catch (error) {
+      console.error("Error counting albums:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Gets related albums for a given album using the RPC function.
+   * @param albumId - The ID of the album to find related albums for.
+   * @param options - Options for including related data.
+   * @param options.includeArtist - Option to include the artist data.
+   * @param options.includeLikes - Option to include the like count.
+   * @param options.includeSongCount - Option to include the total number of songs on the album.
+   * @param options.includeRuntime - Option to include the total runtime of the album.
+   * @param options.limit - Maximum number of albums to return.
+   * @param options.offset - Number of albums to skip.
+   * @returns A list of related albums.
+   * @throws Error if the operation fails.
+   */
+  static async getRelatedAlbums(
+    albumId: UUID,
+    options?: {
+      includeArtist?: boolean;
+      includeLikes?: boolean;
+      includeSongCount?: boolean;
+      includeRuntime?: boolean;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Album[]> {
+    try {
+      const limit = options?.limit ?? 20;
+      const offset = options?.offset ?? 0;
+
+      const albums = await query(
+        "SELECT * FROM get_related_albums($1, $2, $3, $4, $5, $6, $7)",
+        [
+          albumId,
+          options?.includeArtist ?? false,
+          options?.includeLikes ?? false,
+          options?.includeSongCount ?? false,
+          options?.includeRuntime ?? false,
+          limit,
+          offset,
+        ]
+      );
+
+      if (!albums || albums.length === 0) {
+        return [];
+      }
+
+      const processedAlbums = await Promise.all(
+        albums.map(async (album: Album) => {
+          if (album.image_url) {
+            album.image_url = getBlobUrl(album.image_url);
+          }
+          if (album.artist) {
+            if (album.artist.user && album.artist.user.profile_picture_url) {
+              album.artist.user.profile_picture_url = getBlobUrl(
+                album.artist.user.profile_picture_url
+              );
+            }
+            album.artist.type = "artist";
+          }
+          album.type = "album";
+          return album;
+        })
+      );
+
+      return processedAlbums;
+    } catch (error) {
+      console.error("Error fetching related albums:", error);
+      throw error;
+    }
+  }
+}

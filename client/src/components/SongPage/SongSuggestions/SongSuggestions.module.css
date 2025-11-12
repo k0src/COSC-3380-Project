@@ -1,0 +1,39 @@
+.error {
+  text-align: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
+
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: 25vh;
+}
+
+.suggestionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.suggestionsWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.suggestionLabel {
+  font-size: var(--font-size-md);
+}
+
+.suggestionsSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+}

@@ -1,0 +1,30 @@
+.artistLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+}
+
+.artistLayoutBottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+}
+
+.artistLayoutBottomTop {
+  display: grid;
+  grid-template-columns: 2fr 0.75fr;
+  column-gap: var(--layout-gap-hor);
+}
+
+.artistLayoutBottomLeft {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.artistLayoutBottomRight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}

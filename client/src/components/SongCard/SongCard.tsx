@@ -23,8 +23,7 @@ const SongCard: React.FC<SongCardProps> = ({
       <div className={styles.imageContainer}>
         <img src={image} alt={title} className={styles.songImage} />
         <div className={styles.overlay}>
-          <button className={styles.playButton}>
-          </button>
+          <button className={styles.playButton}></button>
         </div>
       </div>
 

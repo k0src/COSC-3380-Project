@@ -1,0 +1,32 @@
+.songStatsContainer {
+  padding: var(--spacing-sm);
+  background-color: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  border: 2px solid var(--color-panel-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+.statsText {
+  color: var(--color-text-gray);
+  font-weight: 500;
+}
+
+.noDataMessage {
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 8.33rem;
+}
+
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 8.33rem;
+}

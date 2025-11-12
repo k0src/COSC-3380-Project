@@ -1,0 +1,25 @@
+.songLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+}
+
+.songLayoutTop {
+  display: grid;
+  grid-template-columns: 1fr 36rem;
+  gap: var(--layout-gap-hor);
+}
+
+.songLayoutTopRight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  justify-content: space-between;
+}
+
+.songLayoutBottom {
+  display: grid;
+  grid-template-columns: 85fr 200fr 36rem;
+  gap: var(--layout-gap-hor);
+  align-items: start;
+}

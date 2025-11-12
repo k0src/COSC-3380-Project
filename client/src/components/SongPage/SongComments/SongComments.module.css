@@ -1,0 +1,15 @@
+.commentsContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+  position: relative;
+}
+
+.error {
+  text-align: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}

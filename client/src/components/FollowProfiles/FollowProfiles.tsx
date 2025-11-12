@@ -1,0 +1,111 @@
+import { memo, useMemo } from "react";
+import { PuffLoader } from "react-spinners";
+import { Link } from "react-router-dom";
+import { LuPlus } from "react-icons/lu";
+import { artistApi } from "@api";
+import { useAsyncData } from "@hooks";
+import type { UUID } from "@types";
+import { LazyImg } from "@components";
+import styles from "./FollowProfiles.module.css";
+import userPlaceholder from "@assets/user-placeholder.webp";
+
+export interface FollowProfilesProps {
+  title: string;
+  userId: UUID;
+  following?: boolean;
+  profileLimit: number;
+  profileMin?: number;
+}
+
+const FollowProfiles: React.FC<FollowProfilesProps> = ({
+  title,
+  userId,
+  following = true,
+  profileLimit,
+  profileMin = 0,
+}) => {
+  const { data, loading, error } = useAsyncData(
+    {
+      profiles: () =>
+        (following ? artistApi.getFollowing : artistApi.getFollowers)(userId, {
+          limit: profileLimit + 1,
+        }),
+    },
+    [userId, following, profileLimit],
+    {
+      cacheKey: `${following ? "following" : "followers"}_${userId}`,
+      hasBlobUrl: true,
+    }
+  );
+
+  const profiles = data?.profiles;
+
+  const { displayProfiles, hasMore } = useMemo(() => {
+    if (!profiles || profiles.length === 0) {
+      return { displayProfiles: [], hasMore: false };
+    }
+    const display = profiles.slice(0, profileLimit);
+    const more = profiles.length > profileLimit;
+    return { displayProfiles: display, hasMore: more };
+  }, [profiles, profileLimit]);
+
+  if (loading) {
+    return (
+      <div className={styles.loaderContainer}>
+        <PuffLoader color="#D53131" size={25} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.error}>Failed to load {title.toLowerCase()}.</div>
+    );
+  }
+
+  if (!profiles || profiles.length === 0) {
+    return null;
+  }
+
+  if (profiles.length < profileMin) {
+    return null;
+  }
+
+  return (
+    <div className={styles.followContainer}>
+      <Link
+        to={
+          following
+            ? `/users/${userId}/info/following`
+            : `/users/${userId}/info/followers`
+        }
+        className={styles.sectionTitle}
+      >
+        {title}
+      </Link>
+      <div className={styles.avatarStack}>
+        {displayProfiles.map((profile) => (
+          <Link
+            key={profile.id}
+            to={`/users/${profile.id}`}
+            className={styles.avatarLink}
+          >
+            <LazyImg
+              src={profile.profile_picture_url || userPlaceholder}
+              blurHash={profile.pfp_blurhash}
+              alt={`${profile.username ?? "User"}'s profile picture`}
+              imgClassNames={[styles.avatar]}
+            />
+          </Link>
+        ))}
+        {hasMore && (
+          <div className={styles.avatarMore}>
+            <LuPlus aria-hidden="true" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default memo(FollowProfiles);
