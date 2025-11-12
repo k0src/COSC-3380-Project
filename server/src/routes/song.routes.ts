@@ -9,7 +9,7 @@ import multer from "multer";
 import { uploadBlob, getBlobUrl } from "../config/blobStorage";
 import crypto from "crypto";
 import { parseBuffer } from "music-metadata";
-import { authenticateToken } from "@middleware/auth.middleware";
+import { authenticateToken, requireAuth } from "@middleware/auth.middleware";
 
 const router = express.Router();
 
@@ -275,7 +275,7 @@ router.get(
 // Protected: Requires authentication
 router.post(
   "/",
-  authenticateToken,
+  requireAuth,
   // accept one audio file (field 'file') and an optional cover image (field 'cover')
   upload.fields([
     { name: "file", maxCount: 1 },
