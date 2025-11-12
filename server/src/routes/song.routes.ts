@@ -9,6 +9,7 @@ import multer from "multer";
 import { uploadBlob, getBlobUrl } from "../config/blobStorage";
 import crypto from "crypto";
 import { parseBuffer } from "music-metadata";
+import { authenticateToken } from "@middleware/auth.middleware";
 
 const router = express.Router();
 
@@ -271,9 +272,10 @@ router.get(
 );
 
 // POST /api/songs - upload a song file and create a DB record
-// NEED auth protection
+// Protected: Requires authentication
 router.post(
   "/",
+  authenticateToken,
   // accept one audio file (field 'file') and an optional cover image (field 'cover')
   upload.fields([
     { name: "file", maxCount: 1 },
@@ -281,6 +283,9 @@ router.post(
   ]),
   async (req: Request, res: Response): Promise<void> => {
     try {
+      // Get user ID from auth middleware (authenticateToken sets req.userId)
+      const userId = (req as any).userId;
+      
       const files = (req as any).files as { [field: string]: Express.Multer.File[] } | undefined;
       const file = files?.file?.[0];
       const cover = files?.cover?.[0];
@@ -350,11 +355,38 @@ router.post(
       
       console.log(`Creating DB record: title="${title}", duration=${durationVal}, genre="${genreVal}"`);
 
-      // insert DB record (provide required fields that have no defaults)
-      const sql = `INSERT INTO songs (id, title, audio_url, image_url, genre, duration, release_date, created_at) VALUES ($1,$2,$3,$4,$5,$6,NOW()::date,NOW()) RETURNING *`;
-      const rows = await query(sql, [id, title, audioBlobName, imageBlobName, genreVal, durationVal]);
-
-      res.status(201).json(rows[0]);
+      // insert DB record with artist_id if user is authenticated
+      let sql: string;
+      let params: any[];
+      
+      if (userId) {
+        // Get the user's artist_id from the users table
+        const userRows = await query(`SELECT artist_id FROM users WHERE id = $1`, [userId]);
+        const artistId = userRows.length > 0 ? userRows[0].artist_id : null;
+        
+        // If user is authenticated, associate the song with them as the main artist
+        sql = `INSERT INTO songs (id, title, audio_url, image_url, genre, duration, release_date, created_at) 
+               VALUES ($1,$2,$3,$4,$5,$6,NOW()::date,NOW()) RETURNING *`;
+        params = [id, title, audioBlobName, imageBlobName, genreVal, durationVal];
+        
+        // Then insert into song_artists table with the artist_id
+        const songRows = await query(sql, params);
+        if (songRows.length > 0 && artistId) {
+          const artistSql = `INSERT INTO song_artists (song_id, artist_id, role) VALUES ($1, $2, 'Main')`;
+          await query(artistSql, [id, artistId]);
+          console.log(`Song linked to artist: ${artistId}`);
+        }
+        
+        const rows = await query(`SELECT * FROM songs WHERE id = $1`, [id]);
+        res.status(201).json(rows[0]);
+      } else {
+        // If no user, just create the song without artist
+        sql = `INSERT INTO songs (id, title, audio_url, image_url, genre, duration, release_date, created_at) 
+               VALUES ($1,$2,$3,$4,$5,$6,NOW()::date,NOW()) RETURNING *`;
+        params = [id, title, audioBlobName, imageBlobName, genreVal, durationVal];
+        const rows = await query(sql, params);
+        res.status(201).json(rows[0]);
+      }
     } catch (error) {
       console.error("Error in POST /songs:", error);
       res.status(500).json({ error: "Failed to upload song" });
