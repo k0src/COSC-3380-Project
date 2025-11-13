@@ -5,6 +5,7 @@ import {
   HistoryService,
   LikeService,
   LibraryService,
+  UserSettingsService,
 } from "@services";
 
 const router = express.Router();
@@ -720,6 +721,117 @@ router.get(
       res.status(200).json(artists);
     } catch (error) {
       console.error("Error in GET /users/:id/library/history/artists:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// PUT /api/users/:id
+router.put("/:id", async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const {
+    username,
+    email,
+    new_password,
+    current_password,
+    authenticated_with,
+    role,
+    profile_picture_url,
+    pfp_blurhash,
+    artist_id,
+    status,
+  } = req.body;
+
+  if (!id) {
+    res.status(400).json({ error: "User ID is required" });
+    return;
+  }
+
+  try {
+    const updatedUser = await UserRepository.update(id, {
+      username,
+      email,
+      new_password,
+      current_password,
+      authenticated_with,
+      role,
+      profile_picture_url,
+      pfp_blurhash,
+      artist_id,
+      status,
+    });
+
+    if (!updatedUser) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error("Error in PUT /users/:id:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET /api/users/:id/settings
+router.get(
+  "/:id/settings",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    try {
+      const settings = await UserSettingsService.getSettings(id);
+      res.status(200).json(settings);
+    } catch (error) {
+      console.error("Error in GET /users/:id/settings:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// PUT /api/users/:id/settings
+router.put(
+  "/:id/settings",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    const {
+      release_notifications,
+      playlist_like_notifications,
+      follower_notifications,
+      comment_tag_notifications,
+      color_scheme,
+      color_theme,
+      zoom_level,
+      artist_like_notifications,
+      song_comment_notifications,
+      songs_discoverable,
+    } = req.body;
+
+    try {
+      const updatedSettings = await UserSettingsService.updateSettings(id, {
+        release_notifications,
+        playlist_like_notifications,
+        follower_notifications,
+        comment_tag_notifications,
+        color_scheme,
+        color_theme,
+        zoom_level,
+        artist_like_notifications,
+        song_comment_notifications,
+        songs_discoverable,
+      });
+      res.status(200).json(updatedSettings);
+    } catch (error) {
+      console.error("Error in PUT /users/:id/settings:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   }

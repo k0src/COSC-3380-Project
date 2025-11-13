@@ -16,6 +16,9 @@ dotenv.config();
 
 const API_URL = process.env.API_URL;
 
+/**
+ * Service for managing user libraries and history.
+ */
 export default class LibraryService {
   /**
    * Searches the user's library for songs, albums, playlists, and artists matching the query.

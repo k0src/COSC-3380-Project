@@ -211,9 +211,8 @@ router.get(
 // NEED auth protection
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const songData = await parseSongForm(req, "upload");
     let { title, duration, genre, release_date, audio_url, image_url } =
-      songData;
+      await parseSongForm(req, "upload");
     if (!title || !genre || !duration || !audio_url) {
       res
         .status(400)
