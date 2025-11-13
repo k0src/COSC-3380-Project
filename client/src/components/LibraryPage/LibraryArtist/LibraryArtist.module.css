@@ -1,0 +1,32 @@
+.artistItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.artistImage {
+  width: 18rem;
+  height: 18rem;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: opacity var(--transition-speed) ease;
+}
+
+.artistImage:hover {
+  opacity: 0.5;
+}
+
+.artistName {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}

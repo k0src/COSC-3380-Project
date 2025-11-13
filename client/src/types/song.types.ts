@@ -1,10 +1,40 @@
-import type { UUID } from "./index.js";
+import type { UUID, Album, SongArtist, Artist } from "./index.js";
 
+// Main Song type
 export interface Song {
   id: UUID;
   title: string;
-  release_year: number;
-  image_url: string;
+  duration: number;
+  genre: string;
+  release_date: string;
+  image_url?: string;
+  image_url_blurhash?: string;
   audio_url: string;
   created_at: string;
+  streams?: number;
+
+  albums?: Album[];
+  artists?: SongArtist[];
+  likes?: number;
+  comments?: number;
+
+  type: "song";
+}
+
+// Extended types with additional fields for specifc contexts
+export interface PlaylistSong extends Song {
+  added_at: string;
+}
+
+export interface AlbumSong extends Song {
+  track_number: number;
+}
+
+export interface ArtistSong extends Song {
+  role: string;
+}
+
+export interface SuggestedSong extends Song {
+  total_score: number;
+  main_artist: Artist;
 }

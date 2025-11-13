@@ -1,0 +1,70 @@
+.userContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  height: auto;
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  border: 2px solid var(--color-panel-border);
+  padding: var(--spacing-md);
+  min-width: 0;
+}
+
+.userProfilePicture {
+  width: 5.4rem;
+  height: 5.4rem;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.usernameContainer {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.usernameText {
+  font-size: var(--font-size-md);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  transition: color var(--transition-speed) ease-in-out;
+  cursor: pointer;
+}
+
+.usernameText:hover {
+  color: var(--color-red);
+}
+
+.followButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-red);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: var(--color-red-200);
+  cursor: pointer;
+  font-size: var(--icon-size-xs);
+  padding: var(--spacing-sm);
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.followButton:hover {
+  background-color: var(--color-red-800);
+  color: var(--color-red-300);
+}
+
+.followButtonActive {
+  background-color: var(--color-red-800);
+  color: var(--color-red-300);
+}

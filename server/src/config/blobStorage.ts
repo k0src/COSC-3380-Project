@@ -14,6 +14,7 @@ const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
 const containerName = process.env.AZURE_STORAGE_CONTAINER || "uploads";
 const accountName = process.env.AZURE_STORAGE_ACCOUNT!;
 const accountKey = process.env.AZURE_STORAGE_ACCOUNT_KEY!;
+const sasTokenDuration = Number(process.env.SAS_TOKEN_DURATION) || 3600;
 
 if (!connectionString) {
   throw new Error("Missing Azure Storage connection string");
@@ -24,7 +25,10 @@ const blobServiceClient =
 const containerClient: ContainerClient =
   blobServiceClient.getContainerClient(containerName);
 
-export function getBlobUrl(filename: string, expiresInSeconds = 3600): string {
+export function getBlobUrl(
+  filename: string,
+  expiresInSeconds = sasTokenDuration
+): string {
   const blobClient = containerClient.getBlobClient(filename);
   try {
     const sasToken = generateBlobSASQueryParameters(
@@ -40,7 +44,7 @@ export function getBlobUrl(filename: string, expiresInSeconds = 3600): string {
     return `${blobClient.url}?${sasToken}`;
   } catch (error) {
     console.error("Could not generate SAS token:", error);
-    return blobClient.url;
+    throw new Error("Could not generate SAS token");
   }
 }
 
