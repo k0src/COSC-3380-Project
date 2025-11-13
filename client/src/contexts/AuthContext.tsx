@@ -58,6 +58,11 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         ...state,
         isLoading: action.payload,
       };
+    case "UPDATE_USER":
+      return {
+        ...state,
+        user: action.payload,
+      };
     default:
       return state;
   }
@@ -147,12 +152,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: "CLEAR_ERROR" });
   };
 
+  const updateUser = (user: AuthState["user"]): void => {
+    dispatch({ type: "UPDATE_USER", payload: user });
+  };
+
   const value: AuthContextType = {
     ...state,
     login,
     signup,
     logout,
     clearError,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

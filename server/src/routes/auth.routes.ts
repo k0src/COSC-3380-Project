@@ -101,7 +101,6 @@ router.post(
         username,
         email,
         password,
-        role: "USER",
       });
 
       if (!user) {

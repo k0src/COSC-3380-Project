@@ -11,13 +11,11 @@ const API_URL = process.env.API_URL;
 export default class UserRepository {
   /**
    * Creates a new user.
-   * @param userData - The data for the new song.
-   * @param userData.username - The username of the user.
-   * @param userData.email - The email of the user.
-   * @param userData.password_hash - The hashed password of the user (optional).
-   * @param userData.authenticated_with - The authentication method used.
-   * @param userData.role - The role of the user.
-   * @param userData.profile_picture_url - The profile picture URL of the user (optional).
+   * @param userData.username The username of the user.
+   * @param userData.email The email of the user.
+   * @param userData.password The password of the user.
+   * @param userData.authenticated_with The authentication method used.
+   * @param userData.profile_picture_url The profile picture URL of the user (optional).
    * @returns The created user, or null if creation fails.
    * @throws Error if the operation fails.
    */
@@ -25,13 +23,11 @@ export default class UserRepository {
     username,
     email,
     password,
-    role = "USER",
     profile_picture_url,
   }: {
     username: string;
     email: string;
     password: string;
-    role?: string;
     profile_picture_url?: string;
   }): Promise<User | null> {
     try {
@@ -40,17 +36,10 @@ export default class UserRepository {
 
       const result = await query(
         `INSERT INTO users
-          (username, email, password_hash, authenticated_with, role, profile_picture_url)
-        VALUES ($1, $2, $3, $4, $5, $6)
+          (username, email, password_hash, authenticated_with, profile_picture_url)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *`,
-        [
-          username,
-          email,
-          password_hash,
-          "CoogMusic",
-          role,
-          profile_picture_url,
-        ],
+        [username, email, password_hash, "CoogMusic", profile_picture_url]
       );
 
       return result[0] ?? null;
@@ -62,14 +51,17 @@ export default class UserRepository {
 
   /**
    * Updates a user.
-   * @param id - The ID of the user to update.
-   * @param userData - The new data for the user.
-   * @param userData.username - The new username of the user (optional).
-   * @param userData.email - The new email of the user (optional).
-   * @param userData.password_hash - The new hashed password of the user (optional).
-   * @param userData.authenticated_with - The new authentication method used (optional).
-   * @param userData.role - The new role of the user (optional).
-   * @param userData.profile_picture_url - The new profile picture URL of the user (optional).
+   * @param id The ID of the user to update.
+   * @param userData.username The new username of the user (optional).
+   * @param userData.email The new email of the user (optional).
+   * @param userData.new_password The new password of the user (optional).
+   * @param userData.current_password The current password of the user (optional).
+   * @param userData.authenticated_with The new authentication method used (optional).
+   * @param userData.role The new role of the user (optional).
+   * @param userData.profile_picture_url The new profile picture URL of the user (optional).
+   * @param userData.pfp_blurhash The new profile picture blurhash of the user (optional).
+   * @param userData.artist_id The new artist ID of the user (optional).
+   * @param userData.status The new status of the user (optional).
    * @returns The updated user, or null if the update fails.
    * @throws Error if the operation fails.
    */
@@ -78,57 +70,99 @@ export default class UserRepository {
     {
       username,
       email,
-      password_hash,
+      new_password,
+      current_password,
       authenticated_with,
       role,
       profile_picture_url,
+      pfp_blurhash,
+      artist_id,
+      status,
     }: {
       username?: string;
       email?: string;
-      password_hash?: string;
+      new_password?: string;
+      current_password?: string;
       authenticated_with?: string;
       role?: string;
       profile_picture_url?: string;
-    },
+      pfp_blurhash?: string;
+      artist_id?: UUID;
+      status?: string;
+    }
   ): Promise<User | null> {
     try {
-      const fields: string[] = [];
-      const values: any[] = [];
-
-      if (username !== undefined) {
-        fields.push(`username = $${values.length + 1}`);
-        values.push(username);
-      }
-      if (email !== undefined) {
-        fields.push(`email = $${values.length + 1}`);
-        values.push(email);
-      }
-      if (password_hash !== undefined) {
-        fields.push(`password_hash = $${values.length + 1}`);
-        values.push(password_hash);
-      }
-      if (authenticated_with !== undefined) {
-        fields.push(`authenticated_with = $${values.length + 1}`);
-        values.push(authenticated_with);
-      }
-      if (role !== undefined) {
-        fields.push(`role = $${values.length + 1}`);
-        values.push(role);
-      }
-      if (profile_picture_url !== undefined) {
-        fields.push(`profile_picture_url = $${values.length + 1}`);
-        values.push(profile_picture_url);
-      }
-      if (fields.length === 0) {
-        throw new Error("No fields provided to update.");
-      }
-
-      values.push(id);
-
       const result = await withTransaction(async (client) => {
-        const sql = `UPDATE users SET ${fields.join(", ")} WHERE id = $${
-          values.length
-        } RETURNING *`;
+        const fields: string[] = [];
+        const values: any[] = [];
+
+        if (username !== undefined) {
+          fields.push(`username = $${values.length + 1}`);
+          values.push(username);
+        }
+        if (email !== undefined) {
+          fields.push(`email = $${values.length + 1}`);
+          values.push(email);
+        }
+        if (new_password !== undefined) {
+          if (!current_password) {
+            throw new Error(
+              "Current password is required to set a new password."
+            );
+          }
+
+          const user = await UserRepository.getOne(id);
+          if (!user || !user.password_hash) {
+            throw new Error("User not found or has no password set.");
+          }
+
+          const isValid = await bcrypt.compare(
+            current_password,
+            user.password_hash
+          );
+          if (!isValid) {
+            throw new Error("Current password is incorrect.");
+          }
+
+          const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || "12", 10);
+          const new_password_hash = await bcrypt.hash(new_password, saltRounds);
+
+          fields.push(`password_hash = $${values.length + 1}`);
+          values.push(new_password_hash);
+        }
+        if (authenticated_with !== undefined) {
+          fields.push(`authenticated_with = $${values.length + 1}`);
+          values.push(authenticated_with);
+        }
+        if (role !== undefined) {
+          fields.push(`role = $${values.length + 1}`);
+          values.push(role);
+        }
+        if (profile_picture_url !== undefined) {
+          fields.push(`profile_picture_url = $${values.length + 1}`);
+          values.push(profile_picture_url);
+        }
+        if (pfp_blurhash !== undefined) {
+          fields.push(`pfp_blurhash = $${values.length + 1}`);
+          values.push(pfp_blurhash);
+        }
+        if (artist_id !== undefined) {
+          fields.push(`artist_id = $${values.length + 1}`);
+          values.push(artist_id);
+        }
+        if (status !== undefined) {
+          fields.push(`status = $${values.length + 1}`);
+          values.push(status);
+        }
+        if (fields.length === 0) {
+          throw new Error("No fields provided to update.");
+        }
+
+        values.push(id);
+
+        const sql = `UPDATE users SET ${fields.join(
+          ", "
+        )}, updated_at = NOW() WHERE id = $${values.length} RETURNING *`;
         const res = await client.query(sql, values);
         return res.rows[0] ?? null;
       });
@@ -151,7 +185,7 @@ export default class UserRepository {
       const res = await withTransaction(async (client) => {
         const del = await client.query(
           `DELETE FROM users WHERE id = $1 RETURNING *`,
-          [id],
+          [id]
         );
         return del.rows[0] ?? null;
       });
@@ -177,7 +211,7 @@ export default class UserRepository {
     options?: {
       includeFollowerCount?: boolean;
       includeFollowingCount?: boolean;
-    },
+    }
   ): Promise<User | null> {
     try {
       const sql = `
@@ -266,7 +300,7 @@ export default class UserRepository {
             user.profile_picture_url = getBlobUrl(user.profile_picture_url);
           }
           return user;
-        }),
+        })
       );
 
       return processedUsers;
@@ -350,7 +384,7 @@ export default class UserRepository {
       includeRuntime?: boolean;
       limit?: number;
       offset?: number;
-    },
+    }
   ): Promise<Playlist[]> {
     try {
       const limit = options?.limit ?? 50;
@@ -418,12 +452,12 @@ export default class UserRepository {
 
   static async validateCredentials(
     email: string,
-    password: string,
+    password: string
   ): Promise<User | null> {
     try {
       const result = await query(
         `SELECT * FROM users WHERE email = $1 AND authenticated_with = 'CoogMusic'`,
-        [email],
+        [email]
       );
 
       if (!result || result.length === 0) {

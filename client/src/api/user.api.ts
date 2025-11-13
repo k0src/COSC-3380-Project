@@ -7,6 +7,7 @@ import type {
   Album,
   Comment,
   User,
+  UserSettings,
 } from "@types";
 
 export const userApi = {
@@ -162,5 +163,51 @@ export const userApi = {
       `/users/${id}/following/count`
     );
     return response.data.followingCount;
+  },
+
+  async update(
+    id: UUID,
+    {
+      username,
+      email,
+      new_password,
+      current_password,
+      authenticated_with,
+      role,
+      profile_picture_url,
+      pfp_blurhash,
+      artist_id,
+      status,
+    }: {
+      username?: string;
+      email?: string;
+      new_password?: string;
+      current_password?: string;
+      authenticated_with?: string;
+      role?: string;
+      profile_picture_url?: string;
+      pfp_blurhash?: string;
+      artist_id?: UUID;
+      status?: string;
+    }
+  ) {
+    const response = await api.put<User>(`/users/${id}`, {
+      username,
+      email,
+      new_password,
+      current_password,
+      authenticated_with,
+      role,
+      profile_picture_url,
+      pfp_blurhash,
+      artist_id,
+      status,
+    });
+    return response.data;
+  },
+
+  async getSettings(id: UUID) {
+    const response = await api.get<UserSettings>(`/users/${id}/settings`);
+    return response.data;
   },
 };
