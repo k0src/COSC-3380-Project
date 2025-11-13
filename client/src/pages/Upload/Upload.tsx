@@ -197,6 +197,13 @@ const Upload: React.FC = () => {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/api/songs");
         xhr.withCredentials = true;
+        
+        // Add Authorization header with Bearer token
+        const token = localStorage.getItem("accessToken");
+        if (token) {
+          xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+        }
+        
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable) {
             const percent = Math.round((e.loaded / e.total) * 100);
