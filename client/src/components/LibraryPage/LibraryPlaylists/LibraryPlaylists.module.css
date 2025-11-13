@@ -45,6 +45,7 @@
 
 .playlistContainer {
   position: relative;
+  width: 18rem;
 }
 
 .pinnedIconContainer {
@@ -54,11 +55,12 @@
   background-color: var(--color-red);
   border-radius: 50%;
   padding: var(--spacing-sm);
-  z-index: 100;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
 }
 
 .pinnedIcon {

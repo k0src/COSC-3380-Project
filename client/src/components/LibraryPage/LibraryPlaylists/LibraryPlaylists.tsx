@@ -61,14 +61,8 @@ const LibraryPlaylists: React.FC<{
           <span className={styles.sectionTitle}>My Playlists</span>
           <div className={styles.itemsGrid}>
             {filteredPlaylists.map((playlist) => (
-              <div className={styles.playlistContainer}>
-                {playlist.is_pinned && (
-                  <div className={styles.pinnedIconContainer}>
-                    <LuPin className={styles.pinnedIcon} />
-                  </div>
-                )}
+              <div key={playlist.id} className={styles.playlistContainer}>
                 <EntityItemCard
-                  key={playlist.id}
                   entity={playlist}
                   type="playlist"
                   linkTo={`/playlists/${playlist.id}`}
@@ -80,6 +74,11 @@ const LibraryPlaylists: React.FC<{
                   subtitle={`${playlist.song_count} songs`}
                   imageUrl={playlist.image_url || musicPlaceholder}
                 />
+                {playlist.is_pinned && (
+                  <div className={styles.pinnedIconContainer}>
+                    <LuPin className={styles.pinnedIcon} />
+                  </div>
+                )}
               </div>
             ))}
           </div>

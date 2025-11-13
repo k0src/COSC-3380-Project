@@ -17,6 +17,10 @@ export { default as FormSubmitButton } from "./Forms/FormButton/FormSubmitButton
 export { default as ProtectedRoute } from "./ProtectedRoute/ProtectedRoute.js";
 export { default as AppLayout } from "./AppLayout/AppLayout.js";
 
+/* ================================ Home Page =============================== */
+export { default as FeaturedSection } from "./HomePage/FeaturedSection/FeaturedSection.js";
+export { default as SongCard } from "./HomePage/SongCard/SongCard.js";
+
 /* ================================ Song Page ================================ */
 export { default as WaveformPlayer } from "./SongPage/WaveformPlayer/WaveformPlayer.js";
 export { default as SongContainer } from "./SongPage/SongContainer/SongContainer.js";
@@ -75,7 +79,6 @@ export { default as FollowProfiles } from "./FollowProfiles/FollowProfiles.js";
 export { default as LikeProfiles } from "./LikeProfiles/LikeProfiles.js";
 
 /* ================================== Cards ================================== */
-export { default as SongCard } from "./SongCard/SongCard.js";
 export { default as EntityItem } from "./EntityItem/EntityItem.js";
 export { default as EntityItemCard } from "./EntityItemCard/EntityItemCard.js";
 export { default as SlidingCardList } from "./SlidingCardList/SlidingCardList.js";

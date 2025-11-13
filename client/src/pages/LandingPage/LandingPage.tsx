@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./LandingPage.module.css";
 import { LuSearch } from "react-icons/lu";
-import SongCard from "../../components/SongCard/SongCard";
+import { SongCard } from "@components";
 import { useAsyncData } from "@hooks";
 import { songApi } from "@api";
 import type { Song } from "@types";

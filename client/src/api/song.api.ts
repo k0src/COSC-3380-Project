@@ -29,6 +29,15 @@ export const songApi = {
     includeArtists?: boolean;
     includeLikes?: boolean;
     includeComments?: boolean;
+    orderByColumn?:
+      | "title"
+      | "created_at"
+      | "streams"
+      | "release_date"
+      | "likes"
+      | "comments"
+      | "duration";
+    orderByDirection?: "ASC" | "DESC";
     limit?: number;
     offset?: number;
   }) {

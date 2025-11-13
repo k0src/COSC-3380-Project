@@ -99,11 +99,6 @@ const LibraryRecent: React.FC<{
                 <div className={styles.itemsGrid}>
                   {filteredRecentlyPlayed.playlists.map((playlist) => (
                     <div key={playlist.id} className={styles.playlistContainer}>
-                      {playlist.is_pinned && (
-                        <div className={styles.pinnedIconContainer}>
-                          <LuPin className={styles.pinnedIcon} />
-                        </div>
-                      )}
                       <EntityItemCard
                         entity={playlist}
                         type="playlist"
@@ -118,6 +113,11 @@ const LibraryRecent: React.FC<{
                         subtitle={`${playlist.song_count} songs`}
                         imageUrl={playlist.image_url || musicPlaceholder}
                       />
+                      {playlist.is_pinned && (
+                        <div className={styles.pinnedIconContainer}>
+                          <LuPin className={styles.pinnedIcon} />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
