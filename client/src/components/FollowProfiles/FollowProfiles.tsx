@@ -5,8 +5,9 @@ import { LuPlus } from "react-icons/lu";
 import { artistApi } from "@api";
 import { useAsyncData } from "@hooks";
 import type { UUID } from "@types";
+import { LazyImg } from "@components";
 import styles from "./FollowProfiles.module.css";
-import userPlaceholder from "@assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.webp";
 
 export interface FollowProfilesProps {
   title: string;
@@ -72,7 +73,16 @@ const FollowProfiles: React.FC<FollowProfilesProps> = ({
 
   return (
     <div className={styles.followContainer}>
-      <span className={styles.sectionTitle}>{title}</span>
+      <Link
+        to={
+          following
+            ? `/users/${userId}/info/following`
+            : `/users/${userId}/info/followers`
+        }
+        className={styles.sectionTitle}
+      >
+        {title}
+      </Link>
       <div className={styles.avatarStack}>
         {displayProfiles.map((profile) => (
           <Link
@@ -80,22 +90,18 @@ const FollowProfiles: React.FC<FollowProfilesProps> = ({
             to={`/users/${profile.id}`}
             className={styles.avatarLink}
           >
-            <img
+            <LazyImg
               src={profile.profile_picture_url || userPlaceholder}
+              blurHash={profile.pfp_blurhash}
               alt={`${profile.username ?? "User"}'s profile picture`}
-              className={styles.avatar}
-              loading="lazy"
+              imgClassNames={[styles.avatar]}
             />
           </Link>
         ))}
         {hasMore && (
-          <Link
-            to={`/users/${userId}/${following ? "following" : "followers"}`}
-            className={styles.avatarMore}
-            aria-label={`View all ${profiles.length} ${title.toLowerCase()}`}
-          >
+          <div className={styles.avatarMore}>
             <LuPlus aria-hidden="true" />
-          </Link>
+          </div>
         )}
       </div>
     </div>

@@ -13,7 +13,7 @@ import {
 } from "react-icons/lu";
 
 const MainLayoutSidebar: React.FC = () => {
-  const { logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = useCallback(async () => {
@@ -41,12 +41,14 @@ const MainLayoutSidebar: React.FC = () => {
           <Link to="/library/songs" className={styles.sidebarLink}>
             <LuDisc3 className={styles.sidebarIcon} />
           </Link>
-          <Link to="/artist/dashboard" className={styles.sidebarLink}>
-            <LuUserPen className={styles.sidebarIcon} />
-          </Link>
           <Link to="/library/history" className={styles.sidebarLink}>
             <LuHistory className={styles.sidebarIcon} />
           </Link>
+          {user && user.role === "ARTIST" && (
+            <Link to="/artist/dashboard" className={styles.sidebarLink}>
+              <LuUserPen className={styles.sidebarIcon} />
+            </Link>
+          )}
         </nav>
       </div>
       {isAuthenticated && (

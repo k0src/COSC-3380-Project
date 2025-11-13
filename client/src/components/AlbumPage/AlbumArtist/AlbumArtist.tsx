@@ -6,10 +6,10 @@ import { useAuth } from "@contexts";
 import { formatRelativeDate } from "@util";
 import { useFollowStatus } from "@hooks";
 import { LuUserRoundCheck, LuUserRoundPlus } from "react-icons/lu";
-import { HorizontalRule } from "@components";
+import { HorizontalRule, LazyImg } from "@components";
 import styles from "./AlbumArtist.module.css";
 import classNames from "classnames";
-import artistPlaceholder from "@assets/artist-placeholder.png";
+import artistPlaceholder from "@assets/artist-placeholder.webp";
 
 export interface AlbumArtistProps {
   artist: Artist;
@@ -59,12 +59,12 @@ const AlbumArtist: React.FC<AlbumArtistProps> = ({ artist, updatedAt }) => {
   return (
     <div className={styles.artistContainer}>
       <div className={styles.artistContainerTop}>
-        <img
+        <LazyImg
           src={artistImageUrl}
+          blurHash={artist.user?.pfp_blurhash}
           alt={`${artist.display_name} Image`}
-          className={styles.artistImage}
+          imgClassNames={[styles.artistImage]}
           onClick={handleFollow}
-          loading="lazy"
         />
         <div className={styles.artistNameContainer}>
           <Link className={styles.artistNameText} to={`/artists/${artist.id}`}>

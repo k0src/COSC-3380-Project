@@ -1,0 +1,139 @@
+.errorFallbackContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--color-black);
+  padding: var(--spacing-4xl) var(--spacing-xl);
+}
+
+.errorContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 80rem;
+  width: 100%;
+  gap: var(--spacing-xl);
+}
+
+.errorHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.errorIcon {
+  font-size: 8rem;
+  color: var(--color-red);
+}
+
+.errorTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  color: var(--color-white);
+  margin: 0;
+}
+
+.errorMessage {
+  font-size: var(--font-size-lg);
+  line-height: 1.6;
+  color: var(--color-text-gray);
+  max-width: 60rem;
+  margin: 0;
+}
+
+.buttonGroup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+}
+
+.reloadButton,
+.homeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-family: "Inter", sans-serif;
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.reloadButton {
+  background-color: var(--color-panel-gray);
+  color: var(--color-white);
+  border: 2px solid var(--color-panel-border);
+}
+
+.reloadButton:hover {
+  background-color: var(--color-panel-border);
+}
+
+.homeButton {
+  background-color: var(--color-red);
+  color: var(--color-white);
+}
+
+.homeButton:hover {
+  background-color: var(--color-red-700);
+}
+
+.errorDetails {
+  width: 100%;
+  max-width: 100rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.errorDetailsTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.errorLog {
+  background-color: var(--color-panel-gray);
+  border: 2px solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.errorLogSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.errorLogSection strong {
+  color: var(--color-red);
+  font-size: var(--font-size-md);
+}
+
+.errorLogContent {
+  background-color: var(--color-black);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-md);
+  color: var(--color-white);
+  font-family: "Fira Code", monospace;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}

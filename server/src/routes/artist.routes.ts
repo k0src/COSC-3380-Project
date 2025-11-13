@@ -294,6 +294,26 @@ router.get(
   }
 );
 
+// GET /api/artists/:id/followers/count
+router.get(
+  "/:id/followers/count",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const followerCount = await FollowService.getFollowerCount(id);
+      res.status(200).json({ followerCount });
+    } catch (error) {
+      console.error("Error in GET /artists/:id/follower-count:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
 // GET /api/artists/:id/following
 router.get(
   "/:id/following",
@@ -318,29 +338,9 @@ router.get(
   }
 );
 
-// GET /api/artists/:id/follower-count
+// GET /api/artists/:id/following/count
 router.get(
-  "/:id/follower-count",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      if (!id) {
-        res.status(400).json({ error: "Artist ID is required" });
-        return;
-      }
-
-      const followerCount = await FollowService.getFollowerCount(id);
-      res.status(200).json({ followerCount });
-    } catch (error) {
-      console.error("Error in GET /artists/:id/follower-count:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/artists/:id/following-count
-router.get(
-  "/:id/following-count",
+  "/:id/following/count",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;

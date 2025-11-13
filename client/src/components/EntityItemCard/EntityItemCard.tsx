@@ -1,22 +1,23 @@
-import { memo, useState, useCallback, useRef, useEffect } from "react";
+import { memo, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAudioQueue, useAuth } from "@contexts";
+import { useAudioQueue, useAuth, useContextMenu } from "@contexts";
 import type { Song, Playlist, Album } from "@types";
-import { QueueMenu } from "@components";
+import { QueueMenu, LazyImg } from "@components";
 import styles from "./EntityItemCard.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
-import artistPlaceholder from "@assets/artist-placeholder.png";
-import { LuPlay, LuListEnd } from "react-icons/lu";
+import musicPlaceholder from "@assets/music-placeholder.webp";
+import artistPlaceholder from "@assets/artist-placeholder.webp";
+import { LuPlay, LuPause, LuListEnd } from "react-icons/lu";
+import classNames from "classnames";
 
 interface EntityActionButtonsProps {
-  type: "song" | "list" | "artist";
+  type: "song" | "playlist" | "album" | "artist";
   entity?: Song | Playlist | Album;
   isHovered: boolean;
 }
 
 const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
   ({ type, entity, isHovered }) => {
-    const { actions } = useAudioQueue();
+    const { state, actions } = useAudioQueue();
     const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
@@ -29,10 +30,47 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
       }
     }, [isHovered, queueMenuOpen]);
 
-    const handlePlay = useCallback(() => {
+    const currentQueueItem = useMemo(() => {
+      if (state.currentIndex < 0 || state.currentIndex >= state.queue.length) {
+        return null;
+      }
+      return state.queue[state.currentIndex];
+    }, [state.currentIndex, state.queue]);
+
+    const isEntityPlaying = useMemo(() => {
+      if (!entity || !currentQueueItem) return false;
+
+      if (type === "song") {
+        return currentQueueItem.song.id === (entity as Song).id;
+      } else if (type === "playlist") {
+        return (
+          !currentQueueItem.isQueued &&
+          currentQueueItem.sourceId === (entity as Playlist).id &&
+          currentQueueItem.sourceType === "playlist"
+        );
+      } else if (type === "album") {
+        return (
+          !currentQueueItem.isQueued &&
+          currentQueueItem.sourceId === (entity as Album).id &&
+          currentQueueItem.sourceType === "album"
+        );
+      }
+      return false;
+    }, [entity, currentQueueItem, type]);
+
+    const handlePlayPause = useCallback(() => {
       if (!entity) return;
-      actions.play(entity);
-    }, [actions, entity]);
+
+      if (isEntityPlaying) {
+        if (state.isPlaying) {
+          actions.pause();
+        } else {
+          actions.resume();
+        }
+      } else {
+        actions.play(entity);
+      }
+    }, [entity, isEntityPlaying, state.isPlaying, actions]);
 
     const handleAddToQueue = useCallback(async () => {
       try {
@@ -67,9 +105,15 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
             />
           </div>
         )}
-        {(type === "song" || type === "list") && (
-          <button onClick={handlePlay} className={styles.entityActionButton}>
-            <LuPlay />
+        {(type === "song" || type === "playlist" || type === "album") && (
+          <button
+            onClick={handlePlayPause}
+            className={classNames(styles.entityActionButton, {
+              [styles.entityActionButtonActive]:
+                isEntityPlaying && state.isPlaying,
+            })}
+          >
+            {isEntityPlaying && state.isPlaying ? <LuPause /> : <LuPlay />}
           </button>
         )}
       </div>
@@ -81,58 +125,73 @@ type EntityItemCardProps =
   | {
       type: "artist";
       linkTo: string;
-      author: string;
+      author?: string;
+      authorLinkTo?: string;
       title: string;
       subtitle: string;
       imageUrl?: string;
+      blurHash?: string;
       entity?: never;
     }
   | {
-      type: "song" | "list";
+      type: "song" | "playlist" | "album";
       linkTo: string;
-      author: string;
+      author?: string;
+      authorLinkTo?: string;
       title: string;
-      subtitle: string;
+      subtitle?: string;
       imageUrl?: string;
+      blurHash?: string;
       entity: Song | Playlist | Album;
     };
 
-/**
- * @param EntityItemProps
- * @param entity The entity object to play when clicking play (Song, Playlist, or Album)
- * @param imageUrl Image URL for the entity
- * @param linkTo Link to navigate to when clicking the title
- * @param author Author name to display (text above title)
- * @param title Title of the entity
- * @param subtitle Subtitle text to display (text below title)
- * @param type Type of entity: "song", "list", or "artist"
- */
 const EntityItemCard: React.FC<EntityItemCardProps> = ({
   entity,
   imageUrl,
+  blurHash,
   linkTo,
   author,
+  authorLinkTo,
   title,
   subtitle,
   type,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { openContextMenu } = useContextMenu();
+
+  const imgSrc = useMemo(() => {
+    if (type === "artist") {
+      return imageUrl || artistPlaceholder;
+    }
+    return imageUrl || musicPlaceholder;
+  }, [type, imageUrl]);
+
+  const imgAlt = useMemo(() => {
+    return `${title} ${type === "artist" ? "Image" : "Cover"}`;
+  }, [title, type]);
+
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!entity) return;
+      openContextMenu(e.clientX, e.clientY, entity, type);
+    },
+    [entity, type, openContextMenu],
+  );
 
   return (
     <div
       className={styles.entityItemCard}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onContextMenu={handleContextMenu}
     >
       <div className={styles.entityImageContainer}>
-        <img
-          src={
-            imageUrl ||
-            (type === "artist" ? artistPlaceholder : musicPlaceholder)
-          }
-          alt={`${title} ${type === "artist" ? "Image" : "Cover"}`}
-          className={styles.entityImage}
-          loading="lazy"
+        <LazyImg
+          src={imgSrc}
+          alt={imgAlt}
+          imgClassNames={[styles.entityImage]}
+          blurHash={blurHash}
         />
         <EntityActionButtons
           type={type}
@@ -141,7 +200,20 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
         />
       </div>
       <div className={styles.entityInfo}>
-        <span className={styles.entityAuthor}>{author}</span>
+        {author &&
+          (authorLinkTo ? (
+            <Link
+              to={authorLinkTo}
+              className={classNames(
+                styles.entityAuthor,
+                styles.entityAuthorLink,
+              )}
+            >
+              {author}
+            </Link>
+          ) : (
+            <span className={styles.entityAuthor}>{author}</span>
+          ))}
         <Link to={linkTo} className={styles.entityTitle}>
           {title}
         </Link>

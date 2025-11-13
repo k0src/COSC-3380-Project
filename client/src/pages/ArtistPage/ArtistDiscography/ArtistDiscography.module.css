@@ -4,6 +4,27 @@
   gap: var(--layout-gap-ver);
 }
 
+.headerContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.backLink {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--color-text-gray) !important;
+  font-size: var(--font-size-sm);
+  text-decoration: underline;
+  transition: color var(--transition-speed) ease-in-out;
+  width: fit-content;
+}
+
+.backLink:hover {
+  color: var(--color-white) !important;
+}
+
 .discoHeader {
   position: relative;
   display: flex;

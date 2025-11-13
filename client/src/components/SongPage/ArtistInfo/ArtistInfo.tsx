@@ -11,10 +11,10 @@ import type { SongArtist } from "@types";
 import { useAuth } from "@contexts";
 import { useFollowStatus } from "@hooks";
 import styles from "./ArtistInfo.module.css";
-import { HorizontalRule } from "@components";
+import { HorizontalRule, LazyImg } from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
-import userPlaceholder from "@assets/user-placeholder.png";
+import userPlaceholder from "@assets/user-placeholder.webp";
 import {
   LuUserRoundCheck,
   LuUserRoundPlus,
@@ -97,10 +97,11 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
     <div className={styles.artistInfoLayout}>
       <div className={styles.artistInfoContainer}>
         <div className={styles.artistInfoLeft}>
-          <img
+          <LazyImg
             src={artistImageUrl}
+            blurHash={mainArtist.user?.pfp_blurhash}
             alt={`${artistDisplayName} Image`}
-            className={styles.artistImage}
+            imgClassNames={[styles.artistImage]}
           />
           <button
             className={classNames(styles.artistFollowButton, {

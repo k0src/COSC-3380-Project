@@ -97,7 +97,6 @@ export default function SearchResultsPage() {
                       plays={artist.plays ?? 0}
                       likes={artist.likes ?? 0}
                       comments={artist.comments ?? 0}
-                      showStats={false}
                     />
                   ))}
                 </div>
@@ -118,7 +117,6 @@ export default function SearchResultsPage() {
                       plays={album.plays ?? 0}
                       likes={album.likes ?? 0}
                       comments={album.comments ?? 0}
-                      showStats={false}
                     />
                   ))}
                 </div>
@@ -139,7 +137,6 @@ export default function SearchResultsPage() {
                       plays={pl.plays ?? 0}
                       likes={pl.likes ?? 0}
                       comments={pl.comments ?? 0}
-                      showStats={false}
                     />
                   ))}
                 </div>

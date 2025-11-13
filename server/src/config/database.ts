@@ -9,6 +9,13 @@ if (loaded.error) {
   dotenv.config({ path: fallbackPath });
 }
 
+function clean(value?: string): string | undefined {
+  if (value == null) return value;
+  const trimmed = value.trim();
+  const m = trimmed.match(/^(['"])(.*)\1$/);
+  return m ? m[2] : trimmed;
+}
+
 const {
   PGHOST,
   PGPORT,
@@ -21,12 +28,12 @@ const {
 } = process.env;
 
 // Provide development fallbacks to avoid hard-crashing local server
-const isProduction = NODE_ENV === "production";
-const host = PGHOST || (isProduction ? undefined : "localhost");
-const port = PGPORT ? parseInt(PGPORT, 10) : 5432;
-const user = PGUSER || (isProduction ? undefined : "postgres");
-const password = PGPASSWORD || (isProduction ? undefined : "postgres");
-const database = PGDATABASE || (isProduction ? undefined : "postgres");
+const isProduction = clean(NODE_ENV) === "production";
+const host = clean(PGHOST) || (isProduction ? undefined : "localhost");
+const port = clean(PGPORT) ? parseInt(clean(PGPORT) as string, 10) : 5432;
+const user = clean(PGUSER) || (isProduction ? undefined : "postgres");
+const password = clean(PGPASSWORD) || (isProduction ? undefined : "postgres");
+const database = clean(PGDATABASE) || (isProduction ? undefined : "postgres");
 
 if (isProduction && (!host || !user || !password || !database)) {
   throw new Error("Missing required Postgres environment variables.");
@@ -34,7 +41,7 @@ if (isProduction && (!host || !user || !password || !database)) {
 
 // SSL handling: disable locally by default unless explicitly requested
 const sslSetting =
-  isProduction || (PGSSLMODE && PGSSLMODE.toLowerCase() !== "disable")
+  isProduction || (clean(PGSSLMODE) && clean(PGSSLMODE)!.toLowerCase() !== "disable")
     ? { rejectUnauthorized: false }
     : false;
 
@@ -44,7 +51,7 @@ const pool = new Pool({
   user,
   password,
   database,
-  max: PGPOOLSIZE ? parseInt(PGPOOLSIZE, 10) : undefined,
+  max: clean(PGPOOLSIZE) ? parseInt(clean(PGPOOLSIZE) as string, 10) : undefined,
   ssl: sslSetting as any,
 });
 

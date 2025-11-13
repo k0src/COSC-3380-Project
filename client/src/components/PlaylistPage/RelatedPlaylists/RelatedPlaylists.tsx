@@ -2,10 +2,11 @@ import { memo, useMemo } from "react";
 import { PuffLoader } from "react-spinners";
 import type { UUID } from "@types";
 import { useAsyncData } from "@hooks";
+import type { Playlist } from "@types";
 import { playlistApi, userApi } from "@api";
 import { EntityItem } from "@components";
 import styles from "./RelatedPlaylists.module.css";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 import { pluralize } from "@util";
 
 export type RelatedPlaylistsProps =
@@ -64,6 +65,27 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
     [playlists, playlistId]
   );
 
+  const playlistAuthor = useMemo(() => {
+    if (mode === "related") {
+      return (playlist: Playlist) => playlist.user?.username || "Unknown";
+    } else {
+      return (playlist: Playlist) =>
+        `${playlist.song_count ?? 0} ${pluralize(
+          playlist.song_count ?? 0,
+          "song"
+        )}`;
+    }
+  }, [mode]);
+
+  const playlistAuthorLink = useMemo(() => {
+    if (mode === "related") {
+      return (playlist: Playlist) =>
+        playlist.user ? `/users/${playlist.user.id}` : undefined;
+    } else {
+      return undefined;
+    }
+  }, [mode]);
+
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
@@ -91,18 +113,13 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
         {filteredPlaylists.map((playlist) => (
           <EntityItem
             key={playlist.id}
-            type="list"
-            author={
-              mode === "related"
-                ? playlist.user?.username || "Unknown"
-                : `${playlist.song_count ?? 0} ${pluralize(
-                    playlist.song_count ?? 0,
-                    "song"
-                  )}`
-            }
+            type="playlist"
+            author={playlistAuthor(playlist)}
+            authorLinkTo={playlistAuthorLink?.(playlist)}
             linkTo={`/playlists/${playlist.id}`}
             title={playlist.title}
             imageUrl={playlist.image_url || musicPlaceholder}
+            //! blurHash={playlist.image_url_blurhash}
             entity={playlist}
           />
         ))}

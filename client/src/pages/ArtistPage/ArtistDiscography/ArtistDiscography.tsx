@@ -1,5 +1,5 @@
 import { memo, useState, useCallback, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { artistApi } from "@api";
 import type { UUID } from "@types";
@@ -9,6 +9,7 @@ import {
   PageLoader,
   CoverLightbox,
   EntityItemCard,
+  LazyImg,
 } from "@components";
 import {
   formatDateString,
@@ -17,9 +18,9 @@ import {
   pluralize,
 } from "@util";
 import styles from "./ArtistDiscography.module.css";
-import classNames from "classnames";
-import artistPlaceholder from "@assets/artist-placeholder.png";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import artistPlaceholder from "@assets/artist-placeholder.webp";
+import musicPlaceholder from "@assets/music-placeholder.webp";
+import { LuArrowLeft } from "react-icons/lu";
 
 const StatItem = memo(({ value, label }: { value: number; label: string }) => (
   <div className={styles.statItem}>
@@ -32,24 +33,19 @@ const ArtistDiscography: React.FC = () => {
 
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-  if (!id) {
-    return (
-      <ErrorPage
-        title="Artist Not Found"
-        message="The requested artist does not exist."
-      />
-    );
-  }
-
   //! ADD LIMITS AND PAGINATION
   const { data, loading, error } = useAsyncData(
     {
-      artist: () => artistApi.getArtistById(id, { includeUser: true }),
-      albums: () => artistApi.getAlbums(id),
-      singles: () => artistApi.getSongs(id, { onlySingles: true }),
-      numberOfSongs: () => artistApi.getNumberOfSongs(id),
-      numberOfAlbums: () => artistApi.getNumberOfAlbums(id),
-      numberOfSingles: () => artistApi.getNumberOfSingles(id),
+      artist: () => artistApi.getArtistById(id || "", { includeUser: true }),
+      albums: () => artistApi.getAlbums(id || ""),
+      singles: () =>
+        artistApi.getSongs(id || "", {
+          includeArtists: true,
+          onlySingles: true,
+        }),
+      numberOfSongs: () => artistApi.getNumberOfSongs(id || ""),
+      numberOfAlbums: () => artistApi.getNumberOfAlbums(id || ""),
+      numberOfSingles: () => artistApi.getNumberOfSingles(id || ""),
     },
     [id],
     {
@@ -72,8 +68,44 @@ const ArtistDiscography: React.FC = () => {
 
   const noDiscography = useMemo(
     () => numberOfAlbums === 0 && numberOfSingles === 0,
-    [numberOfAlbums, numberOfSingles]
+    [numberOfAlbums, numberOfSingles, numberOfSongs]
   );
+
+  const albumAuthor = useMemo(
+    () => artist?.display_name || "",
+    [artist?.display_name]
+  );
+
+  const albumAuthorLink = useMemo(
+    () => (artist ? `/artists/${artist.id}` : undefined),
+    [artist]
+  );
+
+  const singleAuthor = useCallback(
+    (single: (typeof singles)[0]) =>
+      getMainArtist(single.artists || [])?.display_name || "Unknown Artist",
+    []
+  );
+
+  const singleAuthorLink = useCallback((single: (typeof singles)[0]) => {
+    const mainArtist = getMainArtist(single.artists || []);
+    return mainArtist ? `/artists/${mainArtist.id}` : undefined;
+  }, []);
+
+  const handleLightboxClose = useCallback(() => setIsLightboxOpen(false), []);
+
+  const handleImageClick = useCallback(() => {
+    setIsLightboxOpen(true);
+  }, []);
+
+  if (!id) {
+    return (
+      <ErrorPage
+        title="Artist Not Found"
+        message="The requested artist does not exist."
+      />
+    );
+  }
 
   if (error) {
     return (
@@ -83,12 +115,6 @@ const ArtistDiscography: React.FC = () => {
       />
     );
   }
-
-  const handleLightboxClose = useCallback(() => setIsLightboxOpen(false), []);
-
-  const handleImageClick = useCallback(() => {
-    setIsLightboxOpen(true);
-  }, []);
 
   return (
     <>
@@ -110,49 +136,55 @@ const ArtistDiscography: React.FC = () => {
       ) : (
         <>
           <div className={styles.artistDiscographyLayout}>
-            <header className={styles.discoHeader}>
-              <img
-                src={artistImageUrl || artistPlaceholder}
-                alt={`${artist.display_name} Image`}
-                loading="lazy"
-                className={classNames(styles.artistImage, {
-                  [styles.artistImageClickable]: !!artistImageUrl,
-                })}
-                onClick={handleImageClick}
-              />
-              <div className={styles.artistInfo}>
-                <h1 className={styles.discoTitle}>
-                  {artist.display_name}'s Discography
-                </h1>
+            <div className={styles.headerContainer}>
+              <Link to={`/artists/${id}`} className={styles.backLink}>
+                <LuArrowLeft /> Back to artist page
+              </Link>
+              <header className={styles.discoHeader}>
+                <LazyImg
+                  src={artistImageUrl || artistPlaceholder}
+                  alt={`${artist.display_name} Image`}
+                  imgClassNames={[
+                    styles.artistImage,
+                    artistImageUrl ? styles.artistImageClickable : "",
+                  ]}
+                  loading="eager"
+                  onClick={handleImageClick}
+                />
+                <div className={styles.artistInfo}>
+                  <h1 className={styles.discoTitle}>
+                    {artist.display_name}'s Discography
+                  </h1>
 
-                <div className={styles.artistStats}>
-                  {numberOfSongs > 0 && (
-                    <StatItem
-                      value={numberOfSongs}
-                      label={pluralize(numberOfSongs, "Song")}
-                    />
-                  )}
-                  {numberOfAlbums > 0 && (
-                    <>
-                      <span className={styles.statsBullet}>&bull;</span>
+                  <div className={styles.artistStats}>
+                    {numberOfSongs > 0 && (
                       <StatItem
-                        value={numberOfAlbums}
-                        label={pluralize(numberOfAlbums, "Album")}
+                        value={numberOfSongs}
+                        label={pluralize(numberOfSongs, "Song")}
                       />
-                    </>
-                  )}
-                  {numberOfSingles > 0 && (
-                    <>
-                      <span className={styles.statsBullet}>&bull;</span>
-                      <StatItem
-                        value={numberOfSingles}
-                        label={pluralize(numberOfSingles, "Single")}
-                      />
-                    </>
-                  )}
+                    )}
+                    {numberOfAlbums > 0 && (
+                      <>
+                        <span className={styles.statsBullet}>&bull;</span>
+                        <StatItem
+                          value={numberOfAlbums}
+                          label={pluralize(numberOfAlbums, "Album")}
+                        />
+                      </>
+                    )}
+                    {numberOfSingles > 0 && (
+                      <>
+                        <span className={styles.statsBullet}>&bull;</span>
+                        <StatItem
+                          value={numberOfSingles}
+                          label={pluralize(numberOfSingles, "Single")}
+                        />
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </header>
+              </header>
+            </div>
 
             <div className={styles.discoSection}>
               {albums && albums.length > 0 && (
@@ -163,12 +195,14 @@ const ArtistDiscography: React.FC = () => {
                       <EntityItemCard
                         entity={album}
                         key={album.id}
-                        type="list"
+                        type="album"
                         linkTo={`/albums/${album.id}`}
-                        author={artist.display_name}
+                        author={albumAuthor}
+                        authorLinkTo={albumAuthorLink}
                         title={album.title}
                         subtitle={formatDateString(album.release_date)}
                         imageUrl={album.image_url || musicPlaceholder}
+                        blurHash={album.image_url_blurhash}
                       />
                     ))}
                   </div>
@@ -184,13 +218,12 @@ const ArtistDiscography: React.FC = () => {
                         key={single.id}
                         type="song"
                         linkTo={`/songs/${single.id}`}
-                        author={
-                          getMainArtist(single.artists || [])?.display_name ||
-                          artist.display_name
-                        }
+                        author={singleAuthor(single)}
+                        authorLinkTo={singleAuthorLink(single)}
                         title={single.title}
                         subtitle={formatDateString(single.release_date)}
                         imageUrl={single.image_url || musicPlaceholder}
+                        blurHash={single.image_url_blurhash}
                       />
                     ))}
                   </div>

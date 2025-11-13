@@ -1,12 +1,12 @@
 import React from "react";
 import styles from "./LandingPage.module.css";
 import { LuSearch } from "react-icons/lu";
-import SongCard from "../../components/SongCard/SongCard";
+import { SongCard } from "@components";
 import { useAsyncData } from "@hooks";
 import { songApi } from "@api";
 import type { Song } from "@types";
 import { Link } from "react-router-dom";
-import musicPlaceholder from "@assets/music-placeholder.png";
+import musicPlaceholder from "@assets/music-placeholder.webp";
 import { getMainArtist } from "@util";
 
 const LandingPage: React.FC = () => {

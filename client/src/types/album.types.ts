@@ -6,6 +6,7 @@ export interface Album {
   release_date: string;
   created_by: UUID;
   image_url?: string;
+  image_url_blurhash?: string;
   audio_url: string;
   created_at: string;
   genre: string;

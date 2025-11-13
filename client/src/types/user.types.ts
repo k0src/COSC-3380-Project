@@ -1,4 +1,4 @@
-import type { UUID, UserRole } from "./index.js";
+import type { UUID, UserRole, UserStatus } from "./index.js";
 
 export interface User {
   id: UUID;
@@ -8,7 +8,10 @@ export interface User {
   authenticated_with: string;
   role: UserRole;
   profile_picture_url?: string;
+  pfp_blurhash?: string;
   artist_id?: UUID;
+  status: UserStatus;
+  updated_at: string;
   created_at: string;
 
   following_count?: number;

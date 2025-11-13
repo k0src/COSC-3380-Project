@@ -33,38 +33,3 @@
 .searchInput::placeholder {
   color: var(--color-text-gray);
 }
-.searchContainer {
-  height: var(--header-height);
-  background-color: var(--color-panel-gray);
-  border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-panel-border);
-  flex: 1;
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.searchIcon {
-  position: absolute;
-  left: var(--spacing-md);
-  font-size: var(--icon-size-sm);
-  color: var(--color-text-gray);
-  pointer-events: none;
-}
-
-.searchInput {
-  font-family: "Inter", sans-serif;
-  width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm)
-    calc(var(--spacing-md) * 3);
-  background-color: transparent;
-  border: none;
-  border-radius: var(--border-radius-lg);
-  color: var(--color-white);
-  font-size: var(--font-size-sm);
-  outline: none;
-}
-
-.searchInput::placeholder {
-  color: var(--color-text-gray);
-}

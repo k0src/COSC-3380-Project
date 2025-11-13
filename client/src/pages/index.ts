@@ -1,5 +1,3 @@
-export { default as TestPage } from "./TestPage/TestPage.js";
-
 export { default as HomePage } from "./HomePage/HomePage.js";
 export { default as LandingPage } from "./LandingPage/LandingPage.js";
 
@@ -9,6 +7,10 @@ export { default as ArtistDiscography } from "./ArtistPage/ArtistDiscography/Art
 export { default as PlaylistPage } from "./PlaylistPage/PlaylistPage.js";
 export { default as AlbumPage } from "./AlbumPage/AlbumPage.js";
 
+export { default as LibraryPage } from "./LibraryPage/LibraryPage.js";
+export { default as HistoryPage } from "./LibraryPage/HistoryPage/HistoryPage.js";
+
 export { default as LoginPage } from "./LoginPage/LoginPage.js";
 export { default as SignupPage } from "./SignupPage/SignupPage.js";
 export { default as SearchResultsPage } from "./SearchResultsPage/SearchResultsPage.js";
+export { default as UserInfoPage } from "./UserPage/UserInfoPage/UserInfoPage.js";

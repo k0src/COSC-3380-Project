@@ -1,8 +1,9 @@
 .descriptionContainer {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: var(--spacing-sm);
-  height: auto;
+  height: 100%;
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
   border: 2px solid var(--color-panel-border);
@@ -27,6 +28,13 @@
   line-clamp: 6;
   min-width: 0;
   line-height: 1.2;
+}
+
+.descriptionBottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  min-width: 0;
 }
 
 .updatedText {

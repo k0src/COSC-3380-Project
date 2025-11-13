@@ -136,7 +136,6 @@ export default class CommentService {
     songId: UUID,
     options?: {
       includeLikes?: boolean;
-      currentUserId?: UUID;
       limit?: number;
       offset?: number;
     }
@@ -150,27 +149,14 @@ export default class CommentService {
           CASE WHEN $2 THEN (
             SELECT COUNT(*) 
             FROM comment_likes cl WHERE cl.comment_id = c.id
-          ) ELSE NULL END AS likes,
-          CASE WHEN $2 AND $3::UUID IS NOT NULL THEN (  
-            SELECT EXISTS (
-              SELECT 1
-              FROM comment_likes cl2
-              WHERE cl2.comment_id = c.id AND cl2.user_id = $3::UUID
-            )
-          ) ELSE NULL END AS user_liked
+          ) ELSE NULL END AS likes
         FROM comments c 
         JOIN users u ON c.user_id = u.id
         WHERE c.song_id = $1
         ORDER BY c.commented_at DESC
-        LIMIT $4 OFFSET $5`;
+        LIMIT $3 OFFSET $4`;
 
-      const params = [
-        songId,
-        options?.includeLikes ?? false,
-        options?.currentUserId ?? null,
-        limit,
-        offset,
-      ];
+      const params = [songId, options?.includeLikes ?? false, limit, offset];
 
       const comments = await query(sql, params);
       if (comments.length === 0) return [];
