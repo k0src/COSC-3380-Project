@@ -72,6 +72,10 @@ export { default as LibraryPlaylists } from "./LibraryPage/LibraryPlaylists/Libr
 export { default as LibrarySongs } from "./LibraryPage/LibrarySongs/LibrarySongs.js";
 export { default as LibraryAlbums } from "./LibraryPage/LibraryAlbums/LibraryAlbums.js";
 export { default as LibraryArtists } from "./LibraryPage/LibraryArtists/LibraryArtists.js";
+export { default as HistoryPlaylists } from "./LibraryPage/HistoryPlaylists/HistoryPlaylists.js";
+export { default as HistorySongs } from "./LibraryPage/HistorySongs/HistorySongs.js";
+export { default as HistoryAlbums } from "./LibraryPage/HistoryAlbums/HistoryAlbums.js";
+export { default as HistoryArtists } from "./LibraryPage/HistoryArtists/HistoryArtists.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

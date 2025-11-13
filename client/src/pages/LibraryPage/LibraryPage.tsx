@@ -23,6 +23,7 @@ import {
   LuHistory,
   LuListMusic,
   LuMicVocal,
+  LuLock,
   LuPlus,
   LuSearch,
   LuX,
@@ -129,6 +130,10 @@ const LibraryPage: React.FC = () => {
     console.log("Edit Playlist", playlist);
   }, []);
 
+  const handleTogglePrivacy = useCallback((playlist: LibraryPlaylist) => {
+    console.log("Toggle Privacy", playlist);
+  }, []);
+
   const handleDeletePlaylist = useCallback((playlist: LibraryPlaylist) => {
     console.log("Delete Playlist", playlist);
   }, []);
@@ -155,6 +160,16 @@ const LibraryPage: React.FC = () => {
           icon: LuPin,
           onClick: () => handlePinPlaylist(playlist),
           show: entityType === "playlist",
+        },
+        {
+          id: "toggle-playlist-privacy",
+          label:
+            playlist.visibility_status === "PUBLIC"
+              ? "Make Private"
+              : "Make Public",
+          icon: LuLock,
+          onClick: () => handleTogglePrivacy(playlist),
+          show: entityType === "playlist" && isOwner,
         },
         {
           id: "edit-playlist",

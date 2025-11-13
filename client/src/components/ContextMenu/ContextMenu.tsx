@@ -5,13 +5,11 @@ import { useAudioQueue, useAuth } from "@contexts";
 import { useLikeStatus, useFollowStatus } from "@hooks";
 import type { Song, Playlist, Album, Artist } from "@types";
 import styles from "./ContextMenu.module.css";
-import classNames from "classnames";
 import {
   LuPlay,
   LuListStart,
   LuListEnd,
   LuListPlus,
-  LuLock,
   LuThumbsUp,
   LuUserRoundPlus,
   LuShare,
@@ -55,9 +53,9 @@ const ContextMenu: React.FC = () => {
     isAuthenticated: isAuthenticated && !!artistUserId,
   });
 
-  const { menuPosition, positionClass } = useMemo(() => {
+  const { menuPosition } = useMemo(() => {
     if (!isOpen) {
-      return { menuPosition: { top: 0, left: 0 }, positionClass: "" };
+      return { menuPosition: { top: 0, left: 0 } };
     }
 
     const menuWidth = 256;
@@ -75,9 +73,10 @@ const ContextMenu: React.FC = () => {
     let corner = "";
 
     if (spaceRight >= menuWidth) {
+      left = x;
       corner = "left";
     } else if (spaceLeft >= menuWidth) {
-      left = x - menuWidth;
+      left = x - menuWidth / 1.65;
       corner = "right";
     } else {
       left = Math.max(0, x - menuWidth / 2);
@@ -85,16 +84,17 @@ const ContextMenu: React.FC = () => {
     }
 
     if (spaceBottom >= computedMenuHeight) {
+      top = y;
       corner = `top-${corner}`;
     } else if (spaceTop >= computedMenuHeight) {
       top = y - computedMenuHeight;
       corner = `bottom-${corner}`;
     } else {
-      top = Math.max(0, y - computedMenuHeight / 2);
+      top = Math.max(0, windowHeight - computedMenuHeight);
       corner = `middle-${corner}`;
     }
 
-    return { menuPosition: { top, left }, positionClass: corner };
+    return { menuPosition: { top, left } };
   }, [isOpen, x, y, menuHeight]);
 
   useEffect(() => {
@@ -212,17 +212,6 @@ const ContextMenu: React.FC = () => {
     }
   }, [isAuthenticated, navigate, toggleFollow, closeContextMenu]);
 
-  const handleTogglePrivacy = useCallback(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      closeContextMenu();
-      return;
-    }
-
-    console.log("Toggle Privacy", entity);
-    closeContextMenu();
-  }, [entity, closeContextMenu]);
-
   const handleShare = useCallback(() => {
     if (!entity) return;
 
@@ -328,20 +317,6 @@ const ContextMenu: React.FC = () => {
       }
     }
 
-    if (entityType === "playlist") {
-      const playlist = entity as Playlist;
-      const isOwner = user?.id === playlist.created_by;
-      if (isOwner) {
-        list.push("divider");
-        list.push({
-          id: "toggle-privacy",
-          label: "Make Private",
-          icon: LuLock,
-          onClick: handleTogglePrivacy,
-        });
-      }
-    }
-
     if (
       entityType === "song" ||
       entityType === "album" ||
@@ -402,7 +377,6 @@ const ContextMenu: React.FC = () => {
     handleAddToPlaylist,
     handleToggleLike,
     handleToggleFollow,
-    handleTogglePrivacy,
     handleShare,
     closeContextMenu,
   ]);
@@ -412,7 +386,7 @@ const ContextMenu: React.FC = () => {
   return (
     <div
       ref={menuRef}
-      className={classNames(styles.contextMenu, styles[positionClass])}
+      className={styles.contextMenu}
       style={{
         top: `${menuPosition.top}px`,
         left: `${menuPosition.left}px`,

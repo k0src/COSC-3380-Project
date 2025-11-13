@@ -83,6 +83,14 @@ export default function AppRoutes() {
                 </MainLayout>
               }
             />
+            <Route
+              path="/library/history/:tab?"
+              element={
+                <MainLayout>
+                  <Pages.HistoryPage />
+                </MainLayout>
+              }
+            />
           </Route>
 
           {/* <Route

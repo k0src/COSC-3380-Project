@@ -118,7 +118,7 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
         )}
       </div>
     );
-  }
+  },
 );
 
 type EntityItemCardProps =
@@ -176,7 +176,7 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
       if (!entity) return;
       openContextMenu(e.clientX, e.clientY, entity, type);
     },
-    [entity, type, openContextMenu]
+    [entity, type, openContextMenu],
   );
 
   return (
@@ -206,7 +206,7 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
               to={authorLinkTo}
               className={classNames(
                 styles.entityAuthor,
-                styles.entityAuthorLink
+                styles.entityAuthorLink,
               )}
             >
               {author}
