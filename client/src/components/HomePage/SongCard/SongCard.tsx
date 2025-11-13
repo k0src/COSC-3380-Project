@@ -16,14 +16,12 @@ const SongCard: React.FC<SongCardProps> = ({
   artist,
   plays,
   likes,
+  comments,
 }) => {
   return (
     <div className={styles.songCard}>
       <div className={styles.imageContainer}>
         <img src={image} alt={title} className={styles.songImage} />
-        {/* <div className={styles.overlay}>
-          <button className={styles.playButton}></button>
-        </div> */}
       </div>
 
       <div className={styles.songInfo}>
@@ -33,14 +31,14 @@ const SongCard: React.FC<SongCardProps> = ({
 
       <div className={styles.songStats}>
         <div className={styles.statItem}>
-          <span>{plays} Plays</span>
+          <span>{plays}</span>
         </div>
         <div className={styles.statItem}>
-          <span>{likes} Likes</span>
+          <span>{likes}</span>
         </div>
-        {/* <div className={styles.statItem}>
+        <div className={styles.statItem}>
           <span>{comments}</span>
-        </div> */}
+        </div>
       </div>
     </div>
   );

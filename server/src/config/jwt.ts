@@ -1,12 +1,23 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 import crypto from "crypto";
 
+const NODE_ENV = process.env.NODE_ENV || "development";
+const isProduction = NODE_ENV === "production";
+
 if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is required");
+  if (isProduction) {
+    throw new Error("JWT_SECRET environment variable is required");
+  } else {
+    process.env.JWT_SECRET = "dev-secret";
+  }
 }
 
 if (!process.env.JWT_REFRESH_SECRET) {
-  throw new Error("JWT_REFRESH_SECRET environment variable is required");
+  if (isProduction) {
+    throw new Error("JWT_REFRESH_SECRET environment variable is required");
+  } else {
+    process.env.JWT_REFRESH_SECRET = "dev-refresh-secret";
+  }
 }
 
 const JWT_SECRET = process.env.JWT_SECRET;

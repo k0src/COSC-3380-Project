@@ -137,7 +137,6 @@ const HomePage: React.FC = () => {
             <h2 className={styles.sectionTitle}>Featured Playlist</h2>
             {loading && (
               <div className="featuredSection">
-                {/* You can put a loading skeleton here */}
                 <p>Loading...</p>
               </div>
             )}
@@ -146,7 +145,6 @@ const HomePage: React.FC = () => {
                 <p>Error loading playlist.</p>
               </div>
             )}
-            {/* On success, render the card */}
             {!loading && !error && playlist && (
               <FeaturedSection playlist={playlist} />
             )}

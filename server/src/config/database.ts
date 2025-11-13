@@ -1,7 +1,20 @@
 import { Pool, PoolClient } from "pg";
 import dotenv from "dotenv";
+import path from "path";
 
-dotenv.config();
+// Load env from server/.env, then fallback to project root .env if needed
+const loaded = dotenv.config();
+if (loaded.error) {
+  const fallbackPath = path.resolve(process.cwd(), "../.env");
+  dotenv.config({ path: fallbackPath });
+}
+
+function clean(value?: string): string | undefined {
+  if (value == null) return value;
+  const trimmed = value.trim();
+  const m = trimmed.match(/^(['"])(.*)\1$/);
+  return m ? m[2] : trimmed;
+}
 
 const {
   PGHOST,
@@ -11,23 +24,35 @@ const {
   PGDATABASE,
   PGPOOLSIZE,
   PGSSLMODE,
+  NODE_ENV,
 } = process.env;
 
-if (!PGHOST || !PGUSER || !PGPASSWORD || !PGDATABASE) {
+// Provide development fallbacks to avoid hard-crashing local server
+const isProduction = clean(NODE_ENV) === "production";
+const host = clean(PGHOST) || (isProduction ? undefined : "localhost");
+const port = clean(PGPORT) ? parseInt(clean(PGPORT) as string, 10) : 5432;
+const user = clean(PGUSER) || (isProduction ? undefined : "postgres");
+const password = clean(PGPASSWORD) || (isProduction ? undefined : "postgres");
+const database = clean(PGDATABASE) || (isProduction ? undefined : "postgres");
+
+if (isProduction && (!host || !user || !password || !database)) {
   throw new Error("Missing required Postgres environment variables.");
 }
 
-// ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : { rejectUnauthorized: false }, not working idek fix later
+// SSL handling: disable locally by default unless explicitly requested
+const sslSetting =
+  isProduction || (clean(PGSSLMODE) && clean(PGSSLMODE)!.toLowerCase() !== "disable")
+    ? { rejectUnauthorized: false }
+    : false;
+
 const pool = new Pool({
-  host: PGHOST,
-  port: PGPORT ? parseInt(PGPORT, 10) : 5432,
-  user: PGUSER,
-  password: PGPASSWORD,
-  database: PGDATABASE,
-  max: PGPOOLSIZE ? parseInt(PGPOOLSIZE, 10) : undefined,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  host,
+  port,
+  user,
+  password,
+  database,
+  max: clean(PGPOOLSIZE) ? parseInt(clean(PGPOOLSIZE) as string, 10) : undefined,
+  ssl: sslSetting as any,
 });
 
 export async function query<T = any>(

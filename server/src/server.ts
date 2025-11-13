@@ -75,6 +75,7 @@ app.use("/api/songs", Routes.songRoutes);
 app.use("/api/albums", Routes.albumRoutes);
 app.use("/api/artists", Routes.artistRoutes);
 app.use("/api/playlists", Routes.playlistRoutes);
+app.use("/api/search", Routes.searchRoutes);
 app.use("/api/users", Routes.userRoutes);
 app.use("/api/proxy", Routes.proxyRoutes);
 app.use("/api/search", Routes.searchRoutes);
@@ -89,7 +90,17 @@ app.use((req, res, next) => {
 
 async function startServer() {
   try {
-    await testConnection();
+    try {
+      await testConnection();
+    } catch (error) {
+      if (NODE_ENV === "production") {
+        throw error;
+      } else {
+        console.warn(
+          "Database connection failed, but continuing to start server in development."
+        );
+      }
+    }
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`⚡ Server running on port: ${PORT}`);
       console.log("Environment: ", NODE_ENV);
