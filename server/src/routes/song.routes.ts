@@ -275,15 +275,28 @@ router.get(
 // Protected: Requires authentication
 router.post(
   "/",
-  requireAuth,
-  // accept one audio file (field 'file') and an optional cover image (field 'cover')
+  (req: Request, res: Response, next: Function) => {
+    // Check authentication first
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        error: "Unauthorized",
+        message: "Access token is required",
+        statusCode: 401,
+      });
+    }
+    next();
+  },
+  // Then parse multipart files
   upload.fields([
     { name: "file", maxCount: 1 },
     { name: "cover", maxCount: 1 },
   ]),
+  // Then handle the full auth middleware to set req.userId
+  requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     try {
-      // Get user ID from auth middleware (authenticateToken sets req.userId)
+      // Get user ID from auth middleware
       const userId = (req as any).userId;
       
       const files = (req as any).files as { [field: string]: Express.Multer.File[] } | undefined;
