@@ -1,5 +1,3 @@
-export { default as TestPage } from "./TestPage/TestPage.js";
-
 export { default as HomePage } from "./HomePage/HomePage.js";
 export { default as LandingPage } from "./LandingPage/LandingPage.js";
 
