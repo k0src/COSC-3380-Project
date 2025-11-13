@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
 import type { UUID } from "@types";
-import { EntityItemCard, LibraryArtist } from "@components";
+import { EntityItemCard, ArtistItem } from "@components";
 import { libraryApi } from "@api";
 import { formatDateString, getMainArtist } from "@util";
 import { useAsyncData } from "@hooks";
@@ -188,14 +188,7 @@ const LibraryRecent: React.FC<{
                 <span className={styles.sectionTitle}>Recent Artists</span>
                 <div className={styles.itemsGrid}>
                   {filteredRecentlyPlayed.artists.map((artist) => (
-                    <LibraryArtist
-                      key={artist.id}
-                      artistId={artist.id}
-                      artistImageUrl={artist.user?.profile_picture_url}
-                      artistBlurHash={artist.user?.pfp_blurhash}
-                      artistName={artist.display_name}
-                      userId={artist.user_id}
-                    />
+                    <ArtistItem key={artist.id} artist={artist} size={18} />
                   ))}
                 </div>
               </div>

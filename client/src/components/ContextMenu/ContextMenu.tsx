@@ -76,7 +76,7 @@ const ContextMenu: React.FC = () => {
       left = x;
       corner = "left";
     } else if (spaceLeft >= menuWidth) {
-      left = x - menuWidth / 1.65;
+      left = x - menuWidth / 1.7;
       corner = "right";
     } else {
       left = Math.max(0, x - menuWidth / 2);

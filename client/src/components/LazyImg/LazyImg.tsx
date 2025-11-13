@@ -12,6 +12,7 @@ export interface LazyImgProps {
   loading?: "lazy" | "eager";
   onLoad?: () => void;
   onClick?: () => void;
+  size?: number;
 }
 
 const LazyImg: React.FC<LazyImgProps> = ({
@@ -22,6 +23,7 @@ const LazyImg: React.FC<LazyImgProps> = ({
   loading = "lazy",
   onLoad,
   onClick,
+  size,
 }) => {
   const [loaded, setLoaded] = useState(false);
   const [hideBlur, setHideBlur] = useState(false);
@@ -44,7 +46,10 @@ const LazyImg: React.FC<LazyImgProps> = ({
   }, [handleOnLoad]);
 
   return (
-    <div className={classNames(styles.container, ...imgClassNames)}>
+    <div
+      className={classNames(styles.container, ...imgClassNames)}
+      style={size ? { width: `${size}rem`, height: `${size}rem` } : undefined}
+    >
       {!hideBlur && (
         <div
           className={classNames(styles.placeholder, loaded && styles.hidden)}

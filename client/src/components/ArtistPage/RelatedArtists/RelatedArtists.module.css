@@ -40,45 +40,6 @@
   overflow-x: hidden;
 }
 
-.relatedArtistItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.relatedArtistImage {
-  width: 14rem;
-  height: 14rem;
-  border-radius: 50%;
-  object-fit: cover;
-  aspect-ratio: 1 / 1;
-  flex-shrink: 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-  cursor: pointer;
-  transition: opacity var(--transition-speed) ease;
-}
-
-.relatedArtistImage:hover {
-  opacity: 0.5;
-}
-
-.relatedArtistName {
-  font-size: var(--font-size-md);
-  color: var(--color-white);
-  font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: 100%;
-  cursor: pointer;
-  transition: color var(--transition-speed) ease-in-out;
-}
-
-.relatedArtistName:hover {
-  color: var(--color-red);
-}
-
 @media (max-width: 1700px) {
   .relatedArtistsList .relatedArtistItem:last-child {
     display: none;

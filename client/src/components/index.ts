@@ -67,7 +67,6 @@ export { default as UserInfoLiked } from "./UserPage/UserInfoPage/UserInfoLiked/
 
 /* ============================== Library Page ============================== */
 export { default as LibraryRecent } from "./LibraryPage/LibraryRecent/LibraryRecent.js";
-export { default as LibraryArtist } from "./LibraryPage/LibraryArtist/LibraryArtist.js";
 export { default as LibraryPlaylists } from "./LibraryPage/LibraryPlaylists/LibraryPlaylists.js";
 export { default as LibrarySongs } from "./LibraryPage/LibrarySongs/LibrarySongs.js";
 export { default as LibraryAlbums } from "./LibraryPage/LibraryAlbums/LibraryAlbums.js";
@@ -81,11 +80,12 @@ export { default as HistoryArtists } from "./LibraryPage/HistoryArtists/HistoryA
 export { default as SongsList } from "./SongsList/SongsList.js";
 export { default as FollowProfiles } from "./FollowProfiles/FollowProfiles.js";
 export { default as LikeProfiles } from "./LikeProfiles/LikeProfiles.js";
+export { default as SlidingCardList } from "./SlidingCardList/SlidingCardList.js";
 
 /* ================================== Cards ================================== */
 export { default as EntityItem } from "./EntityItem/EntityItem.js";
 export { default as EntityItemCard } from "./EntityItemCard/EntityItemCard.js";
-export { default as SlidingCardList } from "./SlidingCardList/SlidingCardList.js";
+export { default as ArtistItem } from "./ArtistItem/ArtistItem.js";
 
 /* ================================= Modals ================================= */
 export { default as ShareModal } from "./ShareModal/ShareModal.js";
