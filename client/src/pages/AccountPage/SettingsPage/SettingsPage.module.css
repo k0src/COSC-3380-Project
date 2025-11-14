@@ -1,0 +1,252 @@
+/* 
+.settingsLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+}
+
+.settingsTitle {
+  font-size: var(--font-size-2xl);
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.settingsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.settingsForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background-color: var(--color-panel-gray);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-panel-border);
+}
+
+.settingsFormUnsaved {
+  border-color: var(--color-red);
+}
+
+.artistSettingsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.notificationsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.saveButtonContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+}
+
+.saveButton {
+  font-family: "Inter", sans-serif;
+  align-self: flex-start;
+  background-color: var(--color-panel-gray-dark);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-white);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: color var(--transition-speed) ease;
+}
+
+.saveButton:hover:not(:disabled) {
+  color: var(--color-red);
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.unsavedText {
+  font-size: var(--font-size-xs);
+  color: var(--color-red);
+}
+
+.themeOptionsContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  justify-content: space-between;
+}
+
+.themeEditorButton {
+  font-family: "Inter", sans-serif;
+  background-color: var(--color-panel-gray-dark);
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-white);
+  padding: 1.2rem;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: var(--icon-size-sm);
+  transition: color var(--transition-speed) ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.themeEditorButton:hover {
+  color: var(--color-red);
+}
+
+.settingsFormDanger {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-red);
+}
+
+
+
+.dangerButton {
+  font-family: "Inter", sans-serif;
+  align-self: flex-start;
+  background: var(--color-red);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: var(--color-red-200);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.dangerButton:hover:not(:disabled) {
+  background-color: var(--color-red-800);
+  color: var(--color-red-300);
+}
+
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+} */
+
+.settingsLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+}
+
+.settingsTitle {
+  font-size: var(--font-size-2xl);
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.artistCtaLink {
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  color: var(--color-red) !important;
+  font-weight: 500;
+  text-decoration: underline transparent !important;
+  transition: text-decoration var(--transition-speed) ease-in-out;
+}
+
+.artistCtaLink:hover {
+  text-decoration: underline var(--color-red) !important;
+}
+
+.artistToggleGrid,
+.notificationsToggleGrid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.artistToggleGrid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.notificationsToggleGrid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.settingsButton {
+  font-family: "Inter", sans-serif;
+  align-self: flex-start;
+  background: var(--color-red);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: var(--color-red-200);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.settingsButton:hover:not(:disabled) {
+  background-color: var(--color-red-800);
+  color: var(--color-red-300);
+}
+
+.settingsButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dangerButtonContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.dangerButton {
+  font-family: "Inter", sans-serif;
+  align-self: flex-start;
+  background-color: transparent;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-red-ui-border);
+  color: var(--color-red-ui);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: border-color var(--transition-speed) ease-in-out,
+    background-color var(--transition-speed) ease-in-out;
+}
+
+.dangerButton:hover:not(:disabled) {
+  background-color: var(--color-red-ui-bg-hover);
+  border-color: var(--color-red-ui-border-hover);
+}
+
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dangerZoneHint {
+  font-size: var(--font-size-sm);
+  color: var(--color-red);
+  font-weight: 500;
+  display: flex;
+  line-height: 1.5;
+  flex-direction: column;
+}
