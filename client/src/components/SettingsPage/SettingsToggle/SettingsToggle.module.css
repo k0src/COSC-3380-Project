@@ -1,0 +1,130 @@
+.settingsToggleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: fit-content;
+}
+
+.settingsToggleLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-gray);
+}
+
+.toggleContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  border-radius: var(--border-radius-sm);
+  position: relative;
+}
+
+.toggle {
+  position: relative;
+  width: 4.8rem;
+  height: 2.8rem;
+  background-color: var(--color-panel-gray-dark);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 1.4rem;
+  cursor: pointer;
+  transition: background-color var(--transition-speed) ease;
+  padding: 0;
+}
+
+.toggle:focus {
+  outline: none;
+}
+
+.toggleOn {
+  background-color: var(--color-red);
+  border-color: var(--color-red);
+}
+
+.toggleDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggleSlider {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  width: 2rem;
+  height: 2rem;
+  background-color: var(--color-white);
+  border-radius: 50%;
+  transition: transform var(--transition-speed) ease;
+}
+
+.toggleSliderOn {
+  transform: translateX(2rem);
+}
+
+.toggleLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+  font-weight: 500;
+  min-width: 4rem;
+}
+
+.settingsToggleErrorText {
+  font-size: var(--font-size-xs);
+  color: var(--color-red);
+  font-weight: 500;
+}
+
+.hint {
+  position: absolute;
+  bottom: calc(100% + var(--spacing-xs));
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(246, 246, 246, 0.8);
+  color: var(--color-black);
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 1.3rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  animation: hintFadeIn var(--transition-speed) ease-out forwards;
+}
+
+.hintWrap {
+  white-space: normal;
+  text-align: center;
+}
+
+.hintVisible {
+  visibility: visible;
+}
+
+.hint::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(246, 246, 246, 0.75);
+}
+
+.hintWrap {
+  white-space: normal;
+  text-align: center;
+}
+
+@keyframes hintFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

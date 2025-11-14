@@ -23,7 +23,8 @@ html {
 /* Variables */
 :root {
   /* Colors */
-  --color-panel-gray: #181818;
+  --color-panel-gray: #161616;
+  --color-panel-gray-hover: #1a1a1a;
   --color-panel-gray-dark: #0e0e0e;
   --color-panel-border: #1c1c1c;
   --color-red-950: #430c0c;
@@ -41,6 +42,11 @@ html {
   --color-white-hover: #bdbdbd;
   --color-black: #080808;
   --color-black-hover: #111111;
+
+  --color-red-ui: #ff6b6b;
+  --color-red-ui-border: rgba(255, 107, 107, 0.4);
+  --color-red-ui-border-hover: rgba(255, 107, 107, 0.6);
+  --color-red-ui-bg-hover: rgba(255, 107, 107, 0.15);
 
   --color-gray-button: #242424;
   --color-gray-button-hover: #323232;

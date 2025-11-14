@@ -9,10 +9,6 @@ export { default as MainLayoutSidebar } from "./MainLayout/MainLayoutSidebar/Mai
 export { default as MainLayoutSearchBar } from "./MainLayout/MainLayoutSearchBar/MainLayoutSearchBar.js";
 export { default as MainLayoutNowPlayingBar } from "./MainLayout/MainLayoutNowPlayingBar/MainLayoutNowPlayingBar.js";
 
-/* ================================== Forms ================================= */
-export { default as InputGroup } from "./Forms/InputGroup/InputGroup.js";
-export { default as FormSubmitButton } from "./Forms/FormButton/FormSubmitButton.js";
-
 /* ================================= Routes ================================= */
 export { default as ProtectedRoute } from "./ProtectedRoute/ProtectedRoute.js";
 export { default as AppLayout } from "./AppLayout/AppLayout.js";
@@ -76,6 +72,16 @@ export { default as HistorySongs } from "./LibraryPage/HistorySongs/HistorySongs
 export { default as HistoryAlbums } from "./LibraryPage/HistoryAlbums/HistoryAlbums.js";
 export { default as HistoryArtists } from "./LibraryPage/HistoryArtists/HistoryArtists.js";
 
+/* ============================== Account Page ============================== */
+
+/* ============================== Settings Page ============================= */
+export { default as SettingsSection } from "./SettingsPage/SettingsSection/SettingsSection.js";
+export { default as SettingsInput } from "./SettingsPage/SettingsInput/SettingsInput.js";
+export { default as SettingsToggle } from "./SettingsPage/SettingsToggle/SettingsToggle.js";
+export { default as SettingsColorSchemeSelector } from "./SettingsPage/SettingsColorSchemeSelector/SettingsColorSchemeSelector.js";
+export { default as SettingsDropdown } from "./SettingsPage/SettingsDropdown/SettingsDropdown.js";
+export { default as SettingsRadio } from "./SettingsPage/SettingsRadio/SettingsRadio.js";
+
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";
 export { default as FollowProfiles } from "./FollowProfiles/FollowProfiles.js";
@@ -108,3 +114,7 @@ export { default as SoundVisualizer } from "./SoundVisualizer/SoundVisualizer.js
 
 /* ================================= Images ================================= */
 export { default as LazyImg } from "./LazyImg/LazyImg.js";
+
+/* ================================== Forms ================================= */
+export { default as InputGroup } from "./Forms/InputGroup/InputGroup.js";
+export { default as FormSubmitButton } from "./Forms/FormButton/FormSubmitButton.js";

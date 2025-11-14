@@ -10,6 +10,7 @@ import {
   LuUserPen,
   LuHistory,
   LuLogOut,
+  LuUpload,
 } from "react-icons/lu";
 
 const MainLayoutSidebar: React.FC = () => {
@@ -45,9 +46,14 @@ const MainLayoutSidebar: React.FC = () => {
             <LuHistory className={styles.sidebarIcon} />
           </Link>
           {user && user.role === "ARTIST" && (
-            <Link to="/artist/dashboard" className={styles.sidebarLink}>
-              <LuUserPen className={styles.sidebarIcon} />
-            </Link>
+            <>
+              <Link to="/artist/dashboard" className={styles.sidebarLink}>
+                <LuUserPen className={styles.sidebarIcon} />
+              </Link>
+              <Link to="/upload" className={styles.sidebarLink}>
+                <LuUpload className={styles.sidebarIcon} />
+              </Link>
+            </>
           )}
         </nav>
       </div>

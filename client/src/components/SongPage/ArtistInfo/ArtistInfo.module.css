@@ -109,14 +109,14 @@
   color: var(--color-black);
   padding: 0.6rem 1.2rem;
   border-radius: var(--border-radius-sm);
-  font-size: 13px;
+  font-size: 1.3rem;
   font-weight: 500;
   white-space: nowrap;
   pointer-events: none;
   z-index: 1000;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
   opacity: 0;
-  animation: tooltipFadeIn 0.15s ease-out forwards;
+  animation: tooltipFadeIn var(--transition-speed) ease-out forwards;
 }
 
 .tooltip::after {

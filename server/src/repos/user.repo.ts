@@ -31,18 +31,42 @@ export default class UserRepository {
     profile_picture_url?: string;
   }): Promise<User | null> {
     try {
-      const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || "12", 10);
-      const password_hash = await bcrypt.hash(password, saltRounds);
+      const result = withTransaction(async (client) => {
+        // Create user
+        const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || "12", 10);
+        const password_hash = await bcrypt.hash(password, saltRounds);
 
-      const result = await query(
-        `INSERT INTO users
-          (username, email, password_hash, authenticated_with, profile_picture_url)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING *`,
-        [username, email, password_hash, "CoogMusic", profile_picture_url]
-      );
+        const insertSql = `
+          INSERT INTO users (
+              username, email, password_hash, 
+              authenticated_with, profile_picture_url
+            )
+          VALUES ($1, $2, $3, $4, $5)
+          RETURNING *`;
 
-      return result[0] ?? null;
+        const insertParams = [
+          username,
+          email,
+          password_hash,
+          "CoogMusic",
+          profile_picture_url,
+        ];
+
+        const res = await client.query(insertSql, insertParams);
+
+        // Insert empty user_settings tuple
+        if (res && res.rows.length > 0) {
+          const user: User = res.rows[0];
+          await client.query(
+            `INSERT INTO user_settings (user_id) VALUES ($1)`,
+            [user.id]
+          );
+          return user;
+        }
+
+        return null;
+      });
+      return result;
     } catch (error) {
       console.error("Error creating user:", error);
       throw error;

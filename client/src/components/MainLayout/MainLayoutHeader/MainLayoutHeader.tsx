@@ -53,7 +53,7 @@ const MainLayoutHeader: React.FC = () => {
             >
               <LuBell className={styles.actionIcon} />
             </button>
-            <Link to="/settings" className={styles.iconButton}>
+            <Link to="/me/settings" className={styles.iconButton}>
               <LuSettings className={styles.actionIcon} />
             </Link>
             <Link to="/me" className={styles.iconButton} title={user?.username}>

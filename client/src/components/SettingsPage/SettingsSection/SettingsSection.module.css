@@ -1,0 +1,95 @@
+.settingsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.settingsContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.settingsTitleContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: fit-content;
+  padding-right: var(--spacing-xl);
+}
+
+.settingsTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  padding-top: var(--spacing-sm);
+  font-weight: 500;
+}
+
+.settingsTitleDanger {
+  color: var(--color-red);
+}
+
+.settingsDescription {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.settingsButtonContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+}
+
+.saveButton {
+  font-family: "Inter", sans-serif;
+  align-self: flex-start;
+  background-color: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-white);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: color var(--transition-speed) ease-in-out,
+    background-color var(--transition-speed) ease-in-out,
+    border-color var(--transition-speed) ease-in-out;
+  margin-left: auto;
+}
+
+.saveButton:hover:not(:disabled) {
+  color: var(--color-red);
+  background-color: var(--color-panel-gray-dark);
+  border-color: var(--color-panel-gray-dark);
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.unsavedText {
+  font-size: var(--font-size-xs);
+  color: var(--color-red);
+}
+
+.error {
+  font-weight: 500;
+  font-size: var(--font-size-xs);
+  color: var(--color-red);
+}
+
+.settingsDivider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-text-gray);
+  opacity: 0.25;
+  border-radius: 1px;
+}

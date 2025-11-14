@@ -1,0 +1,96 @@
+.settingsRadioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.settingsRadioLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-gray);
+}
+
+.radioOptions {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.vertical {
+  flex-direction: column;
+}
+
+.radioOption {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 1rem 1.4rem;
+  background-color: var(--color-panel-gray-dark);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  user-select: none;
+}
+
+.radioOption:hover {
+  border-color: var(--color-red);
+}
+
+.radioOptionChecked {
+  background-color: var(--color-panel-gray);
+  border-color: var(--color-red);
+}
+
+.radioInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.radioCustom {
+  position: relative;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 2px solid var(--color-panel-border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all var(--transition-speed) ease;
+  box-sizing: border-box;
+}
+
+.radioOptionChecked .radioCustom {
+  border-color: var(--color-red);
+  background-color: var(--color-red);
+}
+
+.radioOptionChecked .radioCustom::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.8rem;
+  height: 0.8rem;
+  background-color: var(--color-white);
+  border-radius: 50%;
+}
+
+.radioLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+  font-weight: 500;
+}
+
+.settingsRadioHint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+  font-style: italic;
+}

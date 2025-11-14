@@ -1,0 +1,59 @@
+.settingsDropdownGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.settingsDropdownLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-gray);
+}
+
+.settingsDropdownErrorText {
+  font-size: var(--font-size-xs);
+  color: var(--color-red);
+  font-weight: 500;
+}
+
+.settingsDropdownHint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+  font-style: italic;
+}
+
+.select {
+  font-family: "Inter", sans-serif;
+  padding: 1.4rem;
+  background-color: var(--color-panel-gray-dark);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  width: 100%;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.5rem;
+  padding-right: 3rem;
+}
+
+.select:focus {
+  outline: none;
+}
+
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.select option {
+  background-color: var(--color-panel-gray-dark);
+  color: var(--color-white);
+}
+
+.selectError {
+  border-color: var(--color-red);
+}
