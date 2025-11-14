@@ -63,7 +63,7 @@
 }
 
 .popup::-webkit-scrollbar-thumb {
-  background: var(--color-panel-border);
+  background: var(--color-panel-gray-hover);
   border-radius: var(--border-radius-sm);
 }
 

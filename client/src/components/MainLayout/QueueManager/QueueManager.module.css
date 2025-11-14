@@ -53,7 +53,7 @@
 
 .closeButton:hover {
   color: var(--color-white);
-  background: var(--color-panel-border);
+  background: var(--color-panel-gray-hover);
 }
 
 .clearButton {
@@ -124,7 +124,7 @@
 }
 
 .queueItem:hover {
-  background: var(--color-panel-border);
+  background: var(--color-panel-gray-hover);
 }
 
 .queueItem:last-child {

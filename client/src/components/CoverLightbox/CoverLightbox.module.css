@@ -40,7 +40,7 @@
 }
 
 .closeButton:hover {
-  background: var(--color-panel-border);
+  background: var(--color-panel-gray-hover);
 }
 
 .coverImage {

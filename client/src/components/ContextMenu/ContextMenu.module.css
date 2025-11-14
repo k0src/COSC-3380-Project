@@ -30,7 +30,7 @@
 }
 
 .menuItem:hover:not(:disabled) {
-  background: var(--color-panel-border);
+  background: var(--color-panel-gray-hover);
   color: var(--color-white);
 }
 
