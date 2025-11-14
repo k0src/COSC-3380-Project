@@ -1,5 +1,6 @@
 import { useMemo, useCallback, memo, useState } from "react";
 import { WaveformPlayer, CoverLightbox, LazyImg } from "@components";
+import { Link } from "react-router-dom";
 import type { Song, CoverGradient, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
 import { LuPlay, LuThumbsUp, LuMessageSquareText } from "react-icons/lu";
@@ -63,7 +64,16 @@ const SongContainer: React.FC<SongContainerProps> = ({
       />
       <div className={styles.songRight}>
         <div className={styles.songInfoContainer}>
-          <span className={styles.artistName}>{mainArtist?.display_name}</span>
+          {mainArtist ? (
+            <Link
+              to={`/artists/${mainArtist.id}`}
+              className={styles.artistNameLink}
+            >
+              {mainArtist.display_name}
+            </Link>
+          ) : (
+            <span className={styles.artistName}>Unknown Artist</span>
+          )}
           <span className={styles.songTitle}>{song.title}</span>
           <div className={styles.interactionsContainer}>
             <InteractionStat icon={LuPlay} value={song.streams ?? 0} />
