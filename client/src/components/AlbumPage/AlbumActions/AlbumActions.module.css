@@ -11,7 +11,7 @@
   justify-content: center;
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   color: var(--color-white);
   cursor: pointer;
   font-size: var(--icon-size-md);
@@ -20,11 +20,11 @@
 }
 
 .actionButton:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .actionButtonActive {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .queueButtonContainer {

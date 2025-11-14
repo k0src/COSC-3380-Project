@@ -27,7 +27,7 @@
 }
 
 .settingsTitleDanger {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .settingsDescription {
@@ -49,11 +49,11 @@
 }
 
 .saveButton {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   align-self: flex-start;
   background-color: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
-  border: 1px solid var(--color-panel-border);
+  border: var(--border-size-sm) solid var(--color-panel-border);
   color: var(--color-white);
   cursor: pointer;
   font-size: var(--font-size-sm);
@@ -65,7 +65,7 @@
 }
 
 .saveButton:hover:not(:disabled) {
-  color: var(--color-red);
+  color: var(--color-accent);
   background-color: var(--color-panel-gray-dark);
   border-color: var(--color-panel-gray-dark);
 }
@@ -77,13 +77,13 @@
 
 .unsavedText {
   font-size: var(--font-size-xs);
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .error {
   font-weight: 500;
   font-size: var(--font-size-xs);
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .settingsDivider {

@@ -6,7 +6,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: var(--spacing-lg) 0;
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   z-index: 100;
 }
 

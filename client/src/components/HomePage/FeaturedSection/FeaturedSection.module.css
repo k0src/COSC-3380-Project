@@ -4,7 +4,7 @@
   justify-content: space-between;
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-lg);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   padding: var(--spacing-xl);
   gap: var(--spacing-lg);
   height: 100%;
@@ -100,7 +100,7 @@
 
 .playButton:hover {
   transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sd);
 }
 
 @media (max-width: 768px) {

@@ -9,11 +9,11 @@
   justify-content: center;
   gap: var(--spacing-md);
   padding: var(--spacing-xs) var(--spacing-md);
-  background-color: var(--color-red);
+  background-color: var(--color-accent);
   color: var(--color-white);
   font-size: var(--font-size-xs);
   font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
 }
 
 .text {

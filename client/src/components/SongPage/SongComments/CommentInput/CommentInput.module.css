@@ -16,7 +16,7 @@
 .commentInputContainer {
   background-color: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   flex: 1;
   position: relative;
   display: flex;
@@ -25,11 +25,11 @@
 }
 
 .commentInputContainer.overLimit {
-  border-color: var(--color-red);
+  border-color: var(--color-accent);
 }
 
 .commentInput {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   width: 95%;
   padding: var(--spacing-md);
   background-color: transparent;
@@ -63,7 +63,7 @@
 }
 
 .charCounterOverLimit {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .commentButton {
@@ -74,31 +74,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-red);
+  background: var(--color-accent);
   border-radius: var(--border-radius-sm);
   border: none;
-  color: var(--color-red-200);
+  color: var(--color-accent-200);
   cursor: pointer;
   padding: var(--spacing-sm);
   transition: all var(--transition-speed) ease-in-out;
 }
 
 .commentButton:disabled {
-  background-color: var(--color-red-800);
-  color: var(--color-red-300);
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
   cursor: not-allowed;
 }
 
 .commentButton:not(:disabled):hover {
-  background-color: var(--color-red-800);
-  color: var(--color-red-300);
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
 }
 
 .measureSpan {
   position: absolute;
   visibility: hidden;
   white-space: pre;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   font-size: var(--font-size-sm);
   padding: var(--spacing-md);
 }

@@ -6,7 +6,7 @@
   height: var(--now-playing-height);
   background-color: var(--color-panel-gray);
   border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   display: flex;
   gap: var(--spacing-sm);
   align-items: center;
@@ -52,7 +52,7 @@
 }
 
 .songTitle:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .artistName:hover {
@@ -102,11 +102,11 @@
 }
 
 .controlButtonActive {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .controlButtonDisabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
@@ -120,16 +120,16 @@
 }
 
 .playButton:disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
 .playButton:not(:disabled):hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .playButtonActive {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .repeatIndicator {
@@ -139,7 +139,7 @@
   font-size: 10px;
   font-weight: bold;
   color: var(--color-white);
-  background-color: var(--color-red);
+  background-color: var(--color-accent);
   border-radius: 50%;
   width: 14px;
   height: 14px;
@@ -172,7 +172,7 @@
 .progressBar {
   flex: 1;
   position: relative;
-  height: 0.4rem;
+  height: var(--spacing-xs);
   background-color: rgba(255, 255, 255, var(--opacity-high));
   border-radius: var(--border-radius-sm);
 }
@@ -180,7 +180,7 @@
 .progressFill {
   position: absolute;
   height: 100%;
-  background-color: var(--color-red);
+  background-color: var(--color-accent);
   border-radius: var(--border-radius-sm);
 }
 
@@ -220,7 +220,7 @@
 
 .volumeSlider {
   width: 12rem;
-  height: 0.4rem;
+  height: var(--spacing-xs);
   -webkit-appearance: none;
   appearance: none;
   background: rgba(255, 255, 255, var(--opacity-high));

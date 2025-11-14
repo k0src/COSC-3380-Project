@@ -12,10 +12,10 @@
 }
 
 .input {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   padding: 1.2rem;
   background-color: var(--color-panel-gray-dark);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-sm);
   color: var(--color-white);
   font-size: var(--font-size-sm);
@@ -40,12 +40,12 @@
 }
 
 .inputError {
-  border-color: var(--color-red);
+  border-color: var(--color-accent);
 }
 
 .inputErrorText {
   font-size: var(--font-size-xs);
-  color: var(--color-red);
+  color: var(--color-accent);
   padding-left: var(--spacing-2xs);
 }
 

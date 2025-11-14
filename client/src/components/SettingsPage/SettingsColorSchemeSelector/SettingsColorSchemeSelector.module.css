@@ -29,12 +29,12 @@
 }
 
 .colorSchemeButton:hover:not(.colorSchemeButtonDisabled) .colorSchemeImage {
-  outline: 2px solid var(--color-white);
+  outline: var(--border-size-md) solid var(--color-white);
   outline-offset: 4px;
 }
 
 .colorSchemeButtonActive .colorSchemeImage {
-  outline: 2px solid var(--color-white);
+  outline: var(--border-size-md) solid var(--color-white);
   outline-offset: 4px;
 }
 
@@ -56,7 +56,7 @@
 }
 
 .colorSchemeLabel {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   font-size: var(--font-size-sm);
   color: var(--color-text-gray);
   text-align: center;
@@ -65,6 +65,6 @@
 
 .colorSchemeSelectorErrorText {
   font-size: var(--font-size-xs);
-  color: var(--color-red);
+  color: var(--color-accent);
   font-weight: 500;
 }

@@ -2,7 +2,7 @@
   padding: var(--spacing-sm);
   background-color: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   display: flex;
   flex-direction: column;
   align-items: center;

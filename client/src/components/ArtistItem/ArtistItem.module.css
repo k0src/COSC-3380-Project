@@ -10,13 +10,13 @@
   object-fit: cover;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sd);
   cursor: pointer;
   transition: opacity var(--transition-speed) ease;
 }
 
 .artistImage:hover {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
 }
 
 .artistName {
@@ -31,5 +31,5 @@
 }
 
 .artistName:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }

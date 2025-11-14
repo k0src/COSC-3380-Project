@@ -8,20 +8,20 @@
   cursor: pointer;
   font-size: var(--icon-size-md);
   transition: color var(--transition-speed) ease-in-out;
-  font-size: 6.4rem;
+  font-size: var(--font-size-4xl);
 }
 
 .playButton:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .playButton:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
 }
 
 .playButtonActive {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .playButton svg {

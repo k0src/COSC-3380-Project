@@ -6,7 +6,7 @@
   height: 100%;
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   padding: var(--spacing-md);
   min-width: 0;
 }
@@ -27,7 +27,7 @@
   -webkit-line-clamp: 6;
   line-clamp: 6;
   min-width: 0;
-  line-height: 1.2;
+  line-height: var(--line-height-tight);
 }
 
 .descriptionBottom {

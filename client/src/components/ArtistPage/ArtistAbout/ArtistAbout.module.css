@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  min-height: 15vh;
+  min-height: var(--loader-height-sm);
 }
 
 .error {
@@ -19,7 +19,7 @@
   gap: var(--spacing-md);
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   padding: var(--spacing-md);
   min-width: 0;
   width: 100%;

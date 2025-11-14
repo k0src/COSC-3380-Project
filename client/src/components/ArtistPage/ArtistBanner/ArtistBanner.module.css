@@ -2,9 +2,9 @@
   position: relative;
   display: flex;
   width: 100%;
-  height: 32rem;
-  background: linear-gradient(to bottom, #181818, #0f0f0f);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  height: var(--artist-banner-height);
+  background: var(--container-gradient-bg);
+  box-shadow: var(--shadow-sd);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   padding: var(--spacing-lg);
@@ -24,7 +24,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(65deg, #080808 0%, transparent 25%);
+  background: var(--container-gradient-overlay);
   pointer-events: none;
   z-index: 1;
 }
@@ -37,13 +37,13 @@
 }
 
 .artistImage {
-  width: 24rem;
-  height: 24rem;
+  width: var(--container-image-size);
+  height: var(--container-image-size);
   border-radius: 50%;
   object-fit: cover;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sd);
   transition: box-shadow var(--transition-speed) ease;
 }
 
@@ -52,7 +52,7 @@
 }
 
 .artistImage:hover {
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-sd-hover);
 }
 
 .artistInfoRight {
@@ -69,7 +69,7 @@
 }
 
 .artistName {
-  font-size: 7.2rem;
+  font-size: var(--font-size-5xl);
   color: var(--dynamic-text-color, var(--color-white));
   font-weight: 700;
 }
@@ -85,18 +85,18 @@
   bottom: calc(100% + var(--spacing-sm));
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(246, 246, 246, 0.8);
+  background: var(--color-tooltip-bg);
   color: var(--color-black);
-  padding: 0.6rem 1.2rem;
+  padding: var(--spacing-xsd) var(--spacing-sd);
   border-radius: var(--border-radius-sm);
-  font-size: 13px;
+  font-size: var(--font-size-xsd);
   font-weight: 500;
   white-space: nowrap;
   pointer-events: none;
   z-index: 1000;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-tooltip);
   opacity: 0;
-  animation: tooltipFadeIn 0.15s ease-out forwards;
+  animation: var(--animation-tooltip-fade-in);
 }
 
 .verifiedBadge {
@@ -117,18 +117,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: rgba(246, 246, 246, 0.75);
-}
-
-@keyframes tooltipFadeIn {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  border-top-color: var(--color-tooltip-bg);
 }
 
 .artistLocation {

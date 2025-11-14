@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  min-height: 15vh;
+  min-height: var(--loader-height-sm);
 }
 
 .error {
@@ -35,7 +35,7 @@
   gap: var(--spacing-lg);
   justify-content: space-between;
   min-width: 0;
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-speed) ease;
   width: 100%;
   overflow-x: hidden;
 }

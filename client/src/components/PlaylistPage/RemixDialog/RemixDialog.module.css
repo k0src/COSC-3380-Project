@@ -12,9 +12,9 @@
   white-space: normal;
   pointer-events: auto;
   z-index: 1000;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-tooltip);
   opacity: 0;
-  animation: remixDialogFadeIn 0.2s ease-out forwards;
+  animation: var(--animation-tooltip-fade-in);
   display: flex;
   align-items: flex-start;
   min-width: 300px;
@@ -31,17 +31,6 @@
   border-bottom-color: var(--color-white);
 }
 
-@keyframes remixDialogFadeIn {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
 .dialogContent {
   display: flex;
   flex-direction: column;
@@ -51,7 +40,7 @@
 
 .description {
   margin: 0;
-  line-height: 1.5;
+  line-height: var(--line-height-relaxed);
   color: var(--color-black);
 }
 
@@ -62,13 +51,13 @@
 }
 
 .remixButton {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-red);
+  background: var(--color-accent);
   border-radius: var(--border-radius-sm);
-  border: 1px solid var(--color-red);
+  border: var(--border-size-sm) solid var(--color-accent);
   color: var(--color-white);
   cursor: pointer;
   font-size: var(--font-size-sm);
@@ -79,24 +68,24 @@
 }
 
 .remixButton:hover:not(:disabled) {
-  background-color: var(--color-red-800);
-  color: var(--color-red-300);
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
 }
 
 .remixButton:disabled {
-  color: var(--color-red-300);
+  color: var(--color-accent-300);
   opacity: 0.8;
   cursor: not-allowed;
 }
 
 .cancelButton {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--color-gray-button);
   border-radius: var(--border-radius-sm);
-  border: 1px solid var(--color-gray-button-border);
+  border: var(--border-size-sm) solid var(--color-gray-button-border);
   color: var(--color-white-alt);
   cursor: pointer;
   font-size: var(--font-size-sm);
@@ -116,7 +105,7 @@
 }
 
 .remixLink {
-  color: var(--color-red) !important;
+  color: var(--color-accent) !important;
   font-weight: 600;
   transition: text-decoration var(--transition-speed) ease-in-out;
 }

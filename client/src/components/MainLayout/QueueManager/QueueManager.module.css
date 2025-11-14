@@ -3,12 +3,11 @@
   bottom: calc(var(--now-playing-height) - var(--spacing-md));
   right: 0;
   background: var(--color-panel-gray);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-md);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-modal);
   z-index: 1000;
-  animation: menuFadeIn var(--transition-speed) ease-out;
+  animation: var(--animation-fade-in);
   width: 32rem;
   max-height: 40rem;
   display: flex;
@@ -17,21 +16,12 @@
   overflow-x: hidden;
 }
 
-@keyframes menuFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-md);
-  border-bottom: 1px solid var(--color-panel-border);
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
 }
 
 .headerButtons {
@@ -80,11 +70,11 @@
 }
 
 .clearButton:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .clearButton:disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
@@ -130,7 +120,7 @@
   cursor: grab;
   transition: all var(--transition-speed) ease;
   user-select: none;
-  border-bottom: 1px solid var(--color-panel-border);
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
 }
 
 .queueItem:hover {
@@ -150,13 +140,13 @@
 }
 
 .queueItemDragging {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: grabbing;
 }
 
 .queueItemDragOver {
   background: var(--color-gray-button-hover);
-  border-top: 2px solid var(--color-red);
+  border-top: var(--border-size-md) solid var(--color-accent);
 }
 
 .dragHandle {
@@ -217,6 +207,5 @@
 }
 
 .removeButton:hover {
-  color: var(--color-red);
-  background: rgba(213, 49, 49, 0.1);
+  color: var(--color-accent);
 }

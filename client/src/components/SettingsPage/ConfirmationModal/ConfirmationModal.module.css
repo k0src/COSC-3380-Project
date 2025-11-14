@@ -75,7 +75,7 @@
   padding: var(--spacing-sd);
   color: var(--color-orange-ui);
   font-size: var(--font-size-sm);
-  line-height: 1.5;
+  line-height: var(--line-height-relaxed);
 }
 
 .errorBanner {
@@ -85,7 +85,7 @@
   padding: var(--spacing-sd);
   color: var(--color-red-ui);
   font-size: var(--font-size-sm);
-  line-height: 1.5;
+  line-height: var(--line-height-relaxed);
 }
 
 .form {
@@ -112,12 +112,12 @@
 }
 
 .input {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   width: 100%;
   background: var(--color-gray-button);
   border: var(--border-size-sm) solid var(--color-gray-button-border);
   border-radius: var(--border-radius-sm);
-  padding: var(--spacing-sd) var(--spacing-xd) var(--spacing-sd)
+  padding: var(--spacing-sd) var(--spacing-xld) var(--spacing-sd)
     var(--spacing-sd);
   color: var(--color-white);
   font-size: var(--font-size-sm);
@@ -165,7 +165,7 @@
 }
 
 .cancelButton {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   background: var(--color-gray-button);
   border: var(--border-size-sm) solid var(--color-gray-button-border);
   border-radius: var(--border-radius-sm);
@@ -187,7 +187,7 @@
 }
 
 .confirmButton {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   background: var(--color-white);
   border: none;
   border-radius: var(--border-radius-sm);
@@ -208,7 +208,7 @@
 }
 
 .dangerButton {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   background: var(--color-red-ui-bg);
   border: var(--border-size-sm) solid var(--color-red-ui-border);
   border-radius: var(--border-radius-sm);

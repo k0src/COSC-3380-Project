@@ -13,7 +13,7 @@
   height: auto;
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   padding: var(--spacing-md);
   min-width: 0;
 }
@@ -22,7 +22,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.2rem;
+  gap: var(--spacing-sd);
   width: 11rem;
 }
 
@@ -33,19 +33,19 @@
   object-fit: cover;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sd);
 }
 
 .artistFollowButton {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  background: var(--color-red);
+  background: var(--color-accent);
   border-radius: var(--border-radius-sm);
   border: none;
-  color: var(--color-red-200);
+  color: var(--color-accent-200);
   cursor: pointer;
   font-size: var(--font-size-sm);
   padding: var(--spacing-sm) var(--spacing-md);
@@ -53,13 +53,13 @@
 }
 
 .artistFollowButton:hover {
-  background-color: var(--color-red-800);
-  color: var(--color-red-300);
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
 }
 
 .artistFollowButtonActive {
-  background-color: var(--color-red-800);
-  color: var(--color-red-300);
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
 }
 
 .artistInfoRight {
@@ -91,7 +91,7 @@
 }
 
 .artistInfoName:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .badgeWrapper {
@@ -105,16 +105,16 @@
   bottom: calc(100% + var(--spacing-sm));
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(246, 246, 246, 0.8);
+  background: var(--color-tooltip-bg);
   color: var(--color-black);
-  padding: 0.6rem 1.2rem;
+  padding: var(--spacing-xsd) var(--spacing-sd);
   border-radius: var(--border-radius-sm);
-  font-size: 1.3rem;
+  font-size: var(--font-size-xsd);
   font-weight: 500;
   white-space: nowrap;
   pointer-events: none;
   z-index: 1000;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-tooltip);
   opacity: 0;
   animation: tooltipFadeIn var(--transition-speed) ease-out forwards;
 }
@@ -126,7 +126,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: rgba(246, 246, 246, 0.75);
+  border-top-color: var(--color-tooltip-bg);
 }
 
 @keyframes tooltipFadeIn {
@@ -166,7 +166,7 @@
   -webkit-line-clamp: 6;
   line-clamp: 6;
   min-width: 0;
-  line-height: 1.2;
+  line-height: var(--line-height-tight);
 }
 
 .otherArtistsContainer {
@@ -175,7 +175,7 @@
   gap: var(--spacing-sm);
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   padding: var(--spacing-md);
   min-width: 0;
   width: 100%;
@@ -216,7 +216,7 @@
 }
 
 .otherArtistName:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .otherArtistRole {
