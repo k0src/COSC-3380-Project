@@ -148,24 +148,24 @@ export default class UserRepository {
   }
 
   /**
-   * Deletes a user.
-   * @param id - The ID of the user to delete.
-   * @returns The deleted user, or null if the deletion fails.
+   * Soft deletes a user by marking their status as DEACTIVATED.
+   * @param id - The ID of the user to deactivate.
+   * @returns The deactivated user, or null if the user is not found.
    * @throws Error if the operation fails.
    */
   static async delete(id: UUID): Promise<User | null> {
     try {
       const res = await withTransaction(async (client) => {
-        const del = await client.query(
-          `DELETE FROM users WHERE id = $1 RETURNING *`,
+        const update = await client.query(
+          `UPDATE users SET status = 'DEACTIVATED' WHERE id = $1 RETURNING *`,
           [id],
         );
-        return del.rows[0] ?? null;
+        return update.rows[0] ?? null;
       });
 
       return res;
     } catch (error) {
-      console.error("Error deleting user:", error);
+      console.error("Error deactivating user:", error);
       throw error;
     }
   }

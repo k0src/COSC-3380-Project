@@ -57,7 +57,8 @@ router.post("/settings", authenticateToken, async (req: Request, res: Response):
   }
 });
 
-// DELETE /api/users/account - delete user account (must be before /:id route)
+// DELETE /api/users/account - soft delete user account (sets status to DEACTIVATED)
+// All associated data is preserved - user cannot login but profile remains in database
 router.delete("/account", authenticateToken, async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.userId;
@@ -67,10 +68,10 @@ router.delete("/account", authenticateToken, async (req: Request, res: Response)
       return;
     }
 
-    // Delete user and all associated data (cascading delete handles related records)
-    const deleted = await UserRepository.delete(userId);
+    // Soft delete: mark user as DEACTIVATED instead of hard deleting
+    const deactivated = await UserRepository.delete(userId);
 
-    if (!deleted) {
+    if (!deactivated) {
       res.status(404).json({ error: "User not found" });
       return;
     }
