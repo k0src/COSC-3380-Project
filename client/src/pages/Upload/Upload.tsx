@@ -319,22 +319,14 @@ const Upload: React.FC = () => {
                 </div>
 
                 <div style={{ marginTop: 8 }}>
-                  <select
+                  <input
+                    type="text"
                     className={styles.titleInput}
+                    placeholder="Genre"
                     value={genre}
                     onChange={(e) => setGenre(e.target.value)}
                     aria-label="Genre"
-                  >
-                    <option value="">(Select genre)</option>
-                    <option>Pop</option>
-                    <option>Rock</option>
-                    <option>Hip-Hop</option>
-                    <option>Electronic</option>
-                    <option>Classical</option>
-                    <option>Jazz</option>
-                    <option>Country</option>
-                    <option>Other</option>
-                  </select>
+                  />
                 </div>
 
                 <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>

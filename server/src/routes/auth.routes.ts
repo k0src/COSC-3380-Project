@@ -199,7 +199,7 @@ router.post(
         return;
       }
 
-      if (user.status !== "ACTIVE") {
+      if (user.status?.toLowerCase() !== "active") {
         res.status(401).json({
           error: "Unauthorized",
           message: "Account is not active",
@@ -340,7 +340,7 @@ router.post("/refresh", async (req: Request, res: Response) => {
       return;
     }
 
-    if (user.status !== "ACTIVE") {
+    if (user.status?.toLowerCase() !== "active") {
       res.status(401).json({
         error: "Unauthorized",
         message: "Account is not active",

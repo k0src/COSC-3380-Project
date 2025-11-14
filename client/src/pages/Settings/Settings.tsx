@@ -22,8 +22,7 @@ const Settings: React.FC = () => {
   const overlayRef = useRef<HTMLDivElement | null>(null);
   
   // Settings state
-  const [notifications, setNotifications] = useState(true);
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [songsDiscoverable, setSongsDiscoverable] = useState(true);
 
   // Manage focus when dialog opens
   useEffect(() => {
@@ -117,8 +116,7 @@ const Settings: React.FC = () => {
     const loadSettings = async () => {
       try {
         const response = await api.get("/users/settings");
-        setNotifications(response.data.notifications ?? true);
-        setIsPrivate(response.data.isPrivate ?? false);
+        setSongsDiscoverable(response.data.songs_discoverable ?? true);
       } catch (err) {
         console.warn("Failed to load settings:", err);
       }
@@ -134,8 +132,7 @@ const Settings: React.FC = () => {
 
       await api.post("/users/settings", body);
 
-      if (setting === "notifications") setNotifications(value);
-      if (setting === "isPrivate") setIsPrivate(value);
+      if (setting === "songs_discoverable") setSongsDiscoverable(value);
     } catch (err) {
       console.error("Error updating setting:", err);
       alert("Failed to update setting");
@@ -152,9 +149,10 @@ const Settings: React.FC = () => {
       setTimeout(() => {
         window.location.href = "/";
       }, 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error deleting account:", err);
-      alert("Failed to delete account");
+      const errorMessage = err.response?.data?.error || err.message || "Failed to delete account";
+      alert(errorMessage);
     }
   };
 
@@ -224,6 +222,7 @@ const Settings: React.FC = () => {
             </div>
           </section>
 
+          {/* Notification section commented out for future use
           <section className={styles.card}>
             <div className={styles.sectionTitle}>Notification</div>
             <div className={styles.listItem}>
@@ -235,19 +234,20 @@ const Settings: React.FC = () => {
               />
             </div>
           </section>
+          */}
 
           <section className={styles.card}>
             <div className={styles.sectionTitle}>Privacy</div>
             <div className={styles.listItem}>
-              <span>Make account private/public</span>
+              <span>Make songs discoverable</span>
               <input 
                 type="checkbox" 
-                checked={isPrivate}
-                onChange={(e) => handleSettingChange("isPrivate", e.target.checked)}
+                checked={songsDiscoverable}
+                onChange={(e) => handleSettingChange("songs_discoverable", e.target.checked)}
               />
             </div>
             <div style={{ marginTop: 12, color: "#fff" }}>
-              (Makes account invisible to other users)
+              (Makes your songs visible to other users)
             </div>
           </section>
         </div>

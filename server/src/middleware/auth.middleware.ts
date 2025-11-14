@@ -100,7 +100,7 @@ export async function requireAuth(
       return;
     }
 
-    if (user.status !== "ACTIVE") {
+    if (user.status?.toLowerCase() !== "active") {
       res.status(401).json({
         error: "Unauthorized",
         message: "User account is not active",

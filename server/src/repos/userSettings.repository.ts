@@ -32,8 +32,16 @@ const pool = new Pool({
 export interface UserSettings {
   id: string;
   user_id: string;
-  notifications_enabled: boolean;
-  is_private: boolean;
+  release_notifications: boolean;
+  playlist_like_notifications: boolean;
+  follower_notifications: boolean;
+  comment_tag_notifications: boolean;
+  color_scheme: string;
+  color_theme: string;
+  zoom_level: number;
+  artist_like_notifications: boolean;
+  song_comment_notifications: boolean;
+  songs_discoverable: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -55,8 +63,10 @@ export class UserSettingsRepository {
 
       // Create default settings if they don't exist
       const newSettings = await pool.query(
-        `INSERT INTO user_settings (user_id, notifications_enabled, is_private)
-         VALUES ($1, true, false)
+        `INSERT INTO user_settings (user_id, release_notifications, playlist_like_notifications, 
+         follower_notifications, comment_tag_notifications, color_scheme, color_theme, 
+         zoom_level, artist_like_notifications, song_comment_notifications, songs_discoverable)
+         VALUES ($1, true, true, true, true, 'dark', 'default', 100, true, true, true)
          RETURNING *`,
         [userId]
       );
@@ -80,14 +90,25 @@ export class UserSettingsRepository {
       const values: any[] = [userId];
       let paramIndex = 2;
 
-      if (settings.notifications_enabled !== undefined) {
-        updates.push(`notifications_enabled = $${paramIndex++}`);
-        values.push(settings.notifications_enabled);
-      }
+      // Map all possible settings fields
+      const settingFields = [
+        'release_notifications',
+        'playlist_like_notifications',
+        'follower_notifications',
+        'comment_tag_notifications',
+        'color_scheme',
+        'color_theme',
+        'zoom_level',
+        'artist_like_notifications',
+        'song_comment_notifications',
+        'songs_discoverable'
+      ] as const;
 
-      if (settings.is_private !== undefined) {
-        updates.push(`is_private = $${paramIndex++}`);
-        values.push(settings.is_private);
+      for (const field of settingFields) {
+        if (settings[field as keyof typeof settings] !== undefined) {
+          updates.push(`${field} = $${paramIndex++}`);
+          values.push(settings[field as keyof typeof settings]);
+        }
       }
 
       if (updates.length === 0) {

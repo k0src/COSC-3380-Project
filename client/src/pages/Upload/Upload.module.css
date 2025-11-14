@@ -229,8 +229,8 @@
 }
 
 .successModal {
-  background: linear-gradient(135deg, rgba(220, 53, 69, 0.15), rgba(255, 107, 107, 0.15));
-  border: 2px solid rgba(220, 53, 69, 0.4);
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(76, 193, 92, 0.15));
+  border: 2px solid rgba(40, 167, 69, 0.4);
   border-radius: 20px;
   padding: 40px 48px;
   text-align: center;
@@ -245,7 +245,7 @@
   width: 80px;
   height: 80px;
   margin: 0 auto 20px;
-  background: linear-gradient(135deg, #dc3545, #ff6b6b);
+  background: linear-gradient(135deg, #28a745, #4cc15c);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -267,7 +267,7 @@
 }
 
 .successButton {
-  background: linear-gradient(135deg, #dc3545, #ff6b6b);
+  background: linear-gradient(135deg, #28a745, #4cc15c);
   color: #fff;
   border: none;
   padding: 12px 24px;
@@ -280,7 +280,7 @@
 
 .successButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4);
+  box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
 }
 
 @keyframes fadeIn {
