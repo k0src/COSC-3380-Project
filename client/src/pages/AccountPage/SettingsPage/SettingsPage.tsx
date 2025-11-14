@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from "react";
+import { memo, useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
@@ -46,7 +46,7 @@ interface AppearanceFormData {
 const SettingsPage: React.FC = () => {
   const { user, isAuthenticated, updateUser, logout, clearAuthState } =
     useAuth();
-  const { settings, updateSettings } = useSettings();
+  const { settings, updateSettings, getAvailableThemes } = useSettings();
   const navigate = useNavigate();
 
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -425,25 +425,17 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  const themeOptions = [
-    { value: "default", label: "Default" },
-    { value: "snazzy", label: "Snazzy" },
-    { value: "nord", label: "Nord" },
-    { value: "dracula", label: "Dracula" },
-    { value: "catppuccin", label: "Catppuccin" },
-    { value: "everforest", label: "Everforest" },
-    { value: "atom", label: "Atom" },
-    { value: "one-dark", label: "One Dark" },
-    { value: "github", label: "GitHub" },
-  ];
+  const themeOptions = getAvailableThemes();
 
-  const zoomOptions = [
-    { value: "80", label: "80%" },
-    { value: "90", label: "90%" },
-    { value: "100", label: "100%" },
-    { value: "110", label: "110%" },
-    { value: "120", label: "120%" },
-  ];
+  const zoomOptions = useMemo(() => {
+    return [
+      { value: "80", label: "80%" },
+      { value: "90", label: "90%" },
+      { value: "100", label: "100%" },
+      { value: "110", label: "110%" },
+      { value: "120", label: "120%" },
+    ];
+  }, []);
 
   return (
     <>

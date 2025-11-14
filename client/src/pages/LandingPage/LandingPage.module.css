@@ -1,7 +1,8 @@
 /* Import fonts that match the image (optional, but recommended) */
 @import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=League+Spartan:wght@100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
 :root {
-  --primary-red: #e63946; /* Color from the logo and button */
+  --primary-red: #e63946;
   --dark-bg: #000000;
   --content-bg: #121212;
   --card-bg: #181818;

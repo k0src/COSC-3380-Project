@@ -1,31 +1,42 @@
-import React, { createContext, useContext, useReducer, useEffect } from "react";
+import { createContext, useContext, useReducer, useEffect } from "react";
 import type { ReactNode } from "react";
 import { userApi } from "@api";
 import { useAuth } from "./AuthContext";
-import type { UserSettings } from "@types";
+import {
+  loadThemes,
+  applyTheme,
+  applyZoomLevel,
+  watchSystemColorScheme,
+  getThemeOptions,
+} from "@util";
+import type { UserSettings, ColorScheme } from "@types";
 
 interface SettingsState {
   settings: UserSettings | null;
   isLoading: boolean;
   error: string | null;
+  themes: any;
 }
 
 type SettingsAction =
   | { type: "SET_SETTINGS"; payload: UserSettings }
   | { type: "UPDATE_SETTINGS"; payload: Partial<UserSettings> }
   | { type: "SET_LOADING"; payload: boolean }
-  | { type: "SET_ERROR"; payload: string | null };
+  | { type: "SET_ERROR"; payload: string | null }
+  | { type: "SET_THEMES"; payload: any };
 
 interface SettingsContextType extends SettingsState {
   updateSettings: (updates: Partial<UserSettings>) => Promise<void>;
   refreshSettings: () => Promise<void>;
   applyAppearanceSettings: () => void;
+  getAvailableThemes: () => Array<{ value: string; label: string }>;
 }
 
 const initialState: SettingsState = {
   settings: null,
   isLoading: true,
   error: null,
+  themes: null,
 };
 
 const settingsReducer = (
@@ -58,6 +69,11 @@ const settingsReducer = (
         error: action.payload,
         isLoading: false,
       };
+    case "SET_THEMES":
+      return {
+        ...state,
+        themes: action.payload,
+      };
     default:
       return state;
   }
@@ -84,6 +100,26 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
 }) => {
   const [state, dispatch] = useReducer(settingsReducer, initialState);
   const { user, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    const initializeThemes = async () => {
+      const themes = await loadThemes();
+      if (themes) {
+        dispatch({ type: "SET_THEMES", payload: themes });
+      }
+    };
+    initializeThemes();
+  }, []);
+
+  useEffect(() => {
+    if (!state.settings || state.settings.color_scheme !== "system") return;
+
+    const cleanup = watchSystemColorScheme(() => {
+      applyAppearanceSettings();
+    });
+
+    return cleanup;
+  }, [state.settings?.color_scheme, state.themes]);
 
   const getLocalStorageKey = (userId: string) =>
     `coogmusic_user_settings_${userId}`;
@@ -115,24 +151,22 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
   };
 
   const applyAppearanceSettings = () => {
-    if (!state.settings) return;
+    if (!state.settings || !state.themes) return;
 
     const { color_scheme, color_theme, zoom_level } = state.settings;
 
-    if (color_scheme) {
-      document.documentElement.setAttribute("data-theme", color_scheme);
-    }
-
-    if (color_theme) {
-      document.documentElement.setAttribute("data-color-theme", color_theme);
+    if (color_scheme && color_theme) {
+      applyTheme(state.themes, color_theme, color_scheme as ColorScheme);
     }
 
     if (zoom_level) {
-      document.documentElement.style.setProperty(
-        "--app-zoom",
-        `${zoom_level}%`
-      );
+      applyZoomLevel(zoom_level);
     }
+  };
+
+  const getAvailableThemes = () => {
+    if (!state.themes) return [];
+    return getThemeOptions(state.themes);
   };
 
   const refreshSettings = async () => {
@@ -209,6 +243,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
     updateSettings,
     refreshSettings,
     applyAppearanceSettings,
+    getAvailableThemes,
   };
 
   return (
