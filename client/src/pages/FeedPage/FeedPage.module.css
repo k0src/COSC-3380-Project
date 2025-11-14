@@ -1,0 +1,21 @@
+.feedPage {
+  padding: 24px;
+}
+
+.recentReleases {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.songList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.songLink {
+  text-decoration: none;
+}

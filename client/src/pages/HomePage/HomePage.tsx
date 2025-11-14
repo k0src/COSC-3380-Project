@@ -126,6 +126,8 @@ const HomePage: React.FC = () => {
     return [];
   }, [data?.recentSongs]);
 
+  console.log(newSongs);
+
   return (
     <main className={styles.contentArea}>
       <div className={styles.contentWrapper}>

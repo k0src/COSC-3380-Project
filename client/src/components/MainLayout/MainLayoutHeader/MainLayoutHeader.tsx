@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import classNames from "classnames";
 
 import { useAuth } from "@contexts";
@@ -16,6 +16,19 @@ import {
 
 const MainLayoutHeader: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
+
+  const navigate = useNavigate();
+
+  const handleFeedClick = (
+    event: React.MouseEvent<HTMLAnchorElement>
+  ): void => {
+    if (isAuthenticated) {
+      return;
+    }
+
+    event.preventDefault();
+    navigate("/login", { state: { from: "/feed" } });
+  };
 
   return (
     <header className={styles.header}>
@@ -34,6 +47,7 @@ const MainLayoutHeader: React.FC = () => {
           className={({ isActive }) =>
             isActive ? styles.navbarLinkActive : styles.navbarLink
           }
+          onClick={handleFeedClick}
         >
           <LuRss className={styles.navIcon} />
           <span>Feed</span>

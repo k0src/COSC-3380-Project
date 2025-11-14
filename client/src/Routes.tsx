@@ -91,7 +91,17 @@ export default function AppRoutes() {
                 </MainLayout>
               }
             />
+            <Route 
+              path="/feed"
+              element={
+                <MainLayout>
+                  <Pages.FeedPage />
+                </MainLayout>
+              }
+            />
           </Route>
+
+
 
           {/* <Route
         path="/library"

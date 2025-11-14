@@ -1,5 +1,6 @@
 export { default as HomePage } from "./HomePage/HomePage.js";
 export { default as LandingPage } from "./LandingPage/LandingPage.js";
+export { default as FeedPage } from "./FeedPage/FeedPage.js";
 
 export { default as SongPage } from "./SongPage/SongPage.js";
 export { default as ArtistPage } from "./ArtistPage/ArtistPage.js";
