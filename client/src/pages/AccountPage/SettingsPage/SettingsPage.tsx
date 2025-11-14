@@ -427,13 +427,13 @@ const SettingsPage: React.FC = () => {
 
   const themeOptions = [
     { value: "default", label: "Default" },
+    { value: "snazzy", label: "Snazzy" },
     { value: "nord", label: "Nord" },
     { value: "dracula", label: "Dracula" },
-    { value: "gruvbox", label: "Gruvbox" },
+    { value: "catppuccin", label: "Catppuccin" },
     { value: "everforest", label: "Everforest" },
     { value: "atom", label: "Atom" },
     { value: "one-dark", label: "One Dark" },
-    { value: "rose-pine", label: "Rose Pine" },
     { value: "github", label: "GitHub" },
   ];
 

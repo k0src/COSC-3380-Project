@@ -39,7 +39,7 @@ const HistorySongs: React.FC<{
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
-        <PuffLoader color="#D53131" size={50} />
+        <PuffLoader color="var(--color-accent)" size={50} />
       </div>
     );
   }

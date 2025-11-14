@@ -27,6 +27,7 @@ html {
     "Courier New", monospace;
 
   /* Colors */
+  /* Colors */
   --color-panel-gray: #161616;
   --color-panel-gray-hover: #1a1a1a;
   --color-panel-gray-dark: #0e0e0e;
@@ -173,7 +174,7 @@ html {
   --opacity-high: 0.1;
 
   /* Shadows */
-  --shadow-layout: 0 2px 6px rgba(0, 0, 0, 0.75);
+  --shadow-layout: 0 2px 4px rgba(0, 0, 0, 0.5);
   --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-context-menu: 0 10px 15px -3px rgba(0, 0, 0, 0.5),

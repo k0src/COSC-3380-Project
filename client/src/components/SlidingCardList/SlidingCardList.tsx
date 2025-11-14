@@ -202,7 +202,7 @@ const SlidingCardList: React.FC<SlidingCardListProps> = ({
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
-        <PuffLoader color="#D53131" size={35} />
+        <PuffLoader color="var(--color-accent)" size={35} />
       </div>
     );
   }

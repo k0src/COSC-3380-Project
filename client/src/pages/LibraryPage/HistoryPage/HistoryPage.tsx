@@ -86,7 +86,7 @@ const HistoryPage: React.FC = () => {
 
   const handleTabClick = useCallback(
     (tab: TabType) => {
-      navigate(`/library/history/${tab}`);
+      navigate(`/history/${tab}`);
     },
     [navigate]
   );

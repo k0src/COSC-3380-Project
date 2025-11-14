@@ -48,9 +48,9 @@
 }
 
 .username {
+  font-family: var(--font-main);
   font-size: var(--font-size-sm);
   color: var(--color-white);
-  font-weight: 500;
 }
 
 .popup::-webkit-scrollbar {

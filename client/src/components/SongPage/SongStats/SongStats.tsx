@@ -13,7 +13,7 @@ import styles from "./SongStats.module.css";
 
 const CHART_HEIGHT = 80;
 const CHART_WIDTH = 330;
-const CHART_COLOR = "rgb(213, 49, 49)";
+const CHART_COLOR = "var(--color-red-ui)";
 
 const CHART_SX = {
   [`& .${areaElementClasses.root}`]: { opacity: 0.2 },

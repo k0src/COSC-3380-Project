@@ -42,7 +42,7 @@ const MainLayoutSidebar: React.FC = () => {
           <Link to="/library/songs" className={styles.sidebarLink}>
             <LuDisc3 className={styles.sidebarIcon} />
           </Link>
-          <Link to="/library/history" className={styles.sidebarLink}>
+          <Link to="/history" className={styles.sidebarLink}>
             <LuHistory className={styles.sidebarIcon} />
           </Link>
           {user && user.role === "ARTIST" && (

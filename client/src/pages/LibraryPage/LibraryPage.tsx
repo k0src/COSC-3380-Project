@@ -271,7 +271,7 @@ const LibraryPage: React.FC = () => {
           <LibraryArtists userId={user.id} searchFilter={searchText} />
         )}
 
-        <Link className={styles.historyLink} to="/library/history">
+        <Link className={styles.historyLink} to="/history">
           View Full History
         </Link>
       </div>

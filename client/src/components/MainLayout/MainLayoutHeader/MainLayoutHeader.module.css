@@ -74,6 +74,7 @@
 .searchContainer,
 .headerActions {
   position: relative;
+  box-shadow: var(--shadow-layout);
 }
 
 .headerNav::after,
@@ -86,7 +87,6 @@
   width: 100%;
   height: 4px;
   border-radius: inherit;
-  box-shadow: var(--shadow-layout);
   pointer-events: none;
 }
 
