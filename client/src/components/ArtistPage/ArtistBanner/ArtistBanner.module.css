@@ -107,7 +107,7 @@
 }
 
 .verifiedBadge:hover {
-  color: var(--dynamic-text-color, var(--color-white-hover));
+  color: var(--dynamic-text-color, var(--color-white-alt));
 }
 
 .tooltip::after {

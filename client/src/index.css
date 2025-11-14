@@ -39,18 +39,34 @@ html {
   --color-text-gray: #6d6d6d;
   --color-text-gray-light: #a1a1a1;
   --color-white: #f6f6f6;
-  --color-white-hover: #bdbdbd;
+  --color-white-alt: #bdbdbd;
   --color-black: #080808;
   --color-black-hover: #111111;
 
   --color-red-ui: #ff6b6b;
   --color-red-ui-border: rgba(255, 107, 107, 0.4);
+  --color-red-ui-bg: rgba(255, 107, 107, 0.1);
   --color-red-ui-border-hover: rgba(255, 107, 107, 0.6);
   --color-red-ui-bg-hover: rgba(255, 107, 107, 0.15);
+
+  --color-green-ui: #86efac;
+  --color-green-ui-border: rgba(34, 197, 94, 0.3);
+  --color-green-ui-bg: rgba(34, 197, 94, 0.1);
+  --color-green-ui-border-hover: rgba(34, 197, 94, 0.5);
+  --color-green-ui-bg-hover: rgba(34, 197, 94, 0.15);
+
+  --color-orange-ui: #fdba74;
+  --color-orange-ui-border: rgba(251, 146, 60, 0.3);
+  --color-orange-ui-bg: rgba(251, 146, 60, 0.1);
+  --color-orange-ui-border-hover: rgba(251, 146, 60, 0.5);
+  --color-orange-ui-bg-hover: rgba(251, 146, 60, 0.15);
 
   --color-gray-button: #242424;
   --color-gray-button-hover: #323232;
   --color-gray-button-border: #464646;
+
+  --color-overlay-bg: rgba(0, 0, 0, 0.6);
+  --overlay-blur: blur(4px);
 
   /* Layout Dimensions */
   --sidebar-width: 6.4rem;
@@ -61,9 +77,11 @@ html {
   --spacing-2xs: 0.2rem;
   --spacing-xs: 0.4rem;
   --spacing-sm: 0.8rem;
+  --spacing-sd: 1.2rem;
   --spacing-md: 1.6rem;
   --spacing-lg: 2.4rem;
   --spacing-xl: 3.2rem;
+  --spacing-xd: 4rem;
   --spacing-2xl: 4.8rem;
   --spacing-3xl: 6.4rem;
   --spacing-4xl: 8rem;
@@ -71,6 +89,9 @@ html {
 
   --layout-gap-hor: 2.4rem;
   --layout-gap-ver: 3.6rem;
+
+  --border-size-sm: 1px;
+  --border-size-md: 2px;
 
   /* Border Radius */
   --border-radius-xs: 0.2rem;
@@ -101,9 +122,33 @@ html {
   --transition-speed: 0.1s;
 
   /* Opacity Values */
-  --opacity-low: 0.05;
-  --opacity-medium: 0.08;
-  --opacity-high: 0.1;
+  --opacity-disabled: 0.5;
+
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  --animation-fade-in: fadeIn var(--transition-speed) ease-out;
+  --animation-slide-in: slideIn var(--transition-speed) ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Links */

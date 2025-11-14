@@ -94,7 +94,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
   font-size: var(--font-size-sm);
   font-weight: 400;
   cursor: pointer;

@@ -7,12 +7,15 @@ import {
   LibraryService,
   UserSettingsService,
 } from "@services";
+import { parseUserUpdateForm } from "@infra/form-parser";
 
 const router = express.Router();
 
+/* ========================================================================== */
+/*                                 Main Routes                                */
+/* ========================================================================== */
+
 // GET /api/users
-// Example:
-// /api/users?includeFollowerCount=true&includeFollowingCount=true&limit=50&offset=0
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
     const { includeFollowerCount, includeFollowingCount, limit, offset } =
@@ -33,8 +36,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 });
 
 // GET /api/users/:id
-// Example:
-// /api/users/:id?includeFollowerCount=true&includeFollowingCount=true
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { includeFollowerCount, includeFollowingCount } = req.query;
@@ -62,6 +63,366 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// DELETE /api/users/:id
+router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  if (!id) {
+    res.status(400).json({ error: "User ID is required" });
+    return;
+  }
+
+  try {
+    const deletedUser = await UserRepository.delete(id);
+
+    if (!deletedUser) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error in DELETE /users/:id:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// PUT /api/users/:id
+router.put("/:id", async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  if (!id) {
+    res.status(400).json({ error: "User ID is required" });
+    return;
+  }
+
+  try {
+    const updateData = await parseUserUpdateForm(req);
+    const updatedUser = await UserRepository.update(id, updateData);
+
+    if (!updatedUser) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error: any) {
+    console.error("Error in PUT /users/:id:", error);
+    const errorMessage = error.message || "Internal server error";
+    res.status(400).json({ error: errorMessage });
+  }
+});
+
+/* ========================================================================== */
+/*                               User Playlists                               */
+/* ========================================================================== */
+
+// GET /api/users/:id/playlists
+router.get(
+  "/:id/playlists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { includeLikes, includeSongCount, includeRuntime, limit, offset } =
+        req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const playlists = await UserRepository.getPlaylists(id, {
+        includeLikes: includeLikes === "true",
+        includeSongCount: includeSongCount === "true",
+        includeRuntime: includeRuntime === "true",
+        limit: limit ? parseInt(limit as string) : undefined,
+        offset: offset ? parseInt(offset as string) : undefined,
+      });
+
+      res.status(200).json(playlists);
+    } catch (error) {
+      console.error("Error in GET /users/:id/playlists:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+/* ========================================================================== */
+/*                                User Library                                */
+/* ========================================================================== */
+
+// GET /api/users/:id/library/recent
+router.get(
+  "/:id/library/recent",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { maxItems } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const recentHistory = await LibraryService.getRecentlyPlayed(
+        id,
+        maxItems ? parseInt(maxItems as string, 10) : 10
+      );
+
+      res.status(200).json(recentHistory);
+    } catch (error) {
+      console.error("Error in GET /users/:id/library/recent:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/library/playlists
+router.get(
+  "/:id/library/playlists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { limit, offset, omitLikes } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const playlists = await LibraryService.getLibraryPlaylists(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+        omitLikes: omitLikes === "true",
+      });
+
+      res.status(200).json(playlists);
+    } catch (error) {
+      console.error("Error in GET /users/:id/library/playlists:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/library/songs
+router.get(
+  "/:id/library/songs",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { limit, offset } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const songs = await LibraryService.getLibrarySongs(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(songs);
+    } catch (error) {
+      console.error("Error in GET /users/:id/library/songs:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/library/albums
+router.get(
+  "/:id/library/albums",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { limit, offset } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const albums = await LibraryService.getLibraryAlbums(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(albums);
+    } catch (error) {
+      console.error("Error in GET /users/:id/library/albums:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/library/artists
+router.get(
+  "/:id/library/artists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { limit, offset } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const artists = await LibraryService.getLibraryArtists(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(artists);
+    } catch (error) {
+      console.error("Error in GET /users/:id/library/artists:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/library?q=searchTerm
+router.get(
+  "/:id/library",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { q } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      if (!q || typeof q !== "string") {
+        res.status(400).json({ error: "Search query is required" });
+        return;
+      }
+
+      const searchResults = await LibraryService.search(id, q);
+
+      res.status(200).json(searchResults);
+    } catch (error) {
+      console.error("Error in GET /users/:id/library:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+/* ============================== User History ============================== */
+
+// GET /api/users/:id/library/history/songs
+router.get(
+  "/:id/library/history/songs",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { timeRange, limit, offset } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const songs = await LibraryService.getSongHistory(id, {
+        timeRange: timeRange as string,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(songs);
+    } catch (error) {
+      console.error("Error in GET /users/:id/library/history/songs:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/library/history/playlists
+router.get(
+  "/:id/library/history/playlists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { timeRange, limit, offset } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const playlists = await LibraryService.getPlaylistHistory(id, {
+        timeRange: timeRange as string,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(playlists);
+    } catch (error) {
+      console.error(
+        "Error in GET /users/:id/library/history/playlists:",
+        error
+      );
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/library/history/albums
+router.get(
+  "/:id/library/history/albums",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { timeRange, limit, offset } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const albums = await LibraryService.getAlbumHistory(id, {
+        timeRange: timeRange as string,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(albums);
+    } catch (error) {
+      console.error("Error in GET /users/:id/library/history/albums:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/library/history/artists
+router.get(
+  "/:id/library/history/artists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { timeRange, limit, offset } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const artists = await LibraryService.getArtistHistory(id, {
+        timeRange: timeRange as string,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(artists);
+    } catch (error) {
+      console.error("Error in GET /users/:id/library/history/artists:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
 // PUT /api/users/:id/history
 router.put(
   "/:id/history",
@@ -83,54 +444,9 @@ router.put(
   }
 );
 
-// POST /api/users/:id/likes
-//! todo: no toggle method - post route for adding like, delete for removing
-router.post(
-  "/:id/likes",
-  async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    const { entityId, entityType } = req.body;
-
-    if (!id || !entityId || !entityType) {
-      res.status(400).json({ error: "Missing required parameters" });
-      return;
-    }
-
-    try {
-      const result = await LikeService.toggleLike(id, entityId, entityType);
-      res.status(200).json({ message: `${entityType} ${result} successfully` });
-    } catch (error) {
-      console.error("Error in POST /users/:id/likes:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/likes/check
-router.get(
-  "/:id/likes/check",
-  async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    const { entityType, entityId } = req.query;
-
-    if (!id || !entityType || !entityId) {
-      res.status(400).json({ error: "Missing required parameters" });
-      return;
-    }
-
-    try {
-      const isLiked = await LikeService.hasUserLiked(
-        id,
-        entityId as string,
-        entityType as any
-      );
-      res.status(200).json({ isLiked });
-    } catch (error) {
-      console.error("Error in GET /users/:id/likes:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
+/* ========================================================================== */
+/*                            User Likes & Comments                           */
+/* ========================================================================== */
 
 // GET /api/users/:id/likes/songs
 router.get(
@@ -269,6 +585,54 @@ router.get(
   }
 );
 
+// POST /api/users/:id/likes
+router.post(
+  "/:id/likes",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { entityId, entityType } = req.body;
+
+    if (!id || !entityId || !entityType) {
+      res.status(400).json({ error: "Missing required parameters" });
+      return;
+    }
+
+    try {
+      const result = await LikeService.toggleLike(id, entityId, entityType);
+      res.status(200).json({ message: `${entityType} ${result} successfully` });
+    } catch (error) {
+      console.error("Error in POST /users/:id/likes:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/likes/check
+router.get(
+  "/:id/likes/check",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { entityType, entityId } = req.query;
+
+    if (!id || !entityType || !entityId) {
+      res.status(400).json({ error: "Missing required parameters" });
+      return;
+    }
+
+    try {
+      const isLiked = await LikeService.hasUserLiked(
+        id,
+        entityId as string,
+        entityType as any
+      );
+      res.status(200).json({ isLiked });
+    } catch (error) {
+      console.error("Error in GET /users/:id/likes:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
 // GET /api/users/:id/likes/count
 router.get(
   "/:id/likes/count",
@@ -291,6 +655,10 @@ router.get(
   }
 );
 
+/* ========================================================================== */
+/*                               User Followers                               */
+/* ========================================================================== */
+
 // GET /api/users/:id/followers
 router.get(
   "/:id/followers",
@@ -310,26 +678,6 @@ router.get(
       res.status(200).json(followers);
     } catch (error) {
       console.error("Error in GET /users/:id/followers:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/followers/count
-router.get(
-  "/:id/followers/count",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const followerCount = await FollowService.getFollowerCount(id);
-      res.status(200).json({ followerCount });
-    } catch (error) {
-      console.error("Error in GET /users/:id/follower-count:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
@@ -359,28 +707,7 @@ router.get(
   }
 );
 
-// GET /api/users/:id/following/count
-router.get(
-  "/:id/following/count",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const followingCount = await FollowService.getFollowingCount(id);
-      res.status(200).json({ followingCount });
-    } catch (error) {
-      console.error("Error in GET /users/:id/following-count:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
 // POST /api/users/:id/following
-//! post following, delete following
 router.post(
   "/:id/following",
   async (req: Request, res: Response): Promise<void> => {
@@ -397,6 +724,46 @@ router.post(
       res.status(200).json({ message: `User ${result} sucessfully` });
     } catch (error) {
       console.error("Error in POST /users/:id/following:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/followers/count
+router.get(
+  "/:id/followers/count",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const followerCount = await FollowService.getFollowerCount(id);
+      res.status(200).json({ followerCount });
+    } catch (error) {
+      console.error("Error in GET /users/:id/follower-count:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/following/count
+router.get(
+  "/:id/following/count",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const followingCount = await FollowService.getFollowingCount(id);
+      res.status(200).json({ followingCount });
+    } catch (error) {
+      console.error("Error in GET /users/:id/following-count:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
@@ -426,352 +793,9 @@ router.get(
   }
 );
 
-// GET /api/users/:id/playlists
-router.get(
-  "/:id/playlists",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { includeLikes, includeSongCount, includeRuntime, limit, offset } =
-        req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const playlists = await UserRepository.getPlaylists(id, {
-        includeLikes: includeLikes === "true",
-        includeSongCount: includeSongCount === "true",
-        includeRuntime: includeRuntime === "true",
-        limit: limit ? parseInt(limit as string) : undefined,
-        offset: offset ? parseInt(offset as string) : undefined,
-      });
-
-      res.status(200).json(playlists);
-    } catch (error) {
-      console.error("Error in GET /users/:id/playlists:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/library?q=searchTerm
-router.get(
-  "/:id/library",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { q } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      if (!q || typeof q !== "string") {
-        res.status(400).json({ error: "Search query is required" });
-        return;
-      }
-
-      const searchResults = await LibraryService.search(id, q);
-
-      res.status(200).json(searchResults);
-    } catch (error) {
-      console.error("Error in GET /users/:id/library:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/library/recent
-router.get(
-  "/:id/library/recent",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { maxItems } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const recentHistory = await LibraryService.getRecentlyPlayed(
-        id,
-        maxItems ? parseInt(maxItems as string, 10) : 10
-      );
-
-      res.status(200).json(recentHistory);
-    } catch (error) {
-      console.error("Error in GET /users/:id/library/recent:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/library/playlists
-router.get(
-  "/:id/library/playlists",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { limit, offset, omitLikes } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const playlists = await LibraryService.getLibraryPlaylists(id, {
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-        omitLikes: omitLikes === "true",
-      });
-
-      res.status(200).json(playlists);
-    } catch (error) {
-      console.error("Error in GET /users/:id/library/playlists:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/library/songs
-router.get(
-  "/:id/library/songs",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const songs = await LibraryService.getLibrarySongs(id, {
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(songs);
-    } catch (error) {
-      console.error("Error in GET /users/:id/library/songs:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/library/albums
-router.get(
-  "/:id/library/albums",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const albums = await LibraryService.getLibraryAlbums(id, {
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(albums);
-    } catch (error) {
-      console.error("Error in GET /users/:id/library/albums:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/library/artists
-router.get(
-  "/:id/library/artists",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const artists = await LibraryService.getLibraryArtists(id, {
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(artists);
-    } catch (error) {
-      console.error("Error in GET /users/:id/library/artists:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/library/history/songs
-router.get(
-  "/:id/library/history/songs",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { timeRange, limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const songs = await LibraryService.getSongHistory(id, {
-        timeRange: timeRange as string,
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(songs);
-    } catch (error) {
-      console.error("Error in GET /users/:id/library/history/songs:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/library/history/playlists
-router.get(
-  "/:id/library/history/playlists",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { timeRange, limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const playlists = await LibraryService.getPlaylistHistory(id, {
-        timeRange: timeRange as string,
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(playlists);
-    } catch (error) {
-      console.error(
-        "Error in GET /users/:id/library/history/playlists:",
-        error
-      );
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/library/history/albums
-router.get(
-  "/:id/library/history/albums",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { timeRange, limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const albums = await LibraryService.getAlbumHistory(id, {
-        timeRange: timeRange as string,
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(albums);
-    } catch (error) {
-      console.error("Error in GET /users/:id/library/history/albums:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET /api/users/:id/library/history/artists
-router.get(
-  "/:id/library/history/artists",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { timeRange, limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const artists = await LibraryService.getArtistHistory(id, {
-        timeRange: timeRange as string,
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(artists);
-    } catch (error) {
-      console.error("Error in GET /users/:id/library/history/artists:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// PUT /api/users/:id
-router.put("/:id", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const {
-    username,
-    email,
-    new_password,
-    current_password,
-    authenticated_with,
-    role,
-    profile_picture_url,
-    pfp_blurhash,
-    artist_id,
-    status,
-  } = req.body;
-
-  if (!id) {
-    res.status(400).json({ error: "User ID is required" });
-    return;
-  }
-
-  try {
-    const updatedUser = await UserRepository.update(id, {
-      username,
-      email,
-      new_password,
-      current_password,
-      authenticated_with,
-      role,
-      profile_picture_url,
-      pfp_blurhash,
-      artist_id,
-      status,
-    });
-
-    if (!updatedUser) {
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    console.error("Error in PUT /users/:id:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+/* ========================================================================== */
+/*                                User Settings                               */
+/* ========================================================================== */
 
 // GET /api/users/:id/settings
 router.get(

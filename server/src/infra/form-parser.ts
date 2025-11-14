@@ -6,6 +6,8 @@ import type { SongData } from "@types";
 import { parseBuffer } from "music-metadata";
 import { Readable } from "stream";
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+
 /**
  * Parses multipart/form-data request for song data and files.
  * Uploads files to blob storage and returns song data.
@@ -110,6 +112,99 @@ export function parseSongForm(
         resolve(songData as SongData);
       } catch (error) {
         return reject(error);
+      }
+    });
+
+    req.pipe(busboy);
+  });
+}
+
+/**
+ * Parses multipart/form-data request for user update with optional image upload.
+ * Handles regular form fields and uploads images to blob storage.
+ * @param req Express request object.
+ * @returns Promise resolving to parsed form data with uploaded image blob name.
+ * @throws Error if image is invalid, too large, or upload fails.
+ */
+export function parseUserUpdateForm(req: Request): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const busboy = Busboy({ headers: req.headers });
+
+    const formData: any = {};
+    const uploadPromises: Promise<void>[] = [];
+
+    busboy.on("field", (fieldname, value) => {
+      if (value === "null") {
+        formData[fieldname] = null;
+      } else {
+        formData[fieldname] = value;
+      }
+    });
+
+    busboy.on("file", async (fieldname, file, info) => {
+      const { filename, mimeType } = info;
+
+      if (fieldname !== "profile_picture") {
+        file.resume();
+        return;
+      }
+
+      if (!mimeType.startsWith("image/")) {
+        file.resume();
+        return reject(new Error("Invalid file type. Only images are allowed."));
+      }
+
+      const supportedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp",
+      ];
+      if (!supportedTypes.includes(mimeType)) {
+        file.resume();
+        return reject(
+          new Error(
+            "Unsupported image format. Only JPEG, PNG, and WebP are allowed."
+          )
+        );
+      }
+
+      const blobName = `${uuidv4()}-${filename}`;
+
+      const uploadPromise = (async () => {
+        try {
+          const chunks: Buffer[] = [];
+          let totalSize = 0;
+
+          for await (const chunk of file) {
+            totalSize += chunk.length;
+            if (totalSize > MAX_IMAGE_SIZE) {
+              throw new Error("Image file size exceeds 5MB limit.");
+            }
+
+            chunks.push(chunk);
+          }
+
+          const buffer = Buffer.concat(chunks);
+          const bufferStream = Readable.from(buffer);
+          await uploadBlob(blobName, bufferStream);
+          formData.profile_picture_url = blobName;
+        } catch (error) {
+          throw error;
+        }
+      })();
+
+      uploadPromises.push(uploadPromise);
+    });
+
+    busboy.on("error", (error) => reject(error));
+
+    busboy.on("finish", async () => {
+      try {
+        await Promise.all(uploadPromises);
+        resolve(formData);
+      } catch (error) {
+        reject(error);
       }
     });
 

@@ -50,4 +50,5 @@ export interface AuthContextType extends AuthState {
   logout: () => Promise<void>;
   clearError: () => void;
   updateUser: (user: User | null) => void;
+  clearAuthState: () => void;
 }

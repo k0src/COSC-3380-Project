@@ -11,6 +11,7 @@ export interface User {
   pfp_blurhash?: string;
   artist_id?: UUID;
   status: UserStatus;
+  is_private: boolean;
   updated_at: string;
   created_at: string;
 

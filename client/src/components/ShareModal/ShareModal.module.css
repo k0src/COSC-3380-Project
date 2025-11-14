@@ -107,7 +107,7 @@
 .socialLabel {
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
 }
 
 .linkSection {
@@ -120,7 +120,7 @@
 .linkLabel {
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
 }
 
 .linkInputWrapper {
@@ -149,7 +149,7 @@
   border: none;
   border-radius: 0.6rem;
   padding: 0.8rem;
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
   font-size: var(--font-size-md);
   cursor: pointer;
   display: flex;

@@ -8,3 +8,4 @@ export {
   type ContextMenuEntityType,
   type ShareModalState,
 } from "./ContextMenuContext";
+export { SettingsProvider, useSettings } from "./SettingsContext";

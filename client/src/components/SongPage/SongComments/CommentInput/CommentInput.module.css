@@ -54,7 +54,7 @@
     var(--spacing-sm) * 2 + var(--icon-size-md) + var(--spacing-sm) * 2
   );
   font-size: var(--font-size-xs);
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
   padding: var(--spacing-2xs);
   border-radius: var(--border-radius-xs);
   user-select: none;

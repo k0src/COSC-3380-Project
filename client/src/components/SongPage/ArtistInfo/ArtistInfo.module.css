@@ -147,7 +147,7 @@
 }
 
 .verifiedBadge:hover {
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
 }
 
 .artistBio {

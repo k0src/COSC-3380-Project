@@ -86,6 +86,7 @@ export default class UserRepository {
    * @param userData.pfp_blurhash The new profile picture blurhash of the user (optional).
    * @param userData.artist_id The new artist ID of the user (optional).
    * @param userData.status The new status of the user (optional).
+   * @param userData.is_private Whether the user's profile is private (optional).
    * @returns The updated user, or null if the update fails.
    * @throws Error if the operation fails.
    */
@@ -102,6 +103,7 @@ export default class UserRepository {
       pfp_blurhash,
       artist_id,
       status,
+      is_private,
     }: {
       username?: string;
       email?: string;
@@ -113,6 +115,7 @@ export default class UserRepository {
       pfp_blurhash?: string;
       artist_id?: UUID;
       status?: string;
+      is_private?: boolean;
     }
   ): Promise<User | null> {
     try {
@@ -178,6 +181,10 @@ export default class UserRepository {
           fields.push(`status = $${values.length + 1}`);
           values.push(status);
         }
+        if (is_private !== undefined) {
+          fields.push(`is_private = $${values.length + 1}`);
+          values.push(is_private);
+        }
         if (fields.length === 0) {
           throw new Error("No fields provided to update.");
         }
@@ -188,7 +195,16 @@ export default class UserRepository {
           ", "
         )}, updated_at = NOW() WHERE id = $${values.length} RETURNING *`;
         const res = await client.query(sql, values);
-        return res.rows[0] ?? null;
+        const updatedUser = res.rows[0] ?? null;
+
+        // Convert blob names to URLs if user was updated
+        if (updatedUser && updatedUser.profile_picture_url) {
+          updatedUser.profile_picture_url = getBlobUrl(
+            updatedUser.profile_picture_url
+          );
+        }
+
+        return updatedUser;
       });
 
       return result;

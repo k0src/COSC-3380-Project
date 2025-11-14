@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
@@ -8,22 +8,421 @@ import {
   SettingsColorSchemeSelector,
   SettingsDropdown,
   SettingsRadio,
+  SettingsImageUpload,
+  ChangePasswordModal,
+  ConfirmationModal,
 } from "@components";
-import { useAuth } from "@contexts";
+import { useAuth, useSettings } from "@contexts";
 import styles from "./SettingsPage.module.css";
-import classNames from "classnames";
+import { userApi } from "@api";
+
+interface AccountFormData {
+  username: string;
+  email: string;
+  privacy: boolean;
+  profilePicture?: File | null;
+  removeProfilePicture?: boolean;
+}
+
+interface ArtistFormData {
+  likeNotifications: boolean;
+  commentNotifications: boolean;
+  discoverability: boolean;
+}
+
+interface NotificationFormData {
+  releases: boolean;
+  playlistLikes: boolean;
+  followers: boolean;
+  commentMentions: boolean;
+}
+
+interface AppearanceFormData {
+  colorScheme: "system" | "light" | "dark";
+  theme: string;
+  zoomLevel: number;
+}
 
 const SettingsPage: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateUser, logout, clearAuthState } =
+    useAuth();
+  const { settings, updateSettings } = useSettings();
   const navigate = useNavigate();
 
-  if (!isAuthenticated) {
-    navigate("/login");
-    return;
-  }
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // Account form state
+  const [accountForm, setAccountForm] = useState<AccountFormData>({
+    username: "",
+    email: "",
+    privacy: false,
+    profilePicture: null,
+  });
+  const [initialAccountForm, setInitialAccountForm] = useState<AccountFormData>(
+    {
+      username: "",
+      email: "",
+      privacy: false,
+      profilePicture: null,
+    }
+  );
+  const [isAccountDirty, setIsAccountDirty] = useState(false);
+  const [isAccountSaving, setIsAccountSaving] = useState(false);
+  const [accountError, setAccountError] = useState("");
+
+  // Artist form state
+  const [artistForm, setArtistForm] = useState<ArtistFormData>({
+    likeNotifications: true,
+    commentNotifications: true,
+    discoverability: true,
+  });
+  const [initialArtistForm, setInitialArtistForm] = useState<ArtistFormData>({
+    likeNotifications: true,
+    commentNotifications: true,
+    discoverability: true,
+  });
+  const [isArtistDirty, setIsArtistDirty] = useState(false);
+  const [isArtistSaving, setIsArtistSaving] = useState(false);
+  const [artistError, setArtistError] = useState("");
+
+  // Notification form state
+  const [notificationForm, setNotificationForm] =
+    useState<NotificationFormData>({
+      releases: true,
+      playlistLikes: false,
+      followers: true,
+      commentMentions: true,
+    });
+  const [initialNotificationForm, setInitialNotificationForm] =
+    useState<NotificationFormData>({
+      releases: true,
+      playlistLikes: false,
+      followers: true,
+      commentMentions: true,
+    });
+  const [isNotificationDirty, setIsNotificationDirty] = useState(false);
+  const [isNotificationSaving, setIsNotificationSaving] = useState(false);
+  const [notificationError, setNotificationError] = useState("");
+
+  // Appearance form state
+  const [appearanceForm, setAppearanceForm] = useState<AppearanceFormData>({
+    colorScheme: "system",
+    theme: "default",
+    zoomLevel: 100,
+  });
+  const [initialAppearanceForm, setInitialAppearanceForm] =
+    useState<AppearanceFormData>({
+      colorScheme: "system",
+      theme: "default",
+      zoomLevel: 100,
+    });
+  const [isAppearanceDirty, setIsAppearanceDirty] = useState(false);
+  const [isAppearanceSaving, setIsAppearanceSaving] = useState(false);
+  const [appearanceError, setAppearanceError] = useState("");
+
+  useEffect(() => {
+    if (user && settings) {
+      const formData: AccountFormData = {
+        username: user.username,
+        email: user.email,
+        privacy: user.is_private,
+        profilePicture: null,
+      };
+      setAccountForm(formData);
+      setInitialAccountForm(formData);
+    }
+  }, [user, settings]);
+
+  useEffect(() => {
+    if (settings) {
+      const formData: ArtistFormData = {
+        likeNotifications: settings.artist_like_notifications,
+        commentNotifications: settings.song_comment_notifications,
+        discoverability: settings.songs_discoverable,
+      };
+      setArtistForm(formData);
+      setInitialArtistForm(formData);
+    }
+  }, [settings]);
+
+  useEffect(() => {
+    const isDirty =
+      accountForm.username !== initialAccountForm.username ||
+      accountForm.email !== initialAccountForm.email ||
+      accountForm.privacy !== initialAccountForm.privacy ||
+      accountForm.profilePicture !== null ||
+      accountForm.removeProfilePicture === true;
+    setIsAccountDirty(isDirty);
+  }, [accountForm, initialAccountForm]);
+
+  useEffect(() => {
+    if (settings) {
+      const formData: NotificationFormData = {
+        releases: settings.release_notifications,
+        playlistLikes: settings.playlist_like_notifications,
+        followers: settings.follower_notifications,
+        commentMentions: settings.comment_tag_notifications,
+      };
+      setNotificationForm(formData);
+      setInitialNotificationForm(formData);
+    }
+  }, [settings]);
+
+  useEffect(() => {
+    const isDirty =
+      artistForm.likeNotifications !== initialArtistForm.likeNotifications ||
+      artistForm.commentNotifications !==
+        initialArtistForm.commentNotifications ||
+      artistForm.discoverability !== initialArtistForm.discoverability;
+    setIsArtistDirty(isDirty);
+  }, [artistForm, initialArtistForm]);
+
+  useEffect(() => {
+    if (settings) {
+      const formData: AppearanceFormData = {
+        colorScheme: settings.color_scheme as "system" | "light" | "dark",
+        theme: settings.color_theme,
+        zoomLevel: settings.zoom_level,
+      };
+      setAppearanceForm(formData);
+      setInitialAppearanceForm(formData);
+    }
+  }, [settings]);
+
+  useEffect(() => {
+    const isDirty =
+      notificationForm.releases !== initialNotificationForm.releases ||
+      notificationForm.playlistLikes !==
+        initialNotificationForm.playlistLikes ||
+      notificationForm.followers !== initialNotificationForm.followers ||
+      notificationForm.commentMentions !==
+        initialNotificationForm.commentMentions;
+    setIsNotificationDirty(isDirty);
+  }, [notificationForm, initialNotificationForm]);
+
+  useEffect(() => {
+    const isDirty =
+      appearanceForm.colorScheme !== initialAppearanceForm.colorScheme ||
+      appearanceForm.theme !== initialAppearanceForm.theme ||
+      appearanceForm.zoomLevel !== initialAppearanceForm.zoomLevel;
+    setIsAppearanceDirty(isDirty);
+  }, [appearanceForm, initialAppearanceForm]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleAccountFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type } = e.target;
+    setAccountForm((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+    }));
+    if (accountError) {
+      setAccountError("");
+    }
+  };
+
+  const handleAccountPrivacyChange = (checked: boolean) => {
+    setAccountForm((prev) => ({ ...prev, privacy: checked }));
+    if (accountError) {
+      setAccountError("");
+    }
+  };
+
+  const handleProfilePictureChange = (file: File | null) => {
+    if (file === null) {
+      setAccountForm((prev) => ({
+        ...prev,
+        profilePicture: null,
+        removeProfilePicture: true,
+      }));
+    } else {
+      setAccountForm((prev) => ({
+        ...prev,
+        profilePicture: file,
+        removeProfilePicture: false,
+      }));
+    }
+    if (accountError) {
+      setAccountError("");
+    }
+  };
+
+  const handleArtistFieldChange = (name: string, checked: boolean) => {
+    setArtistForm((prev) => ({ ...prev, [name]: checked }));
+    if (artistError) {
+      setArtistError("");
+    }
+  };
+
+  const handleNotificationFieldChange = (name: string, checked: boolean) => {
+    setNotificationForm((prev) => ({ ...prev, [name]: checked }));
+    if (notificationError) {
+      setNotificationError("");
+    }
+  };
+
+  const handleAppearanceFieldChange = (
+    name: string,
+    value: string | number
+  ) => {
+    setAppearanceForm((prev) => ({ ...prev, [name]: value }));
+    if (appearanceError) {
+      setAppearanceError("");
+    }
+  };
+
+  const handleAccountSave = async () => {
+    if (!user?.id) return;
+
+    setIsAccountSaving(true);
+    setAccountError("");
+
+    try {
+      const updateData: any = {
+        username: accountForm.username,
+        email: accountForm.email,
+        is_private: accountForm.privacy,
+      };
+
+      if (accountForm.removeProfilePicture) {
+        updateData.profile_picture_url = null;
+      } else if (accountForm.profilePicture) {
+        updateData.profile_picture = accountForm.profilePicture;
+      }
+
+      const updatedUser = await userApi.update(user.id, updateData);
+      updateUser(updatedUser);
+
+      const newInitialForm = {
+        ...accountForm,
+        profilePicture: null,
+        removeProfilePicture: false,
+      };
+      setInitialAccountForm(newInitialForm);
+      setAccountForm(newInitialForm);
+      setIsAccountDirty(false);
+    } catch (error: any) {
+      console.error("Error saving account settings:", error);
+      const errorMessage =
+        error.response?.data?.error || "Failed to save account settings";
+      setAccountError(errorMessage);
+    } finally {
+      setIsAccountSaving(false);
+    }
+  };
+
+  const handleArtistSave = async () => {
+    if (!user?.id) return;
+
+    setIsArtistSaving(true);
+    setArtistError("");
+
+    try {
+      await updateSettings({
+        artist_like_notifications: artistForm.likeNotifications,
+        song_comment_notifications: artistForm.commentNotifications,
+        songs_discoverable: artistForm.discoverability,
+      });
+
+      setInitialArtistForm(artistForm);
+      setIsArtistDirty(false);
+    } catch (error: any) {
+      console.error("Error saving artist settings:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to save artist settings";
+      setArtistError(errorMessage);
+    } finally {
+      setIsArtistSaving(false);
+    }
+  };
+
+  const handleNotificationsSave = async () => {
+    if (!user?.id) return;
+
+    setIsNotificationSaving(true);
+    setNotificationError("");
+
+    try {
+      await updateSettings({
+        release_notifications: notificationForm.releases,
+        playlist_like_notifications: notificationForm.playlistLikes,
+        follower_notifications: notificationForm.followers,
+        comment_tag_notifications: notificationForm.commentMentions,
+      });
+
+      setInitialNotificationForm(notificationForm);
+      setIsNotificationDirty(false);
+    } catch (error: any) {
+      console.error("Error saving notification settings:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to save notification settings";
+      setNotificationError(errorMessage);
+    } finally {
+      setIsNotificationSaving(false);
+    }
+  };
+
+  const handleAppearanceSave = async () => {
+    if (!user?.id) return;
+
+    setIsAppearanceSaving(true);
+    setAppearanceError("");
+
+    try {
+      await updateSettings({
+        color_scheme: appearanceForm.colorScheme,
+        color_theme: appearanceForm.theme,
+        zoom_level: appearanceForm.zoomLevel,
+      });
+
+      setInitialAppearanceForm(appearanceForm);
+      setIsAppearanceDirty(false);
+    } catch (error: any) {
+      console.error("Error saving appearance settings:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to save appearance settings";
+      setAppearanceError(errorMessage);
+    } finally {
+      setIsAppearanceSaving(false);
+    }
+  };
 
   const handleArtistDashboardNavigate = () => {
     navigate("/artist-dashboard");
+  };
+
+  const handleDeactivateAccount = async () => {
+    if (!user?.id) return;
+
+    await userApi.update(user.id, {
+      status: "DEACTIVATED",
+    });
+
+    await logout();
+    navigate("/login");
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.id) return;
+
+    try {
+      await userApi.delete(user.id);
+      clearAuthState();
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      await logout();
+      navigate("/login");
+    }
   };
 
   const themeOptions = [
@@ -57,62 +456,112 @@ const SettingsPage: React.FC = () => {
         <SettingsSection
           title="Account Settings"
           description="Manage your account information and preferences."
+          onSave={handleAccountSave}
+          isDirty={isAccountDirty}
+          isSaving={isAccountSaving}
+          saveError={accountError}
         >
-          {/* img */}
+          <SettingsImageUpload
+            label="Profile Picture"
+            currentImage={user?.profile_picture_url}
+            onImageChange={handleProfilePictureChange}
+            disabled={isAccountSaving}
+            hint="Change your profile picture (max 5MB)"
+          />
           <SettingsInput
             label="Username"
             name="username"
-            value={user?.username || ""}
-            onChange={() => {}}
+            value={accountForm.username}
+            onChange={handleAccountFieldChange}
             placeholder="Change username"
+            disabled={isAccountSaving}
           />
           <SettingsInput
             label="Email Address"
             name="email"
-            value={user?.email || ""}
-            onChange={() => {}}
+            value={accountForm.email}
+            onChange={handleAccountFieldChange}
             placeholder="Change email address"
+            disabled={isAccountSaving}
           />
           <SettingsToggle
             label="Account Privacy"
             name="privacy"
-            checked={false}
-            onChange={() => {}}
+            checked={accountForm.privacy}
+            onChange={handleAccountPrivacyChange}
             values={{ on: "Private", off: "Public" }}
             hint="Control whether your profile is visible to other users"
+            disabled={isAccountSaving}
           />
-          <button className={styles.settingsButton}>Change Password</button>
+          <button
+            className={styles.settingsButton}
+            type="button"
+            onClick={() => setIsPasswordModalOpen(true)}
+          >
+            Change Password
+          </button>
         </SettingsSection>
+
+        <ChangePasswordModal
+          isOpen={isPasswordModalOpen}
+          onClose={() => setIsPasswordModalOpen(false)}
+          userId={user?.id || ""}
+          onPasswordChanged={() => {
+            if (user?.id) {
+              userApi
+                .getUserById(user.id)
+                .then((updatedUser) => {
+                  updateUser(updatedUser);
+                })
+                .catch((error) => {
+                  console.error("Failed to refresh user data:", error);
+                });
+            }
+          }}
+        />
 
         {user && (user.role === "ARTIST" || user.role === "ADMIN") && (
           <SettingsSection
             title="Artist Settings"
             description="Manage your artist preferences."
+            onSave={handleArtistSave}
+            isDirty={isArtistDirty}
+            isSaving={isArtistSaving}
+            saveError={artistError}
           >
             <div className={styles.artistToggleGrid}>
               <SettingsToggle
                 label="Like Notifications"
-                name="artist-like-notifications"
-                checked={true}
-                onChange={() => {}}
+                name="likeNotifications"
+                checked={artistForm.likeNotifications}
+                onChange={(checked) =>
+                  handleArtistFieldChange("likeNotifications", checked)
+                }
                 values={{ on: "All", off: "None" }}
                 hint="Get notified when someone likes your albums or songs"
+                disabled={isArtistSaving}
               />
               <SettingsToggle
                 label="Comment Notifications"
-                name="artist-comment-notifications"
-                checked={true}
-                onChange={() => {}}
+                name="commentNotifications"
+                checked={artistForm.commentNotifications}
+                onChange={(checked) =>
+                  handleArtistFieldChange("commentNotifications", checked)
+                }
                 values={{ on: "All", off: "None" }}
                 hint="Get notified when someone comments on your song"
+                disabled={isArtistSaving}
               />
               <SettingsToggle
                 label="Discoverability"
-                name="artist-discoverability"
-                checked={true}
-                onChange={() => {}}
+                name="discoverability"
+                checked={artistForm.discoverability}
+                onChange={(checked) =>
+                  handleArtistFieldChange("discoverability", checked)
+                }
                 values={{ on: "Shown", off: "Unlisted" }}
                 hint="Control whether your profile is discoverable in searches and recommendations"
+                disabled={isArtistSaving}
               />
             </div>
             <button
@@ -127,39 +576,55 @@ const SettingsPage: React.FC = () => {
         <SettingsSection
           title="Notification Settings"
           description="Manage your notification preferences."
+          onSave={handleNotificationsSave}
+          isDirty={isNotificationDirty}
+          isSaving={isNotificationSaving}
+          saveError={notificationError}
         >
           <div className={styles.notificationsToggleGrid}>
             <SettingsToggle
               label="New Releases"
-              name="release-notifications"
-              checked={true}
-              onChange={() => {}}
+              name="releases"
+              checked={notificationForm.releases}
+              onChange={(checked) =>
+                handleNotificationFieldChange("releases", checked)
+              }
               values={{ on: "All", off: "None" }}
               hint="Get notified when artists you follow release new music"
+              disabled={isNotificationSaving}
             />
             <SettingsToggle
               label="Playlist Likes"
-              name="playlist-notifications"
-              checked={false}
-              onChange={() => {}}
+              name="playlistLikes"
+              checked={notificationForm.playlistLikes}
+              onChange={(checked) =>
+                handleNotificationFieldChange("playlistLikes", checked)
+              }
               values={{ on: "All", off: "None" }}
               hint="Get notified when someone likes your public playlists"
+              disabled={isNotificationSaving}
             />
             <SettingsToggle
               label="New Followers"
-              name="follower-notifications"
-              checked={true}
-              onChange={() => {}}
+              name="followers"
+              checked={notificationForm.followers}
+              onChange={(checked) =>
+                handleNotificationFieldChange("followers", checked)
+              }
               values={{ on: "All", off: "None" }}
               hint="Get notified when someone follows you"
+              disabled={isNotificationSaving}
             />
             <SettingsToggle
               label="Comment Mentions"
-              name="comment-notifications"
-              checked={true}
-              onChange={() => {}}
+              name="commentMentions"
+              checked={notificationForm.commentMentions}
+              onChange={(checked) =>
+                handleNotificationFieldChange("commentMentions", checked)
+              }
               values={{ on: "All", off: "None" }}
               hint="Get notified when someone mentions you in a comment"
+              disabled={isNotificationSaving}
             />
           </div>
         </SettingsSection>
@@ -167,31 +632,39 @@ const SettingsPage: React.FC = () => {
         <SettingsSection
           title="Appearance Settings"
           description="Customize the look and feel of CoogMusic."
+          onSave={handleAppearanceSave}
+          isDirty={isAppearanceDirty}
+          isSaving={isAppearanceSaving}
+          saveError={appearanceError}
         >
           <SettingsColorSchemeSelector
             label="Color Scheme"
-            value="system"
-            onChange={() => {}}
-            name="color-scheme"
-            disabled={false}
+            value={appearanceForm.colorScheme}
+            onChange={(value) =>
+              handleAppearanceFieldChange("colorScheme", value)
+            }
+            name="colorScheme"
+            disabled={isAppearanceSaving}
           />
           <SettingsDropdown
             label="Theme"
             name="theme"
-            value="default"
+            value={appearanceForm.theme}
             options={themeOptions}
-            onChange={() => {}}
+            onChange={(value) => handleAppearanceFieldChange("theme", value)}
             hint="Select your preferred application theme"
             placeholder="Select Theme"
-            disabled={false}
+            disabled={isAppearanceSaving}
           />
           <SettingsRadio
             label="Zoom Level"
-            name="zoom-level"
-            value="100"
-            onChange={() => {}}
+            name="zoomLevel"
+            value={appearanceForm.zoomLevel.toString()}
+            onChange={(value) =>
+              handleAppearanceFieldChange("zoomLevel", parseInt(value))
+            }
             options={zoomOptions}
-            disabled={false}
+            disabled={isAppearanceSaving}
             hint="Adjust the overall zoom level of the application"
           />
         </SettingsSection>
@@ -203,10 +676,18 @@ const SettingsPage: React.FC = () => {
           hasForm={false}
         >
           <div className={styles.dangerButtonContainer}>
-            <button className={styles.dangerButton} onClick={() => {}}>
+            <button
+              className={styles.dangerButton}
+              onClick={() => setIsDeactivateModalOpen(true)}
+              type="button"
+            >
               Deactivate Account
             </button>
-            <button className={styles.dangerButton} onClick={() => {}}>
+            <button
+              className={styles.dangerButton}
+              onClick={() => setIsDeleteModalOpen(true)}
+              type="button"
+            >
               Delete Account
             </button>
           </div>
@@ -222,6 +703,27 @@ const SettingsPage: React.FC = () => {
             </span>
           </div>
         </SettingsSection>
+
+        <ConfirmationModal
+          isOpen={isDeactivateModalOpen}
+          onClose={() => setIsDeactivateModalOpen(false)}
+          onConfirm={handleDeactivateAccount}
+          title="Deactivate Account"
+          message="Are you sure you want to deactivate your account? Your profile will be disabled and your presence will be removed from CoogMusic. You can reactivate your account by logging in again."
+          confirmButtonText="Deactivate Account"
+          isDangerous={true}
+        />
+
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDeleteAccount}
+          title="Delete Account"
+          message="Are you sure you want to permanently delete your account? This will erase all your data including playlists, likes, and history."
+          warningMessage="This action is permanent and cannot be undone. All your data will be permanently deleted."
+          confirmButtonText="Delete Account"
+          isDangerous={true}
+        />
       </div>
     </>
   );

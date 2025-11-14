@@ -34,9 +34,9 @@
 }
 
 .closeButton:hover {
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
 }
 
 .closeButton:active {
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
 }

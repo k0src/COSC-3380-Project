@@ -9,6 +9,10 @@ export interface SettingsSectionProps {
   showDivider?: boolean;
   danger?: boolean;
   hasForm?: boolean;
+  onSave?: () => Promise<void>;
+  isDirty?: boolean;
+  isSaving?: boolean;
+  saveError?: string;
 }
 
 const SettingsSection: React.FC<SettingsSectionProps> = ({
@@ -18,9 +22,20 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
   showDivider = true,
   danger = false,
   hasForm = true,
+  onSave,
+  isDirty = false,
+  isSaving = false,
+  saveError,
 }) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onSave && !isSaving) {
+      await onSave();
+    }
+  };
+
   return (
-    <form className={styles.settingsSection}>
+    <form className={styles.settingsSection} onSubmit={handleSubmit}>
       <div className={styles.settingsContent}>
         <div className={styles.settingsTitleContainer}>
           <span
@@ -36,15 +51,25 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
         </div>
         <div className={styles.settings}>
           {children}
-          <div className={styles.settingsButtonContainer}>
-            {/* <span className={styles.unsavedText}>
-              You have unsaved changes.
-            </span> */}
-            {/* render conditionally */}
-            {hasForm && (
-              <button className={styles.saveButton}>Save Changes</button>
-            )}
-          </div>
+          {hasForm && (
+            <div className={styles.settingsButtonContainer}>
+              {isDirty && (
+                <span className={styles.unsavedText}>
+                  You have unsaved changes.
+                </span>
+              )}
+              {saveError && (
+                <span className={styles.unsavedText}>{saveError}</span>
+              )}
+              <button
+                type="submit"
+                className={styles.saveButton}
+                disabled={isSaving || !isDirty}
+              >
+                {isSaving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
       {showDivider && <div className={styles.settingsDivider}></div>}

@@ -178,13 +178,15 @@ router.post(
         return;
       }
 
-      if (user.status !== "ACTIVE") {
+      if (user.status === "SUSPENDED") {
         res.status(401).json({
           error: "Unauthorized",
-          message: "Account is not active",
+          message: "Account is suspended",
           statusCode: 401,
         });
         return;
+      } else if (user.status === "DEACTIVATED") {
+        await UserRepository.update(user.id, { status: "ACTIVE" });
       }
 
       const tokens = generateTokenPair({
