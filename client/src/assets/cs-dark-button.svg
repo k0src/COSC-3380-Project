@@ -1,0 +1,68 @@
+<svg width="960" height="660" viewBox="0 0 960 660" fill="none"
+	xmlns="http://www.w3.org/2000/svg">
+	<g clip-path="url(#clip0_1_2)">
+		<rect width="960" height="660" fill="var(--color-theme-dark-preview-panel)"/>
+		<g filter="url(#filter0_d_1_2)">
+			<rect x="71.5" y="71.5" width="1270" height="808" rx="22.5" fill="var(--color-theme-dark-preview-bg)" stroke="var(--panel-border)" stroke-width="3"/>
+			<rect x="90" y="91" width="60" height="766" rx="12" fill="var(--color-theme-dark-preview-panel)"/>
+			<rect x="1320" y="91" width="54.0001" height="1162" rx="12" transform="rotate(90 1320 91)" fill="var(--color-theme-dark-preview-panel)"/>
+			<rect x="173" y="168" width="852" height="211" rx="12" fill="var(--color-theme-dark-preview-panel)"/>
+			<rect x="388" y="203" width="265" height="50" rx="12" fill="var(--color-theme-dark-preview-border)"/>
+			<rect x="173" y="404" width="249" height="142" rx="12" fill="var(--color-theme-dark-preview-panel)"/>
+			<rect x="440" y="404" width="585" height="404" rx="12" fill="var(--color-theme-dark-preview-border)"/>
+			<rect x="173" y="559" width="249" height="66" rx="12" fill="var(--color-theme-dark-preview-panel)"/>
+			<rect x="194" y="193" width="176" height="162" rx="12" fill="var(--color-theme-dark-preview-border)"/>
+			<circle cx="418.5" cy="308.5" r="27.5" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="467" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="797.731" y="274" width="6.89022" height="69" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="632.365" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="549.683" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="880.414" y="280.815" width="6.89022" height="55.3704" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="715.048" y="276.556" width="6.89022" height="63.8889" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="508.341" y="292.741" width="6.89022" height="31.5185" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="839.072" y="276.556" width="6.89022" height="63.8889" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="673.707" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="591.024" y="274" width="6.89022" height="69" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="921.755" y="274" width="6.89022" height="69" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="756.389" y="280.815" width="6.89022" height="55.3704" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="480.78" y="280.815" width="6.89022" height="55.3704" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="811.511" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="646.146" y="292.741" width="6.89022" height="31.5185" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="563.463" y="292.741" width="6.89022" height="31.5185" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="894.194" y="292.741" width="6.89022" height="31.5185" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="728.829" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="522.122" y="280.815" width="6.89022" height="55.3704" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="852.853" y="280.815" width="6.89022" height="55.3704" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="687.487" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="604.805" y="274" width="6.89022" height="69" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="935.535" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="770.17" y="280.815" width="6.89022" height="55.3704" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="494.561" y="292.741" width="6.89022" height="31.5185" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="825.292" y="292.741" width="6.89022" height="31.5185" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="659.926" y="280.815" width="6.89022" height="55.3704" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="577.244" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="907.974" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="742.609" y="292.741" width="6.89022" height="31.5185" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="535.902" y="280.815" width="6.89022" height="55.3704" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="866.633" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="701.268" y="276.556" width="6.89022" height="63.8889" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="618.585" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+			<rect x="783.95" y="287.63" width="6.89022" height="41.7407" rx="3.44511" fill="var(--color-theme-dark-preview-accent)"/>
+		</g>
+	</g>
+	<defs>
+		<filter id="filter0_d_1_2" x="60" y="68" width="1285" height="823" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+			<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+			<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+			<feOffset dx="-4" dy="4"/>
+			<feGaussianBlur stdDeviation="3"/>
+			<feComposite in2="hardAlpha" operator="out"/>
+			<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+			<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_2"/>
+			<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_2" result="shape"/>
+		</filter>
+		<clipPath id="clip0_1_2">
+			<rect width="960" height="660" fill="white"/>
+		</clipPath>
+	</defs>
+</svg>

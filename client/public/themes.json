@@ -58,7 +58,15 @@
         "--shadow-sd-hover": "0 0 15px rgba(0, 0, 0, 0.15)",
         "--shadow-md": "0 4px 8px rgba(0, 0, 0, 0.1)",
         "--shadow-tooltip": "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "--color-theme-dark-preview-bg": "#080808",
+        "--color-theme-dark-preview-panel": "#161616",
+        "--color-theme-dark-preview-border": "#1c1c1c",
+        "--color-theme-dark-preview-accent": "#d53131",
+        "--color-theme-light-preview-bg": "#ffffff",
+        "--color-theme-light-preview-panel": "#f5f5f5",
+        "--color-theme-light-preview-border": "#e8e8e8",
+        "--color-theme-light-preview-accent": "#d53131"
       }
     },
     "nordic": {
@@ -119,7 +127,15 @@
         "--shadow-sd-hover": "0 0 15px rgba(0, 0, 0, 0.15)",
         "--shadow-md": "0 4px 8px rgba(0, 0, 0, 0.1)",
         "--shadow-tooltip": "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "--color-theme-dark-preview-bg": "#2e3440",
+        "--color-theme-dark-preview-panel": "#3b4252",
+        "--color-theme-dark-preview-border": "#434c5e",
+        "--color-theme-dark-preview-accent": "#88c0d0",
+        "--color-theme-light-preview-bg": "#eceff4",
+        "--color-theme-light-preview-panel": "#e5e9f0",
+        "--color-theme-light-preview-border": "#d8dee9",
+        "--color-theme-light-preview-accent": "#88c0d0"
       }
     },
     "jazzy": {
@@ -180,7 +196,15 @@
         "--shadow-sd-hover": "0 0 15px rgba(0, 0, 0, 0.15)",
         "--shadow-md": "0 4px 8px rgba(0, 0, 0, 0.1)",
         "--shadow-tooltip": "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "--color-theme-dark-preview-bg": "#1e1f29",
+        "--color-theme-dark-preview-panel": "#2b2d3a",
+        "--color-theme-dark-preview-border": "#3a3c4f",
+        "--color-theme-dark-preview-accent": "#78d7ff",
+        "--color-theme-light-preview-bg": "#ffffff",
+        "--color-theme-light-preview-panel": "#f0f1f2",
+        "--color-theme-light-preview-border": "#e0e2e5",
+        "--color-theme-light-preview-accent": "#57c7ff"
       }
     },
     "dracula": {
@@ -241,7 +265,15 @@
         "--shadow-sd-hover": "0 0 15px rgba(0, 0, 0, 0.15)",
         "--shadow-md": "0 4px 8px rgba(0, 0, 0, 0.1)",
         "--shadow-tooltip": "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "--color-theme-dark-preview-bg": "#282a36",
+        "--color-theme-dark-preview-panel": "#44475a",
+        "--color-theme-dark-preview-border": "#4d5066",
+        "--color-theme-dark-preview-accent": "#bd93f9",
+        "--color-theme-light-preview-bg": "#f8f8f2",
+        "--color-theme-light-preview-panel": "#f0eff4",
+        "--color-theme-light-preview-border": "#e5e4eb",
+        "--color-theme-light-preview-accent": "#bd93f9"
       }
     },
     "atom": {
@@ -302,7 +334,15 @@
         "--shadow-sd-hover": "0 0 15px rgba(0, 0, 0, 0.15)",
         "--shadow-md": "0 4px 8px rgba(0, 0, 0, 0.1)",
         "--shadow-tooltip": "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "--color-theme-dark-preview-bg": "#282c34",
+        "--color-theme-dark-preview-panel": "#2c313c",
+        "--color-theme-dark-preview-border": "#3a3f4b",
+        "--color-theme-dark-preview-accent": "#61afef",
+        "--color-theme-light-preview-bg": "#fafafa",
+        "--color-theme-light-preview-panel": "#f0f0f1",
+        "--color-theme-light-preview-border": "#e5e5e6",
+        "--color-theme-light-preview-accent": "#61afef"
       }
     },
     "neobrutalist": {
@@ -363,7 +403,15 @@
         "--shadow-sd-hover": "6px 6px 0px rgba(0, 0, 0, 1)",
         "--shadow-md": "5px 5px 0px rgba(0, 0, 0, 1)",
         "--shadow-tooltip": "3px 3px 0px rgba(0, 0, 0, 1)",
-        "--shadow-lightbox": "8px 8px 0px rgba(0, 0, 0, 1)"
+        "--shadow-lightbox": "8px 8px 0px rgba(0, 0, 0, 1)",
+        "--color-theme-dark-preview-bg": "#000000",
+        "--color-theme-dark-preview-panel": "#1a1a1a",
+        "--color-theme-dark-preview-border": "#242424",
+        "--color-theme-dark-preview-accent": "#ff6ec7",
+        "--color-theme-light-preview-bg": "#ffffff",
+        "--color-theme-light-preview-panel": "#f5f5f5",
+        "--color-theme-light-preview-border": "#333333",
+        "--color-theme-light-preview-accent": "#ff6ec7"
       }
     }
   },
@@ -426,7 +474,15 @@
         "--shadow-sd-hover": "0 0 15px rgba(0, 0, 0, 0.6)",
         "--shadow-md": "0 4px 8px rgba(0, 0, 0, 0.3)",
         "--shadow-tooltip": "0 4px 6px -1px rgba(0, 0, 0, 0.3)",
-        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "--color-theme-dark-preview-bg": "#080808",
+        "--color-theme-dark-preview-panel": "#161616",
+        "--color-theme-dark-preview-border": "#1c1c1c",
+        "--color-theme-dark-preview-accent": "#d53131",
+        "--color-theme-light-preview-bg": "#ffffff",
+        "--color-theme-light-preview-panel": "#f5f5f5",
+        "--color-theme-light-preview-border": "#e8e8e8",
+        "--color-theme-light-preview-accent": "#d53131"
       }
     },
     "nordic": {
@@ -487,7 +543,15 @@
         "--shadow-sd-hover": "0 0 15px rgba(0, 0, 0, 0.6)",
         "--shadow-md": "0 4px 8px rgba(0, 0, 0, 0.3)",
         "--shadow-tooltip": "0 4px 6px -1px rgba(0, 0, 0, 0.3)",
-        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "--color-theme-dark-preview-bg": "#2e3440",
+        "--color-theme-dark-preview-panel": "#3b4252",
+        "--color-theme-dark-preview-border": "#434c5e",
+        "--color-theme-dark-preview-accent": "#88c0d0",
+        "--color-theme-light-preview-bg": "#eceff4",
+        "--color-theme-light-preview-panel": "#e5e9f0",
+        "--color-theme-light-preview-border": "#d8dee9",
+        "--color-theme-light-preview-accent": "#88c0d0"
       }
     },
     "jazzy": {
@@ -548,7 +612,15 @@
         "--shadow-sd-hover": "0 0 15px rgba(0, 0, 0, 0.6)",
         "--shadow-md": "0 4px 8px rgba(0, 0, 0, 0.3)",
         "--shadow-tooltip": "0 4px 6px -1px rgba(0, 0, 0, 0.3)",
-        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "--color-theme-dark-preview-bg": "#1e1f29",
+        "--color-theme-dark-preview-panel": "#2b2d3a",
+        "--color-theme-dark-preview-border": "#3a3c4f",
+        "--color-theme-dark-preview-accent": "#78d7ff",
+        "--color-theme-light-preview-bg": "#ffffff",
+        "--color-theme-light-preview-panel": "#f0f1f2",
+        "--color-theme-light-preview-border": "#e0e2e5",
+        "--color-theme-light-preview-accent": "#57c7ff"
       }
     },
     "dracula": {
@@ -609,7 +681,15 @@
         "--shadow-sd-hover": "0 0 15px rgba(0, 0, 0, 0.6)",
         "--shadow-md": "0 4px 8px rgba(0, 0, 0, 0.3)",
         "--shadow-tooltip": "0 4px 6px -1px rgba(0, 0, 0, 0.3)",
-        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "--color-theme-dark-preview-bg": "#282a36",
+        "--color-theme-dark-preview-panel": "#44475a",
+        "--color-theme-dark-preview-border": "#4d5066",
+        "--color-theme-dark-preview-accent": "#bd93f9",
+        "--color-theme-light-preview-bg": "#f8f8f2",
+        "--color-theme-light-preview-panel": "#f0eff4",
+        "--color-theme-light-preview-border": "#e5e4eb",
+        "--color-theme-light-preview-accent": "#bd93f9"
       }
     },
     "atom": {
@@ -670,7 +750,15 @@
         "--shadow-sd-hover": "0 0 15px rgba(0, 0, 0, 0.6)",
         "--shadow-md": "0 4px 8px rgba(0, 0, 0, 0.3)",
         "--shadow-tooltip": "0 4px 6px -1px rgba(0, 0, 0, 0.3)",
-        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        "--shadow-lightbox": "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "--color-theme-dark-preview-bg": "#282c34",
+        "--color-theme-dark-preview-panel": "#2c313c",
+        "--color-theme-dark-preview-border": "#3a3f4b",
+        "--color-theme-dark-preview-accent": "#61afef",
+        "--color-theme-light-preview-bg": "#fafafa",
+        "--color-theme-light-preview-panel": "#f0f0f1",
+        "--color-theme-light-preview-border": "#e5e5e6",
+        "--color-theme-light-preview-accent": "#61afef"
       }
     },
     "neobrutalist": {
@@ -731,7 +819,15 @@
         "--shadow-sd-hover": "6px 6px 0px rgba(0,0,0,1)",
         "--shadow-md": "5px 5px 0px rgba(0,0,0,1)",
         "--shadow-tooltip": "3px 3px 0px rgba(0,0,0,1)",
-        "--shadow-lightbox": "8px 8px 0px rgba(0,0,0,1)"
+        "--shadow-lightbox": "8px 8px 0px rgba(0,0,0,1)",
+        "--color-theme-dark-preview-bg": "#000000",
+        "--color-theme-dark-preview-panel": "#1a1a1a",
+        "--color-theme-dark-preview-border": "#242424",
+        "--color-theme-dark-preview-accent": "#ff6ec7",
+        "--color-theme-light-preview-bg": "#ffffff",
+        "--color-theme-light-preview-panel": "#f5f5f5",
+        "--color-theme-light-preview-border": "#333333",
+        "--color-theme-light-preview-accent": "#ff6ec7"
       }
     }
   }

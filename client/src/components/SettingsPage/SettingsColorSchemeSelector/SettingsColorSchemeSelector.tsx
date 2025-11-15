@@ -1,8 +1,8 @@
 import { memo, useMemo } from "react";
 import styles from "./SettingsColorSchemeSelector.module.css";
 import classNames from "classnames";
-import lightButton from "@assets/theme-light-button.webp";
-import darkButton from "@assets/theme-dark-button.webp";
+import DarkSchemeButton from "@assets/cs-dark-button.svg?react";
+import LightSchemeButton from "@assets/cs-light-button.svg?react";
 
 export interface SettingsColorSchemeSelectorProps {
   label: string;
@@ -22,7 +22,13 @@ const SettingsColorSchemeSelector: React.FC<
       : "light";
   }, []);
 
-  const systemImage = systemPreference === "dark" ? darkButton : lightButton;
+  const systemButton = useMemo(() => {
+    return systemPreference === "dark" ? (
+      <DarkSchemeButton className={styles.colorSchemeImage} />
+    ) : (
+      <LightSchemeButton className={styles.colorSchemeImage} />
+    );
+  }, [systemPreference]);
 
   const handleSelect = (scheme: "system" | "light" | "dark") => {
     if (!disabled) {
@@ -43,11 +49,7 @@ const SettingsColorSchemeSelector: React.FC<
             [styles.colorSchemeButtonDisabled]: disabled,
           })}
         >
-          <img
-            src={systemImage}
-            alt="System"
-            className={styles.colorSchemeImage}
-          />
+          {systemButton}
           <span className={styles.colorSchemeLabel}>System</span>
         </button>
 
@@ -60,11 +62,7 @@ const SettingsColorSchemeSelector: React.FC<
             [styles.colorSchemeButtonDisabled]: disabled,
           })}
         >
-          <img
-            src={lightButton}
-            alt="Light"
-            className={styles.colorSchemeImage}
-          />
+          <LightSchemeButton className={styles.colorSchemeImage} />
           <span className={styles.colorSchemeLabel}>Light</span>
         </button>
 
@@ -77,11 +75,7 @@ const SettingsColorSchemeSelector: React.FC<
             [styles.colorSchemeButtonDisabled]: disabled,
           })}
         >
-          <img
-            src={darkButton}
-            alt="Dark"
-            className={styles.colorSchemeImage}
-          />
+          <DarkSchemeButton className={styles.colorSchemeImage} />
           <span className={styles.colorSchemeLabel}>Dark</span>
         </button>
       </div>

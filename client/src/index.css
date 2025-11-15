@@ -192,6 +192,17 @@ html {
     forwards;
   --animation-context-menu-fade-in: contextMenufadeIn var(--transition-speed)
     ease-out;
+
+  /* For Color Scheme Selector Previews */
+  --color-theme-dark-preview-bg: #080808;
+  --color-theme-dark-preview-panel: #161616;
+  --color-theme-dark-preview-border: #1c1c1c;
+  --color-theme-dark-preview-accent: #d53131;
+
+  --color-theme-light-preview-bg: #ffffff;
+  --color-theme-light-preview-panel: #f5f5f5;
+  --color-theme-light-preview-border: #e8e8e8;
+  --color-theme-light-preview-accent: #d53131;
 }
 
 @keyframes fadeIn {
