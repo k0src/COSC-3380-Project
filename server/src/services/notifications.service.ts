@@ -17,7 +17,9 @@ export default class NotificationsService {
     try {
       const result = await query(
         `SELECT * FROM user_notifications
-        WHERE user_id = $1 AND ($2::boolean OR is_read = FALSE)
+        WHERE user_id = $1 
+          AND ($2::boolean OR is_read = FALSE) 
+          AND archived = FALSE
         ORDER BY notified_at DESC`,
         [userId, includeRead]
       );
@@ -65,6 +67,68 @@ export default class NotificationsService {
       });
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Archives a notification for a user.
+   * @param userId The ID of the user.
+   * @param notificationId The ID of the notification.
+   */
+  static async archive(userId: UUID, notificationId: UUID) {
+    try {
+      await withTransaction(async (client) => {
+        await client.query(
+          `UPDATE user_notifications
+          SET archived = TRUE, read_at = COALESCE(read_at, NOW())
+          WHERE user_id = $1 AND id = $2`,
+          [userId, notificationId]
+        );
+      });
+    } catch (error) {
+      console.error("Error archiving notification:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Archives all notifications for a user.
+   * @param userId The ID of the user.
+   */
+  static async archiveAll(userId: UUID) {
+    try {
+      await withTransaction(async (client) => {
+        await client.query(
+          `UPDATE user_notifications
+          SET archived = TRUE, read_at = COALESCE(read_at, NOW())
+          WHERE user_id = $1`,
+          [userId]
+        );
+      });
+    } catch (error) {
+      console.error("Error archiving all notifications:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Checks if a user has unread notifications.
+   * @param userId The ID of the user.
+   * @returns True if there are unread notifications, false otherwise.
+   */
+  static async hasUnreadNotifications(userId: UUID): Promise<boolean> {
+    try {
+      const result = await query(
+        `SELECT EXISTS (
+          SELECT 1 FROM user_notifications
+          WHERE user_id = $1 AND is_read = FALSE AND archived = FALSE
+        ) AS has_unread`,
+        [userId]
+      );
+      return result[0]?.has_unread ?? false;
+    } catch (error) {
+      console.error("Error checking for unread notifications:", error);
       throw error;
     }
   }

@@ -57,9 +57,7 @@ const UserInfoFollowing: React.FC<{ userId: UUID; username: string }> = ({
                 alt={follower.username}
                 imgClassNames={[styles.followAvatar]}
               />
-              <Link className={styles.followName} to={`/users/${follower.id}`}>
-                {follower.username}
-              </Link>
+              <span className={styles.followName}>{follower.username}</span>
             </Link>
           ))}
         </div>

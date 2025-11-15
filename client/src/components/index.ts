@@ -8,6 +8,8 @@ export { default as MainLayoutHeader } from "./MainLayout/MainLayoutHeader/MainL
 export { default as MainLayoutSidebar } from "./MainLayout/MainLayoutSidebar/MainLayoutSidebar.js";
 export { default as MainLayoutSearchBar } from "./MainLayout/MainLayoutSearchBar/MainLayoutSearchBar.js";
 export { default as MainLayoutNowPlayingBar } from "./MainLayout/MainLayoutNowPlayingBar/MainLayoutNowPlayingBar.js";
+export { default as QueueManager } from "./MainLayout/QueueManager/QueueManager.js";
+export { default as NotificationModal } from "./MainLayout/NotificationModal/NotificationModal.js";
 
 /* ================================= Routes ================================= */
 export { default as ProtectedRoute } from "./ProtectedRoute/ProtectedRoute.js";
@@ -106,7 +108,6 @@ export { default as ShareModal } from "./ShareModal/ShareModal.js";
 export { default as KeyboardShortcutsModal } from "./KeyboardShortcutsModal/KeyboardShortcutsModal.js";
 export { default as QueueMenu } from "./QueueMenu/QueueMenu.js";
 export { default as CoverLightbox } from "./CoverLightbox/CoverLightbox.js";
-export { default as QueueManager } from "./MainLayout/QueueManager/QueueManager.js";
 export { default as ContextMenu } from "./ContextMenu/ContextMenu.js";
 
 /* =============================== Page States ============================== */

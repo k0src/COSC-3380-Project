@@ -900,6 +900,26 @@ router.get(
   }
 );
 
+// GET /api/users/:id/notifications/check
+router.get(
+  "/:id/notifications/check",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const hasUnread = await NotificationsService.hasUnreadNotifications(id);
+      res.status(200).json({ hasUnread });
+    } catch (error) {
+      console.error("Error in GET /users/:id/notifications/check:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
 // PUT /api/users/:id/notifications/:notificationId/read
 router.put(
   "/:id/notifications/:notificationId/read",
@@ -938,6 +958,54 @@ router.put(
       res.status(200).json({ message: "All notifications marked as read" });
     } catch (error) {
       console.error("Error in PUT /users/:id/notifications/read-all:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// PUT /api/users/:id/notifications/:notificationId/archive
+router.put(
+  "/:id/notifications/:notificationId/archive",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id, notificationId } = req.params;
+      if (!id || !notificationId) {
+        res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
+      await NotificationsService.archive(id, notificationId);
+      res.status(200).json({ message: "Notification archived successfully" });
+    } catch (error) {
+      console.error(
+        "Error in PUT /users/:id/notifications/:notificationId/archive:",
+        error
+      );
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// PUT /api/users/:id/notifications/archive-all
+router.put(
+  "/:id/notifications/archive-all",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      await NotificationsService.archiveAll(id);
+      res
+        .status(200)
+        .json({ message: "All notifications archived successfully" });
+    } catch (error) {
+      console.error(
+        "Error in PUT /users/:id/notifications/archive-all:",
+        error
+      );
       res.status(500).json({ error: "Internal server error" });
     }
   }

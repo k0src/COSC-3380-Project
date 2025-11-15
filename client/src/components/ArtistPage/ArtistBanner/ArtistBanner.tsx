@@ -37,6 +37,7 @@ const ArtistBanner: React.FC<ArtistBannerProps> = ({
     setIsLightboxOpen(true);
   }, []);
 
+  //! fix me!!!
   const bannerStyle = useMemo(
     () =>
       ({

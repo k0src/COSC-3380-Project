@@ -27,12 +27,12 @@
 .headerButtons {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-lg);
 }
 
 .title {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: 500;
   color: var(--color-white);
   margin: 0;
 }
@@ -41,13 +41,11 @@
   background: none;
   border: none;
   color: var(--color-text-gray);
-  font-size: var(--font-size-lg);
+  font-size: var(--icon-size-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xs);
-  border-radius: var(--border-radius-sm);
   transition: all var(--transition-speed) ease;
 }
 
@@ -60,12 +58,11 @@
   background: none;
   border: none;
   color: var(--color-text-gray);
-  font-size: var(--font-size-lg);
+  font-size: var(--icon-size-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xs);
   transition: all var(--transition-speed) ease;
 }
 

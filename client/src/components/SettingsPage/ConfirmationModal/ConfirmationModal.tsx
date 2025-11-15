@@ -1,6 +1,6 @@
 import { useState, memo, useEffect } from "react";
-import { LuX } from "react-icons/lu";
 import styles from "./ConfirmationModal.module.css";
+import { LuX } from "react-icons/lu";
 
 interface ConfirmationModalProps {
   isOpen: boolean;

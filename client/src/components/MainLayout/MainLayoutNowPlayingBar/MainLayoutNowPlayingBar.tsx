@@ -16,8 +16,8 @@ import {
   CoverLightbox,
   KeyboardShortcutsModal,
   LazyImg,
+  QueueManager,
 } from "@components";
-import { QueueManager } from "@components";
 import classNames from "classnames";
 import styles from "./MainLayoutNowPlayingBar.module.css";
 import {
