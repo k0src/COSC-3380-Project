@@ -1,4 +1,4 @@
-import { memo, useEffect } from "react";
+import { memo } from "react";
 import { PuffLoader } from "react-spinners";
 import type { UUID } from "@types";
 import { useAsyncData } from "@hooks";
@@ -25,10 +25,6 @@ const UserPlaylists: React.FC<UserPlaylistsProps> = ({ userId, username }) => {
       hasBlobUrl: true,
     }
   );
-
-  useEffect(() => {
-    console.log("UserPlaylists data:", data);
-  }, [data]);
 
   if (loading) {
     return (
