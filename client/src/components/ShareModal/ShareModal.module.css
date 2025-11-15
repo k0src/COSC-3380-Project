@@ -91,7 +91,7 @@
 }
 
 .socialButton:hover {
-  background: var(--color-gray-button-border);
+  background: var(--color-gray-button-hover);
 }
 
 .socialLabel {
@@ -135,7 +135,7 @@
 .copyButton {
   position: absolute;
   right: 0.3125rem;
-  background: var(--color-gray-button-border);
+  background: var(--color-gray-button);
   border: none;
   border-radius: 0.6rem;
   padding: 0.8rem;
@@ -149,7 +149,7 @@
 }
 
 .copyButton:hover {
-  background: #5d5d5d;
+  background: var(--color-gray-button-hover);
   color: var(--color-white);
 }
 
