@@ -8,6 +8,7 @@ import type {
   Comment,
   User,
   UserSettings,
+  Artist,
 } from "@types";
 
 export const userApi = {
@@ -208,6 +209,16 @@ export const userApi = {
 
   async getSettings(id: UUID) {
     const response = await api.get<UserSettings>(`/users/${id}/settings`);
+    return response.data;
+  },
+
+  async getRecommendedArtists(id: UUID, limit?: number) {
+    const response = await api.get<Artist[]>(
+      `/users/${id}/recommendedArtists`,
+      {
+        params: { limit },
+      }
+    );
     return response.data;
   },
 };

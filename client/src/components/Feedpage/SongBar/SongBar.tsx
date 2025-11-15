@@ -28,9 +28,13 @@ const SongBar: React.FC<SongBarProps> = ({
 
       <div className={styles.details}>
         <div className={styles.primaryInfo}>
+        <div className={styles.titleContainer}>
           <h3 className={styles.title}>{title}</h3>
           <p className={styles.artist}>{artist}</p>
-          <span className={styles.genre}>{genre}</span>
+        </div>
+          <div className={styles.genreContainer}>
+            <span className={styles.genre}>{genre}</span>
+          </div>
         </div>
 
         <div className={styles.stats}>

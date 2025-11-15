@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { UserRepository } from "@repositories";
+import { UserRepository, ArtistRepository } from "@repositories";
 import {
   FollowService,
   HistoryService,
@@ -7,6 +7,7 @@ import {
   LibraryService,
   UserSettingsService,
 } from "@services";
+import { artistRoutes } from "@routes";
 
 const router = express.Router();
 
@@ -422,6 +423,68 @@ router.get(
     } catch (error) {
       console.error("Error in GET /users/:id/following/check:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// GET /api/users/:id/recommendedArtists
+router.get(
+  "/:id/recommendedArtists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const { limit } = req.query;
+
+      const following = await FollowService.getFollowing(id);
+      const followedArtistIds = following
+        .map((user) => user.artist_id)
+        .filter((artistId): artistId is string => Boolean(artistId));
+
+      const relatedArtistsArrays = await Promise.all(
+        followedArtistIds.map((artistId) =>
+          ArtistRepository.getRelatedArtists(artistId, {
+            includeUser: true,
+            limit: 10,
+          })
+        )
+      );
+
+      const allRelated = relatedArtistsArrays.flat();
+      const uniqueRelated = Array.from(
+        new Map(allRelated.map((artist) => [artist.id, artist])).values()
+      );
+
+      const recommendedArtists = uniqueRelated.filter(
+        (artist) => !followedArtistIds.includes(artist.id)
+      );
+
+      const artistsWithFollowers = await Promise.all(
+        recommendedArtists.map(async (artist) => {
+          if (artist.user_id) {
+            const followerCount = await FollowService.getFollowerCount(
+              artist.user_id
+            );
+            const streamCount = await ArtistRepository.getTotalStreams(artist.id);
+            return { ...artist, follower_count: followerCount, stream_count: streamCount };
+          }
+          return { ...artist, follower_count: 0, stream_count: 0 };
+        })
+      );
+
+      const limitNum = limit ? parseInt(limit as string) : undefined;
+      const result = limitNum
+        ? artistsWithFollowers.slice(0, limitNum)
+        : artistsWithFollowers;
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching recommended artists:", error);
+      res.status(500).json({ error: "Failed to fetch recommended artists" });
     }
   }
 );

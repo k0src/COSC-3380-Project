@@ -21,6 +21,10 @@ export { default as AppLayout } from "./AppLayout/AppLayout.js";
 export { default as FeaturedSection } from "./HomePage/FeaturedSection/FeaturedSection.js";
 export { default as SongCard } from "./HomePage/SongCard/SongCard.js";
 
+/* ============================ Feed Components ============================ */
+export { default as ArtistBar } from "./Feedpage/ArtistBar/ArtistBar.js";
+export { default as SongBar } from "./Feedpage/SongBar/SongBar.js";
+
 /* ================================ Song Page ================================ */
 export { default as WaveformPlayer } from "./SongPage/WaveformPlayer/WaveformPlayer.js";
 export { default as SongContainer } from "./SongPage/SongContainer/SongContainer.js";
