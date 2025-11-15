@@ -18,3 +18,7 @@ export interface Album {
 
   type: "album";
 }
+
+export interface LibraryAlbum extends Album {
+  played_at?: string;
+}

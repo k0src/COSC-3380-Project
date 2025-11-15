@@ -131,6 +131,7 @@ html {
   --artist-banner-height: 32rem;
 
   --container-image-size: 24rem;
+  --container-image-size-sm: 14rem;
 
   --spacing-input: 1.4rem;
 
@@ -159,6 +160,7 @@ html {
   --font-size-5xl: 7.2rem;
 
   --font-size-container-title: 4.2rem;
+  --font-size-container-title-sm: 3.6rem;
 
   /* Icon Sizes */
   --icon-size-xs: 1.4rem;

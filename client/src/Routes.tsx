@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import * as Pages from "./pages";
-import { AppLayout, MainLayout, PageLoader } from "@components";
+import { AppLayout, MainLayout, PageLoader, MeWrapper } from "@components";
 import { useAuth } from "@contexts";
 
 export default function AppRoutes() {
@@ -64,6 +64,15 @@ export default function AppRoutes() {
               element={
                 <MainLayout>
                   <Pages.AlbumPage />
+                </MainLayout>
+              }
+            />
+            <Route path="/me" element={<MeWrapper />} />
+            <Route
+              path="/users/:id"
+              element={
+                <MainLayout>
+                  <Pages.UserPage />
                 </MainLayout>
               }
             />

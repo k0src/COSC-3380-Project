@@ -7,6 +7,7 @@ import type {
   LibraryPlaylist,
   LibrarySearchResults,
   Artist,
+  RecentlyPlayedItemsArray,
 } from "@types";
 
 export const libraryApi = {
@@ -25,6 +26,16 @@ export const libraryApi = {
       `/users/${userId}/library/recent`,
       {
         params: { maxItems },
+      }
+    );
+    return response.data;
+  },
+
+  async getRecentlyPlayedArray(userId: UUID, maxItems: number) {
+    const response = await api.get<RecentlyPlayedItemsArray>(
+      `/users/${userId}/library/recent`,
+      {
+        params: { maxItems, array: true },
       }
     );
     return response.data;

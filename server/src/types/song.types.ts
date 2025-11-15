@@ -50,3 +50,7 @@ export interface SongData {
   image_url?: string; // file in blob storage (i.e., [uuid]-cover.jpg)
   audio_url?: string; // file in to blob storage (i.e., [uuid]-audio.mp3)
 }
+
+export interface LibrarySong extends Song {
+  played_at?: string;
+}

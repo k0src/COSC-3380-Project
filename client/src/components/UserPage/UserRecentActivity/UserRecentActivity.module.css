@@ -2,17 +2,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xl);
-  min-height: 10rem;
+  z-index: 9999;
+  min-height: var(--loader-height-sm);
 }
 
 .error {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-xl);
+  text-align: center;
   color: var(--color-text-gray);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
 }
 
 .container {
@@ -21,6 +18,13 @@
   gap: var(--spacing-md);
   min-width: 0;
   width: 100%;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
 }
 
 .sectionTitle {

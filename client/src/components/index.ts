@@ -12,6 +12,7 @@ export { default as MainLayoutNowPlayingBar } from "./MainLayout/MainLayoutNowPl
 /* ================================= Routes ================================= */
 export { default as ProtectedRoute } from "./ProtectedRoute/ProtectedRoute.js";
 export { default as AppLayout } from "./AppLayout/AppLayout.js";
+export { default as MeWrapper } from "./MeWrapper/MeWrapper.js";
 
 /* ================================ Home Page =============================== */
 export { default as FeaturedSection } from "./HomePage/FeaturedSection/FeaturedSection.js";
@@ -56,6 +57,12 @@ export { default as AlbumActions } from "./AlbumPage/AlbumActions/AlbumActions.j
 export { default as RelatedAlbums } from "./AlbumPage/RelatedAlbums/RelatedAlbums.js";
 
 /* ================================ User Page =============================== */
+export { default as UserContainer } from "./UserPage/UserContainer/UserContainer.js";
+export { default as UserRecentActivity } from "./UserPage/UserRecentActivity/UserRecentActivity.js";
+export { default as UserRecentReleases } from "./UserPage/UserRecentReleases/UserRecentReleases.js";
+export { default as UserActions } from "./UserPage/UserActions/UserActions.js";
+export { default as UserPlaylists } from "./UserPage/UserPlaylists/UserPlaylists.js";
+
 export { default as UserInfoStats } from "./UserPage/UserInfoPage/UserInfoStats/UserInfoStats.js";
 export { default as UserInfoFollowers } from "./UserPage/UserInfoPage/UserInfoFollowers/UserInfoFollowers.js";
 export { default as UserInfoFollowing } from "./UserPage/UserInfoPage/UserInfoFollowing/UserInfoFollowing.js";

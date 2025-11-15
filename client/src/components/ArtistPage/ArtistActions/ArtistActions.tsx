@@ -134,11 +134,19 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
     }
   }, [actions, artistId]);
 
-  return loading ? (
-    <div className={styles.loaderContainer}>
-      <PuffLoader color="var(--color-accent)" size={35} />
-    </div>
-  ) : (
+  if (loading) {
+    return (
+      <div className={styles.loaderContainer}>
+        <PuffLoader color="var(--color-accent)" size={35} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className={styles.error}>Error loading artist actions.</div>;
+  }
+
+  return (
     <>
       <div className={styles.artistActionsContainer}>
         <div className={styles.actionsLayout}>
@@ -169,26 +177,22 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
             Report <LuCircleAlert />
           </button>
 
-          {!error && (
-            <>
-              <StatItem
-                icon={LuUsersRound}
-                value={stats.followers}
-                label="Followers"
-              />
-              <StatItem
-                icon={LuUsersRound}
-                value={stats.following}
-                label="Following"
-              />
-              <StatItem icon={LuMusic} value={stats.tracks} label="Tracks" />
-              <StatItem
-                icon={LuAudioLines}
-                value={stats.streams}
-                label="Total Streams"
-              />
-            </>
-          )}
+          <StatItem
+            icon={LuUsersRound}
+            value={stats.followers}
+            label="Followers"
+          />
+          <StatItem
+            icon={LuUsersRound}
+            value={stats.following}
+            label="Following"
+          />
+          <StatItem icon={LuMusic} value={stats.tracks} label="Tracks" />
+          <StatItem
+            icon={LuAudioLines}
+            value={stats.streams}
+            label="Total Streams"
+          />
         </div>
       </div>
 

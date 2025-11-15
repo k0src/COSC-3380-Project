@@ -36,6 +36,7 @@
   box-shadow: var(--shadow-sd);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
+  min-width: 0;
 }
 
 .userInfoHeader::before {
@@ -56,22 +57,18 @@
 }
 
 .userImage {
-  width: var(--container-image-size);
-  height: var(--container-image-size);
+  width: var(--container-image-size-sm);
+  height: var(--container-image-size-sm);
   border-radius: 50%;
   object-fit: cover;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
   box-shadow: var(--shadow-sd);
   transition: box-shadow var(--transition-speed) ease;
-}
-
-.userImageClickable {
-  cursor: pointer;
-}
-
-.userImage:hover {
-  box-shadow: var(--shadow-sd-hover);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .userInfo {
@@ -82,21 +79,9 @@
 }
 
 .userInfoTitle {
-  font-size: var(--font-size-container-title);
+  font-size: var(--font-size-container-title-sm);
   color: var(--color-white);
-  font-weight: 700;
-}
-
-.artistLink {
-  font-size: var(--font-size-sm);
-  color: var(--color-white) !important;
-  font-weight: 500;
-  transition: all var(--transition-speed) ease-in-out;
-}
-
-.artistLink:hover {
-  color: var(--color-accent) !important;
-  text-decoration: underline;
+  font-weight: 600;
 }
 
 .infoSection {

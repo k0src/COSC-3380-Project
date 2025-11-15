@@ -5,8 +5,12 @@ import type {
   LibraryPlaylist,
   Playlist,
   RecentlyPlayedItems,
+  RecentlyPlayedItemsArray,
   LibrarySearchResults,
   UUID,
+  LibrarySong,
+  LibraryAlbum,
+  LibraryArtist,
 } from "@types";
 import { query } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
@@ -381,6 +385,193 @@ export default class LibraryService {
       };
     } catch (error) {
       console.error("Get recently played items failed:", error);
+      throw error;
+    }
+  }
+
+  static async getRecentlyPlayedArray(
+    userId: UUID,
+    maxItems: number = 10
+  ): Promise<RecentlyPlayedItemsArray> {
+    try {
+      const songsSql = `
+      SELECT DISTINCT ON (s.id) s.*,
+        (SELECT json_agg(row_to_json(album_with_artist))
+        FROM (
+          SELECT a.*,
+            row_to_json(ar) AS artist
+          FROM albums a
+          JOIN album_songs als ON als.album_id = a.id
+          LEFT JOIN artists ar ON ar.id = a.created_by
+          WHERE als.song_id = s.id
+        ) AS album_with_artist) AS albums,
+        (SELECT json_agg(row_to_json(ar_with_role))
+        FROM (
+          SELECT
+            ar.*,
+            sa.role,
+            row_to_json(u) AS user
+          FROM artists ar
+          JOIN users u ON u.artist_id = ar.id
+          JOIN song_artists sa ON sa.artist_id = ar.id
+          WHERE sa.song_id = s.id
+        ) AS ar_with_role) AS artists,
+        MAX(sh.played_at) as played_at
+      FROM songs s
+      JOIN song_history sh ON sh.song_id = s.id
+      WHERE sh.user_id = $1
+      GROUP BY s.id
+      ORDER BY s.id, played_at DESC
+    `;
+
+      const albumsSql = `
+      SELECT DISTINCT ON (a.id) a.*,
+        (SELECT row_to_json(artist_with_user)
+        FROM (
+          SELECT ar.*,
+            row_to_json(u) AS user
+          FROM artists ar
+          LEFT JOIN users u ON ar.user_id = u.id
+          WHERE ar.id = a.created_by
+        ) AS artist_with_user) as artist,
+        (SELECT COUNT(*) FROM album_songs als 
+        WHERE als.album_id = a.id) as song_count,
+        MAX(ah.played_at) as played_at
+      FROM albums a
+      JOIN album_history ah ON ah.album_id = a.id
+      WHERE ah.user_id = $1
+      GROUP BY a.id
+      ORDER BY a.id, played_at DESC
+    `;
+
+      const playlistsSql = `
+      SELECT DISTINCT ON (p.id) p.*,
+        row_to_json(u.*) as user,
+        (SELECT COUNT(*) FROM playlist_songs ps
+        WHERE ps.playlist_id = p.id) as song_count,
+        EXISTS(
+          SELECT 1 FROM user_playlist_pins upp
+          WHERE upp.user_id = $1 AND upp.playlist_id = p.id
+        ) as is_pinned,
+        MAX(ph.played_at) as played_at
+      FROM playlists p
+      LEFT JOIN users u ON p.created_by = u.id
+      JOIN playlist_history ph ON ph.playlist_id = p.id
+      WHERE ph.user_id = $1
+      GROUP BY p.id, u.id
+      ORDER BY p.id, is_pinned DESC, played_at DESC, p.id
+    `;
+
+      const artistsSql = `
+      SELECT DISTINCT ON (a.id) a.*,
+        row_to_json(u.*) as user,
+        MAX(arh.played_at) as played_at
+      FROM artists a
+      LEFT JOIN users u ON a.user_id = u.id
+      JOIN artist_history arh ON arh.artist_id = a.id
+      WHERE arh.user_id = $1
+      GROUP BY a.id, u.id
+      ORDER BY a.id, played_at DESC
+    `;
+
+      const [songsResult, albumsResult, playlistsResult, artistsResult] =
+        await Promise.all([
+          query(songsSql, [userId]),
+          query(albumsSql, [userId]),
+          query(playlistsSql, [userId]),
+          query(artistsSql, [userId]),
+        ]);
+
+      const songs: LibrarySong[] = (songsResult || []).map(
+        (song: LibrarySong) => {
+          if (song.image_url) {
+            song.image_url = getBlobUrl(song.image_url);
+          }
+          if (song.audio_url) {
+            song.audio_url = getBlobUrl(song.audio_url);
+          }
+          if (song.albums && song.albums.length > 0) {
+            song.albums = song.albums.map((album: Album) => {
+              if (album.image_url) {
+                album.image_url = getBlobUrl(album.image_url);
+              }
+              if (album.artist) {
+                album.artist.type = "artist";
+              }
+              album.type = "album";
+              return album;
+            });
+          }
+          if (song.artists && song.artists.length > 0) {
+            song.artists = song.artists.map((artist) => {
+              if (artist.user && artist.user.profile_picture_url) {
+                artist.user.profile_picture_url = getBlobUrl(
+                  artist.user.profile_picture_url
+                );
+              }
+              artist.type = "artist";
+              return artist;
+            });
+          }
+          song.type = "song";
+          return song;
+        }
+      );
+
+      const albums: LibraryAlbum[] = (albumsResult || []).map(
+        (album: LibraryAlbum) => {
+          if (album.image_url) {
+            album.image_url = getBlobUrl(album.image_url);
+          }
+          if (album.artist) {
+            if (album.artist.user && album.artist.user.profile_picture_url) {
+              album.artist.user.profile_picture_url = getBlobUrl(
+                album.artist.user.profile_picture_url
+              );
+            }
+            album.artist.type = "artist";
+          }
+          album.type = "album";
+          return album;
+        }
+      );
+
+      const playlists: LibraryPlaylist[] = (playlistsResult || []).map(
+        (playlist: LibraryPlaylist) => {
+          if (playlist.user && playlist.user.profile_picture_url) {
+            playlist.user.profile_picture_url = getBlobUrl(
+              playlist.user.profile_picture_url
+            );
+          }
+          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          playlist.is_pinned = playlist.is_pinned || false;
+          playlist.type = "playlist";
+          return playlist;
+        }
+      );
+
+      const artists: LibraryArtist[] = (artistsResult || []).map(
+        (artist: LibraryArtist) => {
+          if (artist.user && artist.user.profile_picture_url) {
+            artist.user.profile_picture_url = getBlobUrl(
+              artist.user.profile_picture_url
+            );
+          }
+          artist.type = "artist";
+          return artist;
+        }
+      );
+
+      const allItems = [...songs, ...albums, ...playlists, ...artists];
+      allItems.sort((a, b) => {
+        const dateA = new Date(a.played_at || 0).getTime();
+        const dateB = new Date(b.played_at || 0).getTime();
+        return dateB - dateA;
+      });
+
+      return allItems.slice(0, maxItems);
+    } catch (error) {
+      console.error("Get recently played array failed:", error);
       throw error;
     }
   }

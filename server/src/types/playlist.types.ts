@@ -20,4 +20,5 @@ export interface Playlist {
 
 export interface LibraryPlaylist extends Playlist {
   is_pinned?: boolean;
+  played_at?: string;
 }

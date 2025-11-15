@@ -38,3 +38,7 @@ export interface SuggestedSong extends Song {
   total_score: number;
   main_artist: Artist;
 }
+
+export interface LibrarySong extends Song {
+  played_at?: string;
+}

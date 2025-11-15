@@ -157,10 +157,19 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { maxItems } = req.query;
+      const { maxItems, array } = req.query;
 
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      if (array === "true") {
+        const recentHistory = await LibraryService.getRecentlyPlayedArray(
+          id,
+          maxItems ? parseInt(maxItems as string, 10) : 10
+        );
+        res.status(200).json(recentHistory);
         return;
       }
 
