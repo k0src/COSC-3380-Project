@@ -1,7 +1,7 @@
-import { memo, useCallback, useMemo } from "react";
+import { memo } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { artistApi, libraryApi, userApi } from "@api";
+import { userApi } from "@api";
 import type { UUID } from "@types";
 import { useAsyncData } from "@hooks";
 import {
