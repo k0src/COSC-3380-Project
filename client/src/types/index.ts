@@ -10,3 +10,4 @@ export * from "./audioQueue.types.js";
 export * from "./stats.types.js";
 export * from "./library.types.js";
 export * from "./theme.types.js";
+export * from "./notifications.types.js";

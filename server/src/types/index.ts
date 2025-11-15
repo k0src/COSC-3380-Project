@@ -7,3 +7,4 @@ export * from "./artist.types.js";
 export * from "./util.types.js";
 export * from "./stats.types.js";
 export * from "./library.types.js";
+export * from "./notifications.types.js";

@@ -92,7 +92,7 @@ const ArtistPage: React.FC = () => {
     );
   }
 
-  if (!artist.user || artist.user.status === "DEACTIVATED") {
+  if (!artist.user || artist.user.status !== "ACTIVE") {
     return (
       <ErrorPage
         title="Artist Not Found"

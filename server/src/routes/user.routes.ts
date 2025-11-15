@@ -6,6 +6,7 @@ import {
   LikeService,
   LibraryService,
   UserSettingsService,
+  NotificationsService,
 } from "@services";
 import { parseUserUpdateForm } from "@infra/form-parser";
 
@@ -865,6 +866,78 @@ router.put(
       res.status(200).json(updatedSettings);
     } catch (error) {
       console.error("Error in PUT /users/:id/settings:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+/* ========================================================================== */
+/*                             User Notifications                             */
+/* ========================================================================== */
+
+// GET /api/users/:id/notifications
+router.get(
+  "/:id/notifications",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { includeRead } = req.query;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const notifications = await NotificationsService.getNotifications(
+        id,
+        includeRead === "true"
+      );
+
+      res.status(200).json(notifications);
+    } catch (error) {
+      console.error("Error in GET /users/:id/notifications:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// PUT /api/users/:id/notifications/:notificationId/read
+router.put(
+  "/:id/notifications/:notificationId/read",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id, notificationId } = req.params;
+      if (!id || !notificationId) {
+        res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
+      await NotificationsService.markAsRead(id, notificationId);
+      res.status(200).json({ message: "Notification marked as read" });
+    } catch (error) {
+      console.error(
+        "Error in PUT /users/:id/notifications/:notificationId/read:",
+        error
+      );
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// PUT /api/users/:id/notifications/read-all
+router.put(
+  "/:id/notifications/read-all",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      await NotificationsService.markAllAsRead(id);
+      res.status(200).json({ message: "All notifications marked as read" });
+    } catch (error) {
+      console.error("Error in PUT /users/:id/notifications/read-all:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
