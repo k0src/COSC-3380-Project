@@ -713,11 +713,11 @@ export default class ArtistRepository {
       const playlists = await query(
         `SELECT DISTINCT ON (p.id) p.*,
         CASE WHEN $1 THEN row_to_json(u.*) 
-        ELSE NULL END as user
-        FROM playlists p,
+        ELSE NULL END as user,
         (SELECT EXISTS (
           SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
         )) AS has_song
+        FROM playlists p
         JOIN playlist_songs ps ON p.id = ps.playlist_id
         JOIN songs s ON ps.song_id = s.id
         JOIN song_artists sa ON s.id = sa.song_id

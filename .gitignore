@@ -42,3 +42,8 @@ logs
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Tauri
+client/src-tauri/target
+client/src-tauri/WixTools
+client/src-tauri/gen/schemas

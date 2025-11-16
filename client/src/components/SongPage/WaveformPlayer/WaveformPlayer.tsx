@@ -144,7 +144,9 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
         const urlParts = audioSrc.split("/");
         const filename = urlParts[urlParts.length - 1].split("?")[0];
 
-        const proxyUrl = `/api/proxy/audio/${filename}`;
+        const API_BASE = import.meta.env.VITE_API_URL || "/api";
+        const proxyUrl = `${API_BASE}/proxy/audio/${filename}`;
+
         const response = await fetch(proxyUrl);
         if (!response.ok) {
           throw new Error(`Failed to fetch audio: ${response.status}`);

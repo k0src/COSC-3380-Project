@@ -1,0 +1,48 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "coog-music",
+  "version": "0.1.0",
+  "identifier": "com.coogmusic.dev",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "CoogMusic",
+        "width": 1375,
+        "height": 850,
+        "resizable": true,
+        "fullscreen": false,
+        "minHeight": 500,
+        "minWidth": 500,
+        "devtools": true
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self' customprotocol: asset:",
+        "connect-src": "'self' https://cosc-3380.azurewebsites.net https://cosc3380.blob.core.windows.net blob: ipc: http://ipc.localhost",
+        "font-src": "'self' https://fonts.gstatic.com data:",
+        "img-src": "'self' asset: http://asset.localhost blob: data: https://cosc3380.blob.core.windows.net https://cosc-3380.azurewebsites.net",
+        "media-src": "'self' blob: data: https://cosc3380.blob.core.windows.net https://cosc-3380.azurewebsites.net http://tauri.localhost",
+        "style-src": "'unsafe-inline' 'self' https://fonts.googleapis.com",
+        "script-src": "'self' 'unsafe-inline'"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

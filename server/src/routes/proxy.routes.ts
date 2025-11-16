@@ -20,6 +20,10 @@ router.get("/audio/:filename", async (req, res) => {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
       "Access-Control-Allow-Headers": "*",
+      "Access-Control-Expose-Headers":
+        "Content-Length, Content-Range, Accept-Ranges",
+      "Cross-Origin-Resource-Policy": "cross-origin",
+      "Cross-Origin-Embedder-Policy": "unsafe-none",
     });
 
     const buffer = await response.arrayBuffer();
