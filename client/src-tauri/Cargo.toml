@@ -1,7 +1,7 @@
 [package]
 name = "CoogMusic"
 version = "0.1.0"
-description = "CoogMusic - Full-stack music streaming application created for UH COSC 3380 "
+description = "CoogMusic - Full-stack music streaming application created for UH COSC 3380"
 authors = ["github/k0src"]
 license = ""
 repository = "https://github.com/k0src/COSC-3380-Project"

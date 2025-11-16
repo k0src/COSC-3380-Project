@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "coog-music",
+  "productName": "CoogMusic",
   "version": "0.1.0",
   "identifier": "com.coogmusic.dev",
   "build": {
