@@ -8,7 +8,7 @@ import { validateSignupForm, type ValidationErrors } from "@validators";
 import { InputGroup, FormSubmitButton, PageLoader } from "@components";
 
 import styles from "./SignupPage.module.css";
-import logo from "@assets/logo.svg";
+import Logo from "@assets/logo.svg?react";
 
 const SignupPage: React.FC = () => {
   const [formData, setFormData] = useState<SignupData>({
@@ -101,7 +101,7 @@ const SignupPage: React.FC = () => {
       <div className={styles.signupLayout}>
         <div className={styles.signupContainer}>
           <div className={styles.signupHeader}>
-            <img src={logo} alt="CoogMusic" className={styles.logo} />
+            <Logo className={styles.logo} />
             <div className={styles.signupHeaderBottom}>
               <span className={styles.title}>Join CoogMusic</span>
               <span className={styles.subtitle}>
