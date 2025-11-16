@@ -29,7 +29,8 @@ const PlaylistAddMenu: React.FC<PlaylistAddMenuProps> = ({
 
   const { data, loading, error } = useAsyncData(
     {
-      playlists: () => libraryApi.getLibraryPlaylists(user?.id || ""),
+      playlists: () =>
+        libraryApi.getLibraryPlaylists(user?.id || "", { omitLikes: true }),
     },
     [user?.id],
     {

@@ -23,7 +23,8 @@ const PlaylistAddMenuDCM: React.FC<PlaylistAddMenuDCMProps> = ({
 
   const { data, loading, error } = useAsyncData(
     {
-      playlists: () => libraryApi.getLibraryPlaylists(user?.id || ""),
+      playlists: () =>
+        libraryApi.getLibraryPlaylists(user?.id || "", { omitLikes: true }),
     },
     [user?.id],
     {
