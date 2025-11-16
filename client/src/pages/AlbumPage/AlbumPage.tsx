@@ -103,7 +103,7 @@ const AlbumPage: React.FC = () => {
                 entityId={album.id}
                 entityType="album"
                 profileMin={4}
-                profileLimit={8}
+                profileLimit={6}
               />
               <RelatedAlbums
                 mode="artist"

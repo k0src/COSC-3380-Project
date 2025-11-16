@@ -65,7 +65,7 @@ The client is a single-page application built with React and Vite. It handles al
 The backend is a layered Express application that serves the API and handles all business logic. The structure is designed to separate concerns:
 
 - **Routes:** Define the API endpoints and direct requests to the appropriate controllers/services.
-- **Middleware:** Handles cross-cutting concerns like authentication, logging, and error handling before requests reach the main logic.
+- **Middleware:** Handles authentication, error handling, and request parsing.
 - **Services:** Contain the core business logic. They orchestrate data flow between the routes and the data access layer.
 - **Repositories:** The data access layer. Each repository corresponds to a database table and encapsulates all the SQL queries and logic for that entity.
 

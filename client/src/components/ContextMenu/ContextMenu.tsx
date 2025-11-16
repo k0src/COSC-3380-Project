@@ -4,6 +4,7 @@ import { useContextMenu } from "@contexts";
 import { useAudioQueue, useAuth } from "@contexts";
 import { useLikeStatus, useFollowStatus } from "@hooks";
 import type { Song, Playlist, Album, Artist } from "@types";
+import PlaylistAddMenu from "./PlaylistAddMenu/PlaylistAddMenu";
 import styles from "./ContextMenu.module.css";
 import {
   LuPlay,
@@ -26,6 +27,11 @@ const ContextMenu: React.FC = () => {
   const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuHeight, setMenuHeight] = useState(0);
+  const [playlistMenuOpen, setPlaylistMenuOpen] = useState(false);
+  const [playlistMenuPosition, setPlaylistMenuPosition] = useState({
+    x: 0,
+    y: 0,
+  });
 
   const { entity, entityType, x, y, isOpen, customActions } = menuState;
 
@@ -123,6 +129,7 @@ const ContextMenu: React.FC = () => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         closeContextMenu();
+        setPlaylistMenuOpen(false);
       }
     };
 
@@ -135,107 +142,140 @@ const ContextMenu: React.FC = () => {
     };
   }, [isOpen, closeContextMenu]);
 
-  const handlePlay = useCallback(async () => {
-    if (!entity) return;
-    await actions.play(entity as Song | Playlist | Album);
-    closeContextMenu();
-  }, [entity, actions, closeContextMenu]);
+  useEffect(() => {
+    if (!isOpen) {
+      setPlaylistMenuOpen(false);
+    }
+  }, [isOpen]);
 
-  const handleQueueNext = useCallback(async () => {
-    if (!isAuthenticated) {
-      navigate("/login");
+  const handlePlay = useCallback(
+    async (event?: React.MouseEvent) => {
+      if (!entity) return;
+      await actions.play(entity as Song | Playlist | Album);
       closeContextMenu();
-      return;
-    }
+    },
+    [entity, actions, closeContextMenu]
+  );
 
-    if (!entity || !entityType) return;
-    if (entityType === "song") {
-      actions.queueNext(entity as Song);
-    } else {
-      await actions.queueListNext(entity as Playlist | Album);
-    }
-    closeContextMenu();
-  }, [entity, entityType, actions, closeContextMenu]);
+  const handleQueueNext = useCallback(
+    async (event?: React.MouseEvent) => {
+      if (!isAuthenticated) {
+        navigate("/login");
+        closeContextMenu();
+        return;
+      }
 
-  const handleQueueLast = useCallback(async () => {
-    if (!isAuthenticated) {
-      navigate("/login");
+      if (!entity || !entityType) return;
+      if (entityType === "song") {
+        actions.queueNext(entity as Song);
+      } else {
+        await actions.queueListNext(entity as Playlist | Album);
+      }
       closeContextMenu();
-      return;
-    }
+    },
+    [entity, entityType, actions, closeContextMenu, isAuthenticated, navigate]
+  );
 
-    if (!entity || !entityType) return;
-    if (entityType === "song") {
-      actions.queueLast(entity as Song);
-    } else {
-      await actions.queueListLast(entity as Playlist | Album);
-    }
-    closeContextMenu();
-  }, [entity, entityType, actions, closeContextMenu]);
+  const handleQueueLast = useCallback(
+    async (event?: React.MouseEvent) => {
+      if (!isAuthenticated) {
+        navigate("/login");
+        closeContextMenu();
+        return;
+      }
 
-  const handleAddToPlaylist = useCallback(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
+      if (!entity || !entityType) return;
+      if (entityType === "song") {
+        actions.queueLast(entity as Song);
+      } else {
+        await actions.queueListLast(entity as Playlist | Album);
+      }
       closeContextMenu();
-      return;
-    }
+    },
+    [entity, entityType, actions, closeContextMenu, isAuthenticated, navigate]
+  );
 
-    console.log("Add to Playlist", entity);
-    closeContextMenu();
-  }, [entity, closeContextMenu]);
+  const handleAddToPlaylist = useCallback(
+    (event?: React.MouseEvent) => {
+      if (!isAuthenticated) {
+        navigate("/login");
+        closeContextMenu();
+        return;
+      }
 
-  const handleToggleLike = useCallback(async () => {
-    if (!isAuthenticated) {
-      navigate("/login");
+      if (!entity || entityType !== "song" || !event) return;
+
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const submenuX = rect.right + 8;
+      const submenuY = rect.top;
+
+      setPlaylistMenuPosition({ x: submenuX, y: submenuY });
+      setPlaylistMenuOpen(true);
+    },
+    [entity, entityType, isAuthenticated, navigate, closeContextMenu]
+  );
+
+  const handleToggleLike = useCallback(
+    async (event?: React.MouseEvent) => {
+      if (!isAuthenticated) {
+        navigate("/login");
+        closeContextMenu();
+        return;
+      }
+      try {
+        await toggleLike();
+        closeContextMenu();
+      } catch (error) {
+        console.error("Toggle like failed:", error);
+      }
+    },
+    [isAuthenticated, navigate, toggleLike, closeContextMenu]
+  );
+
+  const handleToggleFollow = useCallback(
+    async (event?: React.MouseEvent) => {
+      if (!isAuthenticated) {
+        navigate("/login");
+        closeContextMenu();
+        return;
+      }
+      try {
+        await toggleFollow();
+        closeContextMenu();
+      } catch (error) {
+        console.error("Toggle follow failed:", error);
+      }
+    },
+    [isAuthenticated, navigate, toggleFollow, closeContextMenu]
+  );
+
+  const handleShare = useCallback(
+    (event?: React.MouseEvent) => {
+      if (!entity) return;
+
+      const origin = window.location.origin;
+      let url = "";
+      let title = "";
+
+      if (entityType === "song") {
+        url = `${origin}/songs/${entity.id}`;
+        title = (entity as Song).title;
+      } else if (entityType === "album") {
+        url = `${origin}/albums/${entity.id}`;
+        title = (entity as Album).title;
+      } else if (entityType === "playlist") {
+        url = `${origin}/playlists/${entity.id}`;
+        title = (entity as Playlist).title;
+      } else if (entityType === "artist") {
+        url = `${origin}/artists/${entity.id}`;
+        title = (entity as Artist).display_name;
+      }
+
+      openShareModal(url, title);
       closeContextMenu();
-      return;
-    }
-    try {
-      await toggleLike();
-      closeContextMenu();
-    } catch (error) {
-      console.error("Toggle like failed:", error);
-    }
-  }, [isAuthenticated, navigate, toggleLike, closeContextMenu]);
-
-  const handleToggleFollow = useCallback(async () => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      closeContextMenu();
-      return;
-    }
-    try {
-      await toggleFollow();
-      closeContextMenu();
-    } catch (error) {
-      console.error("Toggle follow failed:", error);
-    }
-  }, [isAuthenticated, navigate, toggleFollow, closeContextMenu]);
-
-  const handleShare = useCallback(() => {
-    if (!entity) return;
-
-    const origin = window.location.origin;
-    let url = "";
-    let title = "";
-
-    if (entityType === "song") {
-      url = `${origin}/songs/${entity.id}`;
-      title = (entity as Song).title;
-    } else if (entityType === "album") {
-      url = `${origin}/albums/${entity.id}`;
-      title = (entity as Album).title;
-    } else if (entityType === "playlist") {
-      url = `${origin}/playlists/${entity.id}`;
-      title = (entity as Playlist).title;
-    } else if (entityType === "artist") {
-      url = `${origin}/artists/${entity.id}`;
-      title = (entity as Artist).display_name;
-    }
-
-    openShareModal(url, title);
-    closeContextMenu();
-  }, [entity, entityType, openShareModal, closeContextMenu]);
+    },
+    [entity, entityType, openShareModal, closeContextMenu]
+  );
 
   const actions_list = useMemo(() => {
     if (!entity || !entityType) return [];
@@ -245,7 +285,7 @@ const ContextMenu: React.FC = () => {
           id: string;
           label: string;
           icon: React.ComponentType;
-          onClick: () => void | Promise<void>;
+          onClick: (event?: React.MouseEvent) => void | Promise<void>;
           disabled?: boolean;
         }
       | "divider"
@@ -404,7 +444,7 @@ const ContextMenu: React.FC = () => {
           <button
             key={action.id}
             className={styles.menuItem}
-            onClick={action.onClick}
+            onClick={(e) => action.onClick(e)}
             disabled={action.disabled}
           >
             <Icon className={styles.menuIcon} />
@@ -412,6 +452,16 @@ const ContextMenu: React.FC = () => {
           </button>
         );
       })}
+
+      <PlaylistAddMenu
+        isOpen={playlistMenuOpen}
+        position={playlistMenuPosition}
+        songId={entity?.id || ""}
+        onClose={() => {
+          setPlaylistMenuOpen(false);
+          closeContextMenu();
+        }}
+      />
     </div>
   );
 };

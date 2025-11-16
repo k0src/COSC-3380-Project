@@ -134,4 +134,18 @@ export const playlistApi = {
     const response = await api.delete(`/playlists/${playlistId}`);
     return response.data;
   },
+
+  async addSongs(playlistId: UUID, songIds: UUID[]) {
+    const response = await api.put(`/playlists/${playlistId}/songs`, {
+      songIds,
+    });
+    return response.data;
+  },
+
+  async removeSongs(playlistId: UUID, songIds: UUID[]) {
+    const response = await api.put(`/playlists/${playlistId}/songs/remove`, {
+      songIds,
+    });
+    return response.data;
+  },
 };

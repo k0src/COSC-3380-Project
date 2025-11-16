@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
 import styles from "./MainLayoutSidebar.module.css";
-import logo from "@assets/logo.svg";
+import Logo from "@assets/logo.svg?react";
 import {
   LuListMusic,
   LuLibrary,
@@ -30,7 +30,7 @@ const MainLayoutSidebar: React.FC = () => {
     <aside className={styles.sidebar}>
       <div className={styles.sidebarTop}>
         <div className={styles.sidebarLogo}>
-          <img src={logo} alt="Logo" className={styles.logoImage} />
+          <Logo className={styles.logoImage} />
         </div>
         <nav className={styles.sidebarNav}>
           <Link to="/library" className={styles.sidebarLink}>

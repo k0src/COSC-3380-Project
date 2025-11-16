@@ -109,7 +109,7 @@ const PlaylistPage: React.FC = () => {
                 entityId={playlist.id}
                 entityType="playlist"
                 profileMin={4}
-                profileLimit={8}
+                profileLimit={6}
               />
               {playlist.user?.id && (
                 <RelatedPlaylists

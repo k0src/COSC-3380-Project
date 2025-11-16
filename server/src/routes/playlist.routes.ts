@@ -161,6 +161,58 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// PUT /api/playlists/:id/songs
+router.put("/:id/songs", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { songIds } = req.body;
+
+    if (!id) {
+      res.status(400).json({ error: "Playlist ID is required" });
+      return;
+    }
+
+    if (!Array.isArray(songIds)) {
+      res.status(400).json({ error: "songIds must be an array" });
+      return;
+    }
+
+    await PlaylistRepository.addSongs(id, songIds);
+    res.status(200).json({ message: "Songs added to playlist successfully" });
+  } catch (error: any) {
+    console.error("Error in PUT /playlists/:id/songs:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// PUT /api/playlists/:id/songs/remove
+router.put("/:id/songs", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { songIds } = req.body;
+
+    if (!id) {
+      res.status(400).json({ error: "Playlist ID is required" });
+      return;
+    }
+
+    if (!Array.isArray(songIds)) {
+      res.status(400).json({ error: "songIds must be an array" });
+      return;
+    }
+
+    await PlaylistRepository.removeSongs(id, songIds);
+    res
+      .status(200)
+      .json({ message: "Songs removed from playlist successfully" });
+  } catch (error: any) {
+    console.error("Error in PUT /playlists/:id/songs/remove:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
 // GET /api/playlists/:id/cover-image
 router.get(
   "/:id/cover-image",

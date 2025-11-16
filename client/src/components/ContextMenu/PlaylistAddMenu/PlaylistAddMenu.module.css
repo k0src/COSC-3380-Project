@@ -1,18 +1,25 @@
-.contextMenu {
+.playlistAddMenu {
   position: fixed;
   background: var(--color-panel-gray);
   border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-context-menu);
-  z-index: 10000;
+  z-index: 10001;
   min-width: 16rem;
+  max-width: 20rem;
+  max-height: 20rem;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   animation: var(--animation-context-menu-fade-in);
 }
 
-.menuItem {
+.playlistList {
+  overflow-y: auto;
+  max-height: 18rem;
+}
+
+.playlistItem {
   font-family: var(--font-main);
   width: 100%;
   background: transparent;
@@ -29,22 +36,38 @@
   text-align: left;
 }
 
-.menuItem:hover:not(:disabled) {
+.playlistItem:hover:not(:disabled) {
   background: var(--color-panel-gray-hover);
   color: var(--color-white);
 }
 
-.menuItem:disabled {
+.playlistItem:disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
-.menuIcon {
-  font-size: var(--icon-size-sd);
-  flex-shrink: 0;
+.playlistName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.divider {
-  height: 1px;
-  background: var(--color-panel-border);
+.emptyState {
+  padding: var(--spacing-md);
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  font-style: italic;
+}
+
+.loading {
+  padding: var(--spacing-md);
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
 }
