@@ -12,7 +12,7 @@
     "crc": "node ../scripts/crc.js",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "cross-env VITE_PLATFORM=desktop tauri build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -45,6 +45,7 @@
     "@types/react-dom": "^19.1.9",
     "@types/react-helmet": "^6.1.11",
     "@vitejs/plugin-react": "^5.0.2",
+    "cross-env": "^10.1.0",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",

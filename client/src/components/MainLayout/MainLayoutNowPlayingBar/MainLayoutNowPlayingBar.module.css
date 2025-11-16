@@ -207,6 +207,10 @@
   position: relative;
 }
 
+.playlistButtonContainer {
+  position: relative;
+}
+
 .volumeControl {
   display: flex;
   align-items: center;

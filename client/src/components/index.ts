@@ -111,6 +111,8 @@ export { default as KeyboardShortcutsModal } from "./KeyboardShortcutsModal/Keyb
 export { default as QueueMenu } from "./QueueMenu/QueueMenu.js";
 export { default as CoverLightbox } from "./CoverLightbox/CoverLightbox.js";
 export { default as ContextMenu } from "./ContextMenu/ContextMenu.js";
+export { default as PlaylistAddMenuDCM } from "./ContextMenu/PlaylistAddMenuDCM/PlaylistAddMenuDCM.js";
+export { default as PlaylistAddMenu } from "./PlaylistAddMenu/PlaylistAddMenu.js";
 
 /* =============================== Page States ============================== */
 export { default as PageLoader } from "./PageLoader/PageLoader.js";

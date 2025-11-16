@@ -5,7 +5,7 @@
   background: var(--color-panel-gray);
   border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-modal);
+  box-shadow: var(--shadow-modal-sm);
   z-index: 1000;
   animation: var(--animation-fade-in);
   width: 32rem;
@@ -65,18 +65,13 @@
   transition: all var(--transition-speed) ease;
 }
 
-.clearButton:hover {
+.clearButton:hover:not(:disabled) {
   color: var(--color-accent);
 }
 
 .clearButton:disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
-}
-
-.clearButton:disabled:hover {
-  color: var(--color-text-gray);
-  background: none;
 }
 
 .queueContent {

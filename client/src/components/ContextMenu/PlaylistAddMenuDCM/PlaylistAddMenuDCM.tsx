@@ -3,16 +3,16 @@ import type { UUID } from "@types";
 import { libraryApi, playlistApi } from "@api";
 import { useAsyncData } from "@hooks";
 import { useAuth } from "@contexts";
-import styles from "./PlaylistAddMenu.module.css";
+import styles from "./PlaylistAddMenuDCM.module.css";
 
-interface PlaylistAddMenuProps {
+interface PlaylistAddMenuDCMProps {
   isOpen: boolean;
   position: { x: number; y: number };
   songId: UUID;
   onClose: () => void;
 }
 
-const PlaylistAddMenu: React.FC<PlaylistAddMenuProps> = ({
+const PlaylistAddMenuDCM: React.FC<PlaylistAddMenuDCMProps> = ({
   isOpen,
   position,
   songId,
@@ -109,4 +109,4 @@ const PlaylistAddMenu: React.FC<PlaylistAddMenuProps> = ({
   );
 };
 
-export default memo(PlaylistAddMenu);
+export default memo(PlaylistAddMenuDCM);

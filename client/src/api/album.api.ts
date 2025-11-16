@@ -9,6 +9,7 @@ export const albumApi = {
       includeLikes?: boolean;
       includeSongCount?: boolean;
       includeRuntime?: boolean;
+      includeSongIds?: boolean;
     }
   ) {
     const response = await api.get(`/albums/${id}`, {

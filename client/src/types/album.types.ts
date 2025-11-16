@@ -15,6 +15,7 @@ export interface Album {
   artist?: Artist;
   likes?: number;
   runtime?: number;
+  song_ids?: UUID[];
 
   type: "album";
 }

@@ -145,6 +145,7 @@ export default class AlbumRepository {
       includeLikes?: boolean;
       includeRuntime?: boolean;
       includeSongCount?: boolean;
+      includeSongIds?: boolean;
     }
   ): Promise<Album | null> {
     try {
@@ -168,9 +169,12 @@ export default class AlbumRepository {
         ELSE NULL END as runtime,
         CASE WHEN $4 THEN (SELECT COUNT(*) FROM album_songs als
           WHERE als.album_id = a.id)
-        ELSE NULL END as song_count
+        ELSE NULL END as song_count,
+        CASE WHEN $5 THEN (SELECT json_agg(als.song_id) FROM album_songs als
+          WHERE als.album_id = a.id)
+        ELSE NULL END as song_ids
         FROM albums a
-        WHERE a.id = $5
+        WHERE a.id = $6
         LIMIT 1
       `;
 
@@ -179,6 +183,7 @@ export default class AlbumRepository {
         options?.includeLikes ?? false,
         options?.includeRuntime ?? false,
         options?.includeSongCount ?? false,
+        options?.includeSongIds ?? false,
         id,
       ];
 

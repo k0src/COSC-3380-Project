@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
+import { isWeb } from "@util";
 import styles from "./MainLayoutSidebar.module.css";
 import Logo from "@assets/logo.svg?react";
 import {
@@ -11,6 +12,7 @@ import {
   LuHistory,
   LuLogOut,
   LuUpload,
+  LuAppWindowMac,
 } from "react-icons/lu";
 
 const MainLayoutSidebar: React.FC = () => {
@@ -25,6 +27,13 @@ const MainLayoutSidebar: React.FC = () => {
       console.error("Logout failed:", error);
     }
   }, [logout, navigate]);
+
+  const handleDownloadApp = useCallback(() => {
+    window.open(
+      "https://github.com/k0src/COSC-3380-Project/releases/latest",
+      "_blank"
+    );
+  }, []);
 
   return (
     <aside className={styles.sidebar}>
@@ -57,11 +66,18 @@ const MainLayoutSidebar: React.FC = () => {
           )}
         </nav>
       </div>
-      {isAuthenticated && (
-        <button onClick={handleLogout} className={styles.logoutButton}>
-          <LuLogOut className={styles.sidebarIcon} />
-        </button>
-      )}
+      <div className={styles.sidebarBottom}>
+        {isWeb && (
+          <button onClick={handleDownloadApp} className={styles.logoutButton}>
+            <LuAppWindowMac className={styles.sidebarIcon} />
+          </button>
+        )}
+        {isAuthenticated && (
+          <button onClick={handleLogout} className={styles.logoutButton}>
+            <LuLogOut className={styles.sidebarIcon} />
+          </button>
+        )}
+      </div>
     </aside>
   );
 };

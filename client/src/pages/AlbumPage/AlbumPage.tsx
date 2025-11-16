@@ -37,6 +37,7 @@ const AlbumPage: React.FC = () => {
           includeLikes: true,
           includeSongCount: true,
           includeRuntime: true,
+          includeSongIds: true,
         }),
     },
     [id],
@@ -82,7 +83,11 @@ const AlbumPage: React.FC = () => {
             <div className={styles.albumLayoutTopRight}>
               <AlbumArtist artist={album.artist} updatedAt={album.updated_at} />
               <AlbumInfo releaseDate={album.release_date} genre={album.genre} />
-              <AlbumActions album={album} albumUrl={window.location.href} />
+              <AlbumActions
+                album={album}
+                albumUrl={window.location.href}
+                songIds={album.song_ids ?? []}
+              />
             </div>
           </div>
           <div className={styles.albumLayoutBottom}>

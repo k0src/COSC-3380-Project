@@ -1,6 +1,5 @@
 .queueMenu {
   position: absolute;
-  bottom: calc(100% + 0.8rem);
   background: var(--color-panel-gray);
   border: var(--border-size-md) solid var(--color-panel-border) !important;
   border-radius: var(--border-radius-md);
@@ -13,6 +12,14 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
+}
+
+.positionTop {
+  bottom: calc(100% + 0.8rem);
+}
+
+.positionBottom {
+  top: calc(100% + 0.8rem);
 }
 
 .justifyCenter {

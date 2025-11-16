@@ -6,3 +6,4 @@ export * from "./song.util.js";
 export * from "./numbers.util.js";
 export * from "./strings.util.js";
 export * from "./theme.util.js";
+export * from "./platform.util.js";

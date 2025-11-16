@@ -7,8 +7,8 @@ import React, {
   useRef,
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useLikeStatus, useStreamTracking, useKeyboardShortcuts } from "@hooks";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLikeStatus, useStreamTracking, useKeyboardShortcuts } from "@hooks";
 import { useAuth, useAudioQueue } from "@contexts";
 import { formatPlaybackTime, getMainArtist } from "@util";
 import {
@@ -17,6 +17,7 @@ import {
   KeyboardShortcutsModal,
   LazyImg,
   QueueManager,
+  PlaylistAddMenu,
 } from "@components";
 import classNames from "classnames";
 import styles from "./MainLayoutNowPlayingBar.module.css";
@@ -40,7 +41,10 @@ const NowPlayingBar: React.FC = () => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isQueueManagerOpen, setIsQueueManagerOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [playlistMenuOpen, setPlaylistMenuOpen] = useState(false);
+
   const queueButtonRef = useRef<HTMLButtonElement>(null);
+  const playlistButtonRef = useRef<HTMLButtonElement>(null);
   const volumeControlRef = useRef<HTMLDivElement>(null);
 
   const { user, isAuthenticated } = useAuth();
@@ -92,19 +96,15 @@ const NowPlayingBar: React.FC = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  //! add to playlist
-  const handleAddToPlaylist = useCallback(async () => {
-    try {
-      if (!currentSong) return;
-      if (isAuthenticated) {
-        console.log("added to playlist");
-      } else {
-        navigate("/login");
-      }
-    } catch (error) {
-      console.error("Adding to playlist failed:", error);
+  const handleAddToPlaylist = useCallback(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
     }
-  }, [isAuthenticated, navigate]);
+    if (!currentSong) return;
+
+    setPlaylistMenuOpen((prev) => !prev);
+  }, [isAuthenticated, navigate, currentSong]);
 
   const handleToggleShuffle = useCallback(() => {
     actions.toggleShuffleQueue();
@@ -361,13 +361,28 @@ const NowPlayingBar: React.FC = () => {
               buttonRef={queueButtonRef}
             />
           </div>
-          <button
-            className={classNames(styles.controlButton, styles.playlistButton)}
-            onClick={handleAddToPlaylist}
-            aria-label="Add to Playlist"
-          >
-            <LuListPlus />
-          </button>
+          <div className={styles.playlistButtonContainer}>
+            <button
+              ref={playlistButtonRef}
+              className={classNames(
+                styles.controlButton,
+                styles.playlistButton
+              )}
+              onClick={handleAddToPlaylist}
+              aria-label="Add to Playlist"
+            >
+              <LuListPlus />
+            </button>
+            {currentSong && (
+              <PlaylistAddMenu
+                isOpen={playlistMenuOpen}
+                onClose={() => setPlaylistMenuOpen(false)}
+                songIds={[currentSong.id]}
+                buttonRef={playlistButtonRef}
+                position="now-playing"
+              />
+            )}
+          </div>
           <div ref={volumeControlRef} className={styles.volumeControl}>
             <LuVolume2 className={styles.volumeIcon} />
             <input

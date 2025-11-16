@@ -41,8 +41,13 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 // /api/albums/:id?includeArtist=true&includeRuntime=true&includeSongCount=true&includeLikes=true
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { includeArtist, includeRuntime, includeSongCount, includeLikes } =
-    req.query;
+  const {
+    includeArtist,
+    includeRuntime,
+    includeSongCount,
+    includeLikes,
+    includeSongIds,
+  } = req.query;
 
   if (!id) {
     res.status(400).json({ error: "Album ID is required" });
@@ -55,6 +60,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
       includeRuntime: includeRuntime === "true",
       includeLikes: includeLikes === "true",
       includeSongCount: includeSongCount === "true",
+      includeSongIds: includeSongIds === "true",
     });
 
     if (!album) {
