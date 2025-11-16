@@ -12,7 +12,7 @@ import type {
   LibraryAlbum,
   LibraryArtist,
 } from "@types";
-import { query } from "@config/database.js";
+import { query, withTransaction } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
 import dotenv from "dotenv";
 
@@ -1126,6 +1126,32 @@ export default class LibraryService {
       return artists;
     } catch (error) {
       console.error("Get artist history failed:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Toggles the pinned status of a playlist for a user.
+   * @param userId The ID of the user.
+   * @param playlistId The ID of the playlist.
+   * @returns A boolean indicating the new pinned status (true if pinned, false if unpinned).
+   * @throws An error if the operation fails.
+   */
+  static async togglePinPlaylist(
+    userId: UUID,
+    playlistId: UUID
+  ): Promise<boolean> {
+    try {
+      const result = await withTransaction(async (client) => {
+        const res = await client.query("SELECT toggle_playlist_pin($1, $2)", [
+          userId,
+          playlistId,
+        ]);
+        return res.rows[0].toggle_playlist_pin;
+      });
+      return result;
+    } catch (error) {
+      console.error("Toggle pin playlist failed:", error);
       throw error;
     }
   }

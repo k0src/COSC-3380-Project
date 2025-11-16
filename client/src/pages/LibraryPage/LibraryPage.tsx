@@ -15,7 +15,9 @@ import {
   LibraryAlbums,
   LibraryArtists,
   CreatePlaylistModal,
+  ConfirmationModal,
 } from "@components";
+import { libraryApi, playlistApi } from "@api";
 import styles from "./LibraryPage.module.css";
 import classNames from "classnames";
 import {
@@ -69,6 +71,15 @@ const LibraryPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
+  const [playlistModalMode, setPlaylistModalMode] = useState<"create" | "edit">(
+    "create"
+  );
+  const [playlistToEdit, setPlaylistToEdit] = useState<LibraryPlaylist | null>(
+    null
+  );
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [playlistToDelete, setPlaylistToDelete] =
+    useState<LibraryPlaylist | null>(null);
   const { setCustomActionsProvider } = useContextMenu();
 
   const playlistsRefetchRef = useRef<(() => void) | null>(null);
@@ -123,7 +134,9 @@ const LibraryPage: React.FC = () => {
   );
 
   const handleCreatePlaylist = useCallback(() => {
-    setIsPlaylistModalOpen((prev) => !prev);
+    setPlaylistToEdit(null);
+    setPlaylistModalMode("create");
+    setIsPlaylistModalOpen(true);
   }, []);
 
   const handlePlaylistCreated = useCallback(() => {
@@ -131,21 +144,67 @@ const LibraryPage: React.FC = () => {
     recentRefetchRef.current?.();
   }, []);
 
-  const handlePinPlaylist = useCallback((playlist: LibraryPlaylist) => {
-    console.log("Pin/Unpin Playlist", playlist);
-  }, []);
+  const handlePinPlaylist = useCallback(
+    async (playlist: LibraryPlaylist) => {
+      if (!user?.id) return;
+
+      try {
+        await libraryApi.togglePinPlaylist(user.id, playlist.id);
+        playlistsRefetchRef.current?.();
+        recentRefetchRef.current?.();
+      } catch (error) {
+        console.error("Error toggling playlist pin:", error);
+      }
+    },
+    [user?.id]
+  );
 
   const handleEditPlaylist = useCallback((playlist: LibraryPlaylist) => {
-    console.log("Edit Playlist", playlist);
+    setPlaylistToEdit(playlist);
+    setPlaylistModalMode("edit");
+    setIsPlaylistModalOpen(true);
   }, []);
 
-  const handleTogglePrivacy = useCallback((playlist: LibraryPlaylist) => {
-    console.log("Toggle Privacy", playlist);
-  }, []);
+  const handleTogglePrivacy = useCallback(
+    async (playlist: LibraryPlaylist) => {
+      if (!user?.id || playlist.created_by !== user.id) return;
 
-  const handleDeletePlaylist = useCallback((playlist: LibraryPlaylist) => {
-    console.log("Delete Playlist", playlist);
-  }, []);
+      try {
+        await playlistApi.update(playlist.id, {
+          is_public: !playlist.is_public,
+        });
+        playlistsRefetchRef.current?.();
+        recentRefetchRef.current?.();
+      } catch (error) {
+        console.error("Error toggling playlist privacy:", error);
+      }
+    },
+    [user?.id]
+  );
+
+  const handleDeletePlaylist = useCallback(
+    (playlist: LibraryPlaylist) => {
+      if (!user?.id || playlist.created_by !== user.id) return;
+
+      setPlaylistToDelete(playlist);
+      setIsDeleteModalOpen(true);
+    },
+    [user?.id]
+  );
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!playlistToDelete) return;
+
+    try {
+      await playlistApi.delete(playlistToDelete.id);
+      playlistsRefetchRef.current?.();
+      recentRefetchRef.current?.();
+      setIsDeleteModalOpen(false);
+      setPlaylistToDelete(null);
+    } catch (error) {
+      console.error("Error deleting playlist:", error);
+    }
+  }, [playlistToDelete]);
 
   const customActionsProvider = useCallback(
     (
@@ -198,6 +257,7 @@ const LibraryPage: React.FC = () => {
       handleCreatePlaylist,
       handlePinPlaylist,
       handleEditPlaylist,
+      handleTogglePrivacy,
       handleDeletePlaylist,
     ]
   );
@@ -287,12 +347,43 @@ const LibraryPage: React.FC = () => {
         </Link>
       </div>
 
-      <CreatePlaylistModal
-        userId={user.id}
-        username={user.username}
-        isOpen={isPlaylistModalOpen}
-        onClose={() => setIsPlaylistModalOpen(false)}
-        onPlaylistCreated={handlePlaylistCreated}
+      {playlistModalMode === "create" ? (
+        <CreatePlaylistModal
+          userId={user.id}
+          username={user.username}
+          isOpen={isPlaylistModalOpen}
+          onClose={() => {
+            setIsPlaylistModalOpen(false);
+            setPlaylistToEdit(null);
+          }}
+          onPlaylistCreated={handlePlaylistCreated}
+        />
+      ) : (
+        <CreatePlaylistModal
+          mode="edit"
+          userId={user.id}
+          username={user.username}
+          isOpen={isPlaylistModalOpen}
+          onClose={() => {
+            setIsPlaylistModalOpen(false);
+            setPlaylistToEdit(null);
+          }}
+          onPlaylistCreated={handlePlaylistCreated}
+          playlist={playlistToEdit!}
+        />
+      )}
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setPlaylistToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Playlist"
+        message={`Are you sure you want to delete "${playlistToDelete?.title}"? This action cannot be undone.`}
+        confirmButtonText="Delete Playlist"
+        isDangerous={true}
       />
     </>
   );

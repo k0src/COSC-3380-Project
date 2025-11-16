@@ -100,4 +100,38 @@ export const playlistApi = {
     });
     return response.data;
   },
+
+  async update(
+    playlistId: UUID,
+    data: {
+      title?: string;
+      description?: string;
+      is_public?: boolean;
+      image_url?: File | null;
+    }
+  ) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const response = await api.put<Playlist>(
+      `/playlists/${playlistId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  },
+
+  async delete(playlistId: UUID) {
+    const response = await api.delete(`/playlists/${playlistId}`);
+    return response.data;
+  },
 };

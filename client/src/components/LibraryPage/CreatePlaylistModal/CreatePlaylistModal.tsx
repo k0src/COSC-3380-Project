@@ -1,6 +1,6 @@
-import { useState, memo, useEffect, useCallback } from "react";
+import { useState, memo, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import type { UUID } from "@types";
+import type { UUID, LibraryPlaylist, Playlist } from "@types";
 import { playlistApi } from "@api";
 import {
   SettingsInput,
@@ -11,13 +11,25 @@ import {
 import styles from "./CreatePlaylistModal.module.css";
 import { LuX } from "react-icons/lu";
 
-export interface CreatePlaylistModalProps {
-  userId: UUID;
-  username: string;
-  isOpen: boolean;
-  onClose: () => void;
-  onPlaylistCreated?: () => void;
-}
+type CreatePlaylistModalProps =
+  | {
+      mode?: "create";
+      userId: UUID;
+      username: string;
+      isOpen: boolean;
+      onClose: () => void;
+      onPlaylistCreated?: () => void;
+      playlist?: never;
+    }
+  | {
+      mode: "edit";
+      userId: UUID;
+      username: string;
+      isOpen: boolean;
+      onClose: () => void;
+      onPlaylistCreated?: () => void;
+      playlist: LibraryPlaylist | Playlist;
+    };
 
 interface CreatePlaylistForm {
   title: string;
@@ -28,27 +40,46 @@ interface CreatePlaylistForm {
 }
 
 const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
+  mode = "create",
   userId,
   username,
   isOpen,
   onClose,
   onPlaylistCreated,
+  playlist,
 }) => {
   const navigate = useNavigate();
 
   const [error, setError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-  const initialFormState: CreatePlaylistForm = {
-    title: `${username}'s Playlist`,
-    description: "",
-    isPublic: true,
-    image: null,
-    removeImage: false,
-  };
 
-  const [playlistForm, setPlaylistForm] =
-    useState<CreatePlaylistForm>(initialFormState);
+  const initialFormState: CreatePlaylistForm = useMemo(() => {
+    if (mode === "edit" && playlist) {
+      return {
+        title: playlist.title,
+        description: playlist.description || "",
+        isPublic: playlist.is_public,
+        image: null,
+        removeImage: false,
+      };
+    }
+    return {
+      title: `${username}'s Playlist`,
+      description: "",
+      isPublic: true,
+      image: null,
+      removeImage: false,
+    };
+  }, [mode, playlist, username]);
+
+  const [playlistForm, setPlaylistForm] = useState<CreatePlaylistForm>(
+    () => initialFormState
+  );
   const [isDirty, setIsDirty] = useState(false);
+
+  useEffect(() => {
+    setPlaylistForm(initialFormState);
+  }, [initialFormState]);
 
   useEffect(() => {
     const isFormDirty =
@@ -104,7 +135,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
     }
   };
 
-  const handleCreate = useCallback(
+  const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
 
@@ -118,11 +149,14 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
 
       try {
         const playlistData: any = {
-          created_by: userId,
           title: playlistForm.title.trim(),
           description: playlistForm.description.trim(),
           is_public: playlistForm.isPublic,
         };
+
+        if (mode === "create") {
+          playlistData.created_by = userId;
+        }
 
         if (playlistForm.removeImage) {
           playlistData.image_url = null;
@@ -130,19 +164,32 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
           playlistData.image_url = playlistForm.image;
         }
 
-        await playlistApi.create(playlistData);
+        if (mode === "edit" && playlist) {
+          await playlistApi.update(playlist.id, playlistData);
+        } else {
+          await playlistApi.create(playlistData);
+        }
+
         onPlaylistCreated?.();
         onClose();
-        navigate(`/library/playlists`);
+
+        if (mode === "create") {
+          navigate(`/library/playlists`);
+        }
       } catch (error: any) {
-        console.error("Create playlist error:", error);
-        const errorMessage = error.response?.data?.error || "Creation failed";
+        console.error(
+          `${mode === "edit" ? "Update" : "Create"} playlist error:`,
+          error
+        );
+        const errorMessage =
+          error.response?.data?.error ||
+          `${mode === "edit" ? "Update" : "Creation"} failed`;
         setError(errorMessage);
       } finally {
         setIsCreating(false);
       }
     },
-    [userId, playlistForm, onClose, navigate, onPlaylistCreated]
+    [mode, userId, playlist, playlistForm, onClose, navigate, onPlaylistCreated]
   );
 
   useEffect(() => {
@@ -161,6 +208,8 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
   useEffect(() => {
     if (!isOpen) {
       setError("");
+      setPlaylistForm(initialFormState);
+      setIsDirty(false);
     }
   }, [isOpen]);
 
@@ -170,12 +219,14 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          <span className={styles.title}>Create Playlist</span>
+          <span className={styles.title}>
+            {mode === "edit" ? "Edit Playlist" : "Create Playlist"}
+          </span>
           <button className={styles.headerButton} onClick={onClose}>
             <LuX />
           </button>
         </div>
-        <form className={styles.playlistForm} onSubmit={handleCreate}>
+        <form className={styles.playlistForm} onSubmit={handleSubmit}>
           <SettingsInput
             label="Playlist Title"
             name="title"
@@ -204,6 +255,9 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
           />
           <SettingsImageUpload
             label="Playlist Image"
+            currentImage={
+              mode === "edit" && playlist ? playlist.image_url : undefined
+            }
             onImageChange={handleImageChange}
             type="music"
             disabled={isCreating}
@@ -221,7 +275,13 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
               className={styles.saveButton}
               disabled={isCreating}
             >
-              {isCreating ? "Creating..." : "Create Playlist"}
+              {isCreating
+                ? mode === "edit"
+                  ? "Updating..."
+                  : "Creating..."
+                : mode === "edit"
+                ? "Update Playlist"
+                : "Create Playlist"}
             </button>
           </div>
         </form>

@@ -138,4 +138,11 @@ export const libraryApi = {
     );
     return response.data;
   },
+
+  async togglePinPlaylist(userId: UUID, playlistId: UUID) {
+    const response = await api.post(`/users/${userId}/library/playlists/pin`, {
+      playlistId,
+    });
+    return response.data;
+  },
 };

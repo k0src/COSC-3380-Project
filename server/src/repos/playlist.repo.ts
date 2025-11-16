@@ -126,15 +126,15 @@ export default class PlaylistRepository {
         values.push(created_by);
       }
       if (is_public !== undefined) {
-        fields.push(`is_public = ${values.length + 1}`);
+        fields.push(`is_public = $${values.length + 1}`);
         values.push(is_public);
       }
       if (image_url !== undefined) {
-        fields.push(`image_url = ${values.length + 1}`);
+        fields.push(`image_url = $${values.length + 1}`);
         values.push(image_url);
       }
       if (image_url_blurhash !== undefined) {
-        fields.push(`image_url_blurhash = ${values.length + 1}`);
+        fields.push(`image_url_blurhash = $${values.length + 1}`);
         values.push(image_url_blurhash);
       }
       if (fields.length === 0) {

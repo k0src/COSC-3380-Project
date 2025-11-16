@@ -89,7 +89,6 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 router.put("/:id", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-
     if (!id) {
       res.status(400).json({ error: "Playlist ID is required" });
       return;
@@ -106,6 +105,29 @@ router.put("/:id", async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(updatedPlaylist);
   } catch (error: any) {
     console.error("Error in PUT /playlists/:id:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// DELETE /api/playlists/:id
+router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Playlist ID is required" });
+      return;
+    }
+
+    const deleted = await PlaylistRepository.delete(id);
+    if (!deleted) {
+      res.status(404).json({ error: "Playlist not found" });
+      return;
+    }
+
+    res.status(200).json({ message: "Playlist deleted successfully" });
+  } catch (error: any) {
+    console.error("Error in DELETE /playlists/:id:", error);
     const { message, statusCode } = handlePgError(error);
     res.status(statusCode).json({ error: message });
   }

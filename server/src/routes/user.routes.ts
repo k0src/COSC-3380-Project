@@ -227,6 +227,31 @@ router.get(
   }
 );
 
+// POST /api/users/:id/library/playlists/pin
+router.post(
+  "/:id/library/playlists/pin",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { playlistId } = req.body;
+      if (!id || !playlistId) {
+        res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
+      const result = await LibraryService.togglePinPlaylist(id, playlistId);
+      res.status(200).json({
+        message: `Playlist ${result ? "pinned" : "unpinned"} succesfully`,
+      });
+    } catch (error: any) {
+      console.error("Error in POST /users/:id/library/playlists/pin:", error);
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
+      return;
+    }
+  }
+);
+
 // GET /api/users/:id/library/songs
 router.get(
   "/:id/library/songs",
