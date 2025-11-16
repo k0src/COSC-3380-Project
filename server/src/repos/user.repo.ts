@@ -446,16 +446,19 @@ export default class UserRepository {
 
       const sql = `
         SELECT p.*,
-        CASE WHEN $1 THEN (SELECT COUNT(*) FROM playlist_likes pl
-          WHERE pl.playlist_id = p.id)
-        ELSE NULL END as likes,
-        CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_songs ps
-          WHERE ps.playlist_id = p.id)
-        ELSE NULL END as song_count,
-        CASE WHEN $3 THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
-          JOIN playlist_songs ps ON ps.song_id = s.id
-          WHERE ps.playlist_id = p.id)
-        ELSE NULL END as runtime
+          CASE WHEN $1 THEN (SELECT COUNT(*) FROM playlist_likes pl
+            WHERE pl.playlist_id = p.id)
+          ELSE NULL END as likes,
+          CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_songs ps
+            WHERE ps.playlist_id = p.id)
+          ELSE NULL END as song_count,
+          CASE WHEN $3 THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
+            JOIN playlist_songs ps ON ps.song_id = s.id
+            WHERE ps.playlist_id = p.id)
+          ELSE NULL END as runtime,
+          (SELECT EXISTS (
+            SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+          )) AS has_song
         FROM playlists p
         WHERE p.created_by = $4
         ORDER BY p.created_at DESC
@@ -477,10 +480,14 @@ export default class UserRepository {
       }
 
       const processedPlaylists = playlists.map((playlist: Playlist) => {
-        playlist.type = "playlist";
-        if (!playlist.image_url) {
+        if (playlist.image_url) {
+          playlist.image_url = getBlobUrl(playlist.image_url);
+        } else if ((playlist as any).has_song) {
           playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
         }
+        delete (playlist as any).has_song;
+
+        playlist.type = "playlist";
         return playlist;
       });
 
