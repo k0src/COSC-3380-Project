@@ -175,7 +175,6 @@ export const userApi = {
       authenticated_with?: string;
       role?: string;
       profile_picture_url?: string;
-      pfp_blurhash?: string;
       artist_id?: UUID;
       status?: string;
       is_private?: boolean;

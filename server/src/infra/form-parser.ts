@@ -5,8 +5,30 @@ import { v4 as uuidv4 } from "uuid";
 import type { SongData } from "@types";
 import { parseBuffer } from "music-metadata";
 import { Readable } from "stream";
+import { encode } from "blurhash";
+import sharp from "sharp";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+
+/**
+ * Generates a blurhash from an image buffer
+ * @param buffer Image buffer
+ * @returns Promise resolving to blurhash string
+ */
+async function generateBlurhash(buffer: Buffer): Promise<string> {
+  try {
+    const { data, info } = await sharp(buffer)
+      .resize(32, 32, { fit: "cover" })
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    return encode(new Uint8ClampedArray(data), info.width, info.height, 4, 4);
+  } catch (error) {
+    console.error("Error generating blurhash:", error);
+    throw new Error("Failed to generate blurhash");
+  }
+}
 
 /**
  * Parses multipart/form-data request for song data and files.
@@ -186,6 +208,10 @@ export function parseUserUpdateForm(req: Request): Promise<any> {
           }
 
           const buffer = Buffer.concat(chunks);
+
+          const blurhash = await generateBlurhash(buffer);
+          formData.pfp_blurhash = blurhash;
+
           const bufferStream = Readable.from(buffer);
           await uploadBlob(blobName, bufferStream);
           formData.profile_picture_url = blobName;
