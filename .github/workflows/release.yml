@@ -33,7 +33,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: `${context.ref.replace('refs/tags/', '')}`,
-              name: `Desktop App ${context.ref.replace('refs/tags/', '')}`,
+              name: `CoogMusic ${context.ref.replace('refs/tags/', '')}`,
               body: 'See the assets below to download the installer for your platform.',
               draft: true,
               prerelease: false
@@ -49,9 +49,9 @@ jobs:
       matrix:
         include:
           - platform: "macos-latest"
-            args: "--target aarch64-apple-darwin"
+            args: "--target aarch64-apple-darwin --bundles app"
           - platform: "macos-latest"
-            args: "--target x86_64-apple-darwin"
+            args: "--target x86_64-apple-darwin --bundles app"
           - platform: "ubuntu-22.04"
             args: ""
           - platform: "windows-latest"
@@ -80,7 +80,6 @@ jobs:
             libwebkit2gtk-4.1-dev \
             libjavascriptcoregtk-4.1-dev \
             libsoup-3.0-dev \
-            libappindicator3-dev \
             librsvg2-dev \
             patchelf \
             libayatana-appindicator3-dev
