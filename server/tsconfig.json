@@ -14,6 +14,7 @@
       "@validators/*": ["validators/*"],
       "@config/*": ["config/*"],
       "@infra/*": ["infra/*"],
+      "@util": ["util/index"],
       "@util/*": ["util/*"],
       "@middleware": ["middleware/index"],
       "@middleware/*": ["middleware/*"]

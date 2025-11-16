@@ -178,6 +178,7 @@ const UserRecentActivity: React.FC<{
               ? formatRelativeDate(playlist.played_at)
               : "",
             imageUrl: playlist.image_url || musicPlaceholder,
+            blurHash: playlist.image_url_blurhash,
             entity: playlist as Playlist,
           };
         }

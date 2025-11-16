@@ -74,6 +74,7 @@ const HistoryPlaylists: React.FC<{
                   title={playlist.title}
                   subtitle={`${playlist.song_count} songs`}
                   imageUrl={playlist.image_url || musicPlaceholder}
+                  blurHash={playlist.image_url_blurhash}
                 />
                 {playlist.is_pinned && (
                   <div className={styles.pinnedIconContainer}>

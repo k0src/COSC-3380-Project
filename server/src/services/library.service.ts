@@ -171,7 +171,11 @@ export default class LibraryService {
               playlist.user.profile_picture_url
             );
           }
-          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          if (!playlist.image_url) {
+            if (!playlist.image_url) {
+              playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+            }
+          }
           playlist.type = "playlist";
           return playlist;
         }
@@ -272,7 +276,10 @@ export default class LibraryService {
             SELECT 1 FROM user_playlist_pins upp
             WHERE upp.user_id = $1 AND upp.playlist_id = p.id
           ) as is_pinned,
-          MAX(ph.played_at) as played_at
+          MAX(ph.played_at) as played_at,
+          (SELECT EXISTS (
+            SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+          )) AS has_song
         FROM playlists p
         LEFT JOIN users u ON p.created_by = u.id
         JOIN playlist_history ph ON ph.playlist_id = p.id
@@ -360,7 +367,12 @@ export default class LibraryService {
               playlist.user.profile_picture_url
             );
           }
-          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          if (playlist.image_url) {
+            playlist.image_url = getBlobUrl(playlist.image_url);
+          } else if ((playlist as any).has_song) {
+            playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          }
+          delete (playlist as any).has_song;
           playlist.is_pinned = playlist.is_pinned || false;
           playlist.type = "playlist";
           return playlist;
@@ -453,7 +465,10 @@ export default class LibraryService {
           SELECT 1 FROM user_playlist_pins upp
           WHERE upp.user_id = $1 AND upp.playlist_id = p.id
         ) as is_pinned,
-        MAX(ph.played_at) as played_at
+        MAX(ph.played_at) as played_at,
+        (SELECT EXISTS (
+          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+        )) AS has_song
       FROM playlists p
       LEFT JOIN users u ON p.created_by = u.id
       JOIN playlist_history ph ON ph.playlist_id = p.id
@@ -543,7 +558,12 @@ export default class LibraryService {
               playlist.user.profile_picture_url
             );
           }
-          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          if (playlist.image_url) {
+            playlist.image_url = getBlobUrl(playlist.image_url);
+          } else if ((playlist as any).has_song) {
+            playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          }
+          delete (playlist as any).has_song;
           playlist.is_pinned = playlist.is_pinned || false;
           playlist.type = "playlist";
           return playlist;
@@ -691,7 +711,10 @@ export default class LibraryService {
             SELECT 1 FROM user_playlist_pins upp
             WHERE upp.user_id = $1 AND upp.playlist_id = p.id
           ) as is_pinned,
-          COALESCE(pl.liked_at, p.created_at) as sort_date
+          COALESCE(pl.liked_at, p.created_at) as sort_date,
+          (SELECT EXISTS (
+            SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+          )) AS has_song
         FROM playlists p
         LEFT JOIN users u ON p.created_by = u.id
         LEFT JOIN playlist_likes pl ON pl.playlist_id = p.id AND pl.user_id = $1
@@ -713,7 +736,13 @@ export default class LibraryService {
               playlist.user.profile_picture_url
             );
           }
-          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          if (playlist.image_url) {
+            playlist.image_url = getBlobUrl(playlist.image_url);
+          } else if ((playlist as any).has_song) {
+            playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          }
+          delete (playlist as any).has_song;
+
           playlist.is_pinned = playlist.is_pinned || false;
           playlist.type = "playlist";
           return playlist;
@@ -1011,7 +1040,10 @@ export default class LibraryService {
           row_to_json(u.*) as user,
           (SELECT COUNT(*) FROM playlist_songs ps
           WHERE ps.playlist_id = p.id) as song_count,
-          MAX(ph.played_at) as played_at
+          MAX(ph.played_at) as played_at,
+          (SELECT EXISTS (
+            SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+          )) AS has_song
         FROM playlists p
         LEFT JOIN users u ON p.created_by = u.id
         JOIN playlist_history ph ON ph.playlist_id = p.id
@@ -1030,7 +1062,12 @@ export default class LibraryService {
               playlist.user.profile_picture_url
             );
           }
-          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          if (playlist.image_url) {
+            playlist.image_url = getBlobUrl(playlist.image_url);
+          } else if ((playlist as any).has_song) {
+            playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          }
+          delete (playlist as any).has_song;
           playlist.type = "playlist";
           return playlist;
         }

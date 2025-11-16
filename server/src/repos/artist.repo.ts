@@ -712,14 +712,17 @@ export default class ArtistRepository {
     try {
       const playlists = await query(
         `SELECT DISTINCT ON (p.id) p.*,
-         CASE WHEN $1 THEN row_to_json(u.*) 
-         ELSE NULL END as user
-         FROM playlists p
-         JOIN playlist_songs ps ON p.id = ps.playlist_id
-         JOIN songs s ON ps.song_id = s.id
-         JOIN song_artists sa ON s.id = sa.song_id
-         LEFT JOIN users u ON p.created_by = u.id
-         WHERE sa.artist_id = $2
+        CASE WHEN $1 THEN row_to_json(u.*) 
+        ELSE NULL END as user
+        FROM playlists p,
+        (SELECT EXISTS (
+          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+        )) AS has_song
+        JOIN playlist_songs ps ON p.id = ps.playlist_id
+        JOIN songs s ON ps.song_id = s.id
+        JOIN song_artists sa ON s.id = sa.song_id
+        LEFT JOIN users u ON p.created_by = u.id
+        WHERE sa.artist_id = $2
          ORDER BY p.id`,
         [options?.includeUser ?? false, artistId]
       );
@@ -735,7 +738,12 @@ export default class ArtistRepository {
             );
           }
 
-          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          if (playlist.image_url) {
+            playlist.image_url = getBlobUrl(playlist.image_url);
+          } else if ((playlist as any).has_song) {
+            playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          }
+          delete (playlist as any).has_song;
           playlist.type = "playlist";
           return playlist;
         })

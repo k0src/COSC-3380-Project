@@ -2,6 +2,10 @@ import { memo, useRef, useState } from "react";
 import styles from "./SettingsImageUpload.module.css";
 import { LuTrash } from "react-icons/lu";
 import userPlaceholder from "@assets/user-placeholder.webp";
+import musicPlaceholder from "@assets/music-placeholder.webp";
+import artistPlaceholder from "@assets/artist-placeholder.webp";
+
+type ImageUploadType = "user" | "music" | "artist";
 
 interface SettingsImageUploadProps {
   label: string;
@@ -9,6 +13,7 @@ interface SettingsImageUploadProps {
   onImageChange: (file: File | null) => void;
   disabled?: boolean;
   hint?: string;
+  type?: ImageUploadType;
 }
 
 const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
@@ -17,6 +22,7 @@ const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
   onImageChange,
   disabled = false,
   hint,
+  type = "user",
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -63,7 +69,14 @@ const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
 
       <div className={styles.settingsImageUploadArea}>
         <img
-          src={displayImage || userPlaceholder}
+          src={
+            displayImage ||
+            (type === "user"
+              ? userPlaceholder
+              : type === "music"
+              ? musicPlaceholder
+              : artistPlaceholder)
+          }
           alt="Profile preview"
           className={styles.settingsImagePreview}
         />

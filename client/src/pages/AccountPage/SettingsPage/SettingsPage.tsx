@@ -282,13 +282,23 @@ const SettingsPage: React.FC = () => {
   const handleAccountSave = async () => {
     if (!user?.id) return;
 
+    if (!accountForm.username.trim()) {
+      setAccountError("Username cannot be empty");
+      return;
+    }
+
+    if (!accountForm.email.trim()) {
+      setAccountError("Email cannot be empty");
+      return;
+    }
+
     setIsAccountSaving(true);
     setAccountError("");
 
     try {
       const updateData: any = {
-        username: accountForm.username,
-        email: accountForm.email,
+        username: accountForm.username.trim(),
+        email: accountForm.email.trim(),
         is_private: accountForm.privacy,
       };
 

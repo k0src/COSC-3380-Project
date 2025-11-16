@@ -53,7 +53,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
           {children}
           {hasForm && (
             <div className={styles.settingsButtonContainer}>
-              {isDirty && (
+              {isDirty && !saveError && (
                 <span className={styles.unsavedText}>
                   You have unsaved changes.
                 </span>

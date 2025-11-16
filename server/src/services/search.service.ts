@@ -86,7 +86,11 @@ export default class SearchService {
       const playlists: Playlist[] = row.playlists
         ? await Promise.all(
             row.playlists.map(async (playlist: Playlist) => {
-              playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+              if (!playlist.image_url) {
+                if (!playlist.image_url) {
+                  playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+                }
+              }
               playlist.type = "playlist";
               return playlist;
             })
@@ -239,7 +243,11 @@ export default class SearchService {
 
       const processedPlaylists: Playlist[] = await Promise.all(
         results.map(async (playlist: Playlist) => {
-          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          if (!playlist.image_url) {
+            if (!playlist.image_url) {
+              playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+            }
+          }
           playlist.type = "playlist";
           return playlist;
         })

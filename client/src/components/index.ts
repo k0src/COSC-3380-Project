@@ -80,6 +80,7 @@ export { default as HistoryPlaylists } from "./LibraryPage/HistoryPlaylists/Hist
 export { default as HistorySongs } from "./LibraryPage/HistorySongs/HistorySongs.js";
 export { default as HistoryAlbums } from "./LibraryPage/HistoryAlbums/HistoryAlbums.js";
 export { default as HistoryArtists } from "./LibraryPage/HistoryArtists/HistoryArtists.js";
+export { default as CreatePlaylistModal } from "./LibraryPage/CreatePlaylistModal/CreatePlaylistModal.js";
 
 /* ============================== Settings Page ============================= */
 export { default as SettingsSection } from "./SettingsPage/SettingsSection/SettingsSection.js";
@@ -89,6 +90,7 @@ export { default as SettingsColorSchemeSelector } from "./SettingsPage/SettingsC
 export { default as SettingsDropdown } from "./SettingsPage/SettingsDropdown/SettingsDropdown.js";
 export { default as SettingsRadio } from "./SettingsPage/SettingsRadio/SettingsRadio.js";
 export { default as SettingsImageUpload } from "./SettingsPage/SettingsImageUpload/SettingsImageUpload.js";
+export { default as SettingsTextArea } from "./SettingsPage/SettingsTextArea/SettingsTextArea.js";
 export { default as ChangePasswordModal } from "./SettingsPage/ChangePasswordModal/ChangePasswordModal.js";
 export { default as ConfirmationModal } from "./SettingsPage/ConfirmationModal/ConfirmationModal.js";
 

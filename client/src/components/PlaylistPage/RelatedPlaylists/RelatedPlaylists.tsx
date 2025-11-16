@@ -119,7 +119,7 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
             linkTo={`/playlists/${playlist.id}`}
             title={playlist.title}
             imageUrl={playlist.image_url || musicPlaceholder}
-            //! blurHash={playlist.image_url_blurhash}
+            blurHash={playlist.image_url_blurhash}
             entity={playlist}
           />
         ))}

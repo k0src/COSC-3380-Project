@@ -64,6 +64,7 @@ const PlaylistContainer: React.FC<PlaylistContainerProps> = ({ playlist }) => {
             styles.coverImage,
             imageUrl !== musicPlaceholder ? styles.coverImageClickable : "",
           ]}
+          blurHash={playlist.image_url_blurhash ?? undefined}
           onClick={handleImageClick}
           loading="eager"
         />

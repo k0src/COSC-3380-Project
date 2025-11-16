@@ -1,4 +1,4 @@
-import { memo, useState, useMemo, useEffect, useCallback } from "react";
+import { memo, useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth, useContextMenu } from "@contexts";
@@ -14,6 +14,7 @@ import {
   LibrarySongs,
   LibraryAlbums,
   LibraryArtists,
+  CreatePlaylistModal,
 } from "@components";
 import styles from "./LibraryPage.module.css";
 import classNames from "classnames";
@@ -67,7 +68,11 @@ const LibraryPage: React.FC = () => {
   const { tab } = useParams<{ tab?: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
   const { setCustomActionsProvider } = useContextMenu();
+
+  const playlistsRefetchRef = useRef<(() => void) | null>(null);
+  const recentRefetchRef = useRef<(() => void) | null>(null);
 
   const isValidTab = (tab: string | undefined): tab is TabType => {
     return VALID_TABS.includes(tab as TabType);
@@ -117,9 +122,13 @@ const LibraryPage: React.FC = () => {
     []
   );
 
-  //! implement later
   const handleCreatePlaylist = useCallback(() => {
-    console.log("Create Playlist");
+    setIsPlaylistModalOpen((prev) => !prev);
+  }, []);
+
+  const handlePlaylistCreated = useCallback(() => {
+    playlistsRefetchRef.current?.();
+    recentRefetchRef.current?.();
   }, []);
 
   const handlePinPlaylist = useCallback((playlist: LibraryPlaylist) => {
@@ -163,10 +172,7 @@ const LibraryPage: React.FC = () => {
         },
         {
           id: "toggle-playlist-privacy",
-          label:
-            playlist.visibility_status === "PUBLIC"
-              ? "Make Private"
-              : "Make Public",
+          label: playlist.is_public ? "Make Private" : "Make Public",
           icon: LuLock,
           onClick: () => handleTogglePrivacy(playlist),
           show: entityType === "playlist" && isOwner,
@@ -256,10 +262,15 @@ const LibraryPage: React.FC = () => {
             userId={user.id}
             maxItems={20}
             searchFilter={searchText}
+            onRefetchNeeded={recentRefetchRef}
           />
         )}
         {activeTab === "playlists" && (
-          <LibraryPlaylists userId={user.id} searchFilter={searchText} />
+          <LibraryPlaylists
+            userId={user.id}
+            searchFilter={searchText}
+            onRefetchNeeded={playlistsRefetchRef}
+          />
         )}
         {activeTab === "songs" && (
           <LibrarySongs userId={user.id} searchFilter={searchText} />
@@ -275,6 +286,14 @@ const LibraryPage: React.FC = () => {
           View Full History
         </Link>
       </div>
+
+      <CreatePlaylistModal
+        userId={user.id}
+        username={user.username}
+        isOpen={isPlaylistModalOpen}
+        onClose={() => setIsPlaylistModalOpen(false)}
+        onPlaylistCreated={handlePlaylistCreated}
+      />
     </>
   );
 };

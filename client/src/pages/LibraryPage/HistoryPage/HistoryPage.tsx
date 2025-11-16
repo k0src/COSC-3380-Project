@@ -133,10 +133,7 @@ const HistoryPage: React.FC = () => {
         },
         {
           id: "toggle-playlist-privacy",
-          label:
-            playlist.visibility_status === "PUBLIC"
-              ? "Make Private"
-              : "Make Public",
+          label: playlist.is_public ? "Make Private" : "Make Public",
           icon: LuLock,
           onClick: () => handleTogglePrivacy(playlist),
           show: entityType === "playlist" && isOwner,

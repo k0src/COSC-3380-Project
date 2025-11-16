@@ -119,6 +119,21 @@ export default class UserRepository {
     }
   ): Promise<User | null> {
     try {
+      if (
+        username !== undefined &&
+        typeof username === "string" &&
+        username.trim() === ""
+      ) {
+        throw new Error("Username cannot be empty");
+      }
+      if (
+        email !== undefined &&
+        typeof email === "string" &&
+        email.trim() === ""
+      ) {
+        throw new Error("Email cannot be empty");
+      }
+
       const result = await withTransaction(async (client) => {
         const fields: string[] = [];
         const values: any[] = [];
@@ -197,7 +212,6 @@ export default class UserRepository {
         const res = await client.query(sql, values);
         const updatedUser = res.rows[0] ?? null;
 
-        // Convert blob names to URLs if user was updated
         if (updatedUser && updatedUser.profile_picture_url) {
           updatedUser.profile_picture_url = getBlobUrl(
             updatedUser.profile_picture_url
@@ -464,7 +478,9 @@ export default class UserRepository {
 
       const processedPlaylists = playlists.map((playlist: Playlist) => {
         playlist.type = "playlist";
-        playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+        if (!playlist.image_url) {
+          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+        }
         return playlist;
       });
 

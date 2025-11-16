@@ -181,6 +181,7 @@ const SlidingCardList: React.FC<SlidingCardListProps> = ({
             title: playlist.title,
             subtitle: "",
             imageUrl: playlist.image_url || musicPlaceholder,
+            blurHash: playlist.image_url_blurhash,
             entity: playlist,
           };
         }

@@ -143,6 +143,7 @@ const UserInfoLiked: React.FC<{ userId: UUID }> = ({ userId }) => {
                 title={playlist.title}
                 subtitle={`${playlist.song_count} songs`}
                 imageUrl={playlist.image_url || musicPlaceholder}
+                blurHash={playlist.image_url_blurhash}
               />
             ))}
           </div>

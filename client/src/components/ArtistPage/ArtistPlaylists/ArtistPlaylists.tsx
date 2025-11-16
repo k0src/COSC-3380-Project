@@ -72,7 +72,7 @@ const ArtistPlaylists: React.FC<ArtistPlaylistsProps> = ({
             linkTo={`/playlists/${playlist.id}`}
             title={playlist.title}
             imageUrl={playlist.image_url || musicPlaceholder}
-            //! blurHash={playlist.image_url_blurhash}
+            blurHash={playlist.image_url_blurhash}
             entity={playlist}
           />
         ))}

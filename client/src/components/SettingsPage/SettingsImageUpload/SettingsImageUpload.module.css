@@ -13,12 +13,12 @@
 .settingsImageUploadArea {
   display: flex;
   align-items: center;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .settingsImagePreview {
-  width: 8rem;
-  height: 8rem;
+  width: 8.4rem;
+  height: 8.4rem;
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   border: var(--border-size-sm) solid var(--color-panel-border);
@@ -30,7 +30,7 @@
 
 .settingsImageButton {
   font-family: var(--font-main);
-  background-color: var(--color-panel-gray);
+  background-color: var(--color-panel-gray-dark);
   border-radius: var(--border-radius-sm);
   border: var(--border-size-sm) solid var(--color-panel-border);
   color: var(--color-white);
@@ -44,8 +44,6 @@
 
 .settingsImageButton:hover:not(:disabled) {
   color: var(--color-accent);
-  background-color: var(--color-panel-gray-dark);
-  border-color: var(--color-panel-gray-dark);
 }
 
 .settingsImageButton:disabled {
@@ -55,7 +53,7 @@
 
 .settingsImageRemoveButton {
   font-family: var(--font-main);
-  background-color: var(--color-panel-gray);
+  background-color: var(--color-panel-gray-dark);
   border-radius: var(--border-radius-sm);
   border: var(--border-size-sm) solid var(--color-panel-border);
   color: var(--color-white);
@@ -72,8 +70,6 @@
 
 .settingsImageRemoveButton:hover:not(:disabled) {
   color: var(--color-accent);
-  background-color: var(--color-panel-gray-dark);
-  border-color: var(--color-panel-gray-dark);
 }
 
 .settingsImageRemoveButton:disabled {

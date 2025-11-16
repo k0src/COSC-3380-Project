@@ -28,9 +28,11 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     });
 
     res.status(200).json(albums);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in GET /albums/:", error);
-    res.status(500).json({ error: "Internal server error" });
+    const errorMessage = error.message || "Internal server error";
+    res.status(500).json({ error: errorMessage });
+    return;
   }
 });
 
@@ -61,9 +63,11 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     }
 
     res.status(200).json(album);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in GET /albums/:id:", error);
-    res.status(500).json({ error: "Internal server error" });
+    const errorMessage = error.message || "Internal server error";
+    res.status(500).json({ error: errorMessage });
+    return;
   }
 });
 
@@ -88,9 +92,11 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
     });
 
     res.status(200).json(songs);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in GET /albums/:id/songs:", error);
-    res.status(500).json({ error: "Internal server error" });
+    const errorMessage = error.message || "Internal server error";
+    res.status(500).json({ error: errorMessage });
+    return;
   }
 });
 
@@ -112,9 +118,11 @@ router.get(
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
       res.status(200).json(users);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /api/albums/:id/liked-by:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
+      return;
     }
   }
 );
@@ -149,9 +157,11 @@ router.get(
       });
 
       res.status(200).json(albums);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /albums/:id/related:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
+      return;
     }
   }
 );

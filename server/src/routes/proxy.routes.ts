@@ -25,9 +25,10 @@ router.get("/audio/:filename", async (req, res) => {
     const buffer = await response.arrayBuffer();
     res.send(Buffer.from(buffer));
     return;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error proxying audio file:", error);
-    res.status(500).json({ error: "Failed to load audio file" });
+    const errorMessage = error.message || "Internal server error";
+    res.status(500).json({ error: errorMessage });
     return;
   }
 });
