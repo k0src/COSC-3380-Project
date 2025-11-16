@@ -261,6 +261,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
             onImageChange={handleImageChange}
             type="music"
             disabled={isCreating}
+            alt="Playlist Image Preview"
             hint="Upload an cover image for your playlist (optional)."
           />
           <div className={styles.buttonContainer}>

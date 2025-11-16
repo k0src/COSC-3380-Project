@@ -14,6 +14,7 @@ interface SettingsImageUploadProps {
   disabled?: boolean;
   hint?: string;
   type?: ImageUploadType;
+  alt?: string;
 }
 
 const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
@@ -23,6 +24,7 @@ const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
   disabled = false,
   hint,
   type = "user",
+  alt,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -77,7 +79,7 @@ const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
               ? musicPlaceholder
               : artistPlaceholder)
           }
-          alt="Profile preview"
+          alt={alt || "Profile preview"}
           className={styles.settingsImagePreview}
         />
 

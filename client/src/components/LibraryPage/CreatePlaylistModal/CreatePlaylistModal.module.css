@@ -55,7 +55,6 @@
 
 .headerButton:hover {
   color: var(--color-white);
-  background: var(--color-panel-gray-hover);
 }
 
 .playlistForm {
