@@ -25,20 +25,18 @@ router.post("/generate", async (req, res): Promise<void> => {
 
     switch (reportType) {
       case "daily-monthly-active-users":
-        reportData = await UserBehaviorReportsService.getDailyMonthlyActiveUsers(
+        reportData = await UserBehaviorReportsService.getAudienceGrowth(
           dateRange,
-          parameters?.groupBy || 'daily',
-          parameters?.minStreams || 1
+          parameters?.period || 'months'
         );
         break;
       
       case "reports-by-type":
-        reportData = await SystemModerationReportsService.getReportsByType(
+        reportData = await SystemModerationReportsService.getSimplifiedModerationReport(
           dateRange,
           parameters?.reportTypes,
           parameters?.contentType || 'all',
-          parameters?.includeRiskAnalysis || false,
-          parameters?.groupBy || 'type'
+          parameters?.searchTerm
         );
         break;
       
@@ -82,42 +80,33 @@ router.post("/generate", async (req, res): Promise<void> => {
   }
 });
 
-// Helper functions removed - no longer needed with simplified structure
-
 /**
  * GET /api/data-reports/categories
- * Get the 3 available report types and their parameters
+ * Returns available report types and their parameters
  */
 router.get("/categories", (req, res) => {
   const reportTypes = {
     "daily-monthly-active-users": {
-      name: "Active Users",
-      description: "User engagement analytics",
+      name: "Audience Growth",
+      description: "Shows how many users came back to listen after they joined",
       parameters: [
         {
-          name: "groupBy",
+          name: "period",
           type: "select",
-          label: "Period",
+          label: "Group By Period",
           options: [
-            { value: "daily", label: "Daily" },
-            { value: "monthly", label: "Monthly" }
+            { value: "days", label: "Days" },
+            { value: "weeks", label: "Weeks" },
+            { value: "months", label: "Months" }
           ],
-          default: "daily",
+          default: "months",
           required: true
-        },
-        {
-          name: "minStreams",
-          type: "number",
-          label: "Min Streams",
-          default: 1,
-          min: 1,
-          required: false
         }
       ]
     },
     "reports-by-type": {
-      name: "Content Reports",
-      description: "Moderation and safety insights",
+      name: "Content Moderation",
+      description: "Reports, trends, and moderation insights",
       parameters: [
         {
           name: "reportTypes",
@@ -134,7 +123,7 @@ router.get("/categories", (req, res) => {
         {
           name: "contentType",
           type: "select",
-          label: "Content Focus",
+          label: "Content Type",
           options: [
             { value: "all", label: "All Content" },
             { value: "song", label: "Songs" },
@@ -144,6 +133,13 @@ router.get("/categories", (req, res) => {
           ],
           default: "all",
           required: true
+        },
+        {
+          name: "searchTerm",
+          type: "text",
+          label: "Search by Name",
+          placeholder: "Enter username, song title, album, or playlist name",
+          required: false
         }
       ]
     },

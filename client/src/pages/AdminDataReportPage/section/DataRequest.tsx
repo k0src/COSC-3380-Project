@@ -162,8 +162,6 @@ const DataRequestForm: React.FC<Props> = ({ onSubmit }) => {
         {/* Dynamic parameters based on report type */}
         {reportType && reportTypes[reportType]?.parameters && (
           <div className={styles.parametersSection}>
-            <h4>Parameters for {reportTypes[reportType].name}:</h4>
-            <p>{reportTypes[reportType].description}</p>
             {renderDynamicParameters(reportTypes[reportType].parameters, parameters, handleParameterChange)}
           </div>
         )}
@@ -250,7 +248,7 @@ const DataRequestForm: React.FC<Props> = ({ onSubmit }) => {
                     {option.label}
                   </label>
                 ))}
-                <small style={{ color: '#666', fontStyle: 'italic' }}>
+                <small style={{ color: '#6c6c6cff', fontStyle: 'italic' }}>
                   Select multiple options by checking the boxes. Leave all unchecked for "All Types".
                 </small>
               </div>

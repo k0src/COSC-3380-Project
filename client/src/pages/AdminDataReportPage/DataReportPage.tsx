@@ -25,10 +25,14 @@ const DataReportPage: React.FC = () => {
       console.log("API result:", result);
       
       if (result.success) {
-        // Handle both old format (array) and new format (object with results)
+        // Handle different report formats
         const resultsData = result.data.results as any;
         if (Array.isArray(resultsData)) {
           setData(resultsData);
+        } else if (resultsData?.reported_entries) {
+          // Simplified moderation report: has summary, reported_entries, trends
+          setData([resultsData]); // Wrap in array so DataVisualization gets the full object
+          setSummary({ isModeration: true }); // Set a flag so summary section renders
         } else if (resultsData?.results) {
           setData(resultsData.results);
           setSummary(resultsData.summary);

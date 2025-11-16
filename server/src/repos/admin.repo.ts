@@ -60,7 +60,6 @@ export default class AdminRepository {
     // Convert the result to the proper status value based on the enum
     const status = result === "reject" ? "DISMISSED" : "ACTION_TAKEN";
 
-    // Use reportId directly as reported_id (no splitting or combining)
     const sql = `
       UPDATE ${table}
       SET report_status = $1, reviewer_id = $2

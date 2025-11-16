@@ -8,13 +8,7 @@ export interface DateRange {
 
 export class ContentStreamingReportsService {
   /**
-   * Top streamed songs/albums/artists
-   * Parameters:
-   * - contentType: 'songs' | 'albums' | 'artists'
-   * - limit: number of top items to return
-   * - genre: optional genre filter
-   * - includeMetrics: whether to include detailed engagement metrics
-   * - sortBy: 'streams' | 'alphabetical' | 'genre'
+   * Get top streamed content with optional filters
    */
   static async getTopContent(
     dateRange: DateRange,
@@ -24,10 +18,7 @@ export class ContentStreamingReportsService {
     includeMetrics: boolean = false,
     sortBy: 'streams' | 'alphabetical' | 'genre' = 'streams'
   ) {
-    // First, get the main content data
     const results = await this.getContentData(dateRange, contentType, limit, genre, sortBy);
-    
-    // Get comparative context
     const summary = await this.getComparativeContext(dateRange, contentType, genre);
     
     return {
@@ -36,9 +27,6 @@ export class ContentStreamingReportsService {
     };
   }
 
-  /**
-   * Helper method to get the main content data
-   */
   private static async getContentData(
     dateRange: DateRange,
     contentType: 'songs' | 'albums' | 'artists',
@@ -109,21 +97,19 @@ export class ContentStreamingReportsService {
         break;
     }
     
-    // Add genre filter if specified
+    // Filter by genre if provided
     if (genre) {
       if (contentType === 'songs') {
         sql += ` AND s.genre = $${paramIndex}`;
       } else if (contentType === 'albums') {
         sql += ` AND s.genre = $${paramIndex}`;
       } else {
-        // For artists, filter by the genre of their songs
         sql += ` AND s.genre = $${paramIndex}`;
       }
       params.push(genre);
       paramIndex++;
     }
     
-    // Add GROUP BY clause
     switch (contentType) {
       case 'songs':
         sql += ` GROUP BY s.id, s.title, s.genre, al.title`;
@@ -165,8 +151,6 @@ export class ContentStreamingReportsService {
     params.push(limit.toString());
     
     const result = await query(sql, params);
-    
-    // Calculate percentage of total platform streams for each item
     const totalStreams = await this.getTotalPlatformStreams(dateRange);
     
     return (result || []).map((row: any) => ({
@@ -177,9 +161,8 @@ export class ContentStreamingReportsService {
     }));
   }
 
-  /**
-   * Get total platform streams for the period
-   */
+  //Get total platform streams for the period
+
   private static async getTotalPlatformStreams(dateRange: DateRange): Promise<number> {
     const sql = `
       SELECT COUNT(*) as total_streams
@@ -191,21 +174,13 @@ export class ContentStreamingReportsService {
     return result?.[0]?.total_streams || 0;
   }
 
-  /**
-   * Get comparative context including genre performance
-   */
   private static async getComparativeContext(
     dateRange: DateRange,
     contentType: 'songs' | 'albums' | 'artists',
     genre?: string
   ) {
-    // Get total platform streams
     const totalStreams = await this.getTotalPlatformStreams(dateRange);
-    
-    // Get unique listener count for the entire period
     const uniqueListeners = await this.getUniqueListeners(dateRange);
-    
-    // Calculate platform-wide average streams per listener
     const avgStreamsPerListener = uniqueListeners > 0 
       ? parseFloat((totalStreams / uniqueListeners).toFixed(2))
       : 0;
@@ -218,9 +193,6 @@ export class ContentStreamingReportsService {
     };
   }
 
-  /**
-   * Get unique listener count for the period
-   */
   private static async getUniqueListeners(dateRange: DateRange): Promise<number> {
     const sql = `
       SELECT COUNT(DISTINCT user_id) as unique_listeners

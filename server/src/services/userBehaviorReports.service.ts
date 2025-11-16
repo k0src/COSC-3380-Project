@@ -8,195 +8,138 @@ export interface DateRange {
 
 export class UserBehaviorReportsService {
   /**
-   * Get Daily/Monthly Active Users - How many users are actually engaging regularly
-   * Parameters:
-   * - groupBy: 'daily' | 'monthly' - how to group the data
-   * - minStreams: minimum number of streams to be considered active
+   * Tracks user retention by join cohort
    */
-  static async getDailyMonthlyActiveUsers(
-    dateRange: DateRange, 
-    groupBy: 'daily' | 'monthly' = 'daily',
-    minStreams: number = 1
-  ) {
-    // Step 1: Get current period data
-    const currentPeriodData = await this.getCurrentPeriodData(dateRange, groupBy, minStreams);
+  static async getAudienceGrowth(dateRange: DateRange, period: 'days' | 'weeks' | 'months' = 'months') {
+    // Set date grouping based on period
+    let dateTruncation = "DATE_TRUNC('month', u.created_at)";
+    let dateFormat = "TO_CHAR(uc.joined_period, 'Mon YYYY')";
     
-    // Step 2: Get previous period data for comparison
-    const previousPeriodData = await this.getPreviousPeriodData(dateRange, groupBy, minStreams);
-    
-    // Step 3: Get total registered users
-    const totalUsers = await this.getTotalRegisteredUsers(dateRange.to);
-    
-    // Step 4: Get peak activity data
-    const peakActivity = await this.getPeakActivity(dateRange, groupBy, minStreams);
-    
-    // Step 5: Calculate platform averages
-    const platformAverages = await this.calculatePlatformAverages(dateRange, groupBy);
-    
-    // Step 6: Combine all data
-    const enrichedData = currentPeriodData.map((current: any) => {
-      const previous = previousPeriodData.find((p: any) => p.period === current.period);
-      
-      return {
-        ...current,
-        // Engagement Quality
-        avg_streams_per_user: current.active_users > 0 
-          ? parseFloat((current.total_streams / current.active_users).toFixed(2))
-          : 0,
-        
-        // Benchmarks
-        total_registered_users: totalUsers,
-        engagement_rate_percent: totalUsers > 0
-          ? parseFloat((current.active_users / totalUsers * 100).toFixed(2))
-          : 0,
-        
-        // Comparison Metrics
-        previous_period_active_users: previous?.active_users || 0,
-        previous_period_streams: previous?.total_streams || 0,
-        user_growth_percent: previous?.active_users > 0
-          ? parseFloat(((current.active_users - previous.active_users) / previous.active_users * 100).toFixed(2))
-          : null,
-        stream_growth_percent: previous?.total_streams > 0
-          ? parseFloat(((current.total_streams - previous.total_streams) / previous.total_streams * 100).toFixed(2))
-          : null,
-        
-        // Peak Activity
-        peak_period: peakActivity.peak_period,
-        peak_active_users: peakActivity.peak_active_users,
-        peak_streams: peakActivity.peak_streams,
-        percent_of_peak: peakActivity.peak_active_users > 0
-          ? parseFloat((current.active_users / peakActivity.peak_active_users * 100).toFixed(2))
-          : 0
-      };
-    });
-    
-    return {
-      results: enrichedData,
-      summary: {
-        total_periods: enrichedData.length,
-        platform_avg_active_users: platformAverages.avg_active_users,
-        platform_avg_streams: platformAverages.avg_streams,
-        platform_avg_engagement_rate: platformAverages.avg_engagement_rate,
-      }
-    };
-  }
-  
-  // Helper method: Get current period data
-  private static async getCurrentPeriodData(dateRange: DateRange, groupBy: 'daily' | 'monthly', minStreams: number) {
-    const dateGrouping = groupBy === 'monthly' 
-      ? "TO_CHAR(DATE_TRUNC('month', sh.played_at), 'Month YYYY')" 
-      : "DATE(sh.played_at)::text";
+    if (period === 'weeks') {
+      dateTruncation = "DATE_TRUNC('week', u.created_at)";
+      dateFormat = "'Week of ' || TO_CHAR(uc.joined_period, 'Mon DD, YYYY')";
+    } else if (period === 'days') {
+      dateTruncation = "DATE_TRUNC('day', u.created_at)";
+      dateFormat = "TO_CHAR(uc.joined_period, 'Mon DD, YYYY')";
+    }
     
     const sql = `
-      SELECT 
-        ${dateGrouping} as period,
-        COUNT(DISTINCT sh.user_id) as active_users,
-        COUNT(sh.song_id) as total_streams,
-        COUNT(DISTINCT sh.song_id) as unique_songs_played
-      FROM song_history sh
-      WHERE sh.played_at BETWEEN $1 AND $2
-      GROUP BY ${groupBy === 'monthly' ? "DATE_TRUNC('month', sh.played_at)" : "DATE(sh.played_at)"}
-      HAVING COUNT(sh.song_id) >= $3
-      ORDER BY ${groupBy === 'monthly' ? "DATE_TRUNC('month', sh.played_at)" : "DATE(sh.played_at)"} DESC
-    `;
-    
-    const result = await query(sql, [dateRange.from, dateRange.to, minStreams]);
-    return result || [];
-  }
-  
-  // Helper method: Get previous period data
-  private static async getPreviousPeriodData(dateRange: DateRange, groupBy: 'daily' | 'monthly', minStreams: number) {
-    // Calculate previous period range
-    const fromDate = new Date(dateRange.from);
-    const toDate = new Date(dateRange.to);
-    const periodLength = toDate.getTime() - fromDate.getTime();
-    
-    const previousFrom = new Date(fromDate.getTime() - periodLength).toISOString().split('T')[0];
-    const previousTo = new Date(fromDate.getTime() - 86400000).toISOString().split('T')[0]; // 1 day before start
-    
-    const dateGrouping = groupBy === 'monthly' 
-      ? "TO_CHAR(DATE_TRUNC('month', sh.played_at), 'Month YYYY')" 
-      : "DATE(sh.played_at)::text";
-    
-    const sql = `
-      SELECT 
-        ${dateGrouping} as period,
-        COUNT(DISTINCT sh.user_id) as active_users,
-        COUNT(sh.song_id) as total_streams
-      FROM song_history sh
-      WHERE sh.played_at BETWEEN $1 AND $2
-      GROUP BY ${groupBy === 'monthly' ? "DATE_TRUNC('month', sh.played_at)" : "DATE(sh.played_at)"}
-      HAVING COUNT(sh.song_id) >= $3
-    `;
-    
-    const result = await query(sql, [previousFrom, previousTo, minStreams]);
-    return result || [];
-  }
-  
-  // Helper method: Get total registered users
-  private static async getTotalRegisteredUsers(asOfDate: string): Promise<number> {
-    const sql = `
-      SELECT COUNT(*) as total
-      FROM users
-      WHERE created_at <= $1
-    `;
-    
-    const result = await query(sql, [asOfDate]);
-    return result?.[0]?.total || 0;
-  }
-  
-  // Helper method: Get peak activity period
-  private static async getPeakActivity(dateRange: DateRange, groupBy: 'daily' | 'monthly', minStreams: number) {
-    const dateGrouping = groupBy === 'monthly' 
-      ? "TO_CHAR(DATE_TRUNC('month', sh.played_at), 'Month YYYY')" 
-      : "DATE(sh.played_at)::text";
-    
-    const sql = `
-      SELECT 
-        ${dateGrouping} as peak_period,
-        COUNT(DISTINCT sh.user_id) as peak_active_users,
-        COUNT(sh.song_id) as peak_streams
-      FROM song_history sh
-      WHERE sh.played_at BETWEEN $1 AND $2
-      GROUP BY ${groupBy === 'monthly' ? "DATE_TRUNC('month', sh.played_at)" : "DATE(sh.played_at)"}
-      HAVING COUNT(sh.song_id) >= $3
-      ORDER BY COUNT(DISTINCT sh.user_id) DESC
-      LIMIT 1
-    `;
-    
-    const result = await query(sql, [dateRange.from, dateRange.to, minStreams]);
-    return result?.[0] || { peak_period: null, peak_active_users: 0, peak_streams: 0 };
-  }
-  
-  // Helper method: Calculate platform averages
-  private static async calculatePlatformAverages(dateRange: DateRange, groupBy: 'daily' | 'monthly') {
-    const dateGrouping = groupBy === 'monthly' 
-      ? "DATE_TRUNC('month', sh.played_at)"
-      : "DATE(sh.played_at)";
-
-    const sql = `
-      WITH period_stats AS (
+      WITH user_cohorts AS (
         SELECT 
-          ${dateGrouping} as period,
-          COUNT(DISTINCT sh.user_id) as active_users,
-          COUNT(sh.song_id) as total_streams,
-          (SELECT COUNT(*) FROM users WHERE created_at <= MAX(sh.played_at)) as total_users
-        FROM song_history sh
-        WHERE sh.played_at BETWEEN $1 AND $2
-        GROUP BY ${dateGrouping}
+          ${dateTruncation} as joined_period,
+          u.id as user_id,
+          u.created_at
+        FROM users u
+        WHERE u.created_at BETWEEN $1 AND $2
+      ),
+      week1_returns AS (
+        SELECT DISTINCT
+          uc.joined_period,
+          sh.user_id
+        FROM user_cohorts uc
+        JOIN song_history sh ON uc.user_id = sh.user_id
+        WHERE sh.played_at BETWEEN uc.created_at AND uc.created_at + INTERVAL '7 days'
+      ),
+      week4_returns AS (
+        SELECT DISTINCT
+          uc.joined_period,
+          sh.user_id
+        FROM user_cohorts uc
+        JOIN song_history sh ON uc.user_id = sh.user_id
+        WHERE sh.played_at BETWEEN uc.created_at + INTERVAL '21 days' AND uc.created_at + INTERVAL '28 days'
+      ),
+      current_month_returns AS (
+        SELECT DISTINCT
+          uc.joined_period,
+          sh.user_id,
+          COUNT(sh.song_id) as play_count
+        FROM user_cohorts uc
+        JOIN song_history sh ON uc.user_id = sh.user_id
+        WHERE sh.played_at BETWEEN DATE_TRUNC('month', CURRENT_DATE) AND DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+        GROUP BY uc.joined_period, sh.user_id
+      ),
+      play_stats AS (
+        SELECT 
+          uc.joined_period,
+          PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY cmr.play_count) as median_plays,
+          AVG(cmr.play_count) as avg_plays,
+          COUNT(CASE WHEN cmr.play_count > 10 THEN 1 END) as heavy_listeners
+        FROM user_cohorts uc
+        LEFT JOIN current_month_returns cmr ON uc.joined_period = cmr.joined_period AND uc.user_id = cmr.user_id
+        WHERE cmr.play_count IS NOT NULL
+        GROUP BY uc.joined_period
       )
       SELECT 
-        ROUND(AVG(active_users), 2) as avg_active_users,
-        ROUND(AVG(total_streams), 2) as avg_streams,
-        ROUND(AVG((active_users::numeric / NULLIF(total_users, 0) * 100)), 2) as avg_engagement_rate
-      FROM period_stats
+        ${dateFormat} as joined_in,
+        COUNT(DISTINCT uc.user_id) as total_users,
+        COUNT(DISTINCT w1.user_id) as returned_week1,
+        ROUND(
+          (COUNT(DISTINCT w1.user_id)::numeric / NULLIF(COUNT(DISTINCT uc.user_id), 0) * 100), 
+          1
+        ) as week1_retention_percent,
+        COUNT(DISTINCT w4.user_id) as returned_week4,
+        ROUND(
+          (COUNT(DISTINCT w4.user_id)::numeric / NULLIF(COUNT(DISTINCT uc.user_id), 0) * 100), 
+          1
+        ) as week4_retention_percent,
+        COUNT(DISTINCT cmr.user_id) as came_back_this_month,
+        ROUND(
+          (COUNT(DISTINCT cmr.user_id)::numeric / NULLIF(COUNT(DISTINCT uc.user_id), 0) * 100), 
+          1
+        ) as this_month_retention_percent,
+        COALESCE(ROUND(ps.median_plays::numeric, 1), 0) as median_plays,
+        COALESCE(ROUND(ps.avg_plays::numeric, 1), 0) as avg_plays
+      FROM user_cohorts uc
+      LEFT JOIN week1_returns w1 ON uc.joined_period = w1.joined_period AND uc.user_id = w1.user_id
+      LEFT JOIN week4_returns w4 ON uc.joined_period = w4.joined_period AND uc.user_id = w4.user_id
+      LEFT JOIN current_month_returns cmr ON uc.joined_period = cmr.joined_period AND uc.user_id = cmr.user_id
+      LEFT JOIN play_stats ps ON uc.joined_period = ps.joined_period
+      GROUP BY uc.joined_period, ps.median_plays, ps.avg_plays
+      ORDER BY uc.joined_period DESC
     `;
-
+    
     const result = await query(sql, [dateRange.from, dateRange.to]);
-    return result?.[0] || {
-      avg_active_users: 0,
-      avg_streams: 0,
-      avg_engagement_rate: 0
+  
+    // Count total user accounts 
+    // Get active listeners count
+    const totalUsersResult = await query(
+      `SELECT COUNT(*) as active_listeners 
+       FROM users
+       WHERE role = 'USER'`,
+      []
+    );
+    const totalUsers = totalUsersResult?.[0]?.active_listeners || 0;
+    
+    // Get new users count
+    const newUsersResult = await query(
+      `SELECT COUNT(*) as new_users FROM users WHERE created_at BETWEEN $1 AND $2 AND role = 'USER'`,
+      [dateRange.from, dateRange.to]
+    );
+    const newUsers = newUsersResult?.[0]?.new_users || 0;
+    
+    // Get detailed user activity data
+    const userDetailsResult = await query(
+      `SELECT 
+        u.username,
+        u.created_at as joined_date,
+        COUNT(sh.user_id) as total_listens,
+        MAX(sh.played_at) as last_listened
+      FROM users u
+      LEFT JOIN song_history sh ON u.id = sh.user_id
+      WHERE u.role = 'USER' AND u.created_at BETWEEN $1 AND $2
+      GROUP BY u.id, u.username, u.created_at
+      ORDER BY u.created_at DESC`,
+      [dateRange.from, dateRange.to]
+    );
+    
+    return {
+      results: result || [],
+      summary: {
+        active_listeners: totalUsers,
+        new_users: newUsers,
+        total_cohorts: (result || []).length,
+        user_details: userDetailsResult || []
+      }
     };
   }
 }

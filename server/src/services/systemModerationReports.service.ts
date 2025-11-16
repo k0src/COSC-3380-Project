@@ -8,328 +8,424 @@ export interface DateRange {
 
 export class SystemModerationReportsService {
   /**
-   * Number of reports by type 
-   * Parameters:
-   * - reportTypes: array of specific report types to include (e.g., ['explicit', 'hateful', 'spam'])
-   * - contentType: specific content type to focus on ('user', 'song', 'album', 'playlist', or 'all')
-   * - includeRiskAnalysis: whether to include risk level categorization
-   * - groupBy: 'type' | 'date' | 'status' 
+   * Get simplified content moderation report
+   * Returns summary stats, reported entries table, and trend data
    */
-  static async getReportsByType(
-    dateRange: DateRange, 
+  static async getSimplifiedModerationReport(
+    dateRange: DateRange,
     reportTypes?: string[],
     contentType: string = 'all',
-    includeRiskAnalysis: boolean = false,
-    groupBy: 'type' | 'date' | 'status' = 'type'
+    searchTerm?: string
   ) {
-    // Step 1: Get current period data
-    const currentPeriodData = await this.getCurrentPeriodReports(dateRange, reportTypes, contentType);
+    // A. Get Summary Data
+    const summary = await this.getSummaryData(dateRange, reportTypes, contentType, searchTerm);
     
-    // Step 2: Get previous period data for trends
-    const previousPeriodData = await this.getPreviousPeriodReports(dateRange, reportTypes, contentType);
+    // B. Get Reported Entries (simplified table)
+    const reportedEntries = await this.getReportedEntries(dateRange, reportTypes, contentType, searchTerm);
     
-    // Step 3: Get resolution metrics (pending vs resolved)
-    const resolutionMetrics = await this.getResolutionMetrics(dateRange, reportTypes, contentType);
-    
-    // Step 4: Get repeat offenders
-    const repeatOffenders = await this.getRepeatOffenders(dateRange, contentType);
-    
-    // Step 5: Calculate totals for percentages
-    const totalReports = currentPeriodData.reduce((sum: number, row: any) => sum + parseInt(row.total_reports), 0);
-    
-    // Step 6: Combine all data
-    const enrichedData = currentPeriodData.map((current: any) => {
-      const previous = previousPeriodData.find((p: any) => p.report_type === current.report_type);
-      
-      return {
-        ...current,
-        // Percentage of total
-        percentage_of_total: totalReports > 0 
-          ? parseFloat(((parseInt(current.total_reports) / totalReports) * 100).toFixed(1))
-          : 0,
-        
-        // Trend indicators
-        previous_period_reports: previous?.total_reports || 0,
-        report_change_percent: previous?.total_reports > 0
-          ? parseFloat((((current.total_reports - previous.total_reports) / previous.total_reports) * 100).toFixed(1))
-          : null,
-        trend: previous?.total_reports 
-          ? (current.total_reports > previous.total_reports ? 'increasing' : 
-             current.total_reports < previous.total_reports ? 'decreasing' : 'stable')
-          : 'new'
-      };
-    });
+    // C. Get Trends Data
+    const trends = await this.getTrendsData(dateRange, reportTypes, contentType, searchTerm);
     
     return {
-      results: enrichedData,
-      summary: {
-        total_reports: totalReports,
-        pending_reports: resolutionMetrics.pending_count,
-        resolved_reports: resolutionMetrics.resolved_count,
-        pending_vs_resolved_ratio: resolutionMetrics.resolved_count > 0
-          ? parseFloat((resolutionMetrics.pending_count / resolutionMetrics.resolved_count).toFixed(2))
-          : null,
-        unique_items_reported: resolutionMetrics.unique_items,
-        repeat_offenders_count: repeatOffenders.length,
-        repeat_offenders: repeatOffenders
-      }
+      summary,
+      reported_entries: reportedEntries,
+      trends
     };
   }
-  
-  // Helper method: Get current period reports
-  private static async getCurrentPeriodReports(dateRange: DateRange, reportTypes?: string[], contentType: string = 'all') {
+
+  // Get summary statistics
+  private static async getSummaryData(dateRange: DateRange, reportTypes?: string[], contentType: string = 'all', searchTerm?: string) {
+    // Use join-based query when filtering by name
+    if (searchTerm && searchTerm.trim()) {
+      return await this.getSummaryDataWithSearch(dateRange, reportTypes, contentType, searchTerm);
+    }
+    
     let sql = `
       SELECT 
-        r.report_type,
         COUNT(*) as total_reports,
-        COUNT(DISTINCT r.reported_id) as unique_items_reported,
-        COUNT(CASE WHEN r.report_status = 'ACTION_TAKEN' THEN 1 END) as actions_taken,
-        CAST(
-          (COUNT(CASE WHEN r.report_status = 'ACTION_TAKEN' THEN 1 END)::float / NULLIF(COUNT(*), 0)) * 100 AS DECIMAL(5,1)
-        ) as action_rate_percent
+        COUNT(DISTINCT r.reporter_id) as unique_reporters,
+        COUNT(DISTINCT r.reported_id) as unique_items_reported
       FROM (
     `;
     
     const params = [dateRange.from, dateRange.to];
     let paramIndex = 3;
     
-    // Build the UNION query based on content type
-    if (contentType === 'all') {
-      sql += `
-        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM user_reports
-        WHERE reported_at BETWEEN $1 AND $2
-        
-        UNION ALL
-        
-        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM song_reports
-        WHERE reported_at BETWEEN $1 AND $2
-        
-        UNION ALL
-        
-        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM album_reports
-        WHERE reported_at BETWEEN $1 AND $2
-        
-        UNION ALL
-        
-        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM playlist_reports
-        WHERE reported_at BETWEEN $1 AND $2
-      `;
-    } else {
-      sql += `
-        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM ${contentType}_reports
-        WHERE reported_at BETWEEN $1 AND $2
-      `;
-    }
+    // Build union query
+    sql += this.buildUnionQuery(contentType);
+    sql += `) r WHERE r.reported_at BETWEEN $1 AND $2`;
     
-    sql += `) r WHERE 1=1`;
-    
-    // Filter by specific report types if provided
+    // Filter by report types if given
     if (reportTypes && reportTypes.length > 0) {
       const placeholders = reportTypes.map((_, index) => `$${paramIndex + index}`).join(', ');
       sql += ` AND r.report_type IN (${placeholders})`;
       params.push(...reportTypes);
     }
     
-    sql += ` 
-      GROUP BY r.report_type 
-      ORDER BY total_reports DESC
+    const result = await query(sql, params);
+    const basicStats = result?.[0] || { total_reports: 0, unique_reporters: 0, unique_items_reported: 0 };
+    
+    // Get reports by type breakdown
+    const reportsByType = await this.getReportsByTypeBreakdown(dateRange, reportTypes, contentType, searchTerm);
+    
+    // Get reports over time
+    const reportsOverTime = await this.getReportsOverTime(dateRange, reportTypes, contentType, searchTerm);
+    
+    return {
+      total_reports: parseInt(basicStats.total_reports),
+      unique_reporters: parseInt(basicStats.unique_reporters),
+      unique_items_reported: parseInt(basicStats.unique_items_reported),
+      reports_by_type: reportsByType,
+      reports_over_time: reportsOverTime
+    };
+  }
+
+  // Summary with name search filter
+  private static async getSummaryDataWithSearch(dateRange: DateRange, reportTypes: string[] | undefined, contentType: string, searchTerm: string) {
+    const searchPattern = `%${searchTerm.trim()}%`;
+    const params: any[] = [dateRange.from, dateRange.to];
+    
+    const { sql: unionSql, params: unionParams, newParamIndex } = this.buildUnionQueryWithSearch(contentType, searchPattern, 3);
+    params.push(...unionParams);
+    
+    let sql = `
+      SELECT 
+        COUNT(*) as total_reports,
+        COUNT(DISTINCT r.reporter_id) as unique_reporters,
+        COUNT(DISTINCT r.reported_id) as unique_items_reported
+      FROM (
+        ${unionSql}
+      ) r
     `;
     
-    const result = await query(sql, params);
-    return result || [];
-  }
-  
-  // Helper method: Get previous period reports for trend comparison
-  private static async getPreviousPeriodReports(dateRange: DateRange, reportTypes?: string[], contentType: string = 'all') {
-    // Calculate previous period range
-    const fromDate = new Date(dateRange.from);
-    const toDate = new Date(dateRange.to);
-    const periodLength = toDate.getTime() - fromDate.getTime();
+    if (reportTypes && reportTypes.length > 0) {
+      const placeholders = reportTypes.map((_, idx) => `$${newParamIndex + idx}`).join(', ');
+      sql += ` WHERE r.report_type IN (${placeholders})`;
+      params.push(...reportTypes);
+    }
     
-    const previousFrom = new Date(fromDate.getTime() - periodLength).toISOString().split('T')[0];
-    const previousTo = new Date(fromDate.getTime() - 86400000).toISOString().split('T')[0];
+    const result = await query(sql, params);
+    const basicStats = result?.[0] || { total_reports: 0, unique_reporters: 0, unique_items_reported: 0 };
+    
+    const reportsByType = await this.getReportsByTypeBreakdown(dateRange, reportTypes, contentType, searchTerm);
+    const reportsOverTime = await this.getReportsOverTime(dateRange, reportTypes, contentType, searchTerm);
+    
+    return {
+      total_reports: parseInt(basicStats.total_reports),
+      unique_reporters: parseInt(basicStats.unique_reporters),
+      unique_items_reported: parseInt(basicStats.unique_items_reported),
+      reports_by_type: reportsByType,
+      reports_over_time: reportsOverTime
+    };
+  }
+
+  private static async getReportsByTypeBreakdown(dateRange: DateRange, reportTypes?: string[], contentType: string = 'all', searchTerm?: string) {
+    // Use join-based query for name filtering
+    if (searchTerm && searchTerm.trim()) {
+      return await this.getReportsByTypeBreakdownWithSearch(dateRange, reportTypes, contentType, searchTerm);
+    }
+    
+    // Main breakdown query
+    let sql = `
+      SELECT 
+        r.report_type,
+        COUNT(*) as count
+      FROM (
+    `;
+    
+    const params = [dateRange.from, dateRange.to];
+    let paramIndex = 3;
+    
+    sql += this.buildUnionQuery(contentType);
+    sql += `) r WHERE r.reported_at BETWEEN $1 AND $2`;
+    
+    if (reportTypes && reportTypes.length > 0) {
+      const placeholders = reportTypes.map((_, index) => `$${paramIndex + index}`).join(', ');
+      sql += ` AND r.report_type IN (${placeholders})`;
+      params.push(...reportTypes);
+    }
+    
+    sql += ` GROUP BY r.report_type ORDER BY count DESC`;
+    
+    const result = await query(sql, params);
+    
+    const breakdown: any = {};
+    (result || []).forEach((row: any) => {
+      breakdown[row.report_type] = parseInt(row.count);
+    });
+    
+    return breakdown;
+  }
+
+  private static async getReportsByTypeBreakdownWithSearch(dateRange: DateRange, reportTypes: string[] | undefined, contentType: string, searchTerm: string) {
+    const searchPattern = `%${searchTerm.trim()}%`;
+    let unions: string[] = [];
+    const params: any[] = [dateRange.from, dateRange.to];
+    
+    const { sql: unionSql, params: unionParams, newParamIndex } = this.buildUnionQueryWithSearch(contentType, searchPattern, 3);
+    params.push(...unionParams);
     
     let sql = `
       SELECT 
         r.report_type,
-        COUNT(*) as total_reports
+        COUNT(*) as count
       FROM (
+        ${unionSql}
+      ) r
     `;
     
-    const params = [previousFrom, previousTo];
-    let paramIndex = 3;
-    
-    // Build the UNION query based on content type
-    if (contentType === 'all') {
-      sql += `
-        SELECT report_type, report_status, reported_at FROM user_reports
-        WHERE reported_at BETWEEN $1 AND $2
-        
-        UNION ALL
-        
-        SELECT report_type, report_status, reported_at FROM song_reports
-        WHERE reported_at BETWEEN $1 AND $2
-        
-        UNION ALL
-        
-        SELECT report_type, report_status, reported_at FROM album_reports
-        WHERE reported_at BETWEEN $1 AND $2
-        
-        UNION ALL
-        
-        SELECT report_type, report_status, reported_at FROM playlist_reports
-        WHERE reported_at BETWEEN $1 AND $2
-      `;
-    } else {
-      sql += `
-        SELECT report_type, report_status, reported_at FROM ${contentType}_reports
-        WHERE reported_at BETWEEN $1 AND $2
-      `;
-    }
-    
-    sql += `) r WHERE 1=1`;
-    
-    // Filter by specific report types if provided
     if (reportTypes && reportTypes.length > 0) {
-      const placeholders = reportTypes.map((_, index) => `$${paramIndex + index}`).join(', ');
-      sql += ` AND r.report_type IN (${placeholders})`;
+      const placeholders = reportTypes.map((_, idx) => `$${newParamIndex + idx}`).join(', ');
+      sql += ` WHERE r.report_type IN (${placeholders})`;
       params.push(...reportTypes);
     }
     
-    sql += ` 
-      GROUP BY r.report_type
-    `;
+    sql += ` GROUP BY r.report_type ORDER BY count DESC`;
     
     const result = await query(sql, params);
-    return result || [];
+    
+    const breakdown: any = {};
+    (result || []).forEach((row: any) => {
+      breakdown[row.report_type] = parseInt(row.count);
+    });
+    
+    return breakdown;
   }
-  
-  // Helper method: Get resolution metrics (pending vs resolved)
-  private static async getResolutionMetrics(dateRange: DateRange, reportTypes?: string[], contentType: string = 'all') {
+
+  private static async getReportsOverTime(dateRange: DateRange, reportTypes?: string[], contentType: string = 'all', searchTerm?: string) {
+    // Use join-based query for name filtering
+    if (searchTerm && searchTerm.trim()) {
+      return await this.getReportsOverTimeWithSearch(dateRange, reportTypes, contentType, searchTerm);
+    }
+    
     let sql = `
       SELECT 
-        COUNT(CASE WHEN r.report_status = 'PENDING_REVIEW' THEN 1 END) as pending_count,
-        COUNT(CASE WHEN r.report_status IN ('ACTION_TAKEN', 'DISMISSED') THEN 1 END) as resolved_count,
-        COUNT(DISTINCT r.reported_id) as unique_items
+        DATE(r.reported_at) as date,
+        COUNT(*) as count
       FROM (
     `;
     
     const params = [dateRange.from, dateRange.to];
     let paramIndex = 3;
     
-    // Build the UNION query based on content type
-    if (contentType === 'all') {
-      sql += `
-        SELECT report_type, report_status, reported_id FROM user_reports
-        WHERE reported_at BETWEEN $1 AND $2
-        
-        UNION ALL
-        
-        SELECT report_type, report_status, reported_id FROM song_reports
-        WHERE reported_at BETWEEN $1 AND $2
-        
-        UNION ALL
-        
-        SELECT report_type, report_status, reported_id FROM album_reports
-        WHERE reported_at BETWEEN $1 AND $2
-        
-        UNION ALL
-        
-        SELECT report_type, report_status, reported_id FROM playlist_reports
-        WHERE reported_at BETWEEN $1 AND $2
-      `;
-    } else {
-      sql += `
-        SELECT report_type, report_status, reported_id FROM ${contentType}_reports
-        WHERE reported_at BETWEEN $1 AND $2
-      `;
-    }
+    sql += this.buildUnionQuery(contentType);
+    sql += `) r WHERE r.reported_at BETWEEN $1 AND $2`;
     
-    sql += `) r WHERE 1=1`;
-    
-    // Filter by specific report types if provided
+    // Filter by report types if given
     if (reportTypes && reportTypes.length > 0) {
       const placeholders = reportTypes.map((_, index) => `$${paramIndex + index}`).join(', ');
       sql += ` AND r.report_type IN (${placeholders})`;
       params.push(...reportTypes);
     }
     
+    sql += ` GROUP BY DATE(r.reported_at) ORDER BY date ASC`;
+    
     const result = await query(sql, params);
-    return result?.[0] || { pending_count: 0, resolved_count: 0, unique_items: 0 };
+    
+    return (result || []).map((row: any) => ({
+      date: row.date,
+      count: parseInt(row.count)
+    }));
   }
-  
-  // Helper method: Get repeat offenders (items/users with multiple reports)
-  private static async getRepeatOffenders(dateRange: DateRange, contentType: string = 'all') {
-    let sql = '';
-    const params = [dateRange.from, dateRange.to];
+
+  private static async getReportsOverTimeWithSearch(dateRange: DateRange, reportTypes: string[] | undefined, contentType: string, searchTerm: string) {
+    const searchPattern = `%${searchTerm.trim()}%`;
+    const params: any[] = [dateRange.from, dateRange.to];
+    
+    const { sql: unionSql, params: unionParams, newParamIndex } = this.buildUnionQueryWithSearch(contentType, searchPattern, 3);
+    params.push(...unionParams);
+    
+    let sql = `
+      SELECT 
+        DATE(r.reported_at) as date,
+        COUNT(*) as count
+      FROM (
+        ${unionSql}
+      ) r
+    `;
+    
+    if (reportTypes && reportTypes.length > 0) {
+      const placeholders = reportTypes.map((_, idx) => `$${newParamIndex + idx}`).join(', ');
+      sql += ` WHERE r.report_type IN (${placeholders})`;
+      params.push(...reportTypes);
+    }
+    
+    sql += ` GROUP BY DATE(r.reported_at) ORDER BY date ASC`;
+    
+    const result = await query(sql, params);
+    
+    return (result || []).map((row: any) => ({
+      date: row.date,
+      count: parseInt(row.count)
+    }));
+  }
+
+  // Get reported content entries
+  private static async getReportedEntries(dateRange: DateRange, reportTypes?: string[], contentType: string = 'all', searchTerm?: string) {
+    const entries = [];
     
     if (contentType === 'all' || contentType === 'user') {
-      sql = `
-        SELECT 
-          'user' as entity_type,
-          r.reported_id,
-          u.username as entity_name,
-          COUNT(*) as report_count
-        FROM user_reports r
-        LEFT JOIN users u ON r.reported_id = u.id
-        WHERE r.reported_at BETWEEN $1 AND $2
-        GROUP BY r.reported_id, u.username
-        HAVING COUNT(*) >= 2
-        ORDER BY report_count DESC
-        LIMIT 10
-      `;
-    } else if (contentType === 'song') {
-      sql = `
-        SELECT 
-          'song' as entity_type,
-          r.reported_id,
-          s.title as entity_name,
-          COUNT(*) as report_count
-        FROM song_reports r
-        LEFT JOIN songs s ON r.reported_id = s.id
-        WHERE r.reported_at BETWEEN $1 AND $2
-        GROUP BY r.reported_id, s.title
-        HAVING COUNT(*) >= 2
-        ORDER BY report_count DESC
-        LIMIT 10
-      `;
-    } else if (contentType === 'album') {
-      sql = `
-        SELECT 
-          'album' as entity_type,
-          r.reported_id,
-          a.title as entity_name,
-          COUNT(*) as report_count
-        FROM album_reports r
-        LEFT JOIN albums a ON r.reported_id = a.id
-        WHERE r.reported_at BETWEEN $1 AND $2
-        GROUP BY r.reported_id, a.title
-        HAVING COUNT(*) >= 2
-        ORDER BY report_count DESC
-        LIMIT 10
-      `;
-    } else if (contentType === 'playlist') {
-      sql = `
-        SELECT 
-          'playlist' as entity_type,
-          r.reported_id,
-          p.title as entity_name,
-          COUNT(*) as report_count
-        FROM playlist_reports r
-        LEFT JOIN playlists p ON r.reported_id = p.id
-        WHERE r.reported_at BETWEEN $1 AND $2
-        GROUP BY r.reported_id, p.title
-        HAVING COUNT(*) >= 2
-        ORDER BY report_count DESC
-        LIMIT 10
-      `;
+      const userReports = await this.getReportedEntriesForType('user', dateRange, reportTypes, searchTerm);
+      entries.push(...userReports);
     }
     
-    if (!sql) return [];
+    if (contentType === 'all' || contentType === 'song') {
+      const songReports = await this.getReportedEntriesForType('song', dateRange, reportTypes, searchTerm);
+      entries.push(...songReports);
+    }
+    
+    if (contentType === 'all' || contentType === 'album') {
+      const albumReports = await this.getReportedEntriesForType('album', dateRange, reportTypes, searchTerm);
+      entries.push(...albumReports);
+    }
+    
+    if (contentType === 'all' || contentType === 'playlist') {
+      const playlistReports = await this.getReportedEntriesForType('playlist', dateRange, reportTypes, searchTerm);
+      entries.push(...playlistReports);
+    }
+    
+    // Sort newest first
+    entries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    
+    return entries;
+  }
+
+  private static async getReportedEntriesForType(
+    itemType: 'user' | 'song' | 'album' | 'playlist',
+    dateRange: DateRange,
+    reportTypes?: string[],
+    searchTerm?: string
+  ) {
+    let entityJoin = '';
+    let entityName = '';
+    
+    switch (itemType) {
+      case 'user':
+        entityJoin = 'LEFT JOIN users e ON r.reported_id = e.id';
+        entityName = 'e.username';
+        break;
+      case 'song':
+        entityJoin = 'LEFT JOIN songs e ON r.reported_id = e.id';
+        entityName = 'e.title';
+        break;
+      case 'album':
+        entityJoin = 'LEFT JOIN albums e ON r.reported_id = e.id';
+        entityName = 'e.title';
+        break;
+      case 'playlist':
+        entityJoin = 'LEFT JOIN playlists e ON r.reported_id = e.id';
+        entityName = 'e.title';
+        break;
+    }
+    
+    let sql = `
+      SELECT 
+        r.report_type,
+        '${itemType}' as item_type,
+        ${entityName} as item_name,
+        r.reported_id as item_id,
+        COUNT(*) OVER (PARTITION BY r.reported_id) as report_count,
+        CASE 
+          WHEN r.report_status = 'PENDING_REVIEW' THEN 'pending'
+          WHEN r.report_status = 'ACTION_TAKEN' THEN 'resolved'
+          WHEN r.report_status = 'DISMISSED' THEN 'dismissed'
+          ELSE 'pending'
+        END as status,
+        r.reported_at as created_at,
+        CASE 
+          WHEN r.report_status = 'ACTION_TAKEN' AND '${itemType}' = 'user' THEN 'suspended'
+          WHEN r.report_status = 'ACTION_TAKEN' THEN 'hidden'
+          WHEN r.report_status = 'DISMISSED' THEN 'dismissed'
+          ELSE NULL
+        END as action
+      FROM ${itemType}_reports r
+      ${entityJoin}
+      WHERE r.reported_at BETWEEN $1 AND $2
+    `;
+    
+    const params = [dateRange.from, dateRange.to];
+    let paramIndex = 3;
+    
+    if (reportTypes && reportTypes.length > 0) {
+      const placeholders = reportTypes.map((_, index) => `$${paramIndex + index}`).join(', ');
+      sql += ` AND r.report_type IN (${placeholders})`;
+      params.push(...reportTypes);
+      paramIndex += reportTypes.length;
+    }
+    
+    // Filter by name if search provided
+    if (searchTerm && searchTerm.trim()) {
+      sql += ` AND ${entityName} ILIKE $${paramIndex}`;
+      params.push(`%${searchTerm.trim()}%`);
+    }
+    
+    sql += ` ORDER BY r.reported_at DESC LIMIT 100`;
     
     const result = await query(sql, params);
     return result || [];
   }
+
+  // Get trend analysis
+  private static async getTrendsData(dateRange: DateRange, reportTypes?: string[], contentType: string = 'all', searchTerm?: string) {
+    const reportVolumeTrend = await this.getReportsOverTime(dateRange, reportTypes, contentType, searchTerm);
+    const topReportTypes = await this.getReportsByTypeBreakdown(dateRange, reportTypes, contentType, searchTerm);
+    
+    return {
+      report_volume_trend: reportVolumeTrend,
+      top_report_types: Object.entries(topReportTypes)
+        .map(([type, count]) => ({ type, count }))
+        .sort((a: any, b: any) => b.count - a.count)
+    };
+  }
+
+  // Build union query for content types
+  private static buildUnionQuery(contentType: string): string {
+    if (contentType === 'all') {
+      return `
+        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM user_reports
+        UNION ALL
+        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM song_reports
+        UNION ALL
+        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM album_reports
+        UNION ALL
+        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM playlist_reports
+      `;
+    } else {
+      return `
+        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM ${contentType}_reports
+      `;
+    }
+  }
+
+  // Build union query with joins for name search
+  private static buildUnionQueryWithSearch(contentType: string, searchPattern: string, baseParamIndex: number): { sql: string, params: string[], newParamIndex: number } {
+    const unions: string[] = [];
+    const params: string[] = [];
+    let paramIndex = baseParamIndex;
+
+    const contentTypes = contentType === 'all' 
+      ? [{ type: 'user', table: 'users', nameCol: 'username' },
+         { type: 'song', table: 'songs', nameCol: 'title' },
+         { type: 'album', table: 'albums', nameCol: 'title' },
+         { type: 'playlist', table: 'playlists', nameCol: 'title' }]
+      : [{ type: contentType, 
+           table: contentType === 'user' ? 'users' : `${contentType}s`, 
+           nameCol: contentType === 'user' ? 'username' : 'title' }];
+
+    contentTypes.forEach(({ type, table, nameCol }) => {
+      unions.push(`
+        SELECT r.report_type, r.reporter_id, r.reported_id, r.reported_at
+        FROM ${type}_reports r
+        LEFT JOIN ${table} e ON r.reported_id = e.id
+        WHERE r.reported_at BETWEEN $1 AND $2 AND e.${nameCol} ILIKE $${paramIndex}
+      `);
+      params.push(searchPattern);
+      paramIndex++;
+    });
+
+    return { sql: unions.join(' UNION ALL '), params, newParamIndex: paramIndex };
+  }
+
 }
 
 export default SystemModerationReportsService;

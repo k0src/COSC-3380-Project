@@ -32,12 +32,12 @@ export default class ReportRepository {
     const values = [
       reporterId,
       reportedEntityId,
-      reason, // This becomes report_type
+      reason, // report_type
       description,
       "PENDING_REVIEW" // Use the correct enum value from your database
     ];
 
     const result = await query(sql, values);
-    return result; // Fixed: use .rows[0] not [0]
+    return result;
   }
 }

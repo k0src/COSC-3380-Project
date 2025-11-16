@@ -11,11 +11,61 @@ interface Props {
 const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) => {
   if (loading) return <div className={styles.loading}>Loading data...</div>;
   if (error) return <div className={styles.error}>{error}</div>;
-  if (!data.length) return <div className={styles.placeholder}>No data to display yet.</div>;
+  if (!data.length && !summary) return <div className={styles.placeholder}>No data to display yet.</div>;
+
+  // Check if this is the new simplified moderation report
+  const isSimplifiedModerationReport = data.length > 0 && data[0] && 'reported_entries' in data[0];
+  
+  // For simplified moderation report, use the reported_entries array
+  const displayData = isSimplifiedModerationReport ? (data[0] as any).reported_entries : data;
 
   // Helper function to format cell values
   const formatCellValue = (key: string, value: any): string | React.ReactElement => {
     if (value === null || value === undefined) return "N/A";
+
+    // Handle friendly display for report types
+    if (key === "report_type") {
+      const typeMap: Record<string, string> = {
+        EXPLICIT: "Explicit Content",
+        VIOLENT: "Violent Content",
+        HATEFUL: "Hateful Content",
+        COPYRIGHT: "Copyright"
+      };
+      return typeMap[value] || value;
+    }
+
+    // Handle friendly display for item types
+    if (key === "item_type") {
+      const itemMap: Record<string, string> = {
+        user: "User",
+        song: "Song",
+        album: "Album",
+        playlist: "Playlist"
+      };
+      return itemMap[value] || value;
+    }
+
+    // Handle friendly display for status
+    if (key === "status") {
+      const statusMap: Record<string, { label: string; color: string }> = {
+        pending: { label: "Pending", color: "" },
+        resolved: { label: "Resolved", color: styles.positive },
+        dismissed: { label: "Dismissed", color: styles.negative }
+      };
+      const statusInfo = statusMap[value] || { label: value, color: "" };
+      return <span className={statusInfo.color}>{statusInfo.label}</span>;
+    }
+
+    // Handle friendly display for action
+    if (key === "action") {
+      if (!value) return "—";
+      const actionMap: Record<string, string> = {
+        suspended: "Suspended",
+        hidden: "Hidden",
+        dismissed: "No Action"
+      };
+      return actionMap[value] || value;
+    }
 
     // Handle trend indicators
     if (key === "trend") {
@@ -60,7 +110,7 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
     }
 
     // Handle date formatting
-    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
+    if (key === "created_at" || (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value))) {
       return value.split("T")[0];
     }
 
@@ -90,8 +140,7 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
       peak_active_users: "Peak Users",
       peak_streams: "Peak Streams",
       percent_of_peak: "% of Peak",
-      // System Moderation Report headers
-      report_type: "Report Type",
+      // System Moderation Report headers (legacy)
       total_reports: "Total Reports",
       unique_items_reported: "Unique Items",
       actions_taken: "Actions Taken",
@@ -113,7 +162,25 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
       release_date: "Release Date",
       songs_in_album: "Songs",
       songs_streamed: "Songs Streamed",
-      albums_streamed: "Albums"
+      albums_streamed: "Albums",
+      // Audience Growth Report headers
+      joined_in: "Joined In",
+      total_users: "Total Users",
+      returned_week1: "First-Week Return",
+      week1_retention_percent: "Week 1 %",
+      returned_week4: "Week 4 Return",
+      week4_retention_percent: "Week 4 %",
+      came_back_this_month: "This Month's Return",
+      this_month_retention_percent: "This Month %",
+      median_plays: "Median Plays",
+      avg_plays: "Avg Plays",
+      // Simplified Moderation Report headers (new)
+      report_type: "Report Type",
+      item_type: "Item Type",
+      item_name: "Item",
+      status: "Status",
+      created_at: "Date",
+      action: "Action"
     };
 
     return headerMap[key] || key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -122,10 +189,23 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
   // Group columns for better organization
   const getCoreColumns = () => ["period", "active_users", "total_streams", "unique_songs_played", "avg_streams_per_user"];
   const getModerationCoreColumns = () => ["report_type", "total_reports", "unique_items_reported", "actions_taken", "action_rate_percent", "percentage_of_total"];
+  const getAudienceGrowthColumns = () => [
+    "joined_in", 
+    "total_users", 
+    "returned_week1", 
+    "week1_retention_percent",
+    "returned_week4", 
+    "week4_retention_percent",
+    "came_back_this_month", 
+    "this_month_retention_percent",
+    "median_plays", 
+    "avg_plays"
+  ];
 
-  const columns = Object.keys(data[0]);
+  const columns = displayData && displayData.length > 0 ? Object.keys(displayData[0]) : [];
   const coreColumns = columns.filter(col => getCoreColumns().includes(col));
   const moderationCoreColumns = columns.filter(col => getModerationCoreColumns().includes(col));
+  const audienceGrowthColumns = columns.filter(col => getAudienceGrowthColumns().includes(col));
 
   // Check if this is an enhanced report (has new context fields)
   const isEnhancedReport = columns.some(col => 
@@ -136,27 +216,58 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
   const isModerationReport = columns.some(col => 
     ["report_type", "report_change_percent", "trend"].includes(col)
   );
+  
+  // Check if this is an audience growth report
+  const isAudienceGrowthReport = columns.some(col =>
+    ["joined_in", "week1_retention_percent", "median_plays"].includes(col)
+  );
 
   return (
     <div className={styles.reportContainer}>
       {summary && (
         <div className={styles.summaryCard}>
-          <h3>Platform Summary</h3>
+          <h3>{isSimplifiedModerationReport ? "Content Moderation Summary" : "Platform Summary"}</h3>
           <div className={styles.summaryGrid}>
-            {/* User Reports Summary */}
-            {summary.platform_avg_active_users !== undefined && (
+            {/* Simplified Moderation Report Summary */}
+            {isSimplifiedModerationReport && (data[0] as any).summary && (
               <>
                 <div className={styles.summaryItem}>
-                  <span className={styles.summaryLabel}>Total Users:</span>
-                  <span className={styles.summaryValue}>{data[0]?.total_registered_users?.toLocaleString() || 'N/A'}</span>
+                  <strong>Total Reports</strong>
+                  <span>{(data[0] as any).summary.total_reports?.toLocaleString()}</span>
                 </div>
                 <div className={styles.summaryItem}>
-                  <span className={styles.summaryLabel}>Avg Active Users:</span>
-                  <span className={styles.summaryValue}>{summary.platform_avg_active_users?.toLocaleString()}</span>
+                  <strong>People Who Reported</strong>
+                  <span>{(data[0] as any).summary.unique_reporters?.toLocaleString()}</span>
                 </div>
                 <div className={styles.summaryItem}>
-                  <span className={styles.summaryLabel}>Avg Streams:</span>
-                  <span className={styles.summaryValue}>{summary.platform_avg_streams?.toLocaleString()}</span>
+                  <strong>Items Reported</strong>
+                  <span>{(data[0] as any).summary.unique_items_reported?.toLocaleString()}</span>
+                </div>
+                
+                {/* Report Types Breakdown */}
+                {(data[0] as any).summary.reports_by_type && (
+                  <>
+                    {Object.entries((data[0] as any).summary.reports_by_type).map(([type, count]: [string, any]) => (
+                      <div key={type} className={styles.summaryItem}>
+                        <strong>{formatCellValue("report_type", type)}</strong>
+                        <span>{count?.toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </>
+            )}
+            
+            {/* Audience Growth Summary */}
+            {summary.active_listeners !== undefined && (
+              <>
+                <div className={styles.summaryItem}>
+                  <span className={styles.summaryLabel}>Total User Accounts:</span>
+                  <span className={styles.summaryValue}>{summary.active_listeners?.toLocaleString()}</span>
+                </div>
+                <div className={styles.summaryItem}>
+                  <span className={styles.summaryLabel}>New Users (Date Range):</span>
+                  <span className={styles.summaryValue}>{summary.new_users?.toLocaleString()}</span>
                 </div>
               </>
             )}
@@ -239,9 +350,90 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
         </div>
       )}
 
-      <h3 className={styles.sectionTitle}>Data Report Results</h3>
+      <h3 className={styles.sectionTitle}>
+        {isSimplifiedModerationReport ? "Reported Content" : "Data Report Results"}
+      </h3>
 
-      {isEnhancedReport ? (
+      {isSimplifiedModerationReport ? (
+        // Simplified Moderation Report - Clean table with essential columns only
+        <div className={styles.tableContainer}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Content Type</th>
+                <th>Name</th>
+                <th># Reports</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayData.map((row: any, i: number) => (
+                <tr key={i}>
+                  <td>{formatCellValue("Item ", row.item_type)}</td>
+                  <td>{row.item_name || row.item_id}</td>
+                  <td>{row.report_count || 1}</td>
+                  <td>{formatCellValue("created_at", row.created_at)}</td>
+                  <td>{formatCellValue("status", row.status)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : isAudienceGrowthReport ? (
+        // Audience Growth Report
+        <>
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  {audienceGrowthColumns.map((col) => (
+                    <th key={col}>{formatColumnHeader(col)}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((row, i) => (
+                  <tr key={i}>
+                    {audienceGrowthColumns.map((col) => (
+                      <td key={col}>{formatCellValue(col, row[col])}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* User Details Table */}
+          {summary?.user_details && summary.user_details.length > 0 && (
+            <>
+              <h3 className={styles.sectionTitle} style={{ marginTop: '2rem' }}>User Activity Details</h3>
+              <div className={styles.tableContainer}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Username</th>
+                      <th>Joined Date</th>
+                      <th>Total Listens</th>
+                      <th>Last Listened</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {summary.user_details.map((user: any, i: number) => (
+                      <tr key={i}>
+                        <td>{user.username}</td>
+                        <td>{formatCellValue("created_at", user.joined_date)}</td>
+                        <td>{user.total_listens?.toLocaleString()}</td>
+                        <td>{user.last_listened ? formatCellValue("created_at", user.last_listened) : "Never"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </>
+      ) : isEnhancedReport ? (
         <div className={styles.tableWrapper}>
           {/* all metrics */}
           {coreColumns.length > 0 && (
