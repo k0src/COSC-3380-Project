@@ -99,7 +99,7 @@ const MainLayoutHeader: React.FC = () => {
             </div>
 
             {/* Settings Section */}
-            <Link to="/settings" className={styles.iconButton}>
+            <Link to="/me/settings" className={styles.iconButton}>
               <LuSettings className={styles.actionIcon} />
             </Link>
 

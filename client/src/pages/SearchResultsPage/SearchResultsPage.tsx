@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import homeStyles from "../HomePage/HomePage.module.css";
 import styles from "./SearchResultsPage.module.css";
-import { SongCard, LazyImg } from "@components";
+import { LazyImg } from "@components";
 import artistPlaceholder from "@assets/artist-placeholder.webp";
 import { searchApi, type SearchResults } from "../../api/search.api";
 

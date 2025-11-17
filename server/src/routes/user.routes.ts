@@ -1313,47 +1313,7 @@ router.get(
   }
 );
 
-// PUT /api/users/:id
-router.put("/:id", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const {
-    username,
-    email,
-    new_password,
-    current_password,
-    authenticated_with,
-    role,
-    profile_picture_url,
-    pfp_blurhash,
-    artist_id,
-    status,
-  } = req.body;
 
-  if (!id) {
-    res.status(400).json({ error: "User ID is required" });
-    return;
-  }
-
-  try {
-    const updatedUser = await UserRepository.update(id, {
-      username,
-      email,
-      new_password,
-      current_password,
-      authenticated_with,
-      role,
-      profile_picture_url,
-      pfp_blurhash,
-      artist_id,
-      status,
-    });
-
-    if (!updatedUser) {
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-  }
-);
 
 /* ========================================================================== */
 /*                                User Settings                               */
