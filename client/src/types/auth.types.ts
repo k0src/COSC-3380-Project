@@ -1,10 +1,13 @@
 import type { User } from "./user.types";
 
+// SignupData interface - defines the data structure for user registration
 export interface SignupData {
   username: string;
   email: string;
   password: string;
-  role?: "USER" | "ARTIST";
+  role?: "USER" | "ARTIST"; // Optional role field allows choosing account type during signup
+                            // "USER" = Standard listener account
+                            // "ARTIST" = Creator account with upload privileges
 }
 
 export interface LoginData {

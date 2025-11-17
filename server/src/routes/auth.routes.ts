@@ -15,11 +15,12 @@ import {
 
 const router = Router();
 
+// Signup request interface - includes role field for account type selection
 interface SignupRequest {
   username: string;
   email: string;
   password: string;
-  role?: "USER" | "ARTIST" | "ADMIN";
+  role?: "USER" | "ARTIST" | "ADMIN"; // Optional role field (defaults to "USER")
 }
 
 interface LoginRequest {
@@ -98,11 +99,12 @@ router.post(
         return;
       }
 
+      // Step 1: Create the user account with the selected role
       const user = await UserRepository.create({
         username,
         email,
         password,
-        role,
+        role, // Role can be "USER" or "ARTIST" based on signup form selection
       });
 
       if (!user) {
@@ -114,15 +116,20 @@ router.post(
         return;
       }
 
-      // If user is an artist, create an artist profile
+      // Step 2: If user signed up as ARTIST, create an associated artist profile
+      // This artist profile allows them to:
+      // - Upload songs and albums
+      // - Have a dedicated artist page
+      // - Build a following and get verified
       if (role === "ARTIST") {
         try {
+          // Create artist profile linked to the user account
           const artist = await ArtistRepository.create({
-            display_name: username,
-            user_id: user.id,
+            display_name: username, // Use their username as initial artist name
+            user_id: user.id,       // Link artist profile to user account
           });
 
-          // Update user with artist_id
+          // Step 3: Link the artist_id back to the user record for easy access
           if (artist) {
             await UserRepository.update(user.id, { artist_id: artist.id });
             user.artist_id = artist.id;
@@ -130,6 +137,7 @@ router.post(
         } catch (error) {
           console.error("Failed to create artist profile:", error);
           // Don't fail the entire signup if artist profile creation fails
+          // The user account is still created, but they'll need admin assistance
         }
       }
 

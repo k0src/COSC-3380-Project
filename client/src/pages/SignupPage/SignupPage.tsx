@@ -11,11 +11,14 @@ import styles from "./SignupPage.module.css";
 import logo from "@assets/logo.svg";
 
 const SignupPage: React.FC = () => {
+  // Form state includes a 'role' field that allows users to choose between:
+  // - "USER": Regular user account (can listen, create playlists, like songs)
+  // - "ARTIST": Artist account (can upload music + all user features)
   const [formData, setFormData] = useState<SignupData>({
     username: "",
     email: "",
     password: "",
-    role: "USER",
+    role: "USER", // Default to USER role
   });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -132,6 +135,8 @@ const SignupPage: React.FC = () => {
               error={validationErrors.email}
               disabled={isSubmitting}
             />
+            {/* Account Type Selection Dropdown */}
+            {/* This is the key UI element that allows users to choose their account type during signup */}
             <div className={styles.inputGroup}>
               <label htmlFor="role" className={styles.formLabel}>
                 Account Type
@@ -144,9 +149,12 @@ const SignupPage: React.FC = () => {
                 className={styles.select}
                 disabled={isSubmitting}
               >
+                {/* USER: Standard listener account */}
                 <option value="USER">User</option>
+                {/* ARTIST: Creator account with upload privileges */}
                 <option value="ARTIST">Artist</option>
               </select>
+              {/* Show helpful hint when ARTIST is selected */}
               {formData.role === "ARTIST" && (
                 <span className={styles.inputHintText}>
                   Artists can upload music and create artist profiles
