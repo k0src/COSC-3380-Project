@@ -11,17 +11,19 @@ const ReportPage: React.FC = () => {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Example: URL query params -> ?entityId=abc&entityType=song
-  const searchParams = new URLSearchParams(location.search);
-  const entityId = `8ac798e2-605e-4d3b-bc45-db87af811cab`;  // searchParams.get("entityId")
-  const entityType = "SONG"; // searchParams.get("entityType")?.toUpperCase()
+  // Extract entity and entityId from URL path: .../entity/entityId
+  const pathParts = location.pathname.split('/').filter(Boolean);
+  const entity = pathParts[pathParts.length - 2]; // second to last part
+  const entityId = pathParts[pathParts.length - 1]; // last part
+  const entityType = entity?.toUpperCase();
 
-  const dummyId = "e3890941-e65a-4a6a-bad6-07623c3f2f74";
-  const testUserId = dummyId || user?.id;
+  if (!isAuthenticated || !user) {
+    return null;
+  }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -31,7 +33,7 @@ const ReportPage: React.FC = () => {
     }
 
     // If the userId, entityId and its type are not found
-    if (!testUserId || !entityId || !entityType) {
+    if (!user?.id || !entityId || !entityType) {
       setError("Missing required information to submit report.");
       return;
     }
@@ -41,7 +43,7 @@ const ReportPage: React.FC = () => {
 
     try {
       await reportsApi.createReport({
-        reporterId: testUserId,
+        reporterId: user.id,
         reportedEntityId: entityId as UUID,
         reportedEntityType: entityType as
           | "SONG"
