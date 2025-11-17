@@ -30,7 +30,7 @@ export class UserBehaviorReportsService {
           u.id as user_id,
           u.created_at
         FROM users u
-        WHERE u.created_at >= $1 AND u.created_at < ($2::date + INTERVAL '1 day')
+        WHERE u.created_at >= $1 AND u.created_at < ($2::date + INTERVAL '1 day') AND u.role = 'USER'
       ),
       week1_returns AS (
         SELECT DISTINCT
@@ -122,7 +122,8 @@ export class UserBehaviorReportsService {
       `SELECT 
         u.username,
         u.created_at as joined_date,
-        COUNT(sh.user_id) as total_listens,
+        COUNT(sh.song_id) as total_listens,
+        MIN(sh.played_at) as first_listened,
         MAX(sh.played_at) as last_listened
       FROM users u
       LEFT JOIN song_history sh ON u.id = sh.user_id

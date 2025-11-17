@@ -39,9 +39,10 @@ router.post("/reports/:entity/:reportId/decide", async (req, res) => {
     const { result, reviewer_id } = req.body;
 
     if (!result || !reviewer_id) {
-      return res
+      res
         .status(400)
         .json({ success: false, message: "Missing required fields" });
+      return;
     }
 
     const updated = await AdminReportService.decideReport(

@@ -172,11 +172,11 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
       // Audience Growth Report headers
       joined_in: "Joined In",
       total_users: "Total Users",
-      returned_week1: "First-Week Return",
+      returned_week1: "Week 1 Listeners",
       week1_retention_percent: "Week 1 %",
-      returned_week4: "1 Month Return",
+      returned_week4: "1 Month Listeners",
       week4_retention_percent: "1 Month %",
-      came_back_this_month: "This Month's Return",
+      came_back_this_month: "This Month Listeners",
       this_month_retention_percent: "This Month %",
       median_plays: "Median Plays",
       avg_plays: "Avg Plays",
@@ -477,7 +477,8 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
                       <th>Username</th>
                       <th>Joined Date</th>
                       <th>Total Listens</th>
-                      <th>Last Listened</th>
+                      <th>First Listen</th>
+                      <th>Last Listen</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -486,6 +487,7 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
                         <td>{user.username}</td>
                         <td>{formatCellValue("created_at", user.joined_date)}</td>
                         <td>{user.total_listens?.toLocaleString()}</td>
+                        <td>{user.first_listened ? formatCellValue("created_at", user.first_listened) : "Never"}</td>
                         <td>{user.last_listened ? formatCellValue("created_at", user.last_listened) : "Never"}</td>
                       </tr>
                     ))}
