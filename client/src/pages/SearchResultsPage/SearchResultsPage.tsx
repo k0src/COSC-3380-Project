@@ -52,26 +52,41 @@ export default function SearchResultsPage() {
                   <h2 className={homeStyles.sectionTitle}>Songs</h2>
                 </div>
                 <div className={homeStyles.verticalCardsList}>
-                  {songs.map((song, index) => (
-                    <div key={index} className={homeStyles.compactCard}>
-                      <img src={(song as any).image_url || "/PlayerBar/Mask group.png"} alt={song.title} />
-                      <div className={homeStyles.songInfo}>
-                        <h3 className={homeStyles.songTitle}>{song.title}</h3>
-                        <p className={homeStyles.artistName}>
-                          {(song as any).artists && (song as any).artists.length > 0 ? (
-                            (song as any).artists.map((a: any, i: number) => (
-                              <span key={String(a.id || a.user_id || i)}>
-                                <Link to={`/artists/${a.id || a.user_id}`}>{a.display_name || a.name || a.user?.display_name || "Artist"}</Link>
-                                {i < (song as any).artists!.length - 1 ? ", " : ""}
-                              </span>
-                            ))
-                          ) : (
-                            (song as any).artist || ""
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                  {songs.map((song: any, index) => {
+                    const songId = song.id;
+                    return (
+                      <Link
+                        key={index}
+                        to={songId ? `/songs/${songId}` : "#"}
+                        className={homeStyles.compactCard}
+                      >
+                        <img
+                          src={song.image_url || "/PlayerBar/Mask group.png"}
+                          alt={song.title}
+                        />
+                        <div className={homeStyles.songInfo}>
+                          <h3 className={homeStyles.songTitle}>{song.title}</h3>
+                          <p className={homeStyles.artistName}>
+                            {song.artists && song.artists.length > 0 ? (
+                              song.artists.map((a: any, i: number) => (
+                                <span key={String(a.id || a.user_id || i)}>
+                                  <Link to={`/artists/${a.id || a.user_id}`}>
+                                    {a.display_name ||
+                                      a.name ||
+                                      a.user?.display_name ||
+                                      "Artist"}
+                                  </Link>
+                                  {i < song.artists!.length - 1 ? ", " : ""}
+                                </span>
+                              ))
+                            ) : (
+                              song.artist || ""
+                            )}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
 
