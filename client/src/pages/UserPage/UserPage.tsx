@@ -1,6 +1,7 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { useAuth } from "@contexts";
 import { userApi } from "@api";
 import type { UUID } from "@types";
 import { useAsyncData, useErrorCheck } from "@hooks";
@@ -19,6 +20,8 @@ import styles from "./UserPage.module.css";
 const UserPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
 
+  const { user, isAuthenticated } = useAuth();
+
   if (!id) {
     return (
       <ErrorPage
@@ -30,7 +33,7 @@ const UserPage: React.FC = () => {
 
   const { data, loading, error } = useAsyncData(
     {
-      user: () => userApi.getUserById(id),
+      pageUser: () => userApi.getUserById(id),
     },
     [id],
     {
@@ -39,7 +42,14 @@ const UserPage: React.FC = () => {
     }
   );
 
-  const user = data?.user;
+  const pageUser = data?.pageUser;
+
+  const isOwner = useMemo(() => {
+    if (!user || !isAuthenticated || !pageUser) {
+      return false;
+    }
+    return user.id === pageUser.id;
+  }, [user, isAuthenticated, pageUser]);
 
   const { shouldShowError, errorTitle, errorMessage } = useErrorCheck([
     {
@@ -48,12 +58,17 @@ const UserPage: React.FC = () => {
       message: "An unexpected error occurred. Please try again later.",
     },
     {
-      condition: !user && !loading,
+      condition: !pageUser && !loading,
       title: "User Not Found",
       message: "The requested user does not exist.",
     },
     {
-      condition: user?.status !== "ACTIVE",
+      condition: pageUser?.status !== "ACTIVE",
+      title: "User Not Found",
+      message: "The requested user does not exist.",
+    },
+    {
+      condition: pageUser?.status === "DEACTIVATED" && !isOwner,
       title: "User Not Found",
       message: "The requested user does not exist.",
     },
@@ -67,52 +82,51 @@ const UserPage: React.FC = () => {
     return <ErrorPage title={errorTitle} message={errorMessage} />;
   }
 
-  const userIsArtist = user.role === "ARTIST";
-  const userIsAdmin = user.role === "ADMIN";
+  const userIsArtist = pageUser.role === "ARTIST";
+  const userIsAdmin = pageUser.role === "ADMIN";
 
   return (
     <>
       <Helmet>
-        <title>{`${user.username} - CoogMusic`}</title>
+        <title>{`${pageUser.username} - CoogMusic`}</title>
       </Helmet>
 
       <div className={styles.userLayout}>
         <UserContainer
-          username={user.username}
-          profilePictureUrl={user.profile_picture_url}
-          profilePictureBlurHash={user.pfp_blurhash}
+          user={pageUser}
           userIsArtist={userIsArtist}
           userIsAdmin={userIsAdmin}
-          artistId={user.artist_id}
+          artistId={pageUser.artist_id}
+          isOwner={isOwner}
         />
         <div className={styles.userLayoutBottom}>
           <div className={styles.userLayoutLeft}>
             <UserRecentActivity userId={id} maxItems={20} />
-            {userIsArtist && user.artist_id && (
-              <UserRecentReleases artistId={user.artist_id} maxItems={8} />
+            {userIsArtist && pageUser.artist_id && (
+              <UserRecentReleases artistId={pageUser.artist_id} maxItems={8} />
             )}
           </div>
           <div className={styles.userLayoutRight}>
             <UserActions
-              artistId={user.artist_id}
+              artistId={pageUser.artist_id}
               userId={id}
-              userCreatedAt={user.created_at}
+              userCreatedAt={pageUser.created_at}
               userIsArtist={userIsArtist}
             />
             <FollowProfiles
               title="Followers"
-              userId={user.id}
+              userId={pageUser.id}
               profileLimit={8}
               profileMin={4}
               following={false}
             />
             <FollowProfiles
               title="Following"
-              userId={user.id}
+              userId={pageUser.id}
               profileMin={4}
               profileLimit={8}
             />
-            <UserPlaylists userId={user.id} username={user.username} />
+            <UserPlaylists userId={pageUser.id} username={pageUser.username} />
           </div>
         </div>
       </div>

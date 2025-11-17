@@ -1,8 +1,8 @@
 .userContainer {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
+  justify-content: space-between;
   flex: 1;
   padding: var(--spacing-lg);
   background: var(--container-gradient-bg);
@@ -27,6 +27,12 @@
   );
   pointer-events: none;
   border-radius: var(--border-radius-sm);
+}
+
+.userInfoWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
 }
 
 .userImage {
@@ -90,4 +96,21 @@
   white-space: nowrap;
   overflow: hidden;
   max-width: 100%;
+}
+
+.ownerButton {
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: var(--icon-size-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-speed) ease;
+  height: fit-content;
+}
+
+.ownerButton:hover {
+  color: var(--color-white);
 }

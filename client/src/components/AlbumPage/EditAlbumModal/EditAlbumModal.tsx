@@ -1,8 +1,8 @@
 import { useState, memo, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Album, Song, VisibilityStatus } from "@types";
+import type { Album, VisibilityStatus } from "@types";
 import { formatDateString } from "@util";
-import { albumApi, songApi } from "@api";
+import { albumApi } from "@api";
 import {
   SettingsInput,
   SettingsRadio,
@@ -12,23 +12,6 @@ import {
 } from "@components";
 import styles from "./EditAlbumModal.module.css";
 import { LuX } from "react-icons/lu";
-
-/*
-export interface Album {
-  id: UUID;
-  title: string;
-  release_date: string;
-  created_by: UUID;
-  image_url?: string;
-  image_url_blurhash?: string;
-  audio_url: string;
-  created_at: string;
-  genre: string;
-  visibility_status: VisibilityStatus;
-
-}
-
-*/
 
 export interface EditAlbumModalProps {
   isOpen: boolean;
