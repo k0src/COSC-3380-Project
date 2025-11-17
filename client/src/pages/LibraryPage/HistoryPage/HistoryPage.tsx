@@ -280,8 +280,6 @@ const HistoryPage: React.FC = () => {
       ) : (
         <CreatePlaylistModal
           mode="edit"
-          userId={user.id}
-          username={user.username}
           isOpen={isPlaylistModalOpen}
           onClose={() => {
             setIsPlaylistModalOpen(false);
