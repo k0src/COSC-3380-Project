@@ -1,0 +1,66 @@
+.feedPage {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 65% 35%;
+  gap: 32px;
+}
+
+.recentReleases {
+  max-width: 1120px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.songList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.songLink {
+  text-decoration: none;
+}
+
+.recommendedArtists {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recommendedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.refreshButton {
+  background: var(--color-panel-gray, #2a2a2a);
+  color: var(--color-text-primary, #ffffff);
+  border: 1px solid var(--color-border, #444);
+  border-radius: var(--border-radius-md, 8px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all var(--transition-speed, 0.2s) ease;
+}
+
+.refreshButton:hover {
+  background: var(--color-panel-gray-hover, #333);
+  border-color: var(--color-primary, #d53131);
+}
+
+.refreshButton:active {
+  transform: scale(0.95);
+}
+
+.artistList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.artistLink {
+  text-decoration: none;
+}
