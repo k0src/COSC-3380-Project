@@ -37,7 +37,7 @@ const AdminPage: React.FC = () => {
               <div className={styles.cardArrow}>→</div>
             </div>
 
-            <div 
+            {/* <div 
               className={styles.dashboardCard}
               onClick={() => navigate("/admin/appeals")}
             >
@@ -47,7 +47,7 @@ const AdminPage: React.FC = () => {
                 Review and decide on user appeals for content and accounts
               </p>
               <div className={styles.cardArrow}>→</div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
