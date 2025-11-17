@@ -24,25 +24,52 @@ export default class UserRepository {
     email,
     password,
     profile_picture_url,
+    role,
   }: {
     username: string;
     email: string;
     password: string;
     profile_picture_url?: string;
+    role?: string;
   }): Promise<User | null> {
     try {
-      const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || "12", 10);
-      const password_hash = await bcrypt.hash(password, saltRounds);
+      const result = withTransaction(async (client) => {
+        // Create user
+        const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || "12", 10);
+        const password_hash = await bcrypt.hash(password, saltRounds);
 
-      const result = await query(
-        `INSERT INTO users
-          (username, email, password_hash, authenticated_with, profile_picture_url)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING *`,
-        [username, email, password_hash, "CoogMusic", profile_picture_url]
-      );
+        const insertSql = `
+          INSERT INTO users (
+              username, email, password_hash, 
+              authenticated_with, profile_picture_url, role
+            )
+          VALUES ($1, $2, $3, $4, $5, $6)
+          RETURNING *`;
 
-      return result[0] ?? null;
+        const insertParams = [
+          username,
+          email,
+          password_hash,
+          "CoogMusic",
+          profile_picture_url,
+          role,
+        ];
+
+        const res = await client.query(insertSql, insertParams);
+
+        // Insert empty user_settings tuple
+        if (res && res.rows.length > 0) {
+          const user: User = res.rows[0];
+          await client.query(
+            `INSERT INTO user_settings (user_id) VALUES ($1)`,
+            [user.id]
+          );
+          return user;
+        }
+
+        return null;
+      });
+      return result;
     } catch (error) {
       console.error("Error creating user:", error);
       throw error;
@@ -62,6 +89,7 @@ export default class UserRepository {
    * @param userData.pfp_blurhash The new profile picture blurhash of the user (optional).
    * @param userData.artist_id The new artist ID of the user (optional).
    * @param userData.status The new status of the user (optional).
+   * @param userData.is_private Whether the user's profile is private (optional).
    * @returns The updated user, or null if the update fails.
    * @throws Error if the operation fails.
    */
@@ -78,6 +106,7 @@ export default class UserRepository {
       pfp_blurhash,
       artist_id,
       status,
+      is_private,
     }: {
       username?: string;
       email?: string;
@@ -89,9 +118,25 @@ export default class UserRepository {
       pfp_blurhash?: string;
       artist_id?: UUID;
       status?: string;
+      is_private?: boolean;
     }
   ): Promise<User | null> {
     try {
+      if (
+        username !== undefined &&
+        typeof username === "string" &&
+        username.trim() === ""
+      ) {
+        throw new Error("Username cannot be empty");
+      }
+      if (
+        email !== undefined &&
+        typeof email === "string" &&
+        email.trim() === ""
+      ) {
+        throw new Error("Email cannot be empty");
+      }
+
       const result = await withTransaction(async (client) => {
         const fields: string[] = [];
         const values: any[] = [];
@@ -154,6 +199,10 @@ export default class UserRepository {
           fields.push(`status = $${values.length + 1}`);
           values.push(status);
         }
+        if (is_private !== undefined) {
+          fields.push(`is_private = $${values.length + 1}`);
+          values.push(is_private);
+        }
         if (fields.length === 0) {
           throw new Error("No fields provided to update.");
         }
@@ -164,7 +213,15 @@ export default class UserRepository {
           ", "
         )}, updated_at = NOW() WHERE id = $${values.length} RETURNING *`;
         const res = await client.query(sql, values);
-        return res.rows[0] ?? null;
+        const updatedUser = res.rows[0] ?? null;
+
+        if (updatedUser && updatedUser.profile_picture_url) {
+          updatedUser.profile_picture_url = getBlobUrl(
+            updatedUser.profile_picture_url
+          );
+        }
+
+        return updatedUser;
       });
 
       return result;
@@ -392,16 +449,19 @@ export default class UserRepository {
 
       const sql = `
         SELECT p.*,
-        CASE WHEN $1 THEN (SELECT COUNT(*) FROM playlist_likes pl
-          WHERE pl.playlist_id = p.id)
-        ELSE NULL END as likes,
-        CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_songs ps
-          WHERE ps.playlist_id = p.id)
-        ELSE NULL END as song_count,
-        CASE WHEN $3 THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
-          JOIN playlist_songs ps ON ps.song_id = s.id
-          WHERE ps.playlist_id = p.id)
-        ELSE NULL END as runtime
+          CASE WHEN $1 THEN (SELECT COUNT(*) FROM playlist_likes pl
+            WHERE pl.playlist_id = p.id)
+          ELSE NULL END as likes,
+          CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_songs ps
+            WHERE ps.playlist_id = p.id)
+          ELSE NULL END as song_count,
+          CASE WHEN $3 THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
+            JOIN playlist_songs ps ON ps.song_id = s.id
+            WHERE ps.playlist_id = p.id)
+          ELSE NULL END as runtime,
+          (SELECT EXISTS (
+            SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+          )) AS has_song
         FROM playlists p
         WHERE p.created_by = $4
         ORDER BY p.created_at DESC
@@ -423,8 +483,14 @@ export default class UserRepository {
       }
 
       const processedPlaylists = playlists.map((playlist: Playlist) => {
+        if (playlist.image_url) {
+          playlist.image_url = getBlobUrl(playlist.image_url);
+        } else if ((playlist as any).has_song) {
+          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+        }
+        delete (playlist as any).has_song;
+
         playlist.type = "playlist";
-        playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
         return playlist;
       });
 
@@ -481,6 +547,16 @@ export default class UserRepository {
       return user;
     } catch (error) {
       console.error("Error validating credentials:", error);
+      throw error;
+    }
+  }
+
+  static async getUserCount(): Promise<number> {
+    try {
+      const res = await query("SELECT COUNT(*) FROM users");
+      return parseInt(res[0]?.count ?? "0", 10);
+    } catch (error) {
+      console.error("Error counting users:", error);
       throw error;
     }
   }

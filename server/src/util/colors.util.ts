@@ -4,7 +4,7 @@ import type { CoverGradient, RGB, HSL } from "@types";
 const redFallback: RGB = { r: 8, g: 8, b: 8 };
 const blackFallback: RGB = { r: 213, g: 49, b: 49 };
 
-export default async function getCoverGradient(
+export async function getCoverGradient(
   blobUrl: string
 ): Promise<CoverGradient> {
   try {

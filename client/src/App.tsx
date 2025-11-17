@@ -1,15 +1,17 @@
 import { BrowserRouter as Router } from "react-router-dom";
-import { AuthProvider, ContextMenuProvider } from "@contexts";
+import { AuthProvider, ContextMenuProvider, SettingsProvider } from "@contexts";
 import AppRoutes from "./Routes";
 
 function App() {
   return (
     <AuthProvider>
-      <ContextMenuProvider>
-        <Router>
-          <AppRoutes />
-        </Router>
-      </ContextMenuProvider>
+      <SettingsProvider>
+        <ContextMenuProvider>
+          <Router>
+            <AppRoutes />
+          </Router>
+        </ContextMenuProvider>
+      </SettingsProvider>
     </AuthProvider>
   );
 }

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type { Album } from "@types";
 import { formatRuntime, pluralize } from "@util";
 import { CoverLightbox, AlbumPlayButton, LazyImg } from "@components";
-import { LuAudioLines, LuClock, LuThumbsUp } from "react-icons/lu";
+import { LuAudioLines, LuClock, LuPencil, LuThumbsUp } from "react-icons/lu";
 import styles from "./AlbumContainer.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 
@@ -24,9 +24,15 @@ const AlbumStat = memo(
 
 export interface AlbumContainerProps {
   album: Album;
+  isOwner?: boolean;
+  onEditButtonClick?: () => void;
 }
 
-const AlbumContainer: React.FC<AlbumContainerProps> = ({ album }) => {
+const AlbumContainer: React.FC<AlbumContainerProps> = ({
+  album,
+  isOwner,
+  onEditButtonClick,
+}) => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const handleImageClick = useCallback(() => {
@@ -66,19 +72,29 @@ const AlbumContainer: React.FC<AlbumContainerProps> = ({ album }) => {
           onClick={handleImageClick}
         />
         <div className={styles.albumRight}>
-          <div className={styles.albumInfoContainer}>
-            <Link
-              to={`/users/${album.artist?.id}`}
-              className={styles.infoArtist}
-            >
-              {album.artist?.display_name}
-            </Link>
-            <span className={styles.albumTitle}>{album.title}</span>
-            <div className={styles.statsContainer}>
-              <AlbumStat icon={LuAudioLines} value={songCountText} />
-              <AlbumStat icon={LuClock} value={formattedRuntime} />
-              <AlbumStat icon={LuThumbsUp} value={album.likes ?? 0} />
+          <div className={styles.albumInfoWrapper}>
+            <div className={styles.albumInfoContainer}>
+              <Link
+                to={`/artists/${album.artist?.id}`}
+                className={styles.infoArtist}
+              >
+                {album.artist?.display_name}
+              </Link>
+              <span className={styles.albumTitle}>{album.title}</span>
+              <div className={styles.statsContainer}>
+                <AlbumStat icon={LuAudioLines} value={songCountText} />
+                <AlbumStat icon={LuClock} value={formattedRuntime} />
+                <AlbumStat icon={LuThumbsUp} value={album.likes ?? 0} />
+              </div>
             </div>
+            {isOwner && onEditButtonClick && (
+              <button
+                className={styles.ownerButton}
+                onClick={onEditButtonClick}
+              >
+                <LuPencil />
+              </button>
+            )}
           </div>
           <AlbumPlayButton album={album} />
         </div>

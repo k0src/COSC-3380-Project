@@ -148,6 +148,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const clearAuthState = (): void => {
+    authApi.clearAuthState();
+    dispatch({ type: "AUTH_LOGOUT" });
+  };
+
   const clearError = (): void => {
     dispatch({ type: "CLEAR_ERROR" });
   };
@@ -163,6 +168,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     clearError,
     updateUser,
+    clearAuthState,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

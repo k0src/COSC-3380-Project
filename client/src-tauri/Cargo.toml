@@ -1,0 +1,23 @@
+[package]
+name = "CoogMusic"
+version = "0.1.0"
+description = "CoogMusic - Full-stack music streaming application created for UH COSC 3380"
+authors = ["github/k0src"]
+license = ""
+repository = "https://github.com/k0src/COSC-3380-Project"
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.5.1", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+tauri = { version = "2.9.2", features = [] }
+tauri-plugin-log = "2"

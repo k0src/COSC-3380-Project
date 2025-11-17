@@ -14,6 +14,9 @@ export default class PlaylistRepository {
    * @param playlist.title The title of the playlist.
    * @param playlist.description The description of the playlist.
    * @param playlist.created_by The ID of the user who created the playlist.
+   * @param playlist.is_public Whether the playlist is public (optional, defaults to true).
+   * @param playlist.image_url The image URL of the playlist (optional).
+   * @param playlist.image_url_blurhash The blurhash of the playlist image (optional).
    * @returns The created playlist, or null if creation fails.
    * @throws Error if the operation fails.
    */
@@ -21,20 +24,47 @@ export default class PlaylistRepository {
     title,
     description,
     created_by,
+    is_public = true,
+    image_url,
+    image_url_blurhash,
   }: {
     title: string;
     description: string;
     created_by: UUID;
+    is_public?: boolean;
+    image_url?: string;
+    image_url_blurhash?: string;
   }): Promise<Playlist | null> {
     try {
-      const res = await query(
-        `INSERT INTO playlists (title, description, created_by)
-        VALUES ($1, $2, $3)
-        RETURNING *`,
-        [title, description, created_by]
-      );
+      if (!title || typeof title !== "string" || title.trim() === "") {
+        throw new Error("Playlist title cannot be empty");
+      }
 
-      return res[0] ?? null;
+      const res = await withTransaction(async (client) => {
+        const insert = await client.query(
+          `INSERT INTO playlists (title, description, created_by, is_public, image_url, image_url_blurhash)
+          VALUES ($1, $2, $3, $4, $5, $6)
+          RETURNING *`,
+          [
+            title,
+            description,
+            created_by,
+            is_public,
+            image_url,
+            image_url_blurhash,
+          ]
+        );
+        return insert.rows[0] ?? null;
+      });
+
+      if (res) {
+        if (res.image_url) {
+          res.image_url = getBlobUrl(res.image_url);
+        }
+        res.type = "playlist";
+      }
+
+      return res;
     } catch (error) {
       console.error("Error creating playlist:", error);
       throw error;
@@ -48,6 +78,9 @@ export default class PlaylistRepository {
    * @param playlist.title The new title of the playlist (optional).
    * @param playlist.description The new description of the playlist (optional).
    * @param playlist.created_by The new ID of the user who created the playlist (optional).
+   * @param playlist.is_public Whether the playlist is public (optional).
+   * @param playlist.image_url The new image URL of the playlist (optional).
+   * @param playlist.image_url_blurhash The new blurhash of the playlist image (optional).
    * @returns The updated playlist, or null if the update fails.
    * @throws Error if the operation fails.
    */
@@ -57,9 +90,26 @@ export default class PlaylistRepository {
       title,
       description,
       created_by,
-    }: { title?: string; description?: string; created_by?: UUID }
+      is_public,
+      image_url,
+      image_url_blurhash,
+    }: {
+      title?: string;
+      description?: string;
+      created_by?: UUID;
+      is_public?: boolean;
+      image_url?: string;
+      image_url_blurhash?: string;
+    }
   ): Promise<Playlist | null> {
     try {
+      if (
+        title !== undefined &&
+        (typeof title !== "string" || title.trim() === "")
+      ) {
+        throw new Error("Playlist title cannot be empty");
+      }
+
       const fields: string[] = [];
       const values: any[] = [];
 
@@ -75,6 +125,18 @@ export default class PlaylistRepository {
         fields.push(`created_by = $${values.length + 1}`);
         values.push(created_by);
       }
+      if (is_public !== undefined) {
+        fields.push(`is_public = $${values.length + 1}`);
+        values.push(is_public);
+      }
+      if (image_url !== undefined) {
+        fields.push(`image_url = $${values.length + 1}`);
+        values.push(image_url);
+      }
+      if (image_url_blurhash !== undefined) {
+        fields.push(`image_url_blurhash = $${values.length + 1}`);
+        values.push(image_url_blurhash);
+      }
       if (fields.length === 0) {
         throw new Error("No fields to update");
       }
@@ -88,6 +150,13 @@ export default class PlaylistRepository {
         const res = await client.query(sql, values);
         return res.rows[0] ?? null;
       });
+
+      if (res) {
+        if (res.image_url) {
+          res.image_url = getBlobUrl(res.image_url);
+        }
+        res.type = "playlist";
+      }
 
       return res;
     } catch (error) {
@@ -119,8 +188,6 @@ export default class PlaylistRepository {
     }
   }
 
-  //! get playlist cover image here
-  //! make cover image optional
   /**
    * Gets a single playlist by ID.
    * @param id The ID of the playlist to get.
@@ -155,7 +222,10 @@ export default class PlaylistRepository {
         CASE WHEN $4 THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
           JOIN playlist_songs ps ON ps.song_id = s.id
           WHERE ps.playlist_id = p.id)
-        ELSE NULL END as runtime
+        ELSE NULL END as runtime,
+        (SELECT EXISTS (
+          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+        )) AS has_song
         FROM playlists p
         LEFT JOIN users u ON p.created_by = u.id
         WHERE p.id = $5
@@ -181,9 +251,15 @@ export default class PlaylistRepository {
           playlist.user.profile_picture_url
         );
       }
+      if (playlist.image_url) {
+        playlist.image_url = getBlobUrl(playlist.image_url);
+      } else if ((playlist as any).has_song) {
+        playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+      }
+      delete (playlist as any).has_song;
 
-      playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
       playlist.type = "playlist";
+
       return playlist;
     } catch (error) {
       console.error("Error fetching playlist:", error);
@@ -228,7 +304,10 @@ export default class PlaylistRepository {
         CASE WHEN $4 THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
           JOIN playlist_songs ps ON ps.song_id = s.id
           WHERE ps.playlist_id = p.id)
-        ELSE NULL END as runtime
+        ELSE NULL END as runtime,
+        (SELECT EXISTS (
+          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+        )) AS has_song
         FROM playlists p
         LEFT JOIN users u ON p.created_by = u.id
         ORDER BY p.created_at DESC
@@ -256,7 +335,13 @@ export default class PlaylistRepository {
               playlist.user.profile_picture_url
             );
           }
-          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          if (playlist.image_url) {
+            playlist.image_url = getBlobUrl(playlist.image_url);
+          } else if ((playlist as any).has_song) {
+            playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          }
+          delete (playlist as any).has_song;
+
           playlist.type = "playlist";
           return playlist;
         })
@@ -537,7 +622,13 @@ export default class PlaylistRepository {
               playlist.user.profile_picture_url
             );
           }
-          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+
+          if (playlist.image_url) {
+            playlist.image_url = getBlobUrl(playlist.image_url);
+          } else {
+            playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          }
+
           playlist.type = "playlist";
           return playlist;
         })

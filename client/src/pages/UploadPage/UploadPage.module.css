@@ -1,0 +1,204 @@
+.uploadLayout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.uploadContainer {
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.dropzone {
+  border: var(--border-size-md) dashed var(--color-panel-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-2xl);
+  text-align: center;
+  cursor: pointer;
+  background: var(--color-panel-gray-dark);
+  min-height: 36rem;
+  min-width: 96rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-md);
+  transition: all var(--transition-speed) ease;
+}
+
+.dropzone:hover {
+  border-color: var(--color-accent);
+}
+
+.dropzoneHover {
+  border-color: var(--color-accent);
+}
+
+.dropzoneIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+  font-size: 6.4rem;
+}
+
+.dropzoneText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+}
+
+.dropzoneHint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}
+
+.uploadCard {
+  background: var(--color-panel-gray);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-card);
+  min-width: 96rem;
+}
+
+.audioInfoContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.audioFileInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-panel-gray-dark);
+  border-radius: var(--border-radius-md);
+}
+
+.audioFileDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.audioFileName {
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  color: var(--color-white);
+}
+
+.audioFileMeta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}
+
+.playButton {
+  background: transparent;
+  border: none;
+  color: var(--color-white);
+  font-size: var(--icon-size-lg);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-speed) ease;
+}
+
+.playButton:hover {
+  color: var(--color-accent);
+}
+
+.progressBar {
+  height: 0.5rem;
+  background: var(--color-panel-gray-dark);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-accent);
+  transition: width var(--transition-speed) linear;
+}
+
+.uploadForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.buttonContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+}
+
+.buttons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.cancelButton {
+  font-family: var(--font-main);
+  background: var(--color-gray-button);
+  border: var(--border-size-sm) solid var(--color-gray-button-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sd) var(--spacing-md);
+  color: var(--color-white-alt);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: var(--color-gray-button-border);
+  color: var(--color-white);
+}
+
+.cancelButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.uploadButton {
+  font-weight: 500;
+  font-family: var(--font-main);
+  background: var(--color-accent);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: var(--color-accent-200);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sd) var(--spacing-md);
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.uploadButton:hover:not(:disabled) {
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
+}
+
+.uploadButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.errorText {
+  font-size: var(--font-size-sm);
+  color: var(--color-accent);
+  font-weight: 500;
+}

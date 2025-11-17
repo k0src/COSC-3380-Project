@@ -7,6 +7,7 @@ import type {
   LibraryPlaylist,
   LibrarySearchResults,
   Artist,
+  RecentlyPlayedItemsArray,
 } from "@types";
 
 export const libraryApi = {
@@ -25,6 +26,16 @@ export const libraryApi = {
       `/users/${userId}/library/recent`,
       {
         params: { maxItems },
+      }
+    );
+    return response.data;
+  },
+
+  async getRecentlyPlayedArray(userId: UUID, maxItems: number) {
+    const response = await api.get<RecentlyPlayedItemsArray>(
+      `/users/${userId}/library/recent`,
+      {
+        params: { maxItems, array: true },
       }
     );
     return response.data;
@@ -125,6 +136,13 @@ export const libraryApi = {
         params: options,
       }
     );
+    return response.data;
+  },
+
+  async togglePinPlaylist(userId: UUID, playlistId: UUID) {
+    const response = await api.post(`/users/${userId}/library/playlists/pin`, {
+      playlistId,
+    });
     return response.data;
   },
 };

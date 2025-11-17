@@ -1,97 +1,150 @@
-import { Song, UUID, Album, SongArtist, SongData, SuggestedSong } from "@types";
+import { Song, UUID, Album, SongArtist, SuggestedSong } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
 
 export default class SongRepository {
-  /**
-   * Inserts a song into the database.
-   * @param songData - The data for the new song.
-   * @param song.title - The title of the song.
-   * @param song.duration - The duration of the song in seconds.
-   * @param song.genre - The genre of the song.
-   * @param song.release_date - The release date of the song as an ISO string
-   * @returns The created song, or null if creation fails.
-   * @throws Error if the operation fails.
-   */
-  static async insert({
+  static async create({
     title,
+    owner_id,
+    album_id,
+    artists,
     duration,
     genre,
     release_date,
     image_url,
+    image_url_blurhash,
     audio_url,
+    visibility_status,
   }: {
     title: string;
+    owner_id: UUID;
+    album_id?: UUID;
+    artists: { id: UUID; role: string }[];
     duration: number;
     genre: string;
-    release_date: string;
+    release_date?: string;
     image_url?: string;
+    image_url_blurhash?: string;
     audio_url: string;
-  }): Promise<boolean> {
+    visibility_status?: string;
+  }): Promise<Song | null> {
     try {
-      await query(
-        `INSERT INTO songs 
-        (title, duration, genre, release_date, image_url, audio_url)
-        VALUES ($1, $2, $3, $4, $5, $6)`,
-        [title, duration, genre, release_date, image_url, audio_url]
-      );
-      return true;
+      if (!title || typeof title !== "string" || title.trim() === "") {
+        throw new Error("Song title cannot be empty");
+      }
+
+      if (!release_date) {
+        release_date = new Date().toISOString().split("T")[0];
+      }
+
+      const res = await withTransaction(async (client) => {
+        const insert = await client.query(
+          `INSERT INTO songs (
+            title,
+            owner_id,
+            duration,
+            genre,
+            release_date,
+            image_url,
+            image_url_blurhash,
+            audio_url,
+            visibility_status
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          RETURNING *`,
+          [
+            title,
+            owner_id,
+            duration,
+            genre,
+            release_date,
+            image_url,
+            image_url_blurhash,
+            audio_url,
+            visibility_status,
+          ]
+        );
+
+        const songId = insert.rows[0].id;
+        for (const artist of artists) {
+          await client.query(
+            `INSERT INTO song_artists (song_id, artist_id, role)
+            VALUES ($1, $2, $3)`,
+            [songId, artist.id, artist.role]
+          );
+        }
+
+        if (album_id) {
+          const maxTrackNumberRes = await client.query(
+            `SELECT COALESCE(MAX(track_number), 0) AS max_track_number
+            FROM album_songs
+            WHERE album_id = $1`,
+            [album_id]
+          );
+
+          const nextTrackNumber =
+            maxTrackNumberRes.rows[0].max_track_number + 1;
+
+          await client.query(
+            `INSERT INTO album_songs (album_id, song_id, track_number)
+            VALUES ($1, $2, $3)`,
+            [album_id, songId, nextTrackNumber]
+          );
+        }
+
+        return insert.rows[0] ?? null;
+      });
+
+      if (res) {
+        if (res.image_url) {
+          res.image_url = getBlobUrl(res.image_url);
+        }
+        res.type = "song";
+      }
+
+      return res;
     } catch (error) {
       console.error("Error inserting song:", error);
       throw error;
     }
   }
 
-  /**
-   * Updates a song.
-   * @param id - The ID of the song to update.
-   * @param songData - The new data for the song.
-   * @param song.title - The new title of the song (optional).
-   * @param song.image_url - The new image URL of the song (optional).
-   * @param song.audio_url - The new audio URL of the song (optional).
-   * @param song.release_date - The new release date of the song as an ISO string (optional).
-   * @param song.duration - The new duration of the song in seconds (optional).
-   * @param song.genre - The new genre of the song (optional).
-   * @returns The updated song, or null if the update fails.
-   * @throws Error if the operation fails.
-   */
   static async update(
     id: UUID,
     {
       title,
-      image_url,
-      audio_url,
-      release_date,
       duration,
       genre,
+      release_date,
+      image_url,
+      image_url_blurhash,
+      audio_url,
+      visibility_status,
     }: {
       title?: string;
-      image_url?: string;
-      audio_url?: string;
-      release_date?: string;
       duration?: number;
       genre?: string;
+      release_date?: string;
+      image_url?: string;
+      image_url_blurhash?: string;
+      audio_url?: string;
+      visibility_status?: string;
     }
-  ): Promise<boolean> {
+  ): Promise<Song | null> {
     try {
+      if (
+        title !== undefined &&
+        (typeof title !== "string" || title.trim() === "")
+      ) {
+        throw new Error("Song title cannot be empty");
+      }
+
       const fields: string[] = [];
       const values: any[] = [];
 
       if (title !== undefined) {
         fields.push(`title = $${values.length + 1}`);
         values.push(title);
-      }
-      if (image_url !== undefined) {
-        fields.push(`image_url = $${values.length + 1}`);
-        values.push(image_url);
-      }
-      if (audio_url !== undefined) {
-        fields.push(`audio_url = $${values.length + 1}`);
-        values.push(audio_url);
-      }
-      if (release_date !== undefined) {
-        fields.push(`release_date = $${values.length + 1}`);
-        values.push(release_date);
       }
       if (duration !== undefined) {
         fields.push(`duration = $${values.length + 1}`);
@@ -101,20 +154,48 @@ export default class SongRepository {
         fields.push(`genre = $${values.length + 1}`);
         values.push(genre);
       }
+      if (release_date !== undefined) {
+        fields.push(`release_date = $${values.length + 1}`);
+        values.push(release_date);
+      }
+      if (image_url !== undefined) {
+        fields.push(`image_url = $${values.length + 1}`);
+        values.push(image_url);
+      }
+      if (image_url_blurhash !== undefined) {
+        fields.push(`image_url_blurhash = $${values.length + 1}`);
+        values.push(image_url_blurhash);
+      }
+      if (audio_url !== undefined) {
+        fields.push(`audio_url = $${values.length + 1}`);
+        values.push(audio_url);
+      }
+      if (visibility_status !== undefined) {
+        fields.push(`visibility_status = $${values.length + 1}`);
+        values.push(visibility_status);
+      }
       if (fields.length === 0) {
         throw new Error("No fields to update");
       }
 
       values.push(id);
 
-      await withTransaction(async (client) => {
+      const res = await withTransaction(async (client) => {
         const sql = `UPDATE songs SET ${fields.join(", ")} WHERE id = $${
           values.length
-        }`;
-        await client.query(sql, values);
+        } RETURNING *`;
+        const res = await client.query(sql, values);
+        return res.rows[0] ?? null;
       });
 
-      return true;
+      if (res) {
+        if (res.image_url) {
+          res.image_url = getBlobUrl(res.image_url);
+        }
+        res.type = "song";
+      }
+
+      return res;
     } catch (error) {
       console.error("Error updating song:", error);
       throw error;
@@ -127,15 +208,17 @@ export default class SongRepository {
    * @returns The deleted song, or null if the deletion fails.
    * @throws Error if the operation fails.
    */
-  static async delete(id: UUID): Promise<boolean> {
+  static async delete(id: UUID): Promise<Song | null> {
     try {
-      await query(
-        `UPDATE songs SET deleted_at = NOW()
-        WHERE id = $1`,
-        [id]
-      );
+      const res = await withTransaction(async (client) => {
+        const del = await client.query(
+          `DELETE FROM songs WHERE id = $1 RETURNING *`,
+          [id]
+        );
+        return del.rows[0] ?? null;
+      });
 
-      return true;
+      return res;
     } catch (error) {
       console.error("Error deleting song:", error);
       throw error;
@@ -196,7 +279,11 @@ export default class SongRepository {
           CASE WHEN $4 THEN
             (SELECT COUNT(*) FROM comments c
             WHERE c.song_id = s.id)
-          ELSE NULL END AS comments
+          ELSE NULL END AS comments,
+          (SELECT 1 FROM 
+          trending_songs ts 
+          WHERE ts.song_id = s.id) 
+          AS is_trending
         FROM songs s
         WHERE s.id = $5
       `;

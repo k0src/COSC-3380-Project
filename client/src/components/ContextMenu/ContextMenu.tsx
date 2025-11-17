@@ -4,6 +4,7 @@ import { useContextMenu } from "@contexts";
 import { useAudioQueue, useAuth } from "@contexts";
 import { useLikeStatus, useFollowStatus } from "@hooks";
 import type { Song, Playlist, Album, Artist } from "@types";
+import { PlaylistAddMenuDCM } from "@components";
 import styles from "./ContextMenu.module.css";
 import {
   LuPlay,
@@ -26,6 +27,11 @@ const ContextMenu: React.FC = () => {
   const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuHeight, setMenuHeight] = useState(0);
+  const [playlistMenuOpen, setPlaylistMenuOpen] = useState(false);
+  const [playlistMenuPosition, setPlaylistMenuPosition] = useState({
+    x: 0,
+    y: 0,
+  });
 
   const { entity, entityType, x, y, isOpen, customActions } = menuState;
 
@@ -76,7 +82,7 @@ const ContextMenu: React.FC = () => {
       left = x;
       corner = "left";
     } else if (spaceLeft >= menuWidth) {
-      left = x - menuWidth / 1.65;
+      left = x - menuWidth / 1.7;
       corner = "right";
     } else {
       left = Math.max(0, x - menuWidth / 2);
@@ -123,6 +129,7 @@ const ContextMenu: React.FC = () => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         closeContextMenu();
+        setPlaylistMenuOpen(false);
       }
     };
 
@@ -134,6 +141,12 @@ const ContextMenu: React.FC = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, closeContextMenu]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setPlaylistMenuOpen(false);
+    }
+  }, [isOpen]);
 
   const handlePlay = useCallback(async () => {
     if (!entity) return;
@@ -155,7 +168,14 @@ const ContextMenu: React.FC = () => {
       await actions.queueListNext(entity as Playlist | Album);
     }
     closeContextMenu();
-  }, [entity, entityType, actions, closeContextMenu]);
+  }, [
+    entity,
+    entityType,
+    actions,
+    closeContextMenu,
+    isAuthenticated,
+    navigate,
+  ]);
 
   const handleQueueLast = useCallback(async () => {
     if (!isAuthenticated) {
@@ -171,18 +191,34 @@ const ContextMenu: React.FC = () => {
       await actions.queueListLast(entity as Playlist | Album);
     }
     closeContextMenu();
-  }, [entity, entityType, actions, closeContextMenu]);
+  }, [
+    entity,
+    entityType,
+    actions,
+    closeContextMenu,
+    isAuthenticated,
+    navigate,
+  ]);
 
-  const handleAddToPlaylist = useCallback(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      closeContextMenu();
-      return;
-    }
+  const handleAddToPlaylist = useCallback(
+    (event?: React.MouseEvent) => {
+      if (!isAuthenticated) {
+        navigate("/login");
+        closeContextMenu();
+        return;
+      }
 
-    console.log("Add to Playlist", entity);
-    closeContextMenu();
-  }, [entity, closeContextMenu]);
+      if (!entity || entityType !== "song" || !event) return;
+
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const submenuX = rect.right + 8;
+      const submenuY = rect.top;
+
+      setPlaylistMenuPosition({ x: submenuX, y: submenuY });
+      setPlaylistMenuOpen(true);
+    },
+    [entity, entityType, isAuthenticated, navigate, closeContextMenu]
+  );
 
   const handleToggleLike = useCallback(async () => {
     if (!isAuthenticated) {
@@ -245,7 +281,7 @@ const ContextMenu: React.FC = () => {
           id: string;
           label: string;
           icon: React.ComponentType;
-          onClick: () => void | Promise<void>;
+          onClick: (event?: React.MouseEvent) => void | Promise<void>;
           disabled?: boolean;
         }
       | "divider"
@@ -404,7 +440,7 @@ const ContextMenu: React.FC = () => {
           <button
             key={action.id}
             className={styles.menuItem}
-            onClick={action.onClick}
+            onClick={(e) => action.onClick(e)}
             disabled={action.disabled}
           >
             <Icon className={styles.menuIcon} />
@@ -412,6 +448,16 @@ const ContextMenu: React.FC = () => {
           </button>
         );
       })}
+
+      <PlaylistAddMenuDCM
+        isOpen={playlistMenuOpen}
+        position={playlistMenuPosition}
+        songId={entity?.id || ""}
+        onClose={() => {
+          setPlaylistMenuOpen(false);
+          closeContextMenu();
+        }}
+      />
     </div>
   );
 };

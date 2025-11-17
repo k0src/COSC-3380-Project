@@ -1,9 +1,9 @@
-import React, { memo, useEffect, useState, useRef } from "react";
+import { memo, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Song } from "@types";
 import { useLikeStatus } from "@hooks";
 import { useAuth } from "@contexts";
-import { ShareModal, QueueMenu } from "@components";
+import { ShareModal, QueueMenu, PlaylistAddMenu } from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import styles from "./SongActions.module.css";
 import classNames from "classnames";
@@ -37,8 +37,10 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [queueMenuOpen, setQueueMenuOpen] = useState(false);
+  const [playlistMenuOpen, setPlaylistMenuOpen] = useState(false);
 
   const queueButtonRef = useRef<HTMLButtonElement>(null);
+  const playlistButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (user?.id && song?.id) {
@@ -59,12 +61,12 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
 
   const handleAddToPlaylist = async () => {
     try {
-      if (isAuthenticated) {
-        //! send request here
-        console.log("added to playlist: " + song.id);
-      } else {
+      if (!isAuthenticated) {
         navigate("/login");
+        return;
       }
+
+      setPlaylistMenuOpen((prev) => !prev);
     } catch (error) {
       console.error("Adding to playlist failed:", error);
     }
@@ -102,9 +104,22 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
         >
           <LuThumbsUp />
         </button>
-        <button className={styles.actionButton} onClick={handleAddToPlaylist}>
-          <LuListPlus />
-        </button>
+        <div className={styles.playlistButtonContainer}>
+          <button
+            ref={playlistButtonRef}
+            className={styles.actionButton}
+            onClick={handleAddToPlaylist}
+          >
+            <LuListPlus />
+          </button>
+          <PlaylistAddMenu
+            isOpen={playlistMenuOpen}
+            onClose={() => setPlaylistMenuOpen(false)}
+            songIds={[song.id]}
+            buttonRef={playlistButtonRef}
+            position="bottom"
+          />
+        </div>
         <div className={styles.queueButtonContainer}>
           <button
             ref={queueButtonRef}
@@ -119,6 +134,8 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
             entity={song}
             entityType="song"
             buttonRef={queueButtonRef}
+            justification="right"
+            position="bottom"
           />
         </div>
         <button className={styles.actionButton} onClick={handleShare}>

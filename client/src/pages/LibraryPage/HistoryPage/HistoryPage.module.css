@@ -26,7 +26,7 @@
 }
 
 .librarySwitcherButton {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -40,19 +40,19 @@
 }
 
 .librarySwitcherButton:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
   text-decoration: underline;
 }
 
 .librarySwitcherButtonActive {
-  color: var(--color-red);
+  color: var(--color-accent);
   text-decoration: underline;
 }
 
 .searchContainer {
   background-color: var(--color-panel-gray);
   border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   position: relative;
   display: flex;
   align-items: center;
@@ -67,7 +67,7 @@
 }
 
 .searchInput {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   padding: var(--spacing-sm) 3.2rem var(--spacing-sm) 3.5rem;
   background-color: transparent;
   border: none;

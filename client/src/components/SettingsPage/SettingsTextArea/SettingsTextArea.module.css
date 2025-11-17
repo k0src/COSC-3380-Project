@@ -1,0 +1,59 @@
+.settingsTextAreaGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.settingsTextAreaLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-gray);
+}
+
+.settingsTextArea {
+  font-family: var(--font-main);
+  padding: var(--spacing-input);
+  background-color: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  width: 100%;
+  outline: none;
+  resize: none;
+  line-height: var(--line-height-normal);
+}
+
+.settingsTextAreaHeightSmall {
+  height: var(--height-textarea-small);
+}
+
+.settingsTextAreaHeightMedium {
+  height: var(--height-textarea-medium);
+}
+
+.settingsTextAreaHeightLarge {
+  height: var(--height-textarea-large);
+}
+
+.settingsTextAreaDisabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.settingsTextAreaError {
+  border-color: var(--color-accent);
+}
+
+.settingsTextAreaErrorText {
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.settingsTextAreaHint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+  font-style: italic;
+  line-height: var(--line-height-normal);
+}

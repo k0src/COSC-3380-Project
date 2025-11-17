@@ -1,4 +1,12 @@
-import type { Song, Album, LibraryPlaylist, Artist } from "@types";
+import type {
+  Song,
+  Album,
+  LibraryPlaylist,
+  Artist,
+  LibrarySong,
+  LibraryAlbum,
+  LibraryArtist,
+} from "@types";
 
 export interface LibrarySearchResults {
   songs: Song[];
@@ -8,8 +16,12 @@ export interface LibrarySearchResults {
 }
 
 export interface RecentlyPlayedItems {
-  songs: Song[];
-  albums: Album[];
+  songs: LibrarySong[];
+  albums: LibraryAlbum[];
   playlists: LibraryPlaylist[];
-  artists: Artist[];
+  artists: LibraryArtist[];
 }
+
+export type RecentlyPlayedItemsArray = Array<
+  LibrarySong | LibraryAlbum | LibraryPlaylist | LibraryArtist
+>;

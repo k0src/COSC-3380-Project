@@ -1,9 +1,10 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { useAuth } from "@contexts";
 import { artistApi } from "@api";
 import type { UUID } from "@types";
-import { useAsyncData } from "@hooks";
+import { useAsyncData, useErrorCheck } from "@hooks";
 import {
   ErrorPage,
   PageLoader,
@@ -15,11 +16,15 @@ import {
   SlidingCardList,
   SongsList,
   FollowProfiles,
+  EditArtistModal,
 } from "@components";
 import styles from "./ArtistPage.module.css";
 
 const ArtistPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
+
+  const { user, isAuthenticated } = useAuth();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!id) {
     return (
@@ -30,7 +35,7 @@ const ArtistPage: React.FC = () => {
     );
   }
 
-  const { data, loading, error } = useAsyncData(
+  const { data, loading, error, refetch } = useAsyncData(
     {
       artist: () => artistApi.getArtistById(id, { includeUser: true }),
     },
@@ -42,6 +47,13 @@ const ArtistPage: React.FC = () => {
   );
 
   const artist = data?.artist;
+
+  const isOwner = useMemo(() => {
+    if (!user || !isAuthenticated || !artist) {
+      return false;
+    }
+    return user.id === artist.user_id;
+  }, [user, isAuthenticated, artist]);
 
   const fetchPopularSongs = useCallback(
     () =>
@@ -70,35 +82,43 @@ const ArtistPage: React.FC = () => {
     [id]
   );
 
-  if (error) {
-    return (
-      <ErrorPage
-        title="Internal Server Error"
-        message="An unexpected error occurred. Please try again later."
-      />
-    );
-  }
+  const handleEditArtist = useCallback(() => {
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleArtistEdited = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  const { shouldShowError, errorTitle, errorMessage } = useErrorCheck([
+    {
+      condition: !!error,
+      title: "Internal Server Error",
+      message: "An unexpected error occurred. Please try again later.",
+    },
+    {
+      condition: !artist && !loading,
+      title: "Artist Not Found",
+      message: "The requested artist does not exist.",
+    },
+    {
+      condition: artist?.user?.status !== "ACTIVE",
+      title: "Artist Not Found",
+      message: "The requested artist does not exist.",
+    },
+    {
+      condition: artist?.user?.status === "DEACTIVATED" && !isOwner,
+      title: "Artist Not Found",
+      message: "The requested artist does not exist.",
+    },
+  ]);
 
   if (loading) {
     return <PageLoader />;
   }
 
-  if (!artist) {
-    return (
-      <ErrorPage
-        title="Artist Not Found"
-        message="The requested artist does not exist."
-      />
-    );
-  }
-
-  if (!artist.user || artist.user.status === "DEACTIVATED") {
-    return (
-      <ErrorPage
-        title="Artist Not Found"
-        message="The requested artist does not exist."
-      />
-    );
+  if (shouldShowError) {
+    return <ErrorPage title={errorTitle} message={errorMessage} />;
   }
 
   return (
@@ -109,13 +129,9 @@ const ArtistPage: React.FC = () => {
 
       <div className={styles.artistLayout}>
         <ArtistBanner
-          bannerImageUrl={artist.banner_image_url}
-          bannerImgBlurHash={artist.banner_image_url_blurhash}
-          artistImageUrl={artist.user?.profile_picture_url}
-          artistImgBlurHash={artist.user?.pfp_blurhash}
-          artistName={artist.display_name}
-          artistLocation={artist.location}
-          isVerified={artist.verified}
+          artist={artist}
+          isOwner={isOwner}
+          onEditButtonClick={handleEditArtist}
         />
         <div className={styles.artistLayoutBottom}>
           <div className={styles.artistLayoutBottomTop}>
@@ -180,6 +196,15 @@ const ArtistPage: React.FC = () => {
         <RelatedArtists artistId={artist.id} />
         <ArtistAbout artistId={artist.id} artistName={artist.display_name} />
       </div>
+
+      {isOwner && (
+        <EditArtistModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          artist={artist}
+          onArtistEdited={handleArtistEdited}
+        />
+      )}
     </>
   );
 };

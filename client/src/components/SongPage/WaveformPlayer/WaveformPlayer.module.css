@@ -15,20 +15,20 @@
   cursor: pointer;
   font-size: var(--icon-size-md);
   transition: color var(--transition-speed) ease-in-out;
-  font-size: 6.4rem;
+  font-size: var(--font-size-4xl);
 }
 
 .playerPlayBtn:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .playerPlayBtn:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
 }
 
 .playerPlayBtnActive {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .playerPlayBtn svg {
@@ -75,7 +75,7 @@
   box-sizing: border-box;
   pointer-events: none;
   z-index: 2;
-  animation: pulse 1.5s ease-in-out infinite;
+  animation: var(--animation-pulse);
 }
 
 .skeletonBar {
@@ -89,14 +89,4 @@
 .playerWaveform,
 .skeletonWaveform {
   overflow: hidden;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 0.2;
-  }
 }

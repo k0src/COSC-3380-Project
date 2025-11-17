@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  min-height: 15vh;
+  min-height: var(--loader-height-sm);
 }
 
 .error {
@@ -64,14 +64,14 @@
   position: absolute;
   top: var(--spacing-sm);
   right: var(--spacing-sm);
-  background-color: var(--color-red);
+  background-color: var(--color-accent);
   border-radius: 50%;
   padding: var(--spacing-sm);
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-sm);
   pointer-events: none;
 }
 

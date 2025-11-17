@@ -1,0 +1,110 @@
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: var(--loader-height-sm);
+}
+
+.error {
+  text-align: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.withNavigation {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.scrollContainer {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-width: 0;
+  width: 0;
+}
+
+.list {
+  display: flex;
+  gap: var(--spacing-lg);
+  min-width: 0;
+  transition: transform 0.3s ease;
+  width: max-content;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  cursor: pointer;
+  font-size: var(--icon-size-lg);
+  padding: var(--spacing-sm);
+  transition: all var(--transition-speed) ease;
+  flex-shrink: 0;
+  padding-bottom: var(--spacing-4xl);
+}
+
+.navButton:hover:not(:disabled) {
+  color: var(--color-white);
+}
+
+.navButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.scrollGradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to right,
+    rgba(8, 8, 8, 0.7) 0%,
+    transparent 8%,
+    transparent 92%,
+    rgba(8, 8, 8, 0.7) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+  opacity: 1;
+  transition: opacity var(--transition-speed) ease;
+}
+
+.noActivity {
+  text-align: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}

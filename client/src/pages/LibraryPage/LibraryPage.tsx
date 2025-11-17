@@ -1,4 +1,4 @@
-import { memo, useState, useMemo, useEffect, useCallback } from "react";
+import { memo, useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth, useContextMenu } from "@contexts";
@@ -14,7 +14,10 @@ import {
   LibrarySongs,
   LibraryAlbums,
   LibraryArtists,
+  CreatePlaylistModal,
+  ConfirmationModal,
 } from "@components";
+import { libraryApi, playlistApi } from "@api";
 import styles from "./LibraryPage.module.css";
 import classNames from "classnames";
 import {
@@ -67,7 +70,20 @@ const LibraryPage: React.FC = () => {
   const { tab } = useParams<{ tab?: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
+  const [playlistModalMode, setPlaylistModalMode] = useState<"create" | "edit">(
+    "create"
+  );
+  const [playlistToEdit, setPlaylistToEdit] = useState<LibraryPlaylist | null>(
+    null
+  );
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [playlistToDelete, setPlaylistToDelete] =
+    useState<LibraryPlaylist | null>(null);
   const { setCustomActionsProvider } = useContextMenu();
+
+  const playlistsRefetchRef = useRef<(() => void) | null>(null);
+  const recentRefetchRef = useRef<(() => void) | null>(null);
 
   const isValidTab = (tab: string | undefined): tab is TabType => {
     return VALID_TABS.includes(tab as TabType);
@@ -117,26 +133,78 @@ const LibraryPage: React.FC = () => {
     []
   );
 
-  //! implement later
   const handleCreatePlaylist = useCallback(() => {
-    console.log("Create Playlist");
+    setPlaylistToEdit(null);
+    setPlaylistModalMode("create");
+    setIsPlaylistModalOpen(true);
   }, []);
 
-  const handlePinPlaylist = useCallback((playlist: LibraryPlaylist) => {
-    console.log("Pin/Unpin Playlist", playlist);
+  const handlePlaylistCreated = useCallback(() => {
+    playlistsRefetchRef.current?.();
+    recentRefetchRef.current?.();
   }, []);
+
+  const handlePinPlaylist = useCallback(
+    async (playlist: LibraryPlaylist) => {
+      if (!user?.id) return;
+
+      try {
+        await libraryApi.togglePinPlaylist(user.id, playlist.id);
+        playlistsRefetchRef.current?.();
+        recentRefetchRef.current?.();
+      } catch (error) {
+        console.error("Error toggling playlist pin:", error);
+      }
+    },
+    [user?.id]
+  );
 
   const handleEditPlaylist = useCallback((playlist: LibraryPlaylist) => {
-    console.log("Edit Playlist", playlist);
+    setPlaylistToEdit(playlist);
+    setPlaylistModalMode("edit");
+    setIsPlaylistModalOpen(true);
   }, []);
 
-  const handleTogglePrivacy = useCallback((playlist: LibraryPlaylist) => {
-    console.log("Toggle Privacy", playlist);
-  }, []);
+  const handleTogglePrivacy = useCallback(
+    async (playlist: LibraryPlaylist) => {
+      if (!user?.id || playlist.created_by !== user.id) return;
 
-  const handleDeletePlaylist = useCallback((playlist: LibraryPlaylist) => {
-    console.log("Delete Playlist", playlist);
-  }, []);
+      try {
+        await playlistApi.update(playlist.id, {
+          is_public: !playlist.is_public,
+        });
+        playlistsRefetchRef.current?.();
+        recentRefetchRef.current?.();
+      } catch (error) {
+        console.error("Error toggling playlist privacy:", error);
+      }
+    },
+    [user?.id]
+  );
+
+  const handleDeletePlaylist = useCallback(
+    (playlist: LibraryPlaylist) => {
+      if (!user?.id || playlist.created_by !== user.id) return;
+
+      setPlaylistToDelete(playlist);
+      setIsDeleteModalOpen(true);
+    },
+    [user?.id]
+  );
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!playlistToDelete) return;
+
+    try {
+      await playlistApi.delete(playlistToDelete.id);
+      playlistsRefetchRef.current?.();
+      recentRefetchRef.current?.();
+      setIsDeleteModalOpen(false);
+      setPlaylistToDelete(null);
+    } catch (error) {
+      console.error("Error deleting playlist:", error);
+    }
+  }, [playlistToDelete]);
 
   const customActionsProvider = useCallback(
     (
@@ -163,10 +231,7 @@ const LibraryPage: React.FC = () => {
         },
         {
           id: "toggle-playlist-privacy",
-          label:
-            playlist.visibility_status === "PUBLIC"
-              ? "Make Private"
-              : "Make Public",
+          label: playlist.is_public ? "Make Private" : "Make Public",
           icon: LuLock,
           onClick: () => handleTogglePrivacy(playlist),
           show: entityType === "playlist" && isOwner,
@@ -192,6 +257,7 @@ const LibraryPage: React.FC = () => {
       handleCreatePlaylist,
       handlePinPlaylist,
       handleEditPlaylist,
+      handleTogglePrivacy,
       handleDeletePlaylist,
     ]
   );
@@ -256,10 +322,15 @@ const LibraryPage: React.FC = () => {
             userId={user.id}
             maxItems={20}
             searchFilter={searchText}
+            onRefetchNeeded={recentRefetchRef}
           />
         )}
         {activeTab === "playlists" && (
-          <LibraryPlaylists userId={user.id} searchFilter={searchText} />
+          <LibraryPlaylists
+            userId={user.id}
+            searchFilter={searchText}
+            onRefetchNeeded={playlistsRefetchRef}
+          />
         )}
         {activeTab === "songs" && (
           <LibrarySongs userId={user.id} searchFilter={searchText} />
@@ -271,10 +342,48 @@ const LibraryPage: React.FC = () => {
           <LibraryArtists userId={user.id} searchFilter={searchText} />
         )}
 
-        <Link className={styles.historyLink} to="/library/history">
+        <Link className={styles.historyLink} to="/history">
           View Full History
         </Link>
       </div>
+
+      {playlistModalMode === "create" ? (
+        <CreatePlaylistModal
+          mode="create"
+          userId={user.id}
+          username={user.username}
+          isOpen={isPlaylistModalOpen}
+          onClose={() => {
+            setIsPlaylistModalOpen(false);
+            setPlaylistToEdit(null);
+          }}
+          onPlaylistCreated={handlePlaylistCreated}
+        />
+      ) : (
+        <CreatePlaylistModal
+          mode="edit"
+          isOpen={isPlaylistModalOpen}
+          onClose={() => {
+            setIsPlaylistModalOpen(false);
+            setPlaylistToEdit(null);
+          }}
+          onPlaylistCreated={handlePlaylistCreated}
+          playlist={playlistToEdit!}
+        />
+      )}
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setPlaylistToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Playlist"
+        message={`Are you sure you want to delete "${playlistToDelete?.title}"? This action cannot be undone.`}
+        confirmButtonText="Delete Playlist"
+        isDangerous={true}
+      />
     </>
   );
 };

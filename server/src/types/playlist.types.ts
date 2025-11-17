@@ -1,4 +1,4 @@
-import type { UUID, Song, User } from "./index.js";
+import type { UUID, User } from "./index.js";
 
 export interface Playlist {
   id: UUID;
@@ -7,17 +7,19 @@ export interface Playlist {
   created_by: UUID;
   created_at: string;
   updated_at: string;
-  visibility_status: string;
+  is_public: boolean;
 
   song_count?: number;
   user?: User;
   likes?: number;
   runtime?: number;
   image_url?: string;
+  image_url_blurhash?: string;
 
   type: "playlist";
 }
 
 export interface LibraryPlaylist extends Playlist {
   is_pinned?: boolean;
+  played_at?: string;
 }

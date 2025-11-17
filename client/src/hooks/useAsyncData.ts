@@ -78,6 +78,7 @@ interface UseAsyncDataOptions {
   ttl?: number;
   resetOnDepsChange?: boolean;
   hasBlobUrl?: boolean;
+  enabled?: boolean;
 }
 
 interface UseAsyncDataResult<TData extends Record<string, any>> {
@@ -94,8 +95,11 @@ interface UseAsyncDataResult<TData extends Record<string, any>> {
  *
  * @param asyncFns - Object where each key maps to an async function returning a Promise.
  * @param dependencies - Dependency array to determine when to re-fetch the data.
- * @param options - Optional settings.
- *
+ * @param options.cacheKey - Optional key to use for caching the data in localStorage.
+ * @param options.ttl - Time-to-live for the cached data in milliseconds (default: 5 minutes).
+ * @param options.resetOnDepsChange - Whether to reset data when dependencies change (default: false).
+ * @param options.hasBlobUrl - Whether the data contains blob URLs that should not be cached (default: false).
+ * @param options.enabled - Whether the data fetching is enabled (default: true).
  * @returns {UseAsyncDataResult<TData>}
  */
 export function useAsyncData<
@@ -121,6 +125,7 @@ export function useAsyncData<
     ttl = 1000 * 60 * 5,
     resetOnDepsChange = false,
     hasBlobUrl = false,
+    enabled = true,
   } = options;
 
   const fetchData = async (bypassCache = false) => {
@@ -160,6 +165,11 @@ export function useAsyncData<
   };
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
     const depsChanged =
       resetOnDepsChange &&
       JSON.stringify(prevDepsRef.current) !== JSON.stringify(dependencies);

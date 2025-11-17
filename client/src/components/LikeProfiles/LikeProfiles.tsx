@@ -63,7 +63,7 @@ const LikeProfiles: React.FC<LikeProfilesProps> = ({
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
-        <PuffLoader color="#D53131" size={25} />
+        <PuffLoader color="var(--color-accent)" size={25} />
       </div>
     );
   }

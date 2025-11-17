@@ -7,7 +7,6 @@ import { useAsyncData } from "@hooks";
 import {
   ErrorPage,
   PageLoader,
-  CoverLightbox,
   LazyImg,
   UserInfoStats,
   UserInfoFollowers,
@@ -15,8 +14,8 @@ import {
   UserInfoLiked,
 } from "@components";
 import styles from "./UserInfoPage.module.css";
-import userPlaceholder from "@assets/user-placeholder.webp";
 import classNames from "classnames";
+import userPlaceholder from "@assets/user-placeholder.webp";
 import { LuArrowLeft } from "react-icons/lu";
 
 type TabType = "followers" | "following" | "liked";
@@ -25,12 +24,20 @@ const UserInfoPage: React.FC = () => {
   const { id, tab } = useParams<{ id: UUID; tab?: string }>();
   const navigate = useNavigate();
 
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     if (tab === "followers" || tab === "following") return tab;
     if (tab === "likes") return "liked";
     return "followers";
   });
+
+  if (!id) {
+    return (
+      <ErrorPage
+        title="User Not Found"
+        message="The requested user does not exist."
+      />
+    );
+  }
 
   useEffect(() => {
     if (tab === "followers" || tab === "following") {
@@ -60,12 +67,6 @@ const UserInfoPage: React.FC = () => {
     [user]
   );
 
-  const handleLightboxClose = useCallback(() => setIsLightboxOpen(false), []);
-
-  const handleImageClick = useCallback(() => {
-    setIsLightboxOpen(true);
-  }, []);
-
   const handleTabClick = useCallback(
     (tab: TabType) => {
       const urlTab = tab === "liked" ? "likes" : tab;
@@ -87,15 +88,6 @@ const UserInfoPage: React.FC = () => {
         return "";
     }
   }, [activeTab, user]);
-
-  if (!id) {
-    return (
-      <ErrorPage
-        title="User Not Found"
-        message="The requested user does not exist."
-      />
-    );
-  }
 
   if (error) {
     return (
@@ -120,86 +112,62 @@ const UserInfoPage: React.FC = () => {
           message="The requested user does not exist."
         />
       ) : (
-        <>
-          <div className={styles.userInfoLayout}>
-            <div className={styles.headerContainer}>
-              <Link to={`/users/${id}`} className={styles.backLink}>
-                <LuArrowLeft /> Back to user page
-              </Link>
-              <header className={styles.userInfoHeader}>
-                <LazyImg
-                  src={userImageUrl}
-                  alt={`${user.username} Image`}
-                  imgClassNames={[
-                    styles.userImage,
-                    userImageUrl !== userPlaceholder
-                      ? styles.userImageClickable
-                      : "",
-                  ]}
-                  loading="eager"
-                  onClick={handleImageClick}
-                />
-                <div className={styles.userInfo}>
-                  <h1 className={styles.userInfoTitle}>{tabTitle}</h1>
-                  <UserInfoStats userId={id} />
-                  {user.role === "ARTIST" && user.artist_id && (
-                    <Link
-                      to={`/artists/${user.artist_id}`}
-                      className={styles.artistLink}
-                    >
-                      View Artist Page
-                    </Link>
-                  )}
-                </div>
-              </header>
-            </div>
-
-            <div className={styles.infoSection}>
-              <div className={styles.switcherContainer}>
-                <button
-                  className={classNames(styles.switcherButton, {
-                    [styles.switcherButtonActive]: activeTab === "followers",
-                  })}
-                  onClick={() => handleTabClick("followers")}
-                >
-                  Followers
-                </button>
-                <button
-                  className={classNames(styles.switcherButton, {
-                    [styles.switcherButtonActive]: activeTab === "following",
-                  })}
-                  onClick={() => handleTabClick("following")}
-                >
-                  Following
-                </button>
-                <button
-                  className={classNames(styles.switcherButton, {
-                    [styles.switcherButtonActive]: activeTab === "liked",
-                  })}
-                  onClick={() => handleTabClick("liked")}
-                >
-                  Liked
-                </button>
+        <div className={styles.userInfoLayout}>
+          <div className={styles.headerContainer}>
+            <Link to={`/users/${id}`} className={styles.backLink}>
+              <LuArrowLeft /> Back to user page
+            </Link>
+            <header className={styles.userInfoHeader}>
+              <LazyImg
+                src={userImageUrl}
+                blurHash={user.pfp_blurhash}
+                alt={`${user.username} Image`}
+                imgClassNames={[styles.userImage]}
+                loading="eager"
+              />
+              <div className={styles.userInfo}>
+                <h1 className={styles.userInfoTitle}>{tabTitle}</h1>
+                <UserInfoStats userId={id} />
               </div>
-              {activeTab === "followers" && (
-                <UserInfoFollowers userId={id} username={user.username} />
-              )}
-              {activeTab === "following" && (
-                <UserInfoFollowing userId={id} username={user.username} />
-              )}
-              {activeTab === "liked" && <UserInfoLiked userId={id} />}
-            </div>
+            </header>
           </div>
 
-          {userImageUrl && (
-            <CoverLightbox
-              isOpen={isLightboxOpen}
-              onClose={handleLightboxClose}
-              imageUrl={userImageUrl}
-              altText={`${user.username} Image`}
-            />
-          )}
-        </>
+          <div className={styles.infoSection}>
+            <div className={styles.switcherContainer}>
+              <button
+                className={classNames(styles.switcherButton, {
+                  [styles.switcherButtonActive]: activeTab === "followers",
+                })}
+                onClick={() => handleTabClick("followers")}
+              >
+                Followers
+              </button>
+              <button
+                className={classNames(styles.switcherButton, {
+                  [styles.switcherButtonActive]: activeTab === "following",
+                })}
+                onClick={() => handleTabClick("following")}
+              >
+                Following
+              </button>
+              <button
+                className={classNames(styles.switcherButton, {
+                  [styles.switcherButtonActive]: activeTab === "liked",
+                })}
+                onClick={() => handleTabClick("liked")}
+              >
+                Liked
+              </button>
+            </div>
+            {activeTab === "followers" && (
+              <UserInfoFollowers userId={id} username={user.username} />
+            )}
+            {activeTab === "following" && (
+              <UserInfoFollowing userId={id} username={user.username} />
+            )}
+            {activeTab === "liked" && <UserInfoLiked userId={id} />}
+          </div>
+        </div>
       )}
     </>
   );

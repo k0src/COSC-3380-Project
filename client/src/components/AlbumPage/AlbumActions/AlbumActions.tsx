@@ -1,9 +1,9 @@
-import React, { memo, useEffect, useState, useRef } from "react";
+import { memo, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Album } from "@types";
+import type { Album, UUID } from "@types";
 import { useLikeStatus } from "@hooks";
 import { useAuth } from "@contexts";
-import { ShareModal, QueueMenu } from "@components";
+import { ShareModal, QueueMenu, PlaylistAddMenu } from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import styles from "./AlbumActions.module.css";
 import classNames from "classnames";
@@ -18,9 +18,14 @@ import {
 export interface AlbumActionsProps {
   album: Album;
   albumUrl?: string;
+  songIds: UUID[];
 }
 
-const AlbumActions: React.FC<AlbumActionsProps> = ({ album, albumUrl }) => {
+const AlbumActions: React.FC<AlbumActionsProps> = ({
+  album,
+  albumUrl,
+  songIds,
+}) => {
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -37,8 +42,10 @@ const AlbumActions: React.FC<AlbumActionsProps> = ({ album, albumUrl }) => {
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [queueMenuOpen, setQueueMenuOpen] = useState(false);
+  const [playlistMenuOpen, setPlaylistMenuOpen] = useState(false);
 
   const queueButtonRef = useRef<HTMLButtonElement>(null);
+  const playlistButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (user?.id && album?.id) {
@@ -71,12 +78,12 @@ const AlbumActions: React.FC<AlbumActionsProps> = ({ album, albumUrl }) => {
 
   const handleAddToPlaylist = async () => {
     try {
-      if (isAuthenticated) {
-        //! open add to playlist modal...
-        console.log("Add album to playlist: " + album.id);
-      } else {
+      if (!isAuthenticated) {
         navigate("/login");
+        return;
       }
+
+      setPlaylistMenuOpen((prev) => !prev);
     } catch (error) {
       console.error("Adding to playlist failed:", error);
     }
@@ -116,11 +123,22 @@ const AlbumActions: React.FC<AlbumActionsProps> = ({ album, albumUrl }) => {
             entity={album}
             entityType="list"
             buttonRef={queueButtonRef}
+            justification="right"
+            position="bottom"
           />
         </div>
-        <button className={styles.actionButton} onClick={handleAddToPlaylist}>
-          <LuListPlus />
-        </button>
+        <div className={styles.playlistButtonContainer}>
+          <button className={styles.actionButton} onClick={handleAddToPlaylist}>
+            <LuListPlus />
+          </button>
+          <PlaylistAddMenu
+            isOpen={playlistMenuOpen}
+            onClose={() => setPlaylistMenuOpen(false)}
+            songIds={songIds}
+            buttonRef={playlistButtonRef}
+            position="bottom"
+          />
+        </div>
         <button className={styles.actionButton} onClick={handleShare}>
           <LuShare />
         </button>

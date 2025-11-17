@@ -201,7 +201,7 @@ const HomePage: React.FC = () => {
                 padding: "2rem",
               }}
             >
-              <PuffLoader color="#D53131" size={50} />
+              <PuffLoader color="var(--color-accent)" size={50} />
             </div>
           ) : error ? (
             <div style={{ padding: "2rem", textAlign: "center" }}>

@@ -1,8 +1,15 @@
-import type { UUID, Album, SongArtist, Artist } from "./index.js";
+import type {
+  UUID,
+  Album,
+  SongArtist,
+  Artist,
+  VisibilityStatus,
+} from "./index.js";
 
 // Main Song type
 export interface Song {
   id: UUID;
+  owner_id: UUID;
   title: string;
   duration: number;
   genre: string;
@@ -12,11 +19,14 @@ export interface Song {
   audio_url: string;
   created_at: string;
   streams?: number;
+  visibility_status: VisibilityStatus;
 
   albums?: Album[];
   artists?: SongArtist[];
   likes?: number;
   comments?: number;
+
+  is_trending?: boolean;
 
   type: "song";
 }
@@ -37,4 +47,8 @@ export interface ArtistSong extends Song {
 export interface SuggestedSong extends Song {
   total_score: number;
   main_artist: Artist;
+}
+
+export interface LibrarySong extends Song {
+  played_at?: string;
 }

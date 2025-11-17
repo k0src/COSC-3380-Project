@@ -1,0 +1,119 @@
+.settingsToggleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: fit-content;
+}
+
+.settingsToggleLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-gray);
+}
+
+.toggleContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  border-radius: var(--border-radius-sm);
+  position: relative;
+}
+
+.toggle {
+  position: relative;
+  width: 4.8rem;
+  height: 2.8rem;
+  background-color: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: 1.4rem;
+  cursor: pointer;
+  transition: background-color var(--transition-speed) ease;
+  padding: 0;
+}
+
+.toggle:focus {
+  outline: none;
+}
+
+.toggleOn {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.toggleDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggleSlider {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  width: 2rem;
+  height: 2rem;
+  background-color: var(--color-white);
+  border-radius: 50%;
+  transition: transform var(--transition-speed) ease;
+}
+
+.toggleSliderOn {
+  transform: translateX(2rem);
+}
+
+.toggleLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+  font-weight: 500;
+  min-width: 4rem;
+}
+
+.settingsToggleErrorText {
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.hint {
+  position: absolute;
+  bottom: calc(100% + var(--spacing-xs));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-tooltip-bg);
+  color: var(--color-black);
+  padding: var(--spacing-xsd) var(--spacing-sd);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xsd);
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: var(--shadow-tooltip);
+  opacity: 0;
+  visibility: hidden;
+  animation: var(--animation-tooltip-fade-in);
+}
+
+.hintWrap {
+  white-space: normal;
+  text-align: center;
+}
+
+.hintVisible {
+  visibility: visible;
+}
+
+.hint::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--color-tooltip-bg);
+}
+
+.hintWrap {
+  white-space: normal;
+  text-align: center;
+}

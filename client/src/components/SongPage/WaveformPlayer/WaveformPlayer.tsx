@@ -104,10 +104,10 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
   const hoverPlugin = useMemo(
     () =>
       Hover.create({
-        lineColor: "#B22323",
+        lineColor: "var(--color-accent-700)",
         lineWidth: LINE_WIDTH,
-        labelBackground: "#B22323",
-        labelColor: "#F6F6F6",
+        labelBackground: "var(--color-accent-700)",
+        labelColor: "var(--color-white)",
         labelSize: "11px",
       }),
     []
@@ -118,11 +118,15 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
 
     const loadAudioWithCORSBypass = async () => {
       try {
+        const styles = getComputedStyle(document.documentElement);
+        const accentColor = styles.getPropertyValue("--color-accent").trim();
+        const whiteColor = styles.getPropertyValue("--color-white").trim();
+
         const ws = WaveSurfer.create({
           container: waveformRef.current!,
           height: WAVEFORM_HEIGHT,
-          waveColor: "#F6F6F6",
-          progressColor: "#d53131",
+          waveColor: whiteColor,
+          progressColor: accentColor,
           barWidth: BAR_WIDTH,
           barRadius: BAR_RADIUS,
           barGap: BAR_GAP,
@@ -140,7 +144,9 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
         const urlParts = audioSrc.split("/");
         const filename = urlParts[urlParts.length - 1].split("?")[0];
 
-        const proxyUrl = `/api/proxy/audio/${filename}`;
+        const API_BASE = import.meta.env.VITE_API_URL || "/api";
+        const proxyUrl = `${API_BASE}/proxy/audio/${filename}`;
+
         const response = await fetch(proxyUrl);
         if (!response.ok) {
           throw new Error(`Failed to fetch audio: ${response.status}`);

@@ -9,7 +9,7 @@ export const playlistApi = {
       includeLikes?: boolean;
       includeSongCount?: boolean;
       includeRuntime?: boolean;
-    },
+    }
   ) {
     const response = await api.get<Playlist>(`/playlists/${id}`, {
       params: options,
@@ -25,7 +25,7 @@ export const playlistApi = {
       includeLikes?: boolean;
       limit?: number;
       offset?: number;
-    },
+    }
   ) {
     const response = await api.get<PlaylistSong[]>(`/playlists/${id}/songs`, {
       params: options,
@@ -38,7 +38,7 @@ export const playlistApi = {
     options?: {
       limit?: number;
       offset?: number;
-    },
+    }
   ) {
     const response = await api.get<User[]>(`/playlists/${id}/liked-by`, {
       params: options,
@@ -55,7 +55,7 @@ export const playlistApi = {
       includeRuntime?: boolean;
       limit?: number;
       offset?: number;
-    },
+    }
   ) {
     const response = await api.get<Playlist[]>(`/playlists/${id}/related`, {
       params: options,
@@ -66,15 +66,86 @@ export const playlistApi = {
   async createRemixPlaylist(
     playlistId: UUID,
     userId: UUID,
-    numberOfSongs: number,
+    numberOfSongs: number
   ) {
     const response = await api.post<{ remixPlaylistId: UUID }>(
       `/playlists/${playlistId}/remix`,
       {
         userId,
         numberOfSongs,
-      },
+      }
     );
     return response.data.remixPlaylistId;
+  },
+
+  async create(data: {
+    created_by: UUID;
+    title: string;
+    description?: string;
+    is_public: boolean;
+    image_url?: File | null;
+  }) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const response = await api.post<Playlist>(`/playlists`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  async update(
+    playlistId: UUID,
+    data: {
+      title?: string;
+      description?: string;
+      is_public?: boolean;
+      image_url?: File | null;
+    }
+  ) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const response = await api.put<Playlist>(
+      `/playlists/${playlistId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  },
+
+  async delete(playlistId: UUID) {
+    const response = await api.delete(`/playlists/${playlistId}`);
+    return response.data;
+  },
+
+  async addSongs(playlistId: UUID, songIds: UUID[]) {
+    const response = await api.put(`/playlists/${playlistId}/songs`, {
+      songIds,
+    });
+    return response.data;
+  },
+
+  async removeSongs(playlistId: UUID, songIds: UUID[]) {
+    const response = await api.put(`/playlists/${playlistId}/songs/remove`, {
+      songIds,
+    });
+    return response.data;
   },
 };

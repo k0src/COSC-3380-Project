@@ -2,11 +2,12 @@
   height: var(--header-height);
   background-color: var(--color-panel-gray);
   border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   flex: 1;
   position: relative;
   display: flex;
   align-items: center;
+  box-shadow: var(--shadow-layout);
 }
 
 .searchIcon {
@@ -18,7 +19,7 @@
 }
 
 .searchInput {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm)
     calc(var(--spacing-md) * 3);

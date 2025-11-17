@@ -20,3 +20,7 @@ export interface Artist {
 export interface SongArtist extends Artist {
   role: string;
 }
+
+export interface LibraryArtist extends Artist {
+  played_at?: string;
+}

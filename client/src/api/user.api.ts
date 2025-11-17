@@ -12,6 +12,11 @@ import type {
 } from "@types";
 
 export const userApi = {
+  async getUserCount() {
+    const response = await api.get<{ userCount: number }>(`/users/count`);
+    return response.data.userCount;
+  },
+
   async getUserById(id: UUID) {
     const response = await api.get<User>(`/users/${id}`, {
       params: { includeUser: true },
@@ -168,41 +173,31 @@ export const userApi = {
 
   async update(
     id: UUID,
-    {
-      username,
-      email,
-      new_password,
-      current_password,
-      authenticated_with,
-      role,
-      profile_picture_url,
-      pfp_blurhash,
-      artist_id,
-      status,
-    }: {
+    data: {
       username?: string;
       email?: string;
       new_password?: string;
       current_password?: string;
       authenticated_with?: string;
       role?: string;
-      profile_picture_url?: string;
-      pfp_blurhash?: string;
+      profile_picture_url?: File | null;
       artist_id?: UUID;
       status?: string;
+      is_private?: boolean;
     }
   ) {
-    const response = await api.put<User>(`/users/${id}`, {
-      username,
-      email,
-      new_password,
-      current_password,
-      authenticated_with,
-      role,
-      profile_picture_url,
-      pfp_blurhash,
-      artist_id,
-      status,
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const response = await api.put<User>(`/users/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
     return response.data;
   },
@@ -219,6 +214,18 @@ export const userApi = {
         params: { limit },
       }
     );
+    return response.data;
+  },
+  async updateSettings(id: UUID, settings: Partial<UserSettings>) {
+    const response = await api.put<UserSettings>(
+      `/users/${id}/settings`,
+      settings
+    );
+    return response.data;
+  },
+
+  async delete(id: UUID) {
+    const response = await api.delete(`/users/${id}`);
     return response.data;
   },
 };

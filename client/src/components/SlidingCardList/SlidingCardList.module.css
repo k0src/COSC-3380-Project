@@ -68,15 +68,15 @@
   padding: var(--spacing-sm);
   transition: all var(--transition-speed) ease;
   flex-shrink: 0;
+  padding-bottom: var(--spacing-4xl);
 }
 
 .navButton:hover:not(:disabled) {
   color: var(--color-white);
-  transform: scale(1.1);
 }
 
 .navButton:disabled {
-  opacity: 0.3;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 

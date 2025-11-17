@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styles from "./LandingPage.module.css";
 import { LuSearch } from "react-icons/lu";
-import { SongCard } from "@components";
+import { SongCard, UploadPromptModal } from "@components";
 import { useAsyncData } from "@hooks";
 import { songApi } from "@api";
 import type { Song } from "@types";
@@ -11,6 +11,8 @@ import { getMainArtist } from "@util";
 
 const LandingPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
+    const [showUploadModal, setShowUploadModal] = useState(false);
+
   const navigate = useNavigate();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -19,12 +21,6 @@ const LandingPage: React.FC = () => {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
-  // const singles = Array(4).fill({ // Using your original 'newSongs' data
-  //   title: "New Release",
-  //   artist: "Drake",
-  //   image: "/PlayerBar/Mask group.png",
-  //   year: 2008
-  // });
 
   const { data, loading, error } = useAsyncData(
     {
@@ -61,9 +57,19 @@ const LandingPage: React.FC = () => {
             Get obsessed, or become part of someone's obsession. All it takes is
             an upload!
           </p>
-          <button className={styles.uploadButton}>UPLOAD NOW</button>
+          <button
+            className={styles.uploadButton}
+            onClick={() => setShowUploadModal(true)}
+          >
+            UPLOAD NOW
+          </button>
         </div>
       </section>
+
+      <UploadPromptModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+      />
 
       <div className={styles.searchBarContainer}>
         <form className={styles.searchBar} onSubmit={handleSearchSubmit}>

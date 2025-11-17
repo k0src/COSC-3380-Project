@@ -22,7 +22,7 @@
 
 .songCard:hover {
   background-color: var(--color-black-hover);
-  transform: translateY(-0.4rem);
+  transform: translateY(-var(--spacing-xs));
 }
 
 .imageContainer {
@@ -58,7 +58,7 @@
 .playButton {
   width: var(--icon-size-2xl);
   height: var(--icon-size-2xl);
-  background-color: var(--color-red);
+  background-color: var(--color-accent);
   border: none;
   border-radius: 50%;
   display: flex;
@@ -71,7 +71,7 @@
 
 .playButton:hover {
   transform: scale(1.1);
-  background-color: var(--color-red-500);
+  background-color: var(--color-accent-500);
 }
 
 .songInfo {

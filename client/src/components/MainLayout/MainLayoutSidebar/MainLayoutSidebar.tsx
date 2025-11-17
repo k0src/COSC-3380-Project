@@ -1,8 +1,9 @@
 import React, { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
+import { isWeb } from "@util";
 import styles from "./MainLayoutSidebar.module.css";
-import logo from "@assets/logo.svg";
+import Logo from "@assets/logo.svg?react";
 import {
   LuListMusic,
   LuLibrary,
@@ -10,6 +11,8 @@ import {
   LuUserPen,
   LuHistory,
   LuLogOut,
+  LuUpload,
+  LuAppWindowMac,
 } from "react-icons/lu";
 
 const MainLayoutSidebar: React.FC = () => {
@@ -25,11 +28,18 @@ const MainLayoutSidebar: React.FC = () => {
     }
   }, [logout, navigate]);
 
+  const handleDownloadApp = useCallback(() => {
+    window.open(
+      "https://github.com/k0src/COSC-3380-Project/releases/latest",
+      "_blank"
+    );
+  }, []);
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarTop}>
         <div className={styles.sidebarLogo}>
-          <img src={logo} alt="Logo" className={styles.logoImage} />
+          <Logo className={styles.logoImage} />
         </div>
         <nav className={styles.sidebarNav}>
           <Link to="/library" className={styles.sidebarLink}>
@@ -41,21 +51,33 @@ const MainLayoutSidebar: React.FC = () => {
           <Link to="/library/songs" className={styles.sidebarLink}>
             <LuDisc3 className={styles.sidebarIcon} />
           </Link>
-          <Link to="/library/history" className={styles.sidebarLink}>
+          <Link to="/history" className={styles.sidebarLink}>
             <LuHistory className={styles.sidebarIcon} />
           </Link>
           {user && user.role === "ARTIST" && (
-            <Link to="/artist/dashboard" className={styles.sidebarLink}>
-              <LuUserPen className={styles.sidebarIcon} />
-            </Link>
+            <>
+              <Link to="/artist-dashboard" className={styles.sidebarLink}>
+                <LuUserPen className={styles.sidebarIcon} />
+              </Link>
+              <Link to="/upload" className={styles.sidebarLink}>
+                <LuUpload className={styles.sidebarIcon} />
+              </Link>
+            </>
           )}
         </nav>
       </div>
-      {isAuthenticated && (
-        <button onClick={handleLogout} className={styles.logoutButton}>
-          <LuLogOut className={styles.sidebarIcon} />
-        </button>
-      )}
+      <div className={styles.sidebarBottom}>
+        {isWeb && (
+          <button onClick={handleDownloadApp} className={styles.logoutButton}>
+            <LuAppWindowMac className={styles.sidebarIcon} />
+          </button>
+        )}
+        {isAuthenticated && (
+          <button onClick={handleLogout} className={styles.logoutButton}>
+            <LuLogOut className={styles.sidebarIcon} />
+          </button>
+        )}
+      </div>
     </aside>
   );
 };

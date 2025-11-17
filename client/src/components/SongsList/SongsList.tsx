@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useEffect } from "react";
 import { PuffLoader } from "react-spinners";
 import type { Song } from "@types";
 import { useAsyncData } from "@hooks";
@@ -13,6 +13,7 @@ export interface SongsListProps {
   cacheKey: string;
   dependencies?: any[];
   viewMoreLink?: string;
+  onRefetchNeeded?: React.RefObject<(() => void) | null>;
 }
 
 const SongsList: React.FC<SongsListProps> = ({
@@ -21,6 +22,7 @@ const SongsList: React.FC<SongsListProps> = ({
   cacheKey,
   dependencies = [],
   viewMoreLink,
+  onRefetchNeeded,
 }) => {
   const asyncConfig = useMemo(
     () => ({
@@ -29,10 +31,20 @@ const SongsList: React.FC<SongsListProps> = ({
     [fetchData]
   );
 
-  const { data, loading, error } = useAsyncData(asyncConfig, dependencies, {
-    cacheKey,
-    hasBlobUrl: true,
-  });
+  const { data, loading, error, refetch } = useAsyncData(
+    asyncConfig,
+    dependencies,
+    {
+      cacheKey,
+      hasBlobUrl: true,
+    }
+  );
+
+  useEffect(() => {
+    if (onRefetchNeeded) {
+      onRefetchNeeded.current = refetch;
+    }
+  }, [refetch, onRefetchNeeded]);
 
   const songs = data?.songs;
 
@@ -52,7 +64,7 @@ const SongsList: React.FC<SongsListProps> = ({
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
-        <PuffLoader color="#D53131" size={35} />
+        <PuffLoader color="var(--color-accent)" size={35} />
       </div>
     );
   }

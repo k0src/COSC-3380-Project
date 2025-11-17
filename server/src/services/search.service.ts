@@ -157,7 +157,11 @@ export default class SearchService {
       const playlists: Playlist[] = row.playlists
         ? await Promise.all(
             row.playlists.map(async (playlist: Playlist) => {
-              playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+              if (!playlist.image_url) {
+                if (!playlist.image_url) {
+                  playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+                }
+              }
               playlist.type = "playlist";
               return playlist;
             })
@@ -230,23 +234,20 @@ export default class SearchService {
   /**
    * Searches for songs matching the query.
    * @param q The search query string.
+   * @param ownerId Optional user ID to filter by owner.
    * @returns An array of matching songs.
    */
-  static async searchSongs(q: string): Promise<Song[]> {
+  static async searchSongs(q: string, ownerId?: string): Promise<Song[]> {
     try {
-      const results = await query(
-        `SELECT * FROM songs s
-        WHERE s.title ILIKE $1
-        ORDER BY 
-          CASE 
-            WHEN LOWER(s.title) = LOWER($2) THEN 1
-            WHEN LOWER(s.title) LIKE LOWER($2) || '%' THEN 2
-            ELSE 3
-          END,
-          s.streams DESC NULLS LAST,
-          s.title`,
-        [`%${q}%`, q]
-      );
+      let sql = `SELECT * FROM songs s WHERE s.title ILIKE $1`;
+      const params: any[] = [`%${q}%`];
+
+      if (ownerId) {
+        sql += ` AND s.owner_id = $2`;
+        params.push(ownerId);
+      }
+
+      const results = await query(sql, params);
 
       if (!results || results.length === 0) {
         return [];
@@ -275,22 +276,20 @@ export default class SearchService {
   /**
    * Searches for albums matching the query.
    * @param q The search query string.
+   * @param ownerId Optional user ID to filter by owner.
    * @returns An array of matching albums.
    */
-  static async searchAlbums(q: string): Promise<Album[]> {
+  static async searchAlbums(q: string, ownerId?: string): Promise<Album[]> {
     try {
-      const results = await query(
-        `SELECT * FROM albums a
-        WHERE a.title ILIKE $1
-        ORDER BY 
-          CASE 
-            WHEN LOWER(a.title) = LOWER($2) THEN 1
-            WHEN LOWER(a.title) LIKE LOWER($2) || '%' THEN 2
-            ELSE 3
-          END,
-          a.title`,
-        [`%${q}%`, q]
-      );
+      let sql = `SELECT * FROM albums a WHERE a.title ILIKE $1`;
+      const params: any[] = [`%${q}%`];
+
+      if (ownerId) {
+        sql += ` AND a.owner_id = $2`;
+        params.push(ownerId);
+      }
+
+      const results = await query(sql, params);
 
       if (!results || results.length === 0) {
         return [];
@@ -316,22 +315,23 @@ export default class SearchService {
   /**
    * Searches for playlists matching the query.
    * @param q The search query string.
+   * @param ownerId Optional user ID to filter by owner (created_by).
    * @returns An array of matching playlists.
    */
-  static async searchPlaylists(q: string): Promise<Playlist[]> {
+  static async searchPlaylists(
+    q: string,
+    ownerId?: string
+  ): Promise<Playlist[]> {
     try {
-      const results = await query(
-        `SELECT * FROM playlists p
-        WHERE p.title ILIKE $1
-        ORDER BY 
-          CASE 
-            WHEN LOWER(p.title) = LOWER($2) THEN 1
-            WHEN LOWER(p.title) LIKE LOWER($2) || '%' THEN 2
-            ELSE 3
-          END,
-          p.title`,
-        [`%${q}%`, q]
-      );
+      let sql = `SELECT * FROM playlists p WHERE p.title ILIKE $1`;
+      const params: any[] = [`%${q}%`];
+
+      if (ownerId) {
+        sql += ` AND p.created_by = $2`;
+        params.push(ownerId);
+      }
+
+      const results = await query(sql, params);
 
       if (!results || results.length === 0) {
         return [];
@@ -339,7 +339,11 @@ export default class SearchService {
 
       const processedPlaylists: Playlist[] = await Promise.all(
         results.map(async (playlist: Playlist) => {
-          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          if (!playlist.image_url) {
+            if (!playlist.image_url) {
+              playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+            }
+          }
           playlist.type = "playlist";
           return playlist;
         })
@@ -360,7 +364,24 @@ export default class SearchService {
   static async searchArtists(q: string): Promise<Artist[]> {
     try {
       const results = await query(
-        `SELECT ar.*, u.*
+        `SELECT 
+          ar.id,
+          ar.display_name,
+          ar.bio,
+          ar.user_id,
+          ar.created_at,
+          ar.verified,
+          ar.location,
+          ar.banner_image_url,
+          ar.banner_image_url_blurhash,
+          json_build_object(
+            'id', u.id,
+            'username', u.username,
+            'email', u.email,
+            'role', u.role,
+            'profile_picture_url', u.profile_picture_url,
+            'created_at', u.created_at
+          ) as user
         FROM artists ar
         JOIN users u ON ar.user_id = u.id
         WHERE ar.display_name ILIKE $1

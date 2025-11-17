@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  min-height: 15vh;
+  min-height: var(--loader-height-sm);
 }
 
 .error {
@@ -18,7 +18,7 @@
   gap: var(--spacing-md);
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   padding: var(--spacing-md);
   min-width: 0;
 }
@@ -33,7 +33,7 @@
 
 .actionButton,
 .actionButtonAlt {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,30 +46,30 @@
 }
 
 .actionButton {
-  background: var(--color-red);
-  border: 1px solid var(--color-red);
+  background: var(--color-accent);
+  border: var(--border-size-sm) solid var(--color-accent);
   border: none;
-  color: var(--color-red-200);
+  color: var(--color-accent-200);
 }
 
 .actionButton:hover {
-  background-color: var(--color-red-800);
-  color: var(--color-red-300);
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
 }
 
 .followed {
-  background: var(--color-red-800);
-  border-color: var(--color-red-800);
-  color: var(--color-red-300);
+  background: var(--color-accent-800);
+  border-color: var(--color-accent-800);
+  color: var(--color-accent-300);
 }
 
 .followed:hover {
-  background: var(--color-red-800);
+  background: var(--color-accent-800);
 }
 
 .actionButtonAlt {
   background: var(--color-gray-button);
-  border: 1px solid var(--color-gray-button-border);
+  border: var(--border-size-sm) solid var(--color-gray-button-border);
   color: var(--color-white);
 }
 

@@ -17,7 +17,7 @@
 }
 
 .statItem {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
   color: var(--color-text-gray-light);
   font-weight: 500;
   display: flex;
@@ -29,6 +29,7 @@
 }
 
 .statsBullet {
+  font-size: var(--font-size-sm);
   color: var(--color-text-gray-light);
   font-weight: 500;
 }

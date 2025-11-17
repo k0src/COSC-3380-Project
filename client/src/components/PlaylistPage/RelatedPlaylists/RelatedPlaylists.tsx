@@ -89,7 +89,7 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
-        <PuffLoader color="#D53131" size={35} />
+        <PuffLoader color="var(--color-accent)" size={35} />
       </div>
     );
   }
@@ -119,7 +119,7 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
             linkTo={`/playlists/${playlist.id}`}
             title={playlist.title}
             imageUrl={playlist.image_url || musicPlaceholder}
-            //! blurHash={playlist.image_url_blurhash}
+            blurHash={playlist.image_url_blurhash}
             entity={playlist}
           />
         ))}

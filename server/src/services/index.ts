@@ -7,3 +7,4 @@ export { default as StatsService } from "./stats.service.js";
 export { default as SearchService } from "./search.service.js";
 export { default as LibraryService } from "./library.service.js";
 export { default as UserSettingsService } from "./settings.service.js";
+export { default as NotificationsService } from "./notifications.service.js";

@@ -78,12 +78,12 @@
   width: var(--icon-size-3xl);
   height: var(--icon-size-3xl);
   border-radius: 50%;
-  background-color: #2f2f2f;
+  background-color: var(--color-placeholder-bg);
   border: 0.2rem solid var(--color-black);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #454545;
+  color: var(--color-placeholder);
   font-size: 2rem;
   margin-left: calc(-1 * var(--spacing-md));
 }

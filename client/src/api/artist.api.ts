@@ -167,4 +167,57 @@ export const artistApi = {
     );
     return response.data.monthlyListeners;
   },
+
+  async create(data: {
+    user_id: UUID;
+    display_name: string;
+    bio: string;
+    location?: string;
+    banner_image_url?: File | null;
+  }) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const response = await api.post<Artist>(`/artists`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  async update(
+    artistId: UUID,
+    data: {
+      display_name?: string;
+      bio?: string;
+      location?: string;
+      banner_image_url?: File | null;
+    }
+  ) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const response = await api.put<Artist>(`/artists/${artistId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  async delete(artistId: UUID) {
+    const response = await api.delete(`/artists/${artistId}`);
+    return response.data;
+  },
 };

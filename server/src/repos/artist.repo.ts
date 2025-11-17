@@ -8,58 +8,68 @@ dotenv.config();
 const API_URL = process.env.API_URL;
 
 export default class ArtistRepository {
-  /**
-   * Creates a new artist.
-   * @param artistData The data for the new artist.
-   * @param artist.display_name The display name of the artist.
-   * @param artist.bio The bio of the artist (optional).
-   * @param artist.location The location of the artist (optional).
-   * @param artist.banner_image_url The banner image URL of the artist (optional).
-   * @param artist.user_id The user ID associated with the artist.
-   * @returns The created artist, or null if creation fails.
-   * @throws Error if the operation fails.
-   */
   static async create({
+    user_id,
     display_name,
     bio,
     location,
     banner_image_url,
-    user_id,
+    banner_image_url_blurhash,
   }: {
+    user_id: UUID;
     display_name: string;
     bio?: string;
     location?: string;
     banner_image_url?: string;
-    user_id: UUID;
+    banner_image_url_blurhash?: string;
   }): Promise<Artist | null> {
     try {
-      const res = await query(
-        `INSERT INTO artists 
-          (display_name, bio, location, banner_image_url, user_id)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING *`,
-        [display_name, bio, location, banner_image_url, user_id]
-      );
+      if (
+        !display_name ||
+        typeof display_name !== "string" ||
+        display_name.trim() === ""
+      ) {
+        throw new Error("Artist display name cannot be empty");
+      }
 
-      return res[0] ?? null;
+      const res = await withTransaction(async (client) => {
+        const insert = await client.query(
+          `INSERT INTO artists (
+            user_id,
+            display_name,
+            bio,
+            location,
+            banner_image_url,
+            banner_image_url_blurhash 
+          )
+          VALUES ($1, $2, $3, $4, $5, $6) 
+          RETURNING *`,
+          [
+            user_id,
+            display_name,
+            bio,
+            location,
+            banner_image_url,
+            banner_image_url_blurhash,
+          ]
+        );
+        return insert.rows[0] ?? null;
+      });
+
+      if (res) {
+        if (res.banner_image_url) {
+          res.banner_image_url = getBlobUrl(res.banner_image_url);
+        }
+        res.type = "artist";
+      }
+
+      return res;
     } catch (error) {
       console.error("Error creating artist:", error);
       throw error;
     }
   }
 
-  /**
-   * Updates a artist.
-   * @param id The ID of the artist to update.
-   * @param artistData The new data for the artist.
-   * @param artist.display_name The new display name of the artist (optional).
-   * @param artist.bio The new bio of the artist (optional).
-   * @param artist.location The new location of the artist (optional).
-   * @param artist.banner_image_url The new banner image URL of the artist (optional).
-   * @param artist.user_id The new user ID associated with the artist (optional).
-   * @returns The updated artist, or null if the update fails.
-   * @throws Error if the operation fails.
-   */
   static async update(
     id: UUID,
     {
@@ -67,16 +77,23 @@ export default class ArtistRepository {
       bio,
       location,
       banner_image_url,
-      user_id,
+      banner_image_url_blurhash,
     }: {
       display_name?: string;
       bio?: string;
       location?: string;
       banner_image_url?: string;
-      user_id?: UUID;
+      banner_image_url_blurhash?: string;
     }
   ): Promise<Artist | null> {
     try {
+      if (
+        display_name !== undefined &&
+        (typeof display_name !== "string" || display_name.trim() === "")
+      ) {
+        throw new Error("Artist display name cannot be empty");
+      }
+
       const fields: string[] = [];
       const values: any[] = [];
 
@@ -96,9 +113,9 @@ export default class ArtistRepository {
         fields.push(`banner_image_url = $${values.length + 1}`);
         values.push(banner_image_url);
       }
-      if (user_id !== undefined) {
-        fields.push(`user_id = $${values.length + 1}`);
-        values.push(user_id);
+      if (banner_image_url_blurhash !== undefined) {
+        fields.push(`banner_image_url_blurhash = $${values.length + 1}`);
+        values.push(banner_image_url_blurhash);
       }
       if (fields.length === 0) {
         throw new Error("No fields to update");
@@ -111,8 +128,15 @@ export default class ArtistRepository {
           values.length
         } RETURNING *`;
         const result = await client.query(sql, values);
-        return result.rows[0];
+        return result.rows[0] ?? null;
       });
+
+      if (res) {
+        if (res.banner_image_url) {
+          res.banner_image_url = getBlobUrl(res.banner_image_url);
+        }
+        res.type = "artist";
+      }
 
       return res;
     } catch (error) {
@@ -712,14 +736,17 @@ export default class ArtistRepository {
     try {
       const playlists = await query(
         `SELECT DISTINCT ON (p.id) p.*,
-         CASE WHEN $1 THEN row_to_json(u.*) 
-         ELSE NULL END as user
-         FROM playlists p
-         JOIN playlist_songs ps ON p.id = ps.playlist_id
-         JOIN songs s ON ps.song_id = s.id
-         JOIN song_artists sa ON s.id = sa.song_id
-         LEFT JOIN users u ON p.created_by = u.id
-         WHERE sa.artist_id = $2
+        CASE WHEN $1 THEN row_to_json(u.*) 
+        ELSE NULL END as user,
+        (SELECT EXISTS (
+          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+        )) AS has_song
+        FROM playlists p
+        JOIN playlist_songs ps ON p.id = ps.playlist_id
+        JOIN songs s ON ps.song_id = s.id
+        JOIN song_artists sa ON s.id = sa.song_id
+        LEFT JOIN users u ON p.created_by = u.id
+        WHERE sa.artist_id = $2
          ORDER BY p.id`,
         [options?.includeUser ?? false, artistId]
       );
@@ -735,7 +762,12 @@ export default class ArtistRepository {
             );
           }
 
-          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          if (playlist.image_url) {
+            playlist.image_url = getBlobUrl(playlist.image_url);
+          } else if ((playlist as any).has_song) {
+            playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+          }
+          delete (playlist as any).has_song;
           playlist.type = "playlist";
           return playlist;
         })

@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useEffect } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
 import type { UUID } from "@types";
 import { EntityItemCard } from "@components";
@@ -11,8 +11,9 @@ import { LuPin } from "react-icons/lu";
 const LibraryPlaylists: React.FC<{
   userId: UUID;
   searchFilter?: string;
-}> = ({ userId, searchFilter = "" }) => {
-  const { data, loading, error } = useAsyncData(
+  onRefetchNeeded?: React.RefObject<(() => void) | null>;
+}> = ({ userId, searchFilter = "", onRefetchNeeded }) => {
+  const { data, loading, error, refetch } = useAsyncData(
     {
       playlists: () => libraryApi.getLibraryPlaylists(userId),
     },
@@ -36,10 +37,16 @@ const LibraryPlaylists: React.FC<{
     );
   }, [playlists, searchFilter]);
 
+  useEffect(() => {
+    if (onRefetchNeeded) {
+      onRefetchNeeded.current = refetch;
+    }
+  }, [refetch, onRefetchNeeded]);
+
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
-        <PuffLoader color="#D53131" size={50} />
+        <PuffLoader color="var(--color-accent)" size={50} />
       </div>
     );
   }
@@ -73,6 +80,7 @@ const LibraryPlaylists: React.FC<{
                   title={playlist.title}
                   subtitle={`${playlist.song_count} songs`}
                   imageUrl={playlist.image_url || musicPlaceholder}
+                  blurHash={playlist.image_url_blurhash}
                 />
                 {playlist.is_pinned && (
                   <div className={styles.pinnedIconContainer}>
