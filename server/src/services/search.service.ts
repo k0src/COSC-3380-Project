@@ -19,6 +19,20 @@ export interface SearchResults {
  * Service for handling search for songs, albums, artists, playlists, and users.
  */
 export default class SearchService {
+  private static isAllTypeQuery(
+    q: string,
+    type: "songs" | "albums"
+  ): boolean {
+    const normalized = (q ?? "").trim().toLowerCase();
+    if (type === "songs") {
+      return normalized === "song" || normalized === "songs";
+    }
+    if (type === "albums") {
+      return normalized === "album" || normalized === "albums";
+    }
+    return false;
+  }
+
   /**
    * Searches for songs, albums, artists, playlists, and users matching the query.
    * @param q The search query string.
@@ -26,11 +40,19 @@ export default class SearchService {
    */
   static async search(q: string): Promise<SearchResults> {
     try {
+      const qLower = (q ?? "").trim().toLowerCase();
+      const songsWhere = this.isAllTypeQuery(qLower, "songs")
+        ? "TRUE"
+        : "s.title ILIKE $1 OR s.genre ILIKE $1";
+      const albumsWhere = this.isAllTypeQuery(qLower, "albums")
+        ? "TRUE"
+        : "a.title ILIKE $1";
+
       const results = await query(
         `
         SELECT
-          (SELECT json_agg(s) FROM songs s WHERE s.title ILIKE $1 OR s.genre ILIKE $1) AS songs,
-          (SELECT json_agg(a) FROM albums a WHERE a.title ILIKE $1) AS albums,
+          (SELECT json_agg(s) FROM songs s WHERE ${songsWhere}) AS songs,
+          (SELECT json_agg(a) FROM albums a WHERE ${albumsWhere}) AS albums,
           (SELECT json_agg(ar) FROM artists ar WHERE ar.display_name ILIKE $1 OR ar.bio ILIKE $1) AS artists,
           (SELECT json_agg(p) FROM playlists p WHERE p.title ILIKE $1) AS playlists,
           (SELECT json_agg(u) FROM users u WHERE u.username ILIKE $1) AS users
@@ -160,10 +182,12 @@ export default class SearchService {
    */
   static async searchSongs(q: string): Promise<Song[]> {
     try {
+      const qLower = (q ?? "").trim().toLowerCase();
+      const isAll = this.isAllTypeQuery(qLower, "songs");
       const results = await query(
         `SELECT * FROM songs s
-        WHERE s.title ILIKE $1 OR s.genre ILIKE $1`,
-        [`%${q}%`]
+        ${isAll ? "" : "WHERE s.title ILIKE $1 OR s.genre ILIKE $1"}`,
+        isAll ? [] : [`%${q}%`]
       );
 
       if (!results || results.length === 0) {
@@ -197,10 +221,12 @@ export default class SearchService {
    */
   static async searchAlbums(q: string): Promise<Album[]> {
     try {
+      const qLower = (q ?? "").trim().toLowerCase();
+      const isAll = this.isAllTypeQuery(qLower, "albums");
       const results = await query(
         `SELECT * FROM albums a
-        WHERE a.title ILIKE $1`,
-        [`%${q}%`]
+        ${isAll ? "" : "WHERE a.title ILIKE $1"}`,
+        isAll ? [] : [`%${q}%`]
       );
 
       if (!results || results.length === 0) {
