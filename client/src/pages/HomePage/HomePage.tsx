@@ -74,7 +74,7 @@ const HomePage: React.FC = () => {
     asyncConfig,
     [isAuthenticated, user],
     {
-      cacheKey: "homepage_data", // <-- Renamed from "homepage_suggestions"
+      cacheKey: "homepage_data",
       hasBlobUrl: true,
     }
   );

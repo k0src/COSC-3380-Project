@@ -75,7 +75,6 @@ const MainLayoutHeader: React.FC = () => {
       <div className={styles.headerActions}>
         {isAuthenticated ? (
           <>
-            {/* Notification Section */}
             <div className={styles.notificationButtonWrapper}>
               <button
                 onClick={handleNotifications}
@@ -98,22 +97,15 @@ const MainLayoutHeader: React.FC = () => {
               />
             </div>
 
-            {/* Settings Section */}
             <Link to="/me/settings" className={styles.iconButton}>
               <LuSettings className={styles.actionIcon} />
             </Link>
 
-            {/* Profile Section */}
-            <Link
-              to="/me"
-              className={styles.iconButton}
-              title={user?.username}
-            >
+            <Link to="/me" className={styles.iconButton} title={user?.username}>
               <LuCircleUser className={styles.actionIcon} />
             </Link>
           </>
         ) : (
-          /* Guest Section */
           <>
             <Link to="/login" className={styles.navbarLink}>
               <span>Sign In</span>
