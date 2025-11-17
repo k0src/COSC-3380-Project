@@ -216,6 +216,11 @@ const UploadPage: React.FC = () => {
         return;
       }
 
+      if (!uploadForm.genre.trim()) {
+        setError("Please specify a genre");
+        return;
+      }
+
       if (!user?.id) {
         setError("Unauthorized. Please log in.");
         return;
@@ -251,7 +256,7 @@ const UploadPage: React.FC = () => {
           title: uploadForm.title.trim(),
           owner_id: user.id,
           artists: JSON.stringify(allArtists),
-          genre: uploadForm.genre.trim() || "Unknown",
+          genre: uploadForm.genre.trim(),
           album_id: uploadForm.albumId || undefined,
           release_date: uploadForm.releaseDate,
           visibility_status: uploadForm.visibilityStatus,
