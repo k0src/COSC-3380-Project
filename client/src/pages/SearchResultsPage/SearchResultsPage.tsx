@@ -2,17 +2,14 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import homeStyles from "../HomePage/HomePage.module.css";
 import styles from "./SearchResultsPage.module.css";
-import Sidebar from "../../components/SideBar/sidebar";
-import Topbar from "../../components/TopBar/topBar";
-import PlayerBar from "../../components/PlayerBar/playerBar";
-import SongCard from "../../components/SongCard/SongCard";
-import { fetchSearch, type SearchResponse } from "../../api/search.api";
+import { SongCard } from "@components";
+import { searchApi, type SearchResults } from "../../api/search.api";
 
 export default function SearchResultsPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") ?? "";
 
-  const [results, setResults] = useState<SearchResponse>({});
+  const [results, setResults] = useState<SearchResults | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +20,7 @@ export default function SearchResultsPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchSearch(query, "all", 20, 0);
+        const data = await searchApi.search(query);
         setResults(data);
       } catch (err) {
         console.error("Search failed:", err);
@@ -36,17 +33,13 @@ export default function SearchResultsPage() {
     loadResults();
   }, [query]);
 
-  const songs = results.songs ?? [];
-  const artists = results.artists ?? [];
-  const albums = results.albums ?? [];
-  const playlists = results.playlists ?? [];
+  const songs = results?.songs ?? [];
+  const artists = results?.artists ?? [];
+  const albums = results?.albums ?? [];
+  const playlists = results?.playlists ?? [];
 
   return (
-    <>
-      <Topbar />
-      <Sidebar />
-
-
+    <>      
       <main className={homeStyles.contentArea}>
         <div className={homeStyles.contentWrapper}>
           {loading && <p className={styles.loading}>Loading...</p>}
@@ -61,19 +54,19 @@ export default function SearchResultsPage() {
                 <div className={homeStyles.verticalCardsList}>
                   {songs.map((song, index) => (
                     <div key={index} className={homeStyles.compactCard}>
-                      <img src={song.image} alt={song.title} />
+                      <img src={(song as any).image_url || "/PlayerBar/Mask group.png"} alt={song.title} />
                       <div className={homeStyles.songInfo}>
                         <h3 className={homeStyles.songTitle}>{song.title}</h3>
                         <p className={homeStyles.artistName}>
-                          {song.artists && song.artists.length > 0 ? (
-                            song.artists.map((a, i) => (
-                              <span key={String(a.id)}>
-                                <Link to={`/artists/${a.id}`}>{a.name}</Link>
-                                {i < song.artists!.length - 1 ? ", " : ""}
+                          {(song as any).artists && (song as any).artists.length > 0 ? (
+                            (song as any).artists.map((a: any, i: number) => (
+                              <span key={String(a.id || a.user_id || i)}>
+                                <Link to={`/artists/${a.id || a.user_id}`}>{a.display_name || a.name || a.user?.display_name || "Artist"}</Link>
+                                {i < (song as any).artists!.length - 1 ? ", " : ""}
                               </span>
                             ))
                           ) : (
-                            song.artist || ""
+                            (song as any).artist || ""
                           )}
                         </p>
                       </div>
@@ -88,16 +81,15 @@ export default function SearchResultsPage() {
                   <h2 className={homeStyles.sectionTitle}>Artists</h2>
                 </div>
                 <div className={homeStyles.cardsContainer}>
-                  {artists.map((artist, index) => (
+                  {artists.map((artist: any, index) => (
                     <SongCard
                       key={`artist-${index}`}
-                      title={artist.name}
+                      title={artist.display_name || artist.name || "Artist"}
                       artist={""}
-                      image={artist.image}
+                      image={artist.user?.profile_picture_url || artist.image_url || "/PlayerBar/Mask group.png"}
                       plays={artist.plays ?? 0}
                       likes={artist.likes ?? 0}
                       comments={artist.comments ?? 0}
-                      showStats={false}
                     />
                   ))}
                 </div>
@@ -109,16 +101,15 @@ export default function SearchResultsPage() {
                   <h2 className={homeStyles.sectionTitle}>Albums</h2>
                 </div>
                 <div className={homeStyles.cardsContainer}>
-                  {albums.map((album, index) => (
+                  {albums.map((album: any, index) => (
                     <SongCard
                       key={`album-${index}`}
                       title={album.title}
-                      artist={album.artist}
-                      image={album.image}
+                      artist={""}
+                      image={album.image_url || "/PlayerBar/Mask group.png"}
                       plays={album.plays ?? 0}
                       likes={album.likes ?? 0}
                       comments={album.comments ?? 0}
-                      showStats={false}
                     />
                   ))}
                 </div>
@@ -130,16 +121,15 @@ export default function SearchResultsPage() {
                   <h2 className={homeStyles.sectionTitle}>Playlists</h2>
                 </div>
                 <div className={homeStyles.cardsContainer}>
-                  {playlists.map((pl, index) => (
+                  {playlists.map((pl: any, index) => (
                     <SongCard
                       key={`pl-${index}`}
                       title={pl.title}
-                      artist={pl.artist}
-                      image={pl.image}
+                      artist={""}
+                      image={pl.image_url || "/PlayerBar/Mask group.png"}
                       plays={pl.plays ?? 0}
                       likes={pl.likes ?? 0}
                       comments={pl.comments ?? 0}
-                      showStats={false}
                     />
                   ))}
                 </div>
@@ -148,8 +138,6 @@ export default function SearchResultsPage() {
           )}
         </div>
       </main>
-
-      <PlayerBar />
     </>
   );
 }
