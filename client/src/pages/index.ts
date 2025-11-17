@@ -21,3 +21,10 @@ export { default as UserInfoPage } from "./UserPage/UserInfoPage/UserInfoPage.js
 export { default as SettingsPage } from "./AccountPage/SettingsPage/SettingsPage.js";
 
 export { default as UploadPage } from "./UploadPage/UploadPage.js";
+
+export { default as AdminReportPage } from "./AdminReportPage/AdminReportPage.js";
+export { default as ReportPage } from "./ReportPage/ReportPage.js";
+export { default as dataReport } from "./AdminDataReportPage/DataReportPage.js";
+export { default as AdminPage } from "./AdminPage/AdminPage.js";
+export { default as AppealsPage } from "./AppealsPage/AppealsPage.js";
+export { default as AdminAppealsPage } from "./AdminAppealsPage/AdminAppealsPage.js";

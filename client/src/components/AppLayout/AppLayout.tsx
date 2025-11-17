@@ -4,14 +4,13 @@ import {
   ContextMenuProvider,
   useContextMenu,
 } from "@contexts";
-import { DevBanner, ContextMenu, ShareModal } from "@components";
+import { ContextMenu, ShareModal } from "@components";
 
 const AppLayoutContent: React.FC = () => {
   const { shareModalState, closeShareModal } = useContextMenu();
 
   return (
     <>
-      <DevBanner />
       <Outlet />
       <ContextMenu />
       <ShareModal

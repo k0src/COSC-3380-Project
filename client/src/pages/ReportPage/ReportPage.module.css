@@ -1,0 +1,111 @@
+.reportLayout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--color-black);
+}
+
+.reportContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 40rem;
+  background-color: var(--color-panel-gray);
+  border: 2px solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-xl);
+  gap: var(--spacing-lg);
+}
+
+.reportHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  text-align: center;
+}
+
+.reportForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray-light);
+  margin-bottom: var(--spacing-xs);
+}
+
+.select,
+.textarea {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--color-panel-gray-dark);
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+}
+
+.select:focus,
+.textarea:focus {
+  outline: 1px solid var(--color-red);
+}
+
+.textarea {
+  resize: none;
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+}
+
+.cancelBtn,
+.submitBtn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: background-color var(--transition-speed) ease-in-out;
+}
+
+.cancelBtn {
+  background-color: var(--color-panel-gray-dark);
+  color: var(--color-text-gray);
+  border: 1px solid var(--color-panel-border);
+}
+
+.cancelBtn:hover {
+  background-color: var(--color-panel-border);
+}
+
+.submitBtn {
+  background-color: var(--color-red);
+  color: var(--color-white);
+  border: none;
+}
+
+.submitBtn:hover {
+  background-color: var(--color-red-700);
+}
+
+.errorText {
+  color: var(--color-red);
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
