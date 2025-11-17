@@ -81,17 +81,25 @@ export default function SearchResultsPage() {
                   <h2 className={homeStyles.sectionTitle}>Artists</h2>
                 </div>
                 <div className={homeStyles.cardsContainer}>
-                  {artists.map((artist: any, index) => (
-                    <SongCard
-                      key={`artist-${index}`}
-                      title={artist.display_name || artist.name || "Artist"}
-                      artist={""}
-                      image={artist.user?.profile_picture_url || artist.image_url || "/PlayerBar/Mask group.png"}
-                      plays={artist.plays ?? 0}
-                      likes={artist.likes ?? 0}
-                      comments={artist.comments ?? 0}
-                    />
-                  ))}
+                  {artists.map((artist: any, index) => {
+                    const artistId = artist.user_id ?? artist.id;
+                    return (
+                      <Link key={`artist-${index}`} to={artistId ? `/artists/${artistId}` : "#"}>
+                        <SongCard
+                          title={artist.display_name || artist.name || "Artist"}
+                          artist={""}
+                          image={
+                            artist.user?.profile_picture_url ||
+                            artist.image_url ||
+                            "/PlayerBar/Mask group.png"
+                          }
+                          plays={artist.plays ?? 0}
+                          likes={artist.likes ?? 0}
+                          comments={artist.comments ?? 0}
+                        />
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
 
