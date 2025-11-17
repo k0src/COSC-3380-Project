@@ -349,6 +349,7 @@ const LibraryPage: React.FC = () => {
 
       {playlistModalMode === "create" ? (
         <CreatePlaylistModal
+          mode="create"
           userId={user.id}
           username={user.username}
           isOpen={isPlaylistModalOpen}
@@ -361,8 +362,6 @@ const LibraryPage: React.FC = () => {
       ) : (
         <CreatePlaylistModal
           mode="edit"
-          userId={user.id}
-          username={user.username}
           isOpen={isPlaylistModalOpen}
           onClose={() => {
             setIsPlaylistModalOpen(false);

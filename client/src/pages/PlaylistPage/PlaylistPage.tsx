@@ -1,6 +1,7 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "react-router-dom";
+import { useAuth } from "@contexts";
 import type { UUID } from "@types";
 import { useAsyncData, useErrorCheck } from "@hooks";
 import { playlistApi } from "@api";
@@ -14,11 +15,15 @@ import {
   PlaylistUser,
   PlaylistDescription,
   PlaylistActions,
+  CreatePlaylistModal,
 } from "@components";
 import styles from "./PlaylistPage.module.css";
 
 const PlaylistPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
+
+  const { user, isAuthenticated } = useAuth();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!id) {
     return (
@@ -29,7 +34,7 @@ const PlaylistPage: React.FC = () => {
     );
   }
 
-  const { data, loading, error } = useAsyncData(
+  const { data, loading, error, refetch } = useAsyncData(
     {
       playlist: () =>
         playlistApi.getPlaylistById(id, {
@@ -53,6 +58,21 @@ const PlaylistPage: React.FC = () => {
       playlistApi.getSongs(id, { includeArtists: true, includeAlbums: true }),
     [id]
   );
+
+  const isOwner = useMemo(() => {
+    if (!user || !isAuthenticated || !playlist) {
+      return false;
+    }
+    return user.id === playlist.created_by;
+  }, [user, isAuthenticated, playlist]);
+
+  const handleEditPlaylist = useCallback(() => {
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handlePlaylistEdited = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   const { shouldShowError, errorTitle, errorMessage } = useErrorCheck([
     {
@@ -90,7 +110,11 @@ const PlaylistPage: React.FC = () => {
 
       <div className={styles.playlistLayout}>
         <div className={styles.playlistLayoutTop}>
-          <PlaylistContainer playlist={playlist} />
+          <PlaylistContainer
+            playlist={playlist}
+            isOwner={isOwner}
+            onEditButtonClick={handleEditPlaylist}
+          />
           <div className={styles.playlistLayoutTopRight}>
             {playlist?.user && <PlaylistUser user={playlist.user} />}
             <PlaylistDescription
@@ -132,6 +156,16 @@ const PlaylistPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {isOwner && (
+        <CreatePlaylistModal
+          mode="edit"
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          playlist={playlist}
+          onPlaylistCreated={handlePlaylistEdited}
+        />
+      )}
     </>
   );
 };

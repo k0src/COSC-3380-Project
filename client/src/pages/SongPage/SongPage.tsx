@@ -72,7 +72,7 @@ const SongPage: React.FC = () => {
     if (!user || !isAuthenticated || !song) {
       return false;
     }
-    return user.id === song.created_by;
+    return user.id === song.owner_id;
   }, [user, isAuthenticated, song]);
 
   const handleEditSong = useCallback(() => {

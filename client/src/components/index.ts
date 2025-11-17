@@ -58,6 +58,7 @@ export { default as AlbumArtist } from "./AlbumPage/AlbumArtist/AlbumArtist.js";
 export { default as AlbumInfo } from "./AlbumPage/AlbumInfo/AlbumInfo.js";
 export { default as AlbumActions } from "./AlbumPage/AlbumActions/AlbumActions.js";
 export { default as RelatedAlbums } from "./AlbumPage/RelatedAlbums/RelatedAlbums.js";
+export { default as EditAlbumModal } from "./AlbumPage/EditAlbumModal/EditAlbumModal.js";
 
 /* ================================ User Page =============================== */
 export { default as UserContainer } from "./UserPage/UserContainer/UserContainer.js";

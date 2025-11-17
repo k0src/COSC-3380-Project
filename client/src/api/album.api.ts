@@ -62,4 +62,61 @@ export const albumApi = {
     });
     return response.data;
   },
+
+  async create(data: {
+    title: string;
+    owner_id: UUID;
+    genre: string;
+    release_date: string;
+    visibility_status: string;
+    created_by: UUID;
+    image?: File | null;
+  }) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value);
+      }
+    });
+
+    const response = await api.post<Album>("/albums", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  async update(
+    albumId: UUID,
+    data: {
+      title?: string;
+      genre?: string;
+      release_date?: string;
+      visibility_status?: string;
+      created_by?: UUID;
+      image?: File | null;
+    }
+  ) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const response = await api.put<Album>(`/albums/${albumId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  async delete(albumId: UUID) {
+    const response = await api.delete(`/albums/${albumId}`);
+    return response.data;
+  },
 };

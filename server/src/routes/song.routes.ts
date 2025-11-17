@@ -125,6 +125,29 @@ router.put("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// DELETE /api/songs/:id
+router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Song ID is required!" });
+      return;
+    }
+
+    const deleted = await SongRepo.delete(id);
+    if (!deleted) {
+      res.status(404).json({ error: "Song not found" });
+      return;
+    }
+
+    res.status(200).json({ message: "Song deleted successfully" });
+  } catch (error: any) {
+    console.error("Error in DELETE /api/songs/:id:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
 router.get(
   "/:id/suggestions",
   async (req: Request, res: Response): Promise<void> => {
@@ -162,29 +185,6 @@ router.get(
     }
   }
 );
-
-// DELETE /api/songs/:id
-router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).json({ error: "Song ID is required!" });
-      return;
-    }
-
-    const deleted = await SongRepo.delete(id);
-    if (!deleted) {
-      res.status(404).json({ error: "Song not found" });
-      return;
-    }
-
-    res.status(200).json({ message: "Song deleted successfully" });
-  } catch (error: any) {
-    console.error("Error in DELETE /api/songs/:id:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
 
 router.get(
   "/:id/comments",

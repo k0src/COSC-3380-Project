@@ -71,30 +71,52 @@
   justify-content: space-between;
 }
 
-.saveButton {
-  font-family: var(--font-main);
+.buttons {
+  margin-left: auto;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  background: var(--color-accent);
+  gap: var(--spacing-md);
+}
+
+.deleteButton {
+  font-family: var(--font-main);
+  background: var(--color-red-ui-bg);
+  border: var(--border-size-sm) solid var(--color-red-ui-border);
   border-radius: var(--border-radius-sm);
-  border: none;
-  color: var(--color-accent-200);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
   padding: var(--spacing-sm) var(--spacing-md);
-  transition: all var(--transition-speed) ease-in-out;
-  margin-left: auto;
+  color: var(--color-red-ui);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.deleteButton:hover:not(:disabled) {
+  background: var(--color-red-ui-bg-hover);
+}
+
+.deleteButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.saveButton {
+  font-family: var(--font-main);
+  background: var(--color-white);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-panel-gray);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
 }
 
 .saveButton:hover:not(:disabled) {
-  background-color: var(--color-accent-800);
-  color: var(--color-accent-300);
+  background: var(--color-white-alt);
 }
 
 .saveButton:disabled {
-  opacity: 0.6;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 

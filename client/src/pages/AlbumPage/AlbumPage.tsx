@@ -1,6 +1,7 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "react-router-dom";
+import { useAuth } from "@contexts";
 import type { UUID } from "@types";
 import { useAsyncData, useErrorCheck } from "@hooks";
 import { albumApi } from "@api";
@@ -14,11 +15,15 @@ import {
   AlbumInfo,
   AlbumActions,
   RelatedAlbums,
+  EditAlbumModal,
 } from "@components";
 import styles from "./AlbumPage.module.css";
 
 const AlbumPage: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
   const { id } = useParams<{ id: UUID }>();
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!id) {
     return (
@@ -29,7 +34,7 @@ const AlbumPage: React.FC = () => {
     );
   }
 
-  const { data, loading, error } = useAsyncData(
+  const { data, loading, error, refetch } = useAsyncData(
     {
       album: () =>
         albumApi.getAlbumById(id, {
@@ -54,6 +59,21 @@ const AlbumPage: React.FC = () => {
     [id]
   );
 
+  const isOwner = useMemo(() => {
+    if (!user || !isAuthenticated || !album) {
+      return false;
+    }
+    return user.id === album.owner_id;
+  }, [user, isAuthenticated, album]);
+
+  const handleEditAlbum = useCallback(() => {
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleAlbumEdited = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
   const { shouldShowError, errorTitle, errorMessage } = useErrorCheck([
     {
       condition: !!error,
@@ -62,6 +82,11 @@ const AlbumPage: React.FC = () => {
     },
     {
       condition: !album && !loading,
+      title: "Album Not Found",
+      message: "The requested album does not exist.",
+    },
+    {
+      condition: album?.visibility_status === "PRIVATE" && !isOwner,
       title: "Album Not Found",
       message: "The requested album does not exist.",
     },
@@ -83,7 +108,11 @@ const AlbumPage: React.FC = () => {
 
       <div className={styles.albumLayout}>
         <div className={styles.albumLayoutTop}>
-          <AlbumContainer album={album} />
+          <AlbumContainer
+            album={album}
+            isOwner={isOwner}
+            onEditButtonClick={handleEditAlbum}
+          />
           <div className={styles.albumLayoutTopRight}>
             <AlbumArtist artist={album.artist} updatedAt={album.updated_at} />
             <AlbumInfo releaseDate={album.release_date} genre={album.genre} />
@@ -125,6 +154,15 @@ const AlbumPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {isOwner && (
+        <EditAlbumModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          album={album}
+          onAlbumEdited={handleAlbumEdited}
+        />
+      )}
     </>
   );
 };

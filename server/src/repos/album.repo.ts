@@ -3,73 +3,114 @@ import { query, withTransaction } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
 
 export default class AlbumRepository {
-  /**
-   * Creates a new album.
-   * @param albumData - The data for the new album.
-   * @param album.title - The title of the album.
-   * @param album.release_date - The release date of the album (optional).
-   * @param album.image_url - The image URL of the album (optional).
-   * @param album.created_by - The ID of the user who created the album.
-   * @returns The created album, or null if creation fails.
-   * @throws Error if the operation fails.
-   */
   static async create({
     title,
+    owner_id,
+    genre,
     release_date,
     image_url,
+    image_url_blurhash,
     created_by,
+    visibility_status,
   }: {
     title: string;
-    release_date?: number;
+    owner_id: UUID;
+    genre: string;
+    release_date?: string;
     image_url?: string;
+    image_url_blurhash?: string;
     created_by: UUID;
+    visibility_status: string;
   }): Promise<Album | null> {
     try {
-      const res = await query(
-        `INSERT INTO albums (title, release_date, image_url, created_by)
-        VALUES ($1, $2, $3, $4)
-        RETURNING *`,
-        [title, release_date, image_url, created_by]
-      );
-      return res[0] ?? null;
+      if (!title || typeof title !== "string" || title.trim() === "") {
+        throw new Error("Song title cannot be empty");
+      }
+
+      if (!release_date) {
+        release_date = new Date().toISOString().split("T")[0];
+      }
+
+      const res = await withTransaction(async (client) => {
+        const insert = await client.query(
+          `INSERT INTO albums (
+            title,
+            owner_id,
+            genre,
+            release_date,
+            image_url,
+            image_url_blurhash,
+            created_by,
+            visibility_status
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          RETURNING *`,
+          [
+            title,
+            owner_id,
+            genre,
+            release_date,
+            image_url,
+            image_url_blurhash,
+            created_by,
+            visibility_status,
+          ]
+        );
+        return insert.rows[0] ?? null;
+      });
+
+      if (res) {
+        if (res.image_url) {
+          res.image_url = getBlobUrl(res.image_url);
+        }
+        res.type = "album";
+      }
+
+      return res;
     } catch (error) {
       console.error("Error creating album:", error);
       throw error;
     }
   }
 
-  /**
-   * Updates an album.
-   * @param id - The ID of the album to update.
-   * @param albumData - The new data for the album.
-   * @param album.title - The new title of the album (optional).
-   * @param album.release_date - The new release date of the album (optional).
-   * @param album.image_url - The new image URL of the album (optional).
-   * @param album.created_by - The new user ID of the album artist (optional).
-   * @returns The updated album, or null if the update fails.
-   * @throws Error if the operation fails.
-   */
   static async update(
     id: UUID,
     {
       title,
+      genre,
       release_date,
       image_url,
+      image_url_blurhash,
       created_by,
+      visibility_status,
     }: {
-      title?: string;
-      release_date?: number;
+      title: string;
+      genre: string;
+      release_date?: string;
       image_url?: string;
-      created_by?: UUID;
+      image_url_blurhash?: string;
+      created_by: UUID;
+      visibility_status: string;
     }
   ): Promise<Album | null> {
     try {
+      if (
+        title !== undefined &&
+        (typeof title !== "string" || title.trim() === "")
+      ) {
+        throw new Error("Song title cannot be empty");
+      }
+
       const fields: string[] = [];
       const values: any[] = [];
 
       if (title !== undefined) {
         fields.push(`title = $${fields.length + 1}`);
         values.push(title);
+      }
+      if (genre !== undefined) {
+        fields.push(`genre = $${fields.length + 1}`);
+        values.push(genre);
       }
       if (release_date !== undefined) {
         fields.push(`release_date = $${fields.length + 1}`);
@@ -79,9 +120,17 @@ export default class AlbumRepository {
         fields.push(`image_url = $${fields.length + 1}`);
         values.push(image_url);
       }
+      if (image_url_blurhash !== undefined) {
+        fields.push(`image_url_blurhash = $${fields.length + 1}`);
+        values.push(image_url_blurhash);
+      }
       if (created_by !== undefined) {
         fields.push(`created_by = $${fields.length + 1}`);
         values.push(created_by);
+      }
+      if (visibility_status !== undefined) {
+        fields.push(`visibility_status = $${fields.length + 1}`);
+        values.push(visibility_status);
       }
       if (fields.length === 0) {
         throw new Error("No fields to update");
@@ -96,6 +145,13 @@ export default class AlbumRepository {
         const res = await client.query(sql, values);
         return res.rows[0] ?? null;
       });
+
+      if (res) {
+        if (res.image_url) {
+          res.image_url = getBlobUrl(res.image_url);
+        }
+        res.type = "album";
+      }
 
       return res;
     } catch (error) {

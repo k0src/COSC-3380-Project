@@ -6,6 +6,7 @@ import { CoverLightbox, PlaylistPlayButton, LazyImg } from "@components";
 import { LuAudioLines, LuClock, LuThumbsUp } from "react-icons/lu";
 import styles from "./PlaylistContainer.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
+import { LuPencil } from "react-icons/lu";
 
 const PlaylistStat = memo(
   ({
@@ -24,9 +25,15 @@ const PlaylistStat = memo(
 
 export interface PlaylistContainerProps {
   playlist: Playlist;
+  isOwner?: boolean;
+  onEditButtonClick?: () => void;
 }
 
-const PlaylistContainer: React.FC<PlaylistContainerProps> = ({ playlist }) => {
+const PlaylistContainer: React.FC<PlaylistContainerProps> = ({
+  playlist,
+  isOwner,
+  onEditButtonClick,
+}) => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const handleImageClick = useCallback(() => {
@@ -69,19 +76,29 @@ const PlaylistContainer: React.FC<PlaylistContainerProps> = ({ playlist }) => {
           loading="eager"
         />
         <div className={styles.playlistRight}>
-          <div className={styles.playlistInfoContainer}>
-            <Link
-              to={`/users/${playlist.user?.id}`}
-              className={styles.infoUsername}
-            >
-              {playlist.user?.username}
-            </Link>
-            <span className={styles.playlistTitle}>{playlist.title}</span>
-            <div className={styles.statsContainer}>
-              <PlaylistStat icon={LuAudioLines} value={songCountText} />
-              <PlaylistStat icon={LuClock} value={formattedRuntime} />
-              <PlaylistStat icon={LuThumbsUp} value={playlist.likes ?? 0} />
+          <div className={styles.playlistInfoWrapper}>
+            <div className={styles.playlistInfoContainer}>
+              <Link
+                to={`/users/${playlist.user?.id}`}
+                className={styles.infoUsername}
+              >
+                {playlist.user?.username}
+              </Link>
+              <span className={styles.playlistTitle}>{playlist.title}</span>
+              <div className={styles.statsContainer}>
+                <PlaylistStat icon={LuAudioLines} value={songCountText} />
+                <PlaylistStat icon={LuClock} value={formattedRuntime} />
+                <PlaylistStat icon={LuThumbsUp} value={playlist.likes ?? 0} />
+              </div>
             </div>
+            {isOwner && onEditButtonClick && (
+              <button
+                className={styles.ownerButton}
+                onClick={onEditButtonClick}
+              >
+                <LuPencil />
+              </button>
+            )}
           </div>
           <PlaylistPlayButton playlist={playlist} />
         </div>

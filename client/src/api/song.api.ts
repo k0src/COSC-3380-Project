@@ -99,7 +99,7 @@ export const songApi = {
 
   async create(data: {
     title: string;
-    created_by: UUID;
+    owner_id: UUID;
     genre: string;
     release_date: string;
     visibility_status: string;

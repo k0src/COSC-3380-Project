@@ -9,7 +9,7 @@ import type {
 // Main Song type
 export interface Song {
   id: UUID;
-  created_by: UUID;
+  owner_id: UUID;
   title: string;
   duration: number;
   genre: string;

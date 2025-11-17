@@ -3,10 +3,9 @@ import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
 
 export default class SongRepository {
-  // add reladate
   static async create({
     title,
-    created_by,
+    owner_id,
     duration,
     genre,
     release_date,
@@ -16,7 +15,7 @@ export default class SongRepository {
     visibility_status,
   }: {
     title: string;
-    created_by: UUID;
+    owner_id: UUID;
     duration: number;
     genre: string;
     release_date?: string;
@@ -38,7 +37,7 @@ export default class SongRepository {
         const insert = await client.query(
           `INSERT INTO songs (
             title,
-            created_by,
+            owner_id,
             duration,
             genre,
             release_date,
@@ -51,7 +50,7 @@ export default class SongRepository {
           RETURNING *`,
           [
             title,
-            created_by,
+            owner_id,
             duration,
             genre,
             release_date,

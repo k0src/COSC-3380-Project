@@ -31,10 +31,12 @@
 
 .playlistRight {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   padding: var(--spacing-sm) 0;
   gap: var(--spacing-md);
   flex: 1;
+  align-items: flex-start;
 }
 
 .playlistInfoContainer {
@@ -90,4 +92,28 @@
   white-space: nowrap;
   overflow: hidden;
   max-width: 100%;
+}
+
+.playlistInfoWrapper {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+  width: 100%;
+}
+
+.ownerButton {
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: var(--icon-size-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-speed) ease;
+  height: fit-content;
+}
+
+.ownerButton:hover {
+  color: var(--color-white);
 }

@@ -1,8 +1,8 @@
 import { useState, memo, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Song, VisibilityStatus } from "@types";
+import type { Album, Song, VisibilityStatus } from "@types";
 import { formatDateString } from "@util";
-import { songApi } from "@api";
+import { albumApi, songApi } from "@api";
 import {
   SettingsInput,
   SettingsRadio,
@@ -10,18 +10,34 @@ import {
   SettingsDatePicker,
   ConfirmationModal,
 } from "@components";
-import styles from "./EditSongModal.module.css";
+import styles from "./EditAlbumModal.module.css";
 import { LuX } from "react-icons/lu";
 
-export interface EditSongModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSongEdited?: () => void;
-  song: Song;
+/*
+export interface Album {
+  id: UUID;
+  title: string;
+  release_date: string;
+  created_by: UUID;
+  image_url?: string;
+  image_url_blurhash?: string;
+  audio_url: string;
+  created_at: string;
+  genre: string;
+  visibility_status: VisibilityStatus;
+
 }
 
-// todo: add album stuff later
-interface EditSongForm {
+*/
+
+export interface EditAlbumModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAlbumEdited?: () => void;
+  album: Album;
+}
+
+interface EditAlbumForm {
   title: string;
   genre: string;
   release_date: string;
@@ -30,31 +46,29 @@ interface EditSongForm {
   removeImage?: boolean;
 }
 
-const EditSongModal: React.FC<EditSongModalProps> = ({
+const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
   isOpen,
   onClose,
-  onSongEdited,
-  song,
+  onAlbumEdited,
+  album,
 }) => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const initialFormState: EditSongForm = useMemo(() => {
+  const initialFormState: EditAlbumForm = useMemo(() => {
     return {
-      title: song.title,
-      genre: song.genre,
-      release_date: formatDateString(song.release_date),
-      visibility_status: song.visibility_status,
+      title: album.title,
+      genre: album.genre,
+      release_date: formatDateString(album.release_date),
+      visibility_status: album.visibility_status,
       image: null,
       removeImage: false,
     };
-  }, [song]);
+  }, [album]);
 
-  const [formState, setFormState] = useState<EditSongForm>(
-    () => initialFormState
-  );
+  const [formState, setFormState] = useState(() => initialFormState);
 
   const [isDirty, setIsDirty] = useState(false);
 
@@ -143,7 +157,7 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
       setError("");
 
       try {
-        const songData: any = {
+        const albumData: any = {
           title: formState.title.trim(),
           genre: formState.genre.trim(),
           release_date: formState.release_date.trim(),
@@ -151,43 +165,43 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
         };
 
         if (formState.removeImage) {
-          songData.image_url = null;
+          albumData.image_url = null;
         } else if (formState.image) {
-          songData.image_url = formState.image;
+          albumData.image_url = formState.image;
         }
 
-        await songApi.update(song.id, songData);
+        await albumApi.update(album.id, albumData);
 
-        onSongEdited?.();
+        onAlbumEdited?.();
         onClose();
       } catch (error: any) {
-        console.error("Error editing song:", error);
+        console.error("Error editing album:", error);
         const errorMessage =
-          error.response?.data?.error || "Failed to edit song";
+          error.response?.data?.error || "Failed to edit album";
         setError(errorMessage);
       } finally {
         setIsEditing(false);
       }
     },
-    [formState, onClose, onSongEdited, song.id]
+    [formState, onClose, onAlbumEdited, album.id]
   );
 
-  const handleDeleteSong = useCallback(async () => {
+  const handleDeleteAlbum = useCallback(async () => {
     setIsEditing(true);
     setError("");
     try {
-      await songApi.delete(song.id);
+      await albumApi.delete(album.id);
       onClose();
       navigate("/library");
     } catch (error: any) {
-      console.error("Delete song error:", error);
+      console.error("Delete album error:", error);
       const errorMessage =
-        error.response?.data?.error || "Failed to delete song";
+        error.response?.data?.error || "Failed to delete album";
       setError(errorMessage);
     } finally {
       setIsEditing(false);
     }
-  }, [song.id, onClose, navigate]);
+  }, [album.id, onClose, navigate]);
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
 
@@ -219,19 +233,19 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
       <div className={styles.overlay} onClick={onClose}>
         <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
           <div className={styles.header}>
-            <span className={styles.title}>{`Edit ${song.title}`}</span>
+            <span className={styles.title}>{`Edit ${album.title}`}</span>
             <button className={styles.headerButton} onClick={onClose}>
               <LuX />
             </button>
           </div>
 
-          <form className={styles.songForm} onSubmit={handleSubmit}>
+          <form className={styles.albumForm} onSubmit={handleSubmit}>
             <SettingsInput
-              label="Song Title"
+              label="Album Title"
               name="title"
               value={formState.title}
               onChange={handleFormChange}
-              placeholder="My Song"
+              placeholder="My Album"
               error={error}
               disabled={isEditing}
             />
@@ -268,12 +282,12 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
             />
             <SettingsImageUpload
               label="Cover Image"
-              currentImage={song.image_url || undefined}
+              currentImage={album.image_url || undefined}
               onImageChange={handleImageChange}
               type="music"
               disabled={isEditing}
-              alt="Song Cover Image Preview"
-              hint="Upload a cover image for your song (optional)."
+              alt="Album Cover Image Preview"
+              hint="Upload a cover image for your album (optional)."
             />
             <div className={styles.buttonContainer}>
               {isDirty && !error && (
@@ -289,14 +303,14 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
                   onClick={() => setIsDeleteModalOpen(true)}
                   disabled={isEditing}
                 >
-                  {isEditing ? "Deleting..." : "Delete Song"}
+                  {isEditing ? "Deleting..." : "Delete Album"}
                 </button>
                 <button
                   type="submit"
                   className={styles.saveButton}
                   disabled={isEditing || !isDirty}
                 >
-                  {isEditing ? "Updating..." : "Update Song"}
+                  {isEditing ? "Updating..." : "Update Album"}
                 </button>
               </div>
             </div>
@@ -307,14 +321,14 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteSong}
-        title="Delete Song"
-        message="Are you sure you want to permanently delete this song? This action cannot be undone."
-        confirmButtonText="Delete Song"
+        onConfirm={handleDeleteAlbum}
+        title="Delete Album"
+        message="Are you sure you want to permanently delete this album? This action cannot be undone."
+        confirmButtonText="Delete Album"
         isDangerous={true}
       />
     </>
   );
 };
 
-export default memo(EditSongModal);
+export default memo(EditAlbumModal);

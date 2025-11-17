@@ -1,12 +1,12 @@
 import express, { Request, Response } from "express";
 import { AlbumRepository } from "@repositories";
 import { LikeService } from "@services";
+import { handlePgError } from "@util";
+import { parseAlbumForm } from "@infra/form-parser";
 
 const router = express.Router();
 
 // GET /api/albums
-// Example:
-// /api/albums?includeArtist=true&includeRuntime=true&includeSongCount=true&includeLikes=true&limit=50&offset=0
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
     const {
@@ -37,8 +37,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 });
 
 // GET /api/albums/:id
-// Example:
-// /api/albums/:id?includeArtist=true&includeRuntime=true&includeSongCount=true&includeLikes=true
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const {
@@ -77,9 +75,74 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// POST /api/albums
+router.post("/", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const albumData = await parseAlbumForm(req);
+    const newAlbum = await AlbumRepository.create(albumData);
+
+    if (!newAlbum) {
+      res.status(400).json({ error: "Failed to create album" });
+      return;
+    }
+
+    res.status(200).json(newAlbum);
+  } catch (error: any) {
+    console.error("Error in POST /api/albums/:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// PUT /api/albums/:id
+router.put("/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Album ID is required!" });
+      return;
+    }
+
+    const albumData = await parseAlbumForm(req);
+    const updatedAlbum = await AlbumRepository.update(id, albumData);
+
+    if (!updatedAlbum) {
+      res.status(404).json({ error: "Album not found" });
+      return;
+    }
+
+    res.status(200).json(updatedAlbum);
+  } catch (error: any) {
+    console.error("Error in PUT /api/albums/:id:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// DELETE /api/albums/:id
+router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Album ID is required!" });
+      return;
+    }
+
+    const deleted = await AlbumRepository.delete(id);
+    if (!deleted) {
+      res.status(404).json({ error: "Album not found" });
+      return;
+    }
+
+    res.status(200).json({ message: "Album deleted successfully" });
+  } catch (error: any) {
+    console.error("Error in DELETE /api/albums/:id:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
 // GET /api/albums/:id/songs
-// Example:
-// /api/albums/:id/songs?includeArtists=true&includeLikes=true&limit=50&offset=0
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { includeArtists, includeLikes, limit, offset } = req.query;

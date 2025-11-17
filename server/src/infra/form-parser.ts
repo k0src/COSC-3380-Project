@@ -360,3 +360,96 @@ export function parseSongForm(req: Request): Promise<any> {
     req.pipe(busboy);
   });
 }
+
+export function parseAlbumForm(req: Request): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const busboy = Busboy({ headers: req.headers });
+
+    const formData: any = {};
+    const uploadPromises: Promise<void>[] = [];
+
+    busboy.on("field", (fieldname, value) => {
+      if (value === "null") {
+        formData[fieldname] = null;
+      } else {
+        formData[fieldname] = value;
+      }
+    });
+
+    busboy.on("file", async (fieldname, file, info) => {
+      const { filename, mimeType } = info;
+
+      if (fieldname !== "image_url") {
+        file.resume();
+        return;
+      }
+
+      if (!mimeType.startsWith("image/")) {
+        file.resume();
+        return reject(new Error("Invalid file type. Only images are allowed."));
+      }
+
+      const supportedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp",
+      ];
+      if (!supportedTypes.includes(mimeType)) {
+        file.resume();
+        return reject(
+          new Error(
+            "Unsupported image format. Only JPEG, PNG, and WebP are allowed."
+          )
+        );
+      }
+
+      const blobName = `${uuidv4()}-${filename}`;
+
+      const uploadPromise = (async () => {
+        try {
+          const chunks: Buffer[] = [];
+          let totalSize = 0;
+          for await (const chunk of file) {
+            totalSize += chunk.length;
+            if (totalSize > MAX_IMAGE_SIZE) {
+              throw new Error("Image file size exceeds 5MB limit.");
+            }
+            chunks.push(chunk);
+          }
+
+          const buffer = Buffer.concat(chunks);
+
+          const blurhash = await generateBlurhash(buffer);
+          formData.image_url_blurhash = blurhash;
+
+          const bufferStream = Readable.from(buffer);
+          await uploadBlob(blobName, bufferStream);
+          formData.image_url = blobName;
+        } catch (error) {
+          throw error;
+        }
+      })();
+
+      uploadPromises.push(uploadPromise);
+    });
+
+    busboy.on("error", (error) => reject(error));
+
+    busboy.on("finish", async () => {
+      try {
+        await Promise.all(uploadPromises);
+
+        if (formData.image_url === null) {
+          formData.image_url_blurhash = null;
+        }
+
+        resolve(formData);
+      } catch (error) {
+        reject(error);
+      }
+    });
+
+    req.pipe(busboy);
+  });
+}
