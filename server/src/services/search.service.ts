@@ -1,4 +1,4 @@
-import type { Song, Album, User, Artist, Playlist } from "@types";
+import type { Song, Album, User, Artist, Playlist, SongArtist } from "@types";
 import { query } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
 import dotenv from "dotenv";
@@ -29,15 +29,31 @@ export default class SearchService {
       const results = await query(
         `
         SELECT
-          (SELECT json_agg(s ORDER BY 
+          (SELECT json_agg(row_to_json(song_with_artists) ORDER BY 
             CASE  
-              WHEN LOWER(s.title) = LOWER($2) THEN 1
-              WHEN LOWER(s.title) LIKE LOWER($2) || '%' THEN 2
+              WHEN LOWER(song_with_artists.title) = LOWER($2) THEN 1
+              WHEN LOWER(song_with_artists.title) LIKE LOWER($2) || '%' THEN 2
               ELSE 3
             END,
-            s.streams DESC NULLS LAST,
-            s.title
-          ) FROM songs s WHERE s.title ILIKE $1) AS songs,
+            song_with_artists.streams DESC NULLS LAST,
+            song_with_artists.title
+          ) FROM (
+            SELECT s.*,
+              (SELECT json_agg(row_to_json(ar_with_role))
+               FROM (
+                 SELECT
+                   ar.*,
+                   sa.role,
+                   row_to_json(u) AS user
+                 FROM artists ar
+                 JOIN users u ON u.artist_id = ar.id
+                 JOIN song_artists sa ON sa.artist_id = ar.id
+                 WHERE sa.song_id = s.id
+               ) AS ar_with_role
+              ) AS artists
+            FROM songs s
+            WHERE s.title ILIKE $1
+          ) AS song_with_artists) AS songs,
           (SELECT json_agg(a ORDER BY 
             CASE 
               WHEN LOWER(a.title) = LOWER($2) THEN 1
@@ -96,6 +112,18 @@ export default class SearchService {
               }
               if (song.audio_url) {
                 song.audio_url = getBlobUrl(song.audio_url);
+              }
+              // If song has embedded artists, convert profile_picture_url blob and set types
+              if (song.artists && song.artists.length > 0) {
+                song.artists = song.artists.map((artist: SongArtist) => {
+                  if (artist.user && artist.user.profile_picture_url) {
+                    artist.user.profile_picture_url = getBlobUrl(
+                      artist.user.profile_picture_url
+                    );
+                  }
+                  artist.type = "artist";
+                  return artist;
+                });
               }
               song.type = "song";
               return song;

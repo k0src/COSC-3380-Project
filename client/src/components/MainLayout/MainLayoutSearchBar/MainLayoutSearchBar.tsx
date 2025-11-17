@@ -1,11 +1,20 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./MainLayoutSearchBar.module.css";
 import { LuSearch } from "react-icons/lu";
 
 const MainLayoutSearchBar: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+
+  // Sync search query with URL parameter
+  useEffect(() => {
+    const query = searchParams.get("q");
+    if (query) {
+      setSearchQuery(query);
+    }
+  }, [searchParams]);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
