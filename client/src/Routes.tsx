@@ -75,6 +75,14 @@ export default function AppRoutes() {
               }
             />
             <Route
+              path="/me/settings"
+              element={
+                <MainLayout>
+                  <Pages.SettingsPage />
+                </MainLayout>
+              }
+            />
+            <Route
               path="/users/:id/info/:tab?"
               element={
                 <MainLayout>
@@ -98,14 +106,7 @@ export default function AppRoutes() {
                 </MainLayout>
               }
             />
-            <Route
-              path="/me/settings"
-              element={
-                <MainLayout>
-                  <Pages.SettingsPage />
-                </MainLayout>
-              }
-            />
+            <Route path="/upload" element={<Pages.UploadPage />} />
           </Route>
         </Routes>
       )}

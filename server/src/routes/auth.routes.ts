@@ -143,6 +143,7 @@ router.post(
         username: user.username,
         email: user.email,
         role: user.role,
+        artist_id: user.artist_id,
         profile_picture_url: user.profile_picture_url,
         created_at: user.created_at,
       };
@@ -220,6 +221,7 @@ router.post(
         username: user.username,
         email: user.email,
         role: user.role,
+        artist_id: user.artist_id,
         profile_picture_url: user.profile_picture_url,
         created_at: user.created_at,
       };
@@ -395,6 +397,7 @@ router.get("/me", requireAuth, async (req: Request, res: Response) => {
       username: req.user.username,
       email: req.user.email,
       role: req.user.role,
+      artist_id: req.user.artist_id,
       profile_picture_url: req.user.profile_picture_url,
       created_at: req.user.created_at,
     };

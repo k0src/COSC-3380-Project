@@ -140,3 +140,6 @@ export { default as LazyImg } from "./LazyImg/LazyImg.js";
 export { default as InputGroup } from "./Forms/InputGroup/InputGroup.js";
 export { default as FormSubmitButton } from "./Forms/FormButton/FormSubmitButton.js";
 export { default as Dropdown } from "./Forms/Dropdown/Dropdown.js";
+export { default as SearchableDropdown } from "./SearchableDropdown/SearchableDropdown.js";
+export { default as SearchableList } from "./SearchableList/SearchableList.js";
+export type { SearchableListItem } from "./SearchableList/SearchableList.js";

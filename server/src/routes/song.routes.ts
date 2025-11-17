@@ -85,6 +85,40 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   try {
     const songData = await parseForm(req, "song");
+
+    try {
+      songData.artists = JSON.parse(songData.artists);
+    } catch (e) {
+      res.status(400).json({ error: "Invalid artists data" });
+      return;
+    }
+
+    if (!Array.isArray(songData.artists) || songData.artists.length === 0) {
+      res.status(400).json({ error: "At least one artist is required" });
+      return;
+    }
+
+    for (const artist of songData.artists) {
+      if (
+        !artist.role ||
+        typeof artist.role !== "string" ||
+        artist.role.trim() === ""
+      ) {
+        res.status(400).json({ error: "All artists must have a role" });
+        return;
+      }
+    }
+
+    const mainArtists = songData.artists.filter(
+      (a: any) => a.role.toLowerCase() === "main"
+    );
+    if (mainArtists.length !== 1) {
+      res
+        .status(400)
+        .json({ error: 'Exactly one artist must have the "Main" role' });
+      return;
+    }
+
     const newSong = await SongRepo.create(songData);
 
     if (!newSong) {

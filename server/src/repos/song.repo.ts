@@ -6,6 +6,8 @@ export default class SongRepository {
   static async create({
     title,
     owner_id,
+    album_id,
+    artists,
     duration,
     genre,
     release_date,
@@ -16,6 +18,8 @@ export default class SongRepository {
   }: {
     title: string;
     owner_id: UUID;
+    album_id?: UUID;
+    artists: { id: UUID; role: string }[];
     duration: number;
     genre: string;
     release_date?: string;
@@ -60,6 +64,34 @@ export default class SongRepository {
             visibility_status,
           ]
         );
+
+        const songId = insert.rows[0].id;
+        for (const artist of artists) {
+          await client.query(
+            `INSERT INTO song_artists (song_id, artist_id, role)
+            VALUES ($1, $2, $3)`,
+            [songId, artist.id, artist.role]
+          );
+        }
+
+        if (album_id) {
+          const maxTrackNumberRes = await client.query(
+            `SELECT COALESCE(MAX(track_number), 0) AS max_track_number
+            FROM album_songs
+            WHERE album_id = $1`,
+            [album_id]
+          );
+
+          const nextTrackNumber =
+            maxTrackNumberRes.rows[0].max_track_number + 1;
+
+          await client.query(
+            `INSERT INTO album_songs (album_id, song_id, track_number)
+            VALUES ($1, $2, $3)`,
+            [album_id, songId, nextTrackNumber]
+          );
+        }
+
         return insert.rows[0] ?? null;
       });
 

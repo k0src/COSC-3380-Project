@@ -17,3 +17,5 @@ export { default as UserPage } from "./UserPage/UserPage.js";
 export { default as UserInfoPage } from "./UserPage/UserInfoPage/UserInfoPage.js";
 
 export { default as SettingsPage } from "./AccountPage/SettingsPage/SettingsPage.js";
+
+export { default as UploadPage } from "./UploadPage/UploadPage.js";

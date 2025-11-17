@@ -97,15 +97,20 @@ export const songApi = {
     return response.data;
   },
 
-  async create(data: {
-    title: string;
-    owner_id: UUID;
-    genre: string;
-    release_date: string;
-    visibility_status: string;
-    image?: File | null;
-    audio: File;
-  }) {
+  async create(
+    data: {
+      title: string;
+      owner_id: UUID;
+      album_id?: UUID;
+      artists: { id: UUID; role: string }[];
+      genre: string;
+      release_date: string;
+      visibility_status: string;
+      image_url?: File | null;
+      audio_url: File;
+    },
+    onUploadProgress?: (progressEvent: any) => void
+  ) {
     const formData = new FormData();
 
     Object.entries(data).forEach(([key, value]) => {
@@ -118,6 +123,7 @@ export const songApi = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
+      onUploadProgress,
     });
     return response.data;
   },
@@ -129,7 +135,7 @@ export const songApi = {
       genre?: string;
       release_date?: string;
       visibility_status?: string;
-      image?: File | null;
+      image_url?: File | null;
     }
   ) {
     const formData = new FormData();
