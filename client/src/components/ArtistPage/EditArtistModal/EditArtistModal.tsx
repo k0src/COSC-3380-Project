@@ -194,9 +194,18 @@ const EditArtistModal: React.FC<EditArtistModalProps> = ({
             error={error}
             disabled={isEditing}
             height="medium"
-            hint="Enter a bio for your artist profile (optional)."
+            hint="Enter a bio for your artist profile (optional). Max 500 characters."
           />
-          {/* location */}
+          <SettingsInput
+            label="Location"
+            name="location"
+            value={formState.location}
+            onChange={handleFormChange}
+            placeholder="Location"
+            error={error}
+            disabled={isEditing}
+            hint="Enter your location (optional)."
+          />
           <SettingsImageUpload
             label="Banner Image"
             currentImage={artist?.banner_image_url || undefined}
@@ -204,7 +213,7 @@ const EditArtistModal: React.FC<EditArtistModalProps> = ({
             type="banner"
             disabled={isEditing}
             alt="Banner Image Preview"
-            hint="Upload a banner image for your artist profile (optional)."
+            hint="Upload a banner image for your artist profile (optional). Recommended size: 1700x300 pixels."
           />
           <div className={styles.buttonContainer}>
             {isDirty && !error && (
