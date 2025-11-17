@@ -11,6 +11,11 @@ import type {
 } from "@types";
 
 export const userApi = {
+  async getUserCount() {
+    const response = await api.get<{ userCount: number }>(`/users/count`);
+    return response.data.userCount;
+  },
+
   async getUserById(id: UUID) {
     const response = await api.get<User>(`/users/${id}`, {
       params: { includeUser: true },

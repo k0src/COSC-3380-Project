@@ -56,7 +56,7 @@ const MainLayoutSidebar: React.FC = () => {
           </Link>
           {user && user.role === "ARTIST" && (
             <>
-              <Link to="/artist/dashboard" className={styles.sidebarLink}>
+              <Link to="/artist-dashboard" className={styles.sidebarLink}>
                 <LuUserPen className={styles.sidebarIcon} />
               </Link>
               <Link to="/upload" className={styles.sidebarLink}>

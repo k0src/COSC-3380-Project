@@ -1,7 +1,7 @@
-import React from "react";
+import { useState } from "react";
 import styles from "./LandingPage.module.css";
 import { LuSearch } from "react-icons/lu";
-import { SongCard } from "@components";
+import { SongCard, UploadPromptModal } from "@components";
 import { useAsyncData } from "@hooks";
 import { songApi } from "@api";
 import type { Song } from "@types";
@@ -10,6 +10,8 @@ import musicPlaceholder from "@assets/music-placeholder.webp";
 import { getMainArtist } from "@util";
 
 const LandingPage: React.FC = () => {
+  const [showUploadModal, setShowUploadModal] = useState(false);
+
   // const singles = Array(4).fill({ // Using your original 'newSongs' data
   //   title: "New Release",
   //   artist: "Drake",
@@ -52,9 +54,19 @@ const LandingPage: React.FC = () => {
             Get obsessed, or become part of someone's obsession. All it takes is
             an upload!
           </p>
-          <button className={styles.uploadButton}>UPLOAD NOW</button>
+          <button
+            className={styles.uploadButton}
+            onClick={() => setShowUploadModal(true)}
+          >
+            UPLOAD NOW
+          </button>
         </div>
       </section>
+
+      <UploadPromptModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+      />
 
       <div className={styles.searchBarContainer}>
         <div className={styles.searchBar}>

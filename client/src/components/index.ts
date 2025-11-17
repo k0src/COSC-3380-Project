@@ -16,6 +16,9 @@ export { default as ProtectedRoute } from "./ProtectedRoute/ProtectedRoute.js";
 export { default as AppLayout } from "./AppLayout/AppLayout.js";
 export { default as MeWrapper } from "./MeWrapper/MeWrapper.js";
 
+/* ============================== Landing Page ============================== */
+export { default as UploadPromptModal } from "./LandingPage/UploadPromptModal/UploadPromptModal.js";
+
 /* ================================ Home Page =============================== */
 export { default as FeaturedSection } from "./HomePage/FeaturedSection/FeaturedSection.js";
 export { default as SongCard } from "./HomePage/SongCard/SongCard.js";

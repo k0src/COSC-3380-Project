@@ -547,4 +547,14 @@ export default class UserRepository {
       throw error;
     }
   }
+
+  static async getUserCount(): Promise<number> {
+    try {
+      const res = await query("SELECT COUNT(*) FROM users");
+      return parseInt(res[0]?.count ?? "0", 10);
+    } catch (error) {
+      console.error("Error counting users:", error);
+      throw error;
+    }
+  }
 }
