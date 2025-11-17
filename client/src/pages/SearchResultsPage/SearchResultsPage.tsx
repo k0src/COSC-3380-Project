@@ -82,7 +82,7 @@ export default function SearchResultsPage() {
                 </div>
                 <div className={homeStyles.cardsContainer}>
                   {artists.map((artist: any, index) => {
-                    const artistId = artist.user_id ?? artist.id;
+                    const artistId = artist.id ?? artist.user?.id ?? artist.user_id;
                     return (
                       <Link key={`artist-${index}`} to={artistId ? `/artists/${artistId}` : "#"}>
                         <SongCard
@@ -129,17 +129,21 @@ export default function SearchResultsPage() {
                   <h2 className={homeStyles.sectionTitle}>Playlists</h2>
                 </div>
                 <div className={homeStyles.cardsContainer}>
-                  {playlists.map((pl: any, index) => (
-                    <SongCard
-                      key={`pl-${index}`}
-                      title={pl.title}
-                      artist={""}
-                      image={pl.image_url || "/PlayerBar/Mask group.png"}
-                      plays={pl.plays ?? 0}
-                      likes={pl.likes ?? 0}
-                      comments={pl.comments ?? 0}
-                    />
-                  ))}
+                  {playlists.map((pl: any, index) => {
+                    const playlistId = pl.id;
+                    return (
+                      <Link key={`pl-${index}`} to={playlistId ? `/playlists/${playlistId}` : "#"}>
+                        <SongCard
+                          title={pl.title}
+                          artist={""}
+                          image={pl.image_url || "/PlayerBar/Mask group.png"}
+                          plays={pl.plays ?? 0}
+                          likes={pl.likes ?? 0}
+                          comments={pl.comments ?? 0}
+                        />
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
             </>
