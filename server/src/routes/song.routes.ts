@@ -1,15 +1,13 @@
 import express, { Request, Response } from "express";
 import { SongRepository as SongRepo } from "@repositories";
+import { handlePgError, getCoverGradient } from "@util";
 import { parseSongForm } from "@infra/form-parser";
-import getCoverGradient from "@util/colors.util";
 import { CommentService, StatsService, LikeService } from "@services";
 import { validateOrderBy } from "@validators";
 
 const router = express.Router();
 
 // GET /api/songs
-// Example:
-// /api/songs?includeAlbum=true&includeArtists=true&includeLikes=true&includeComments=true&limit=50&offset=0
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
     const {
@@ -53,8 +51,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 });
 
 // GET /api/songs/:id
-// Example:
-// /api/songs/:id?includeAlbum=true&includeArtists=true&includeLikes=true&includeComments=true
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -82,6 +78,50 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     const errorMessage = error.message || "Internal server error";
     res.status(500).json({ error: errorMessage });
     return;
+  }
+});
+
+// POST /api/songs
+router.post("/", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const songData = await parseSongForm(req);
+    const newSong = await SongRepo.create(songData);
+
+    if (!newSong) {
+      res.status(400).json({ error: "Failed to create song" });
+      return;
+    }
+
+    res.status(200).json(newSong);
+  } catch (error: any) {
+    console.error("Error in POST /api/songs/:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// PUT /api/songs/:id
+router.put("/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Song ID is required!" });
+      return;
+    }
+
+    const songData = await parseSongForm(req);
+    const updatedSong = await SongRepo.update(id, songData);
+
+    if (!updatedSong) {
+      res.status(404).json({ error: "Song not found" });
+      return;
+    }
+
+    res.status(200).json(updatedSong);
+  } catch (error: any) {
+    console.error("Error in PUT /api/songs/:id:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
   }
 });
 
@@ -122,6 +162,29 @@ router.get(
     }
   }
 );
+
+// DELETE /api/songs/:id
+router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Song ID is required!" });
+      return;
+    }
+
+    const deleted = await SongRepo.delete(id);
+    if (!deleted) {
+      res.status(404).json({ error: "Song not found" });
+      return;
+    }
+
+    res.status(200).json({ message: "Song deleted successfully" });
+  } catch (error: any) {
+    console.error("Error in DELETE /api/songs/:id:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
 
 router.get(
   "/:id/comments",
@@ -218,97 +281,6 @@ router.get(
     }
   }
 );
-
-// POST /api/songs/ -> create new song
-// NEED auth protection
-router.post("/", async (req: Request, res: Response): Promise<void> => {
-  try {
-    let { title, duration, genre, release_date, audio_url, image_url } =
-      await parseSongForm(req, "upload");
-    if (!title || !genre || !duration || !audio_url) {
-      res
-        .status(400)
-        .json({ error: "Missing or invalid required song fields." });
-      return;
-    }
-
-    // If we didn't get a release_date, set it to today
-    if (!release_date) {
-      release_date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-    }
-
-    const success = await SongRepo.insert({
-      title,
-      duration,
-      genre,
-      release_date,
-      audio_url,
-      image_url,
-    });
-    if (!success) {
-      res.status(500).json({ error: "Failed to create song" });
-      return;
-    }
-
-    res.status(201).json({ message: "Song created successfully" });
-  } catch (error: any) {
-    console.error("Error in POST /songs/:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
-    return;
-  }
-});
-
-// PUT /api/songs/:id -> update song
-// NEED auth protection
-router.put("/:id", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).json({ error: "Song ID is required!" });
-      return;
-    }
-
-    const songData = await parseSongForm(req, "update");
-    const success = await SongRepo.update(id, songData);
-    if (!success) {
-      res.status(404).json({ error: "Song not found" });
-      return;
-    }
-
-    res.status(200).json({ message: "Song updated successfully" });
-  } catch (error: any) {
-    console.error("Error in PUT /api/songs/:id:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
-    return;
-  }
-});
-
-// DELETE /api/songs/:id -> delete song
-// NEED auth protection
-router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).json({ error: "Song ID is required!" });
-      return;
-    }
-
-    const success = await SongRepo.delete(id);
-    if (!success) {
-      res.status(404).json({ error: "Song not found" });
-      return;
-    }
-
-    res.status(200).json({ message: "Song deleted successfully" });
-  } catch (error: any) {
-    console.error("Error in DELETE /api/songs/:id:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
-    return;
-  }
-});
 
 router.put(
   "/:id/streams",

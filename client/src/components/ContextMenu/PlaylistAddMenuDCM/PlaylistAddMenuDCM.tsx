@@ -29,6 +29,7 @@ const PlaylistAddMenuDCM: React.FC<PlaylistAddMenuDCMProps> = ({
     [user?.id],
     {
       cacheKey: `playlist_add_menu_${user?.id}`,
+      enabled: !!user,
     }
   );
 

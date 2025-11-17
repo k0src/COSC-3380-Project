@@ -68,7 +68,7 @@ const AlbumContainer: React.FC<AlbumContainerProps> = ({ album }) => {
         <div className={styles.albumRight}>
           <div className={styles.albumInfoContainer}>
             <Link
-              to={`/users/${album.artist?.id}`}
+              to={`/artists/${album.artist?.id}`}
               className={styles.infoArtist}
             >
               {album.artist?.display_name}

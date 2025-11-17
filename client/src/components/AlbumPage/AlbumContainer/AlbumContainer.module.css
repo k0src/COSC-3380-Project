@@ -47,6 +47,11 @@
   font-size: var(--font-size-xl);
   color: var(--color-text-gray-light) !important;
   font-weight: 500;
+  cursor: pointer;
+}
+
+.infoArtist:hover {
+  color: var(--color-white) !important;
 }
 
 .albumTitle {

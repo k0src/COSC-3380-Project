@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { userApi } from "@api";
 import type { UUID } from "@types";
-import { useAsyncData } from "@hooks";
+import { useAsyncData, useErrorCheck } from "@hooks";
 import {
   ErrorPage,
   PageLoader,
@@ -41,35 +41,30 @@ const UserPage: React.FC = () => {
 
   const user = data?.user;
 
-  if (error) {
-    return (
-      <ErrorPage
-        title="Internal Server Error"
-        message="An unexpected error occurred. Please try again later."
-      />
-    );
-  }
+  const { shouldShowError, errorTitle, errorMessage } = useErrorCheck([
+    {
+      condition: !!error,
+      title: "Internal Server Error",
+      message: "An unexpected error occurred. Please try again later.",
+    },
+    {
+      condition: !user && !loading,
+      title: "User Not Found",
+      message: "The requested user does not exist.",
+    },
+    {
+      condition: user?.status !== "ACTIVE",
+      title: "User Not Found",
+      message: "The requested user does not exist.",
+    },
+  ]);
 
   if (loading) {
     return <PageLoader />;
   }
 
-  if (!user) {
-    return (
-      <ErrorPage
-        title="User Not Found"
-        message="The requested user does not exist."
-      />
-    );
-  }
-
-  if (user.status !== "ACTIVE") {
-    return (
-      <ErrorPage
-        title="User Not Found"
-        message="The requested user does not exist."
-      />
-    );
+  if (shouldShowError) {
+    return <ErrorPage title={errorTitle} message={errorMessage} />;
   }
 
   const userIsArtist = user.role === "ARTIST";

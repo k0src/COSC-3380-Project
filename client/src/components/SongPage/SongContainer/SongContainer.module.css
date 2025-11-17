@@ -115,3 +115,33 @@
   overflow: hidden;
   max-width: 100%;
 }
+
+.songInfoWrapper {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+}
+
+.ownerButtonsContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  height: fit-content;
+}
+
+.ownerButton {
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: var(--icon-size-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-speed) ease;
+  height: fit-content;
+}
+
+.ownerButton:hover {
+  color: var(--color-white);
+}

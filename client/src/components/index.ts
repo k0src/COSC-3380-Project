@@ -32,6 +32,7 @@ export { default as CommentItem } from "./SongPage/SongComments/CommentItem/Comm
 export { default as CommentInput } from "./SongPage/SongComments/CommentInput/CommentInput.js";
 export { default as CommentsList } from "./SongPage/SongComments/CommentsList/CommentsList.js";
 export { default as SongSuggestions } from "./SongPage/SongSuggestions/SongSuggestions.js";
+export { default as EditSongModal } from "./SongPage/EditSongModal/EditSongModal.js";
 
 /* =============================== Artist Page =============================== */
 export { default as ArtistBanner } from "./ArtistPage/ArtistBanner/ArtistBanner.js";
@@ -91,6 +92,8 @@ export { default as SettingsDropdown } from "./SettingsPage/SettingsDropdown/Set
 export { default as SettingsRadio } from "./SettingsPage/SettingsRadio/SettingsRadio.js";
 export { default as SettingsImageUpload } from "./SettingsPage/SettingsImageUpload/SettingsImageUpload.js";
 export { default as SettingsTextArea } from "./SettingsPage/SettingsTextArea/SettingsTextArea.js";
+export { default as SettingsDatePicker } from "./SettingsPage/SettingsDatePicker/SettingsDatePicker.js";
+
 export { default as ChangePasswordModal } from "./SettingsPage/ChangePasswordModal/ChangePasswordModal.js";
 export { default as ConfirmationModal } from "./SettingsPage/ConfirmationModal/ConfirmationModal.js";
 

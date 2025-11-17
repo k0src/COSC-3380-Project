@@ -30,6 +30,15 @@ const UserInfoPage: React.FC = () => {
     return "followers";
   });
 
+  if (!id) {
+    return (
+      <ErrorPage
+        title="User Not Found"
+        message="The requested user does not exist."
+      />
+    );
+  }
+
   useEffect(() => {
     if (tab === "followers" || tab === "following") {
       setActiveTab(tab);
@@ -79,15 +88,6 @@ const UserInfoPage: React.FC = () => {
         return "";
     }
   }, [activeTab, user]);
-
-  if (!id) {
-    return (
-      <ErrorPage
-        title="User Not Found"
-        message="The requested user does not exist."
-      />
-    );
-  }
 
   if (error) {
     return (

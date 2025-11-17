@@ -1,9 +1,16 @@
 import { useMemo, useCallback, memo, useState } from "react";
 import { WaveformPlayer, CoverLightbox, LazyImg } from "@components";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import type { Song, CoverGradient, SongArtist } from "@types";
 import { useAudioQueue } from "@contexts";
-import { LuPlay, LuThumbsUp, LuMessageSquareText } from "react-icons/lu";
+import {
+  LuPlay,
+  LuThumbsUp,
+  LuMessageSquareText,
+  LuPencil,
+  LuChartLine,
+} from "react-icons/lu";
 import styles from "./SongContainer.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 
@@ -12,6 +19,8 @@ export interface SongContainerProps {
   song: Song;
   mainArtist: SongArtist | undefined;
   numberComments?: number;
+  isOwner?: boolean;
+  onEditButtonClick?: () => void;
 }
 
 const SongContainer: React.FC<SongContainerProps> = ({
@@ -19,7 +28,10 @@ const SongContainer: React.FC<SongContainerProps> = ({
   song,
   mainArtist,
   numberComments,
+  isOwner,
+  onEditButtonClick,
 }) => {
+  const navigate = useNavigate();
   const { actions } = useAudioQueue();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
@@ -49,6 +61,10 @@ const SongContainer: React.FC<SongContainerProps> = ({
     setIsLightboxOpen(true);
   }, []);
 
+  const handleViewAnalytics = useCallback(() => {
+    navigate(`/artist-dashboard/songs/${song.id}`);
+  }, [navigate, song.id]);
+
   return (
     <div className={styles.songContainer} style={gradientStyle}>
       <LazyImg
@@ -63,26 +79,46 @@ const SongContainer: React.FC<SongContainerProps> = ({
         onClick={handleImageClick}
       />
       <div className={styles.songRight}>
-        <div className={styles.songInfoContainer}>
-          {mainArtist ? (
-            <Link
-              to={`/artists/${mainArtist.id}`}
-              className={styles.artistNameLink}
-            >
-              {mainArtist.display_name}
-            </Link>
-          ) : (
-            <span className={styles.artistName}>Unknown Artist</span>
-          )}
-          <span className={styles.songTitle}>{song.title}</span>
-          <div className={styles.interactionsContainer}>
-            <InteractionStat icon={LuPlay} value={song.streams ?? 0} />
-            <InteractionStat icon={LuThumbsUp} value={song.likes ?? 0} />
-            <InteractionStat
-              icon={LuMessageSquareText}
-              value={numberComments ?? 0}
-            />
+        <div className={styles.songInfoWrapper}>
+          <div className={styles.songInfoContainer}>
+            {mainArtist ? (
+              <Link
+                to={`/artists/${mainArtist.id}`}
+                className={styles.artistNameLink}
+              >
+                {mainArtist.display_name}
+              </Link>
+            ) : (
+              <span className={styles.artistName}>Unknown Artist</span>
+            )}
+            <span className={styles.songTitle}>{song.title}</span>
+            <div className={styles.interactionsContainer}>
+              <InteractionStat icon={LuPlay} value={song.streams ?? 0} />
+              <InteractionStat icon={LuThumbsUp} value={song.likes ?? 0} />
+              <InteractionStat
+                icon={LuMessageSquareText}
+                value={numberComments ?? 0}
+              />
+            </div>
           </div>
+          {isOwner && (
+            <div className={styles.ownerButtonsContainer}>
+              {onEditButtonClick && (
+                <button
+                  className={styles.ownerButton}
+                  onClick={onEditButtonClick}
+                >
+                  <LuPencil />
+                </button>
+              )}
+              <button
+                className={styles.ownerButton}
+                onClick={handleViewAnalytics}
+              >
+                <LuChartLine />
+              </button>
+            </div>
+          )}
         </div>
         {song.audio_url && (
           <WaveformPlayer audioSrc={song.audio_url} onPlay={handlePlay} />

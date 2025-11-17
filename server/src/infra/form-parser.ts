@@ -2,13 +2,13 @@ import { Request } from "express";
 import Busboy from "busboy";
 import { uploadBlob } from "@config/blobStorage";
 import { v4 as uuidv4 } from "uuid";
-import type { SongData } from "@types";
 import { parseBuffer } from "music-metadata";
 import { Readable } from "stream";
 import { encode } from "blurhash";
 import sharp from "sharp";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+const MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 
 /**
  * Generates a blurhash from an image buffer
@@ -28,117 +28,6 @@ async function generateBlurhash(buffer: Buffer): Promise<string> {
     console.error("Error generating blurhash:", error);
     throw new Error("Failed to generate blurhash");
   }
-}
-
-/**
- * Parses multipart/form-data request for song data and files.
- * Uploads files to blob storage and returns song data.
- * @param req - Express request object.
- * @returns Promise resolving to SongData.
- * @throws Error if required fields are missing or file upload fails.
- */
-export function parseSongForm(
-  req: Request,
-  mode: "upload" | "update"
-): Promise<SongData> {
-  return new Promise((resolve, reject) => {
-    const busboy = Busboy({ headers: req.headers });
-
-    const uploadPromises: Promise<void>[] = [];
-    const songData: Partial<SongData> = {};
-
-    // Normal fields go directly into songData
-    busboy.on("field", (fieldname, value) => {
-      if (["title", "genre", "release_date"].includes(fieldname)) {
-        (songData as any)[fieldname] = value;
-      }
-    });
-
-    // Files are uploaded to blob storage
-    busboy.on("file", async (fieldname, file, info) => {
-      const { filename, mimeType } = info;
-
-      // Validate mimetype
-      if (fieldname === "audio_url" && !mimeType.startsWith("audio/")) {
-        file.resume();
-        return reject(new Error("Invalid audio file type"));
-      }
-      if (fieldname === "image_url" && !mimeType.startsWith("image/")) {
-        file.resume();
-        return reject(new Error("Invalid image file type"));
-      }
-
-      // Give file a unique name
-      const blobName = `${uuidv4()}-${filename}`;
-
-      // For audio files calculate duration and upload
-      if (fieldname === "audio_url") {
-        const uploadPromise = (async () => {
-          try {
-            // Collect all chunks
-            const chunks: Buffer[] = [];
-            for await (const chunk of file) {
-              chunks.push(chunk);
-            }
-            const buffer = Buffer.concat(chunks);
-
-            // Calculate duration from buffer
-            const metadata = await parseBuffer(buffer, mimeType);
-            const duration = metadata.format.duration
-              ? Math.round(metadata.format.duration)
-              : null;
-
-            if (!duration) {
-              throw new Error("Could not determine audio duration");
-            }
-            songData.duration = duration;
-
-            // Upload buffer to blob storage
-            const bufferStream = Readable.from(buffer);
-            await uploadBlob(blobName, bufferStream);
-            songData.audio_url = blobName;
-          } catch (error) {
-            return reject(error);
-          }
-        })();
-
-        uploadPromises.push(uploadPromise);
-      } else {
-        // For image files just upload directly
-        uploadPromises.push(
-          uploadBlob(blobName, file).then(() => {
-            if (fieldname === "image_url") {
-              songData.image_url = blobName;
-            }
-          })
-        );
-      }
-    });
-
-    busboy.on("error", (error) => reject(error));
-    busboy.on("finish", async () => {
-      try {
-        await Promise.all(uploadPromises);
-
-        // Validate required fields if upload
-        if (
-          mode === "upload" &&
-          (!songData.title ||
-            !songData.genre ||
-            !songData.duration ||
-            !songData.audio_url)
-        ) {
-          return reject(new Error("Missing required song fields"));
-        }
-
-        resolve(songData as SongData);
-      } catch (error) {
-        return reject(error);
-      }
-    });
-
-    req.pipe(busboy);
-  });
 }
 
 // temporary
@@ -311,6 +200,139 @@ export function parsePlaylistForm(req: Request): Promise<any> {
           const bufferStream = Readable.from(buffer);
           await uploadBlob(blobName, bufferStream);
           formData.image_url = blobName;
+        } catch (error) {
+          throw error;
+        }
+      })();
+
+      uploadPromises.push(uploadPromise);
+    });
+
+    busboy.on("error", (error) => reject(error));
+
+    busboy.on("finish", async () => {
+      try {
+        await Promise.all(uploadPromises);
+
+        if (formData.image_url === null) {
+          formData.image_url_blurhash = null;
+        }
+
+        resolve(formData);
+      } catch (error) {
+        reject(error);
+      }
+    });
+
+    req.pipe(busboy);
+  });
+}
+
+export function parseSongForm(req: Request): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const busboy = Busboy({ headers: req.headers });
+
+    const formData: any = {};
+    const uploadPromises: Promise<void>[] = [];
+
+    busboy.on("field", (fieldname, value) => {
+      if (value === "null") {
+        formData[fieldname] = null;
+      } else {
+        formData[fieldname] = value;
+      }
+    });
+
+    busboy.on("file", async (fieldname, file, info) => {
+      const { filename, mimeType } = info;
+
+      if (fieldname !== "image_url" && fieldname !== "audio_url") {
+        file.resume();
+        return;
+      }
+
+      const isImage = fieldname === "image_url";
+      const isAudio = fieldname === "audio_url";
+
+      if (isImage && !mimeType.startsWith("image/")) {
+        file.resume();
+        return reject(new Error("Invalid file type. Only images are allowed."));
+      }
+
+      if (isAudio && !mimeType.startsWith("audio/")) {
+        file.resume();
+        return reject(
+          new Error("Invalid file type. Only audio files are allowed.")
+        );
+      }
+
+      const supportedImageTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp",
+      ];
+
+      const supportedAudioType = "audio/mpeg";
+
+      if (isImage && !supportedImageTypes.includes(mimeType)) {
+        file.resume();
+        return reject(
+          new Error(
+            "Unsupported image format. Only JPEG, PNG, and WebP are allowed."
+          )
+        );
+      }
+
+      if (isAudio && mimeType !== supportedAudioType) {
+        file.resume();
+        return reject(
+          new Error("Unsupported audio format. Only MP3 files are allowed.")
+        );
+      }
+
+      const blobName = `${uuidv4()}-${filename}`;
+
+      const uploadPromise = (async () => {
+        try {
+          const chunks: Buffer[] = [];
+          let totalSize = 0;
+
+          for await (const chunk of file) {
+            totalSize += chunk.length;
+            if (totalSize > MAX_IMAGE_SIZE && isImage) {
+              throw new Error("Image file size exceeds 5MB limit.");
+            }
+            if (totalSize > MAX_AUDIO_SIZE && isAudio) {
+              throw new Error("Audio file size exceeds 10MB limit.");
+            }
+
+            chunks.push(chunk);
+          }
+
+          const buffer = Buffer.concat(chunks);
+
+          if (isImage) {
+            const blurhash = await generateBlurhash(buffer);
+            formData.image_url_blurhash = blurhash;
+          }
+
+          if (isAudio) {
+            const metadata = await parseBuffer(buffer, mimeType);
+            const duration = metadata.format.duration
+              ? Math.round(metadata.format.duration)
+              : null;
+
+            if (!duration) {
+              throw new Error("Unable to determine audio duration.");
+            }
+
+            formData.duration = duration;
+          }
+
+          const bufferStream = Readable.from(buffer);
+          await uploadBlob(blobName, bufferStream);
+          formData[fieldname] = blobName;
         } catch (error) {
           throw error;
         }

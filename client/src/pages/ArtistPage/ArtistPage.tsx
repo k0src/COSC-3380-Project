@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { artistApi } from "@api";
 import type { UUID } from "@types";
-import { useAsyncData } from "@hooks";
+import { useAsyncData, useErrorCheck } from "@hooks";
 import {
   ErrorPage,
   PageLoader,
@@ -70,35 +70,30 @@ const ArtistPage: React.FC = () => {
     [id]
   );
 
-  if (error) {
-    return (
-      <ErrorPage
-        title="Internal Server Error"
-        message="An unexpected error occurred. Please try again later."
-      />
-    );
-  }
+  const { shouldShowError, errorTitle, errorMessage } = useErrorCheck([
+    {
+      condition: !!error,
+      title: "Internal Server Error",
+      message: "An unexpected error occurred. Please try again later.",
+    },
+    {
+      condition: !artist && !loading,
+      title: "Artist Not Found",
+      message: "The requested artist does not exist.",
+    },
+    {
+      condition: artist?.user?.status !== "ACTIVE",
+      title: "Artist Not Found",
+      message: "The requested artist does not exist.",
+    },
+  ]);
 
   if (loading) {
     return <PageLoader />;
   }
 
-  if (!artist) {
-    return (
-      <ErrorPage
-        title="Artist Not Found"
-        message="The requested artist does not exist."
-      />
-    );
-  }
-
-  if (!artist.user || artist.user.status !== "ACTIVE") {
-    return (
-      <ErrorPage
-        title="Artist Not Found"
-        message="The requested artist does not exist."
-      />
-    );
+  if (shouldShowError) {
+    return <ErrorPage title={errorTitle} message={errorMessage} />;
   }
 
   return (

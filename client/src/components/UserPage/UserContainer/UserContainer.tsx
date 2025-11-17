@@ -59,7 +59,7 @@ const UserContainer: React.FC<UserContainerProps> = ({
             {userIsAdmin && <LuShield className={styles.userRoleIcon} />}
           </div>
           {userIsArtist && (
-            <Link to={`/artists/`} className={styles.artistLink}>
+            <Link to={`/artists/${artistId}`} className={styles.artistLink}>
               View Artist Page
             </Link>
           )}

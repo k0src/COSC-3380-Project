@@ -96,4 +96,60 @@ export const songApi = {
     });
     return response.data;
   },
+
+  async create(data: {
+    title: string;
+    created_by: UUID;
+    genre: string;
+    release_date: string;
+    visibility_status: string;
+    image?: File | null;
+    audio: File;
+  }) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const response = await api.post<Song>(`/songs`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  async update(
+    songId: UUID,
+    data: {
+      title?: string;
+      genre?: string;
+      release_date?: string;
+      visibility_status?: string;
+      image?: File | null;
+    }
+  ) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const reponse = await api.put<Song>(`/songs/${songId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return reponse.data;
+  },
+
+  async delete(songId: UUID) {
+    const response = await api.delete(`/songs/${songId}`);
+    return response.data;
+  },
 };

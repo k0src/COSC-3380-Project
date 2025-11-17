@@ -35,6 +35,7 @@ const PlaylistAddMenu: React.FC<PlaylistAddMenuProps> = ({
     [user?.id],
     {
       cacheKey: `playlist_add_menu_${user?.id}`,
+      enabled: !!user,
     }
   );
 

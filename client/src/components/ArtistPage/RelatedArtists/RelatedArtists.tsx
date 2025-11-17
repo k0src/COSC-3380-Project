@@ -46,8 +46,8 @@ const RelatedArtists: React.FC<RelatedArtistsProps> = ({ artistId }) => {
       <h2 className={styles.sectionTitle}>Fans Also Like</h2>
       <div className={styles.relatedArtistsList}>
         {relatedArtists.map((related) => (
-          <div className={styles.relatedArtistItem}>
-            <ArtistItem key={related.id} artist={related} size={14} />
+          <div key={related.id} className={styles.relatedArtistItem}>
+            <ArtistItem artist={related} size={14} />
           </div>
         ))}
       </div>

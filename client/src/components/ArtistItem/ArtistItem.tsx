@@ -30,7 +30,6 @@ const ArtistItem: React.FC<ArtistItemProps> = ({ artist, size = 18 }) => {
 
   return (
     <Link
-      key={artist.id}
       className={styles.artistItem}
       to={`/artists/${artist.id}`}
       onContextMenu={handleContextMenu}

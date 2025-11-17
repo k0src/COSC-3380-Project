@@ -1,8 +1,15 @@
-import type { UUID, Album, SongArtist, Artist } from "./index.js";
+import type {
+  UUID,
+  Album,
+  SongArtist,
+  Artist,
+  VisibilityStatus,
+} from "./index.js";
 
 // Main Song type
 export interface Song {
   id: UUID;
+  created_by: UUID;
   title: string;
   duration: number;
   genre: string;
@@ -12,6 +19,7 @@ export interface Song {
   audio_url: string;
   created_at: string;
   streams?: number;
+  visibility_status: VisibilityStatus;
 
   // Related fields
   albums?: Album[];
@@ -38,17 +46,6 @@ export interface ArtistSong extends Song {
 export interface SuggestedSong extends Song {
   total_score: number;
   main_artist: Artist;
-}
-
-// THIS NEEDS TO INCLUDE ARTISTS AND ALBUM!!!
-// Form data from client
-export interface SongData {
-  title?: string;
-  genre?: string;
-  duration?: number;
-  release_date?: string;
-  image_url?: string; // file in blob storage (i.e., [uuid]-cover.jpg)
-  audio_url?: string; // file in to blob storage (i.e., [uuid]-audio.mp3)
 }
 
 export interface LibrarySong extends Song {
