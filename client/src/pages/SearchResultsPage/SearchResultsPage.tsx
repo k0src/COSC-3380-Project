@@ -109,17 +109,21 @@ export default function SearchResultsPage() {
                   <h2 className={homeStyles.sectionTitle}>Albums</h2>
                 </div>
                 <div className={homeStyles.cardsContainer}>
-                  {albums.map((album: any, index) => (
-                    <SongCard
-                      key={`album-${index}`}
-                      title={album.title}
-                      artist={""}
-                      image={album.image_url || "/PlayerBar/Mask group.png"}
-                      plays={album.plays ?? 0}
-                      likes={album.likes ?? 0}
-                      comments={album.comments ?? 0}
-                    />
-                  ))}
+                  {albums.map((album: any, index) => {
+                    const albumId = album.id;
+                    return (
+                      <Link key={`album-${index}`} to={albumId ? `/albums/${albumId}` : "#"}>
+                        <SongCard
+                          title={album.title}
+                          artist={""}
+                          image={album.image_url || "/PlayerBar/Mask group.png"}
+                          plays={album.plays ?? 0}
+                          likes={album.likes ?? 0}
+                          comments={album.comments ?? 0}
+                        />
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
 
