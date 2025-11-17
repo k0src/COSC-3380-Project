@@ -374,13 +374,27 @@ router.post(
       
       if (userId) {
         // Get the user's artist_id from the users table
-        const userRows = await query(`SELECT artist_id FROM users WHERE id = $1`, [userId]);
+        console.log(`Looking up artist_id for user: ${userId}`);
+        const userRows = await query(`SELECT artist_id, role FROM users WHERE id = $1`, [userId]);
         const artistId = userRows.length > 0 ? userRows[0].artist_id : null;
+        const userRole = userRows.length > 0 ? userRows[0].role : null;
+        
+        console.log(`User role: ${userRole}, artist_id: ${artistId}`);
+        
+        // Check if user is an artist but doesn't have an artist_id (shouldn't happen but handle it)
+        if ((userRole === 'ARTIST' || userRole === 'ADMIN') && !artistId) {
+          console.error(`User ${userId} is ${userRole} but has no artist_id! This should not happen.`);
+          res.status(400).json({ 
+            error: "Artist profile not found. Please contact support or try logging out and back in." 
+          });
+          return;
+        }
         
         // If user is authenticated, associate the song with them as the main artist
-        sql = `INSERT INTO songs (id, title, audio_url, image_url, genre, duration, release_date, created_at) 
-               VALUES ($1,$2,$3,$4,$5,$6,NOW()::date,NOW()) RETURNING *`;
-        params = [id, title, audioBlobName, imageBlobName, genreVal, durationVal];
+        // Include owner_id (the user who uploaded the song)
+        sql = `INSERT INTO songs (id, title, audio_url, image_url, genre, duration, release_date, created_at, owner_id) 
+               VALUES ($1,$2,$3,$4,$5,$6,NOW()::date,NOW(),$7) RETURNING *`;
+        params = [id, title, audioBlobName, imageBlobName, genreVal, durationVal, userId];
         
         // Then insert into song_artists table with the artist_id
         const songRows = await query(sql, params);
@@ -388,21 +402,34 @@ router.post(
           const artistSql = `INSERT INTO song_artists (song_id, artist_id, role) VALUES ($1, $2, 'Main')`;
           await query(artistSql, [id, artistId]);
           console.log(`Song linked to artist: ${artistId}`);
+        } else if (songRows.length > 0) {
+          console.log(`Song created but not linked to any artist (user has no artist_id)`);
         }
         
         const rows = await query(`SELECT * FROM songs WHERE id = $1`, [id]);
         res.status(201).json(rows[0]);
       } else {
-        // If no user, just create the song without artist
-        sql = `INSERT INTO songs (id, title, audio_url, image_url, genre, duration, release_date, created_at) 
-               VALUES ($1,$2,$3,$4,$5,$6,NOW()::date,NOW()) RETURNING *`;
-        params = [id, title, audioBlobName, imageBlobName, genreVal, durationVal];
-        const rows = await query(sql, params);
-        res.status(201).json(rows[0]);
+        // If no user, cannot upload (owner_id is required)
+        res.status(401).json({ error: "Authentication required to upload songs" });
+        return;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in POST /songs:", error);
-      res.status(500).json({ error: "Failed to upload song" });
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to upload song";
+      if (error.message) {
+        console.error("Error details:", error.message);
+        if (error.message.includes("blob") || error.message.includes("storage")) {
+          errorMessage = "Failed to upload file to storage. Please check server configuration.";
+        } else if (error.message.includes("database") || error.message.includes("query")) {
+          errorMessage = "Database error occurred. Please try again.";
+        } else if (error.code) {
+          errorMessage = `Upload failed: ${error.code}`;
+        }
+      }
+      
+      res.status(500).json({ error: errorMessage, details: error.message });
     }
   }
 );

@@ -207,7 +207,9 @@ router.post(
         return;
       }
 
-      if (user.status?.toLowerCase() !== "active") {
+      // Check if account is active (if status field exists, it must be ACTIVE)
+      // If status is null/undefined, allow login (backward compatibility)
+      if (user.status && user.status.toLowerCase() !== "active") {
         res.status(401).json({
           error: "Unauthorized",
           message: "Account is not active",
@@ -348,10 +350,12 @@ router.post("/refresh", async (req: Request, res: Response) => {
       return;
     }
 
-    if (user.status?.toLowerCase() !== "active") {
+    // Check if account is active (if status field exists, it must be ACTIVE)
+    // If status is null/undefined, allow access (backward compatibility)
+    if (user.status && user.status.toLowerCase() !== "active") {
       res.status(401).json({
         error: "Unauthorized",
-        message: "Account is not active",
+        message: "User account is not active",
         statusCode: 401,
       });
       return;
