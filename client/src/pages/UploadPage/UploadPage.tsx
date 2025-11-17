@@ -440,8 +440,9 @@ const UploadPage: React.FC = () => {
                   entityType="album"
                   onChange={(value) => handleDropdownChange("albumId", value)}
                   disabled={isUploading}
-                  placeholder="Select an album (optional)"
+                  placeholder="Select an album..."
                   ownerId={user?.id}
+                  hint="Add this song to an existing album (Optional)"
                 />
 
                 <SearchableList
