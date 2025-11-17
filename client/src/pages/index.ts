@@ -12,8 +12,8 @@ export { default as HistoryPage } from "./LibraryPage/HistoryPage/HistoryPage.js
 
 export { default as LoginPage } from "./LoginPage/LoginPage.js";
 export { default as SignupPage } from "./SignupPage/SignupPage.js";
-
 export { default as UserPage } from "./UserPage/UserPage.js";
 export { default as UserInfoPage } from "./UserPage/UserInfoPage/UserInfoPage.js";
 
 export { default as SettingsPage } from "./AccountPage/SettingsPage/SettingsPage.js";
+export { default as SearchResultsPage } from "./SearchResultsPage/SearchResultsPage.js";

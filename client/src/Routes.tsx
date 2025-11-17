@@ -26,6 +26,14 @@ export default function AppRoutes() {
               />
             )}
             <Route
+              path="/search"
+              element={
+                <MainLayout>
+                  <Pages.SearchResultsPage />
+                </MainLayout>
+              }
+            />
+            <Route
               path="/songs/:id"
               element={
                 <MainLayout>

@@ -29,9 +29,9 @@ export default class SearchService {
       const results = await query(
         `
         SELECT
-          (SELECT json_agg(s) FROM songs s WHERE s.title ILIKE $1) AS songs,
+          (SELECT json_agg(s) FROM songs s WHERE s.title ILIKE $1 OR s.genre ILIKE $1) AS songs,
           (SELECT json_agg(a) FROM albums a WHERE a.title ILIKE $1) AS albums,
-          (SELECT json_agg(ar) FROM artists ar WHERE ar.display_name ILIKE $1) AS artists,
+          (SELECT json_agg(ar) FROM artists ar WHERE ar.display_name ILIKE $1 OR ar.bio ILIKE $1) AS artists,
           (SELECT json_agg(p) FROM playlists p WHERE p.title ILIKE $1) AS playlists,
           (SELECT json_agg(u) FROM users u WHERE u.username ILIKE $1) AS users
         `,
@@ -162,7 +162,7 @@ export default class SearchService {
     try {
       const results = await query(
         `SELECT * FROM songs s
-        WHERE s.title ILIKE $1`,
+        WHERE s.title ILIKE $1 OR s.genre ILIKE $1`,
         [`%${q}%`]
       );
 
@@ -268,10 +268,12 @@ export default class SearchService {
   static async searchArtists(q: string): Promise<Artist[]> {
     try {
       const results = await query(
-        `SELECT ar.*, u.*
+        `SELECT 
+          ar.*,
+          row_to_json(u) AS user
         FROM artists ar
-        JOIN users u ON ar.user_id = u.id
-        WHERE ar.display_name ILIKE $1`,
+        LEFT JOIN users u ON ar.user_id = u.id
+        WHERE ar.display_name ILIKE $1 OR ar.bio ILIKE $1`,
         [`%${q}%`]
       );
 
