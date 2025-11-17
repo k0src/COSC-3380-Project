@@ -1,0 +1,138 @@
+.PlayerBar {
+  position: fixed;
+  bottom: 0;
+  left: 80px; /* Match sidebar width */
+  right: 0;
+  height: 90px;
+  background-color: #121212;
+  border-top: 1px solid #222;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 900;
+}
+
+/* Left section - Song info */
+.playerInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 180px;
+  width: 30%;
+}
+
+.playerImage {
+  width: 56px;
+  height: 56px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.playerSong {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.playerSong p {
+  color: #fff;
+  margin: 0;
+  font-size: 14px;
+}
+
+.playerSong span {
+  color: #a7a7a7;
+  font-size: 12px;
+}
+
+/* Center section - Controls */
+.playerControls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 722px;
+}
+
+.playButtons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.playButtons button {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.playButtons button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.playButton {
+  width: 32px;
+  height: 32px;
+}
+
+/* Progress bar */
+.progressContainer {
+  width: 100%;
+  height: 4px;
+  background-color: #4d4d4d;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.progressBar {
+  height: 100%;
+  background-color: #fff;
+  border-radius: 2px;
+  width: 30%; /* Update dynamically with JS */
+}
+
+/* Right section - Volume */
+.playerExtra {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 180px;
+  width: 30%;
+  justify-content: flex-end;
+}
+
+.volumeControl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.iconButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.iconButton img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.iconButton:hover img {
+  opacity: 1;
+}
