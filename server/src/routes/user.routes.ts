@@ -10,6 +10,7 @@ import {
 } from "@services";
 import { parseForm } from "@infra/form-parser";
 import { handlePgError } from "@util/pgErrorHandler.util";
+import { authenticateToken } from "@middleware";
 
 const router = express.Router();
 
@@ -83,56 +84,82 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 });
 
 // DELETE /api/users/:id
-router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
+router.delete(
+  "/:id",
+  authenticateToken,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
 
-  if (!id) {
-    res.status(400).json({ error: "User ID is required" });
-    return;
-  }
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
 
-  try {
-    const deletedUser = await UserRepository.delete(id);
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
+        return;
+      }
 
-    if (!deletedUser) {
-      res.status(404).json({ error: "User not found" });
+      const deletedUser = await UserRepository.delete(id);
+
+      if (!deletedUser) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+
+      res.status(200).json({ message: "User deleted successfully" });
+    } catch (error: any) {
+      console.error("Error in DELETE /users/:id:", error);
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
       return;
     }
-
-    res.status(200).json({ message: "User deleted successfully" });
-  } catch (error: any) {
-    console.error("Error in DELETE /users/:id:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
-    return;
   }
-});
+);
 
 // PUT /api/users/:id
-router.put("/:id", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
+router.put(
+  "/:id",
+  authenticateToken,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
 
-  if (!id) {
-    res.status(400).json({ error: "User ID is required" });
-    return;
-  }
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
 
-  try {
-    const updateData = await parseForm(req, "user");
-    const updatedUser = await UserRepository.update(id, updateData);
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
+        return;
+      }
 
-    if (!updatedUser) {
-      res.status(404).json({ error: "User not found" });
-      return;
+      const updateData = await parseForm(req, "user");
+      const updatedUser = await UserRepository.update(id, updateData);
+
+      if (!updatedUser) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+
+      res.status(200).json(updatedUser);
+    } catch (error: any) {
+      console.error("Error in PUT /users/:id:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
     }
-
-    res.status(200).json(updatedUser);
-  } catch (error: any) {
-    console.error("Error in PUT /users/:id:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
   }
-});
+);
 
 /* ========================================================================== */
 /*                               User Playlists                               */
@@ -243,12 +270,22 @@ router.get(
 // POST /api/users/:id/library/playlists/pin
 router.post(
   "/:id/library/playlists/pin",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const { playlistId } = req.body;
       if (!id || !playlistId) {
         res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
         return;
       }
 
@@ -675,16 +712,25 @@ router.get(
 // POST /api/users/:id/likes
 router.post(
   "/:id/likes",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    const { entityId, entityType } = req.body;
-
-    if (!id || !entityId || !entityType) {
-      res.status(400).json({ error: "Missing required parameters" });
-      return;
-    }
-
     try {
+      const { id } = req.params;
+      const { entityId, entityType } = req.body;
+      if (!id || !entityId || !entityType) {
+        res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
+        return;
+      }
+
       const result = await LikeService.toggleLike(id, entityId, entityType);
       res.status(200).json({ message: `${entityType} ${result} successfully` });
     } catch (error: any) {
@@ -807,16 +853,25 @@ router.get(
 // POST /api/users/:id/following
 router.post(
   "/:id/following",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    const { followingId } = req.body;
-
-    if (!id || !followingId) {
-      res.status(400).json({ error: "Missing required parameters" });
-      return;
-    }
-
     try {
+      const { id } = req.params;
+      const { followingId } = req.body;
+      if (!id || !followingId) {
+        res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
+        return;
+      }
+
       const result = await FollowService.toggleFollow(id, followingId);
       res.status(200).json({ message: `User ${result} sucessfully` });
     } catch (error: any) {
@@ -905,14 +960,24 @@ router.get(
 // GET /api/users/:id/settings
 router.get(
   "/:id/settings",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).json({ error: "User ID is required" });
-      return;
-    }
-
     try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
+        return;
+      }
+
       const settings = await UserSettingsService.getSettings(id);
       res.status(200).json(settings);
     } catch (error: any) {
@@ -927,27 +992,37 @@ router.get(
 // PUT /api/users/:id/settings
 router.put(
   "/:id/settings",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).json({ error: "User ID is required" });
-      return;
-    }
-
-    const {
-      release_notifications,
-      playlist_like_notifications,
-      follower_notifications,
-      comment_tag_notifications,
-      color_scheme,
-      color_theme,
-      zoom_level,
-      artist_like_notifications,
-      song_comment_notifications,
-      songs_discoverable,
-    } = req.body;
-
     try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
+        return;
+      }
+
+      const {
+        release_notifications,
+        playlist_like_notifications,
+        follower_notifications,
+        comment_tag_notifications,
+        color_scheme,
+        color_theme,
+        zoom_level,
+        artist_like_notifications,
+        song_comment_notifications,
+        songs_discoverable,
+      } = req.body;
+
       const updatedSettings = await UserSettingsService.updateSettings(id, {
         release_notifications,
         playlist_like_notifications,
@@ -1026,11 +1101,21 @@ router.get(
 // PUT /api/users/:id/notifications/:notificationId/read
 router.put(
   "/:id/notifications/:notificationId/read",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id, notificationId } = req.params;
       if (!id || !notificationId) {
         res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
         return;
       }
 
@@ -1048,9 +1133,10 @@ router.put(
   }
 );
 
-// PUT /api/users/:id/notifications/read-all
-router.put(
+// POST /api/users/:id/notifications/read-all
+router.post(
   "/:id/notifications/read-all",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -1059,10 +1145,19 @@ router.put(
         return;
       }
 
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
+        return;
+      }
+
       await NotificationsService.markAllAsRead(id);
       res.status(200).json({ message: "All notifications marked as read" });
     } catch (error: any) {
-      console.error("Error in PUT /users/:id/notifications/read-all:", error);
+      console.error("Error in POST /users/:id/notifications/read-all:", error);
       const errorMessage = error.message || "Internal server error";
       res.status(500).json({ error: errorMessage });
       return;
@@ -1073,11 +1168,21 @@ router.put(
 // PUT /api/users/:id/notifications/:notificationId/archive
 router.put(
   "/:id/notifications/:notificationId/archive",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id, notificationId } = req.params;
       if (!id || !notificationId) {
         res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
         return;
       }
 
@@ -1095,14 +1200,24 @@ router.put(
   }
 );
 
-// PUT /api/users/:id/notifications/archive-all
-router.put(
+// POST /api/users/:id/notifications/archive-all
+router.post(
   "/:id/notifications/archive-all",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
         return;
       }
 
@@ -1112,7 +1227,7 @@ router.put(
         .json({ message: "All notifications archived successfully" });
     } catch (error: any) {
       console.error(
-        "Error in PUT /users/:id/notifications/archive-all:",
+        "Error in POST /users/:id/notifications/archive-all:",
         error
       );
       const errorMessage = error.message || "Internal server error";

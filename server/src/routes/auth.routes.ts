@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { body, validationResult } from "express-validator";
-import { UserRepository } from "@repositories";
+import { UserRepository, ArtistRepository } from "@repositories";
 import { TokenBlacklistManager } from "@services";
 import {
   generateTokenPair,
@@ -19,6 +19,7 @@ interface SignupRequest {
   username: string;
   email: string;
   password: string;
+  role?: "USER" | "ARTIST";
 }
 
 interface LoginRequest {
@@ -75,7 +76,7 @@ router.post(
         return;
       }
 
-      const { username, email, password } = req.body;
+      const { username, email, password, role } = req.body;
 
       const existingUser = await UserRepository.getByEmail(email);
       if (existingUser) {
@@ -101,6 +102,7 @@ router.post(
         username,
         email,
         password,
+        role: role || "USER",
       });
 
       if (!user) {
@@ -110,6 +112,25 @@ router.post(
           statusCode: 500,
         });
         return;
+      }
+
+      if (user.role === "ARTIST") {
+        const artist = await ArtistRepository.create({
+          user_id: user.id,
+          display_name: user.username,
+        });
+
+        if (!artist) {
+          res.status(500).json({
+            error: "Internal Server Error",
+            message: "Failed to create artist profile",
+            statusCode: 500,
+          });
+          return;
+        }
+
+        await UserRepository.update(user.id, { artist_id: artist.id });
+        user.artist_id = artist.id;
       }
 
       const tokens = generateTokenPair({

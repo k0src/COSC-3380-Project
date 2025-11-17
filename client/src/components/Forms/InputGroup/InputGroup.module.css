@@ -8,7 +8,6 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text-gray);
-  padding-left: var(--spacing-2xs);
 }
 
 .input {
@@ -46,7 +45,7 @@
 .inputErrorText {
   font-size: var(--font-size-xs);
   color: var(--color-accent);
-  padding-left: var(--spacing-2xs);
+  font-weight: 500;
 }
 
 .inputHint {
@@ -57,5 +56,5 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-gray);
   font-style: italic;
-  padding-left: var(--spacing-2xs);
+  line-height: var(--line-height-normal);
 }

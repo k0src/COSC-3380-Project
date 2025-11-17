@@ -212,7 +212,9 @@ const UserRecentActivity: React.FC<{
   }
 
   if (!recentActivity || recentActivity.length === 0) {
-    return null;
+    return (
+      <div className={styles.noActivity}>No recent activity to display.</div>
+    );
   }
 
   return (

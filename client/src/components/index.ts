@@ -139,3 +139,4 @@ export { default as LazyImg } from "./LazyImg/LazyImg.js";
 /* ================================== Forms ================================= */
 export { default as InputGroup } from "./Forms/InputGroup/InputGroup.js";
 export { default as FormSubmitButton } from "./Forms/FormButton/FormSubmitButton.js";
+export { default as Dropdown } from "./Forms/Dropdown/Dropdown.js";

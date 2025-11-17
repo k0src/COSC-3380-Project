@@ -93,6 +93,7 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-gray);
   font-style: italic;
+  line-height: var(--line-height-normal);
 }
 
 .hiddenInput {

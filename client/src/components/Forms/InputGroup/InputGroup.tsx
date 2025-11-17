@@ -44,11 +44,7 @@ const InputGroup: React.FC<InputGroupProps> = ({
         disabled={disabled}
       />
       {error && <span className={styles.inputErrorText}>{error}</span>}
-      {hint && (
-        <div className={styles.inputHint}>
-          <span className={styles.inputHintText}>{hint}</span>
-        </div>
-      )}
+      {hint && <span className={styles.inputHintText}>{hint}</span>}
     </div>
   );
 };

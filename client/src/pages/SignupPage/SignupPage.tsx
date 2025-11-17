@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useAuth } from "@contexts";
 import type { SignupData } from "@types";
 import { validateSignupForm, type ValidationErrors } from "@validators";
-import { InputGroup, FormSubmitButton, PageLoader } from "@components";
+import {
+  InputGroup,
+  FormSubmitButton,
+  PageLoader,
+  Dropdown,
+} from "@components";
 
 import styles from "./SignupPage.module.css";
 import Logo from "@assets/logo.svg?react";
 
 const SignupPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const asArtist = searchParams.get("artist") === "true";
+
   const [formData, setFormData] = useState<SignupData>({
     username: "",
     email: "",
     password: "",
+    role: asArtist ? "ARTIST" : "USER",
   });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,6 +76,16 @@ const SignupPage: React.FC = () => {
       setValidationErrors((prev) => ({ ...prev, [name]: undefined }));
     }
 
+    if (error) {
+      clearError();
+    }
+  };
+
+  const handleDropdownChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, role: value as "USER" | "ARTIST" }));
+    if (validationErrors.role) {
+      setValidationErrors((prev) => ({ ...prev, role: undefined }));
+    }
     if (error) {
       clearError();
     }
@@ -151,6 +170,19 @@ const SignupPage: React.FC = () => {
               placeholder="Confirm your password"
               error={validationErrors.confirmPassword}
               disabled={isSubmitting}
+            />
+            <Dropdown
+              label="Account Type"
+              name="role"
+              value={formData.role || "USER"}
+              onChange={handleDropdownChange}
+              options={[
+                { value: "USER", label: "Listener" },
+                { value: "ARTIST", label: "Artist" },
+              ]}
+              error={validationErrors.role}
+              disabled={isSubmitting}
+              hint="Select the type of account you want to create. Artists can upload music and create artist profiles."
             />
 
             {error && (

@@ -24,7 +24,7 @@ export const notificationsApi = {
   },
 
   async markAllAsRead(userId: UUID) {
-    await api.put(`/users/${userId}/notifications/read-all`);
+    await api.post(`/users/${userId}/notifications/read-all`);
   },
 
   async archive(userId: UUID, notificationId: UUID) {
@@ -32,6 +32,6 @@ export const notificationsApi = {
   },
 
   async archiveAll(userId: UUID) {
-    await api.put(`/users/${userId}/notifications/archive-all`);
+    await api.post(`/users/${userId}/notifications/archive-all`);
   },
 };

@@ -102,3 +102,9 @@
   opacity: 1;
   transition: opacity var(--transition-speed) ease;
 }
+
+.noActivity {
+  text-align: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
