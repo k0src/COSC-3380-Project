@@ -1,5 +1,5 @@
 import { memo, useState, useCallback, useRef, useEffect } from "react";
-import Blurhash from "react-blurhash";
+import { Blurhash } from "react-blurhash";
 import styles from "./LazyImg.module.css";
 import classNames from "classnames";
 import blurPlaceholder from "@assets/blur-placeholder.webp";
