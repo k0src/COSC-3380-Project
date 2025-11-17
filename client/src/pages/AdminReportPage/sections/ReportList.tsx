@@ -31,7 +31,8 @@ const ReportsList: React.FC<ReportsListProps> = ({
       user: "users",
       song: "songs",
       album: "albums",
-      playlist: "playlists"
+      playlist: "playlists",
+      artist: "artists"
     };
     
     const routePrefix = routeMap[reportType];

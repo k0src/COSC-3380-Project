@@ -15,11 +15,13 @@ const ReportPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Extract entity and entityId from URL path: .../entity/entityId
+  // Extract entity and entityId from URL path
+  // URL structure: /songs/id, /artists/id, /playlists/id, /albums/id, /users/id
   const pathParts = location.pathname.split('/').filter(Boolean);
-  const entity = pathParts[pathParts.length - 2]; // second to last part
-  const entityId = pathParts[pathParts.length - 1]; // last part
-  const entityType = entity?.toUpperCase();
+  const entityPlural = pathParts[pathParts.length - 2]; // e.g., "songs", "artists", "playlists"
+  const entityId = pathParts[pathParts.length - 1]; // the UUID
+  
+  const entityType = entityPlural?.replace(/s$/, '').toUpperCase();
 
   if (!isAuthenticated || !user) {
     return null;

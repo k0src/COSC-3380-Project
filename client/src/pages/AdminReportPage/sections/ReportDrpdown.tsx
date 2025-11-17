@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './ReportSection.module.css';
 
-export type ReportType = 'user' | 'song' | 'album' | 'playlist';
+export type ReportType = 'user' | 'song' | 'album' | 'playlist' | 'artist';
 
 interface ReportDropdownProps {
   selectedReport: ReportType;
@@ -44,7 +44,7 @@ const ReportDropdown: React.FC<ReportDropdownProps> = ({ selectedReport, onSelec
 
       {isOpen && (
         <div className={styles.dropdownMenu}>
-          {(['user', 'song', 'album', 'playlist'] as ReportType[]).map((type) => (
+          {(['user', 'song', 'album', 'playlist', 'artist'] as ReportType[]).map((type) => (
             <div
               key={type}
               className={`${styles.dropdownItem} ${

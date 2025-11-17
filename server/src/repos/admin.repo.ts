@@ -1,7 +1,7 @@
 import { query } from "config/database.js";
 import type { UUID } from "types";
 
-export type ReportEntity = "user" | "song" | "album" | "playlist";
+export type ReportEntity = "user" | "song" | "album" | "playlist" | "artist";
 
 export default class AdminRepository {
   static async getReports(
@@ -15,7 +15,8 @@ export default class AdminRepository {
         user: { table: 'users', titleColumn: 'username' },
         song: { table: 'songs', titleColumn: 'title' },
         album: { table: 'albums', titleColumn: 'title' },
-        playlist: { table: 'playlists', titleColumn: 'name' }
+        playlist: { table: 'playlists', titleColumn: 'name' },
+        artist: { table: 'artists', titleColumn: 'display_name' }
       };
 
       const config = entityConfig[entity];
@@ -87,6 +88,14 @@ export default class AdminRepository {
         case "user":
           entityUpdateSql = `
             UPDATE users
+            SET status = 'SUSPENDED'
+            WHERE id = $1;
+          `;
+          break;
+        
+        case "artist":
+          entityUpdateSql = `
+            UPDATE artists
             SET status = 'SUSPENDED'
             WHERE id = $1;
           `;

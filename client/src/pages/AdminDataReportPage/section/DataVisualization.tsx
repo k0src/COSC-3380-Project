@@ -41,9 +41,10 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
     }
 
     // Handle friendly display for item types
-    if (key === "item_type") {
+    if (key === "item_type" || key === "content_type") {
       const itemMap: Record<string, string> = {
         user: "User",
+        artist: "Artist",
         song: "Song",
         album: "Album",
         playlist: "Playlist"
@@ -55,6 +56,8 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
     if (key === "status") {
       const statusMap: Record<string, { label: string; color: string }> = {
         pending: { label: "Pending", color: "" },
+        suspended: { label: "Suspended", color: styles.negative },
+        hidden: { label: "Hidden", color: styles.negative },
         resolved: { label: "Resolved", color: styles.positive },
         dismissed: { label: "Dismissed", color: styles.negative }
       };

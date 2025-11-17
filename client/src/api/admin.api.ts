@@ -1,7 +1,7 @@
 import api from "./api";
 import type { UUID } from "@types";
 
-export type EntityType = "user" | "song" | "album" | "playlist";
+export type EntityType = "user" | "song" | "album" | "playlist" | "artist";
 
 export type Report = {
   report_id: UUID;

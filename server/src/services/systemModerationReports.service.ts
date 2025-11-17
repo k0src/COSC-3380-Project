@@ -57,7 +57,7 @@ export class SystemModerationReportsService {
     
     // Build union query
     sql += this.buildUnionQuery(contentType);
-    sql += `) r WHERE r.reported_at BETWEEN $1 AND $2`;
+    sql += `) r WHERE r.reported_at >= $1::date AND r.reported_at < ($2::date + INTERVAL '1 day')`;
     
     // Filter by report types if given
     if (reportTypes && reportTypes.length > 0) {
@@ -273,6 +273,11 @@ export class SystemModerationReportsService {
       entries.push(...userReports);
     }
     
+    if (contentType === 'all' || contentType === 'artist') {
+      const artistReports = await this.getReportedEntriesForType('artist', dateRange, reportTypes, searchTerm);
+      entries.push(...artistReports);
+    }
+    
     if (contentType === 'all' || contentType === 'song') {
       const songReports = await this.getReportedEntriesForType('song', dateRange, reportTypes, searchTerm);
       entries.push(...songReports);
@@ -303,6 +308,11 @@ export class SystemModerationReportsService {
       summaries.push(...userSummaries);
     }
     
+    if (contentType === 'all' || contentType === 'artist') {
+      const artistSummaries = await this.getReportSummaryForType('artist', dateRange, reportTypes, searchTerm);
+      summaries.push(...artistSummaries);
+    }
+    
     if (contentType === 'all' || contentType === 'song') {
       const songSummaries = await this.getReportSummaryForType('song', dateRange, reportTypes, searchTerm);
       summaries.push(...songSummaries);
@@ -325,7 +335,7 @@ export class SystemModerationReportsService {
   }
 
   private static async getReportSummaryForType(
-    itemType: 'user' | 'song' | 'album' | 'playlist',
+    itemType: 'user' | 'song' | 'album' | 'playlist' | 'artist',
     dateRange: DateRange,
     reportTypes?: string[],
     searchTerm?: string
@@ -337,6 +347,10 @@ export class SystemModerationReportsService {
       case 'user':
         entityJoin = 'LEFT JOIN users e ON r.reported_id = e.id';
         entityName = 'e.username';
+        break;
+      case 'artist':
+        entityJoin = 'LEFT JOIN artists e ON r.reported_id = e.id';
+        entityName = 'e.display_name';
         break;
       case 'song':
         entityJoin = 'LEFT JOIN songs e ON r.reported_id = e.id';
@@ -360,7 +374,7 @@ export class SystemModerationReportsService {
         MAX(r.reported_at) as latest_reported_at
       FROM ${itemType}_reports r
       ${entityJoin}
-      WHERE r.reported_at BETWEEN $1 AND $2
+      WHERE r.reported_at >= $1::date AND r.reported_at < ($2::date + INTERVAL '1 day')
     `;
     
     const params = [dateRange.from, dateRange.to];
@@ -393,6 +407,11 @@ export class SystemModerationReportsService {
       details.push(...userDetails);
     }
     
+    if (contentType === 'all' || contentType === 'artist') {
+      const artistDetails = await this.getReportDetailsForType('artist', dateRange, reportTypes, searchTerm);
+      details.push(...artistDetails);
+    }
+    
     if (contentType === 'all' || contentType === 'song') {
       const songDetails = await this.getReportDetailsForType('song', dateRange, reportTypes, searchTerm);
       details.push(...songDetails);
@@ -415,7 +434,7 @@ export class SystemModerationReportsService {
   }
 
   private static async getReportDetailsForType(
-    itemType: 'user' | 'song' | 'album' | 'playlist',
+    itemType: 'user' | 'song' | 'album' | 'playlist' | 'artist',
     dateRange: DateRange,
     reportTypes?: string[],
     searchTerm?: string
@@ -427,6 +446,10 @@ export class SystemModerationReportsService {
       case 'user':
         entityJoin = 'LEFT JOIN users e ON r.reported_id = e.id';
         entityName = 'e.username';
+        break;
+      case 'artist':
+        entityJoin = 'LEFT JOIN artists e ON r.reported_id = e.id';
+        entityName = 'e.display_name';
         break;
       case 'song':
         entityJoin = 'LEFT JOIN songs e ON r.reported_id = e.id';
@@ -449,13 +472,14 @@ export class SystemModerationReportsService {
         r.report_type,
         CASE 
           WHEN r.report_status = 'PENDING_REVIEW' THEN 'pending'
-          WHEN r.report_status = 'ACTION_TAKEN' THEN 'resolved'
+          WHEN r.report_status = 'ACTION_TAKEN' AND '${itemType}' IN ('user', 'artist') THEN 'suspended'
+          WHEN r.report_status = 'ACTION_TAKEN' THEN 'hidden'
           WHEN r.report_status = 'DISMISSED' THEN 'dismissed'
           ELSE 'pending'
         END as status
       FROM ${itemType}_reports r
       ${entityJoin}
-      WHERE r.reported_at BETWEEN $1 AND $2
+      WHERE r.reported_at >= $1::date AND r.reported_at < ($2::date + INTERVAL '1 day')
     `;
     
     const params = [dateRange.from, dateRange.to];
@@ -480,7 +504,7 @@ export class SystemModerationReportsService {
   }
 
   private static async getReportedEntriesForType(
-    itemType: 'user' | 'song' | 'album' | 'playlist',
+    itemType: 'user' | 'song' | 'album' | 'playlist' | 'artist',
     dateRange: DateRange,
     reportTypes?: string[],
     searchTerm?: string
@@ -492,6 +516,10 @@ export class SystemModerationReportsService {
       case 'user':
         entityJoin = 'LEFT JOIN users e ON r.reported_id = e.id';
         entityName = 'e.username';
+        break;
+      case 'artist':
+        entityJoin = 'LEFT JOIN artists e ON r.reported_id = e.id';
+        entityName = 'e.display_name';
         break;
       case 'song':
         entityJoin = 'LEFT JOIN songs e ON r.reported_id = e.id';
@@ -522,7 +550,7 @@ export class SystemModerationReportsService {
         END as status,
         r.reported_at as created_at,
         CASE 
-          WHEN r.report_status = 'ACTION_TAKEN' AND '${itemType}' = 'user' THEN 'suspended'
+          WHEN r.report_status = 'ACTION_TAKEN' AND '${itemType}' IN ('user', 'artist') THEN 'suspended'
           WHEN r.report_status = 'ACTION_TAKEN' THEN 'hidden'
           WHEN r.report_status = 'DISMISSED' THEN 'dismissed'
           ELSE NULL
@@ -573,6 +601,8 @@ export class SystemModerationReportsService {
       return `
         SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM user_reports
         UNION ALL
+        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM artist_reports
+        UNION ALL
         SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM song_reports
         UNION ALL
         SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM album_reports
@@ -594,12 +624,13 @@ export class SystemModerationReportsService {
 
     const contentTypes = contentType === 'all' 
       ? [{ type: 'user', table: 'users', nameCol: 'username' },
+         { type: 'artist', table: 'artists', nameCol: 'display_name' },
          { type: 'song', table: 'songs', nameCol: 'title' },
          { type: 'album', table: 'albums', nameCol: 'title' },
          { type: 'playlist', table: 'playlists', nameCol: 'title' }]
       : [{ type: contentType, 
-           table: contentType === 'user' ? 'users' : `${contentType}s`, 
-           nameCol: contentType === 'user' ? 'username' : 'title' }];
+           table: contentType === 'user' ? 'users' : contentType === 'artist' ? 'artists' : `${contentType}s`, 
+           nameCol: contentType === 'user' ? 'username' : contentType === 'artist' ? 'display_name' : 'title' }];
 
     contentTypes.forEach(({ type, table, nameCol }) => {
       unions.push(`

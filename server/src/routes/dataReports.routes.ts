@@ -132,6 +132,7 @@ router.get("/categories", (req, res) => {
             { value: "all", label: "All Content" },
             { value: "song", label: "Songs" },
             { value: "user", label: "Users" },
+            { value: "artist", label: "Artists" },
             { value: "album", label: "Albums" },
             { value: "playlist", label: "Playlists" }
           ],
