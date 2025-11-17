@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { PlaylistRepository } from "@repositories";
 import { generatePlaylistImage } from "@util";
-import { parsePlaylistForm } from "@infra/form-parser";
+import { parseForm } from "@infra/form-parser";
 import { LikeService } from "@services";
 import { handlePgError } from "@util/pgErrorHandler.util";
 
@@ -39,7 +39,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 // POST /api/playlists
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const createData = await parsePlaylistForm(req);
+    const createData = await parseForm(req, "playlist");
     const newPlaylist = await PlaylistRepository.create(createData);
     if (!newPlaylist) {
       res.status(400).json({ error: "Failed to create playlist" });
@@ -94,7 +94,7 @@ router.put("/:id", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const updateData = await parsePlaylistForm(req);
+    const updateData = await parseForm(req, "playlist");
     const updatedPlaylist = await PlaylistRepository.update(id, updateData);
 
     if (!updatedPlaylist) {

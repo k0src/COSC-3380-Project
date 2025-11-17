@@ -305,7 +305,7 @@ const SettingsPage: React.FC = () => {
       if (accountForm.removeProfilePicture) {
         updateData.profile_picture_url = null;
       } else if (accountForm.profilePicture) {
-        updateData.profile_picture = accountForm.profilePicture;
+        updateData.profile_picture_url = accountForm.profilePicture;
       }
 
       const updatedUser = await userApi.update(user.id, updateData);

@@ -173,7 +173,7 @@ export const artistApi = {
     display_name: string;
     bio: string;
     location?: string;
-    banner_image?: File | null;
+    banner_image_url?: File | null;
   }) {
     const formData = new FormData();
 
@@ -197,7 +197,7 @@ export const artistApi = {
       display_name?: string;
       bio?: string;
       location?: string;
-      banner_image?: File | null;
+      banner_image_url?: File | null;
     }
   ) {
     const formData = new FormData();

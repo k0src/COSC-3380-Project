@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { ArtistRepository } from "@repositories";
 import { validateOrderBy } from "@validators";
 import { FollowService } from "@services";
-import { parseArtistForm } from "@infra/form-parser";
+import { parseForm } from "@infra/form-parser";
 import { handlePgError } from "@util";
 
 const router = express.Router();
@@ -71,7 +71,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 // POST /api/artists
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const artistData = await parseArtistForm(req);
+    const artistData = await parseForm(req, "artist");
     const newArtist = await ArtistRepository.create(artistData);
 
     if (!newArtist) {
@@ -96,7 +96,7 @@ router.put("/:id", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const artistData = await parseArtistForm(req);
+    const artistData = await parseForm(req, "artist");
     const updatedArtist = await ArtistRepository.update(id, artistData);
 
     if (!updatedArtist) {

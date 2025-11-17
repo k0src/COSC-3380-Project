@@ -30,104 +30,51 @@ async function generateBlurhash(buffer: Buffer): Promise<string> {
   }
 }
 
-export function parseUserForm(req: Request): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const busboy = Busboy({ headers: req.headers });
+type FormEntityType = "user" | "playlist" | "song" | "album" | "artist";
 
-    const formData: any = {};
-    const uploadPromises: Promise<void>[] = [];
-
-    busboy.on("field", (fieldname, value) => {
-      if (value === "null") {
-        formData[fieldname] = null;
-      } else {
-        formData[fieldname] = value;
-      }
-    });
-
-    busboy.on("file", async (fieldname, file, info) => {
-      const { filename, mimeType } = info;
-
-      if (fieldname !== "profile_picture") {
-        file.resume();
-        return;
-      }
-
-      if (!mimeType.startsWith("image/")) {
-        file.resume();
-        return reject(new Error("Invalid file type. Only images are allowed."));
-      }
-
-      const supportedTypes = [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/webp",
-      ];
-      if (!supportedTypes.includes(mimeType)) {
-        file.resume();
-        return reject(
-          new Error(
-            "Unsupported image format. Only JPEG, PNG, and WebP are allowed."
-          )
-        );
-      }
-
-      const blobName = `${uuidv4()}-${filename}`;
-
-      const uploadPromise = (async () => {
-        try {
-          const chunks: Buffer[] = [];
-          let totalSize = 0;
-
-          for await (const chunk of file) {
-            totalSize += chunk.length;
-            if (totalSize > MAX_IMAGE_SIZE) {
-              throw new Error("Image file size exceeds 5MB limit.");
-            }
-            chunks.push(chunk);
-          }
-
-          const buffer = Buffer.concat(chunks);
-
-          const blurhash = await generateBlurhash(buffer);
-          formData.pfp_blurhash = blurhash;
-
-          const bufferStream = Readable.from(buffer);
-          await uploadBlob(blobName, bufferStream);
-          formData.profile_picture_url = blobName;
-        } catch (error) {
-          throw error;
-        }
-      })();
-
-      uploadPromises.push(uploadPromise);
-    });
-
-    busboy.on("error", (error) => reject(error));
-
-    busboy.on("finish", async () => {
-      try {
-        await Promise.all(uploadPromises);
-
-        if (formData.profile_picture_url === null) {
-          formData.pfp_blurhash = null;
-        }
-
-        resolve(formData);
-      } catch (error) {
-        reject(error);
-      }
-    });
-
-    req.pipe(busboy);
-  });
+interface FormEntityConfig {
+  imageFields: string[];
+  audioFields?: string[];
+  blurhashMapping: { [key: string]: string };
 }
 
-export function parsePlaylistForm(req: Request): Promise<any> {
+const FORM_ENTITY_CONFIGS: Record<FormEntityType, FormEntityConfig> = {
+  user: {
+    imageFields: ["profile_picture_url"],
+    blurhashMapping: { profile_picture_url: "pfp_blurhash" },
+  },
+  playlist: {
+    imageFields: ["image_url"],
+    blurhashMapping: { image_url: "image_url_blurhash" },
+  },
+  song: {
+    imageFields: ["image_url"],
+    audioFields: ["audio_url"],
+    blurhashMapping: { image_url: "image_url_blurhash" },
+  },
+  album: {
+    imageFields: ["image_url"],
+    blurhashMapping: { image_url: "image_url_blurhash" },
+  },
+  artist: {
+    imageFields: ["banner_image_url"],
+    blurhashMapping: { banner_image_url: "banner_image_url_blurhash" },
+  },
+};
+
+/**
+ * Form parser for all entity types
+ * @param req Express request object
+ * @param formEntityType Type of entity being parsed
+ * @returns Promise resolving to parsed form data
+ */
+export function parseForm(
+  req: Request,
+  formEntityType: FormEntityType
+): Promise<any> {
   return new Promise((resolve, reject) => {
     const busboy = Busboy({ headers: req.headers });
-
+    const config = FORM_ENTITY_CONFIGS[formEntityType];
     const formData: any = {};
     const uploadPromises: Promise<void>[] = [];
 
@@ -142,114 +89,20 @@ export function parsePlaylistForm(req: Request): Promise<any> {
     busboy.on("file", async (fieldname, file, info) => {
       const { filename, mimeType } = info;
 
-      if (fieldname !== "image_url") {
+      const isImageField = config.imageFields.includes(fieldname);
+      const isAudioField = config.audioFields?.includes(fieldname);
+
+      if (!isImageField && !isAudioField) {
         file.resume();
         return;
       }
 
-      if (!mimeType.startsWith("image/")) {
+      if (isImageField && !mimeType.startsWith("image/")) {
         file.resume();
         return reject(new Error("Invalid file type. Only images are allowed."));
       }
 
-      const supportedTypes = [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/webp",
-      ];
-      if (!supportedTypes.includes(mimeType)) {
-        file.resume();
-        return reject(
-          new Error(
-            "Unsupported image format. Only JPEG, PNG, and WebP are allowed."
-          )
-        );
-      }
-
-      const blobName = `${uuidv4()}-${filename}`;
-
-      const uploadPromise = (async () => {
-        try {
-          const chunks: Buffer[] = [];
-          let totalSize = 0;
-
-          for await (const chunk of file) {
-            totalSize += chunk.length;
-            if (totalSize > MAX_IMAGE_SIZE) {
-              throw new Error("Image file size exceeds 5MB limit.");
-            }
-            chunks.push(chunk);
-          }
-
-          const buffer = Buffer.concat(chunks);
-
-          const blurhash = await generateBlurhash(buffer);
-          formData.image_url_blurhash = blurhash;
-
-          const bufferStream = Readable.from(buffer);
-          await uploadBlob(blobName, bufferStream);
-          formData.image_url = blobName;
-        } catch (error) {
-          throw error;
-        }
-      })();
-
-      uploadPromises.push(uploadPromise);
-    });
-
-    busboy.on("error", (error) => reject(error));
-
-    busboy.on("finish", async () => {
-      try {
-        await Promise.all(uploadPromises);
-
-        if (formData.image_url === null) {
-          formData.image_url_blurhash = null;
-        }
-
-        resolve(formData);
-      } catch (error) {
-        reject(error);
-      }
-    });
-
-    req.pipe(busboy);
-  });
-}
-
-export function parseSongForm(req: Request): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const busboy = Busboy({ headers: req.headers });
-
-    const formData: any = {};
-    const uploadPromises: Promise<void>[] = [];
-
-    busboy.on("field", (fieldname, value) => {
-      if (value === "null") {
-        formData[fieldname] = null;
-      } else {
-        formData[fieldname] = value;
-      }
-    });
-
-    busboy.on("file", async (fieldname, file, info) => {
-      const { filename, mimeType } = info;
-
-      if (fieldname !== "image_url" && fieldname !== "audio_url") {
-        file.resume();
-        return;
-      }
-
-      const isImage = fieldname === "image_url";
-      const isAudio = fieldname === "audio_url";
-
-      if (isImage && !mimeType.startsWith("image/")) {
-        file.resume();
-        return reject(new Error("Invalid file type. Only images are allowed."));
-      }
-
-      if (isAudio && !mimeType.startsWith("audio/")) {
+      if (isAudioField && !mimeType.startsWith("audio/")) {
         file.resume();
         return reject(
           new Error("Invalid file type. Only audio files are allowed.")
@@ -262,10 +115,9 @@ export function parseSongForm(req: Request): Promise<any> {
         "image/png",
         "image/webp",
       ];
-
       const supportedAudioType = "audio/mpeg";
 
-      if (isImage && !supportedImageTypes.includes(mimeType)) {
+      if (isImageField && !supportedImageTypes.includes(mimeType)) {
         file.resume();
         return reject(
           new Error(
@@ -274,7 +126,7 @@ export function parseSongForm(req: Request): Promise<any> {
         );
       }
 
-      if (isAudio && mimeType !== supportedAudioType) {
+      if (isAudioField && mimeType !== supportedAudioType) {
         file.resume();
         return reject(
           new Error("Unsupported audio format. Only MP3 files are allowed.")
@@ -290,24 +142,26 @@ export function parseSongForm(req: Request): Promise<any> {
 
           for await (const chunk of file) {
             totalSize += chunk.length;
-            if (totalSize > MAX_IMAGE_SIZE && isImage) {
+            if (totalSize > MAX_IMAGE_SIZE && isImageField) {
               throw new Error("Image file size exceeds 5MB limit.");
             }
-            if (totalSize > MAX_AUDIO_SIZE && isAudio) {
+            if (totalSize > MAX_AUDIO_SIZE && isAudioField) {
               throw new Error("Audio file size exceeds 10MB limit.");
             }
-
             chunks.push(chunk);
           }
 
           const buffer = Buffer.concat(chunks);
 
-          if (isImage) {
+          if (isImageField) {
             const blurhash = await generateBlurhash(buffer);
-            formData.image_url_blurhash = blurhash;
+            const blurhashField = config.blurhashMapping[fieldname];
+            if (blurhashField) {
+              formData[blurhashField] = blurhash;
+            }
           }
 
-          if (isAudio) {
+          if (isAudioField) {
             const metadata = await parseBuffer(buffer, mimeType);
             const duration = metadata.format.duration
               ? Math.round(metadata.format.duration)
@@ -337,196 +191,14 @@ export function parseSongForm(req: Request): Promise<any> {
       try {
         await Promise.all(uploadPromises);
 
-        if (formData.image_url === null) {
-          formData.image_url_blurhash = null;
-        }
-
-        resolve(formData);
-      } catch (error) {
-        reject(error);
-      }
-    });
-
-    req.pipe(busboy);
-  });
-}
-
-export function parseAlbumForm(req: Request): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const busboy = Busboy({ headers: req.headers });
-
-    const formData: any = {};
-    const uploadPromises: Promise<void>[] = [];
-
-    busboy.on("field", (fieldname, value) => {
-      if (value === "null") {
-        formData[fieldname] = null;
-      } else {
-        formData[fieldname] = value;
-      }
-    });
-
-    busboy.on("file", async (fieldname, file, info) => {
-      const { filename, mimeType } = info;
-
-      if (fieldname !== "image_url") {
-        file.resume();
-        return;
-      }
-
-      if (!mimeType.startsWith("image/")) {
-        file.resume();
-        return reject(new Error("Invalid file type. Only images are allowed."));
-      }
-
-      const supportedTypes = [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/webp",
-      ];
-      if (!supportedTypes.includes(mimeType)) {
-        file.resume();
-        return reject(
-          new Error(
-            "Unsupported image format. Only JPEG, PNG, and WebP are allowed."
-          )
-        );
-      }
-
-      const blobName = `${uuidv4()}-${filename}`;
-
-      const uploadPromise = (async () => {
-        try {
-          const chunks: Buffer[] = [];
-          let totalSize = 0;
-          for await (const chunk of file) {
-            totalSize += chunk.length;
-            if (totalSize > MAX_IMAGE_SIZE) {
-              throw new Error("Image file size exceeds 5MB limit.");
+        config.imageFields.forEach((field) => {
+          if (formData[field] === null) {
+            const blurhashField = config.blurhashMapping[field];
+            if (blurhashField) {
+              formData[blurhashField] = null;
             }
-            chunks.push(chunk);
           }
-
-          const buffer = Buffer.concat(chunks);
-
-          const blurhash = await generateBlurhash(buffer);
-          formData.image_url_blurhash = blurhash;
-
-          const bufferStream = Readable.from(buffer);
-          await uploadBlob(blobName, bufferStream);
-          formData.image_url = blobName;
-        } catch (error) {
-          throw error;
-        }
-      })();
-
-      uploadPromises.push(uploadPromise);
-    });
-
-    busboy.on("error", (error) => reject(error));
-
-    busboy.on("finish", async () => {
-      try {
-        await Promise.all(uploadPromises);
-
-        if (formData.image_url === null) {
-          formData.image_url_blurhash = null;
-        }
-
-        resolve(formData);
-      } catch (error) {
-        reject(error);
-      }
-    });
-
-    req.pipe(busboy);
-  });
-}
-
-export function parseArtistForm(req: Request): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const busboy = Busboy({ headers: req.headers });
-
-    const formData: any = {};
-    const uploadPromises: Promise<void>[] = [];
-
-    busboy.on("field", (fieldname, value) => {
-      if (value === "null") {
-        formData[fieldname] = null;
-      } else {
-        formData[fieldname] = value;
-      }
-    });
-
-    busboy.on("file", async (fieldname, file, info) => {
-      const { filename, mimeType } = info;
-
-      if (fieldname !== "banner_image") {
-        file.resume();
-        return;
-      }
-
-      if (!mimeType.startsWith("image/")) {
-        file.resume();
-        return reject(new Error("Invalid file type. Only images are allowed."));
-      }
-
-      const supportedTypes = [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/webp",
-      ];
-      if (!supportedTypes.includes(mimeType)) {
-        file.resume();
-        return reject(
-          new Error(
-            "Unsupported image format. Only JPEG, PNG, and WebP are allowed."
-          )
-        );
-      }
-
-      const blobName = `${uuidv4()}-${filename}`;
-
-      const uploadPromise = (async () => {
-        try {
-          const chunks: Buffer[] = [];
-          let totalSize = 0;
-
-          for await (const chunk of file) {
-            totalSize += chunk.length;
-            if (totalSize > MAX_IMAGE_SIZE) {
-              throw new Error("Image file size exceeds 5MB limit.");
-            }
-            chunks.push(chunk);
-          }
-
-          const buffer = Buffer.concat(chunks);
-
-          const blurhash = await generateBlurhash(buffer);
-          formData.banner_image_url_blurhash = blurhash;
-
-          const bufferStream = Readable.from(buffer);
-          await uploadBlob(blobName, bufferStream);
-          formData.banner_image_url = blobName;
-        } catch (error) {
-          throw error;
-        }
-      })();
-
-      uploadPromises.push(uploadPromise);
-    });
-
-    busboy.on("error", (error) => reject(error));
-
-    busboy.on("finish", async () => {
-      try {
-        await Promise.all(uploadPromises);
-
-        if (formData.banner_image_url === null) {
-          formData.banner_image_url_blurhash = null;
-        }
+        });
 
         resolve(formData);
       } catch (error) {

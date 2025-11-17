@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { SongRepository as SongRepo } from "@repositories";
 import { handlePgError, getCoverGradient } from "@util";
-import { parseSongForm } from "@infra/form-parser";
+import { parseForm } from "@infra/form-parser";
 import { CommentService, StatsService, LikeService } from "@services";
 import { validateOrderBy } from "@validators";
 
@@ -84,7 +84,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 // POST /api/songs
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const songData = await parseSongForm(req);
+    const songData = await parseForm(req, "song");
     const newSong = await SongRepo.create(songData);
 
     if (!newSong) {
@@ -109,7 +109,7 @@ router.put("/:id", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const songData = await parseSongForm(req);
+    const songData = await parseForm(req, "song");
     const updatedSong = await SongRepo.update(id, songData);
 
     if (!updatedSong) {

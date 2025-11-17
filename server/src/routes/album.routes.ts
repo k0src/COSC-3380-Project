@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { AlbumRepository } from "@repositories";
 import { LikeService } from "@services";
 import { handlePgError } from "@util";
-import { parseAlbumForm } from "@infra/form-parser";
+import { parseForm } from "@infra/form-parser";
 
 const router = express.Router();
 
@@ -78,7 +78,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 // POST /api/albums
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const albumData = await parseAlbumForm(req);
+    const albumData = await parseForm(req, "album");
     const newAlbum = await AlbumRepository.create(albumData);
 
     if (!newAlbum) {
@@ -103,7 +103,7 @@ router.put("/:id", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const albumData = await parseAlbumForm(req);
+    const albumData = await parseForm(req, "album");
     const updatedAlbum = await AlbumRepository.update(id, albumData);
 
     if (!updatedAlbum) {

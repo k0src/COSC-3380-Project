@@ -8,7 +8,7 @@ import {
   UserSettingsService,
   NotificationsService,
 } from "@services";
-import { parseUserForm } from "@infra/form-parser";
+import { parseForm } from "@infra/form-parser";
 import { handlePgError } from "@util/pgErrorHandler.util";
 
 const router = express.Router();
@@ -105,7 +105,7 @@ router.put("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const updateData = await parseUserForm(req);
+    const updateData = await parseForm(req, "user");
     const updatedUser = await UserRepository.update(id, updateData);
 
     if (!updatedUser) {

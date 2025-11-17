@@ -174,11 +174,10 @@ export const userApi = {
       current_password?: string;
       authenticated_with?: string;
       role?: string;
-      profile_picture_url?: string;
+      profile_picture_url?: File | null;
       artist_id?: UUID;
       status?: string;
       is_private?: boolean;
-      profile_picture?: File;
     }
   ) {
     const formData = new FormData();

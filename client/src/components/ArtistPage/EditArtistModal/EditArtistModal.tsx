@@ -121,9 +121,9 @@ const EditArtistModal: React.FC<EditArtistModalProps> = ({
         };
 
         if (formState.removeBannerImage) {
-          artistData.banner_image = null;
+          artistData.banner_image_url = null;
         } else if (formState.banner_image) {
-          artistData.banner_image = formState.banner_image;
+          artistData.banner_image_url = formState.banner_image;
         }
 
         await artistApi.update(artist.id, artistData);
