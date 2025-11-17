@@ -156,7 +156,12 @@ const DataRequestForm: React.FC<Props> = ({ onSubmit }) => {
 
         <label>
           To:
-          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+          <input 
+            type="date" 
+            value={dateTo} 
+            onChange={(e) => setDateTo(e.target.value)} 
+            max={new Date().toISOString().split('T')[0]}
+          />
         </label>
 
         {/* Dynamic parameters based on report type */}

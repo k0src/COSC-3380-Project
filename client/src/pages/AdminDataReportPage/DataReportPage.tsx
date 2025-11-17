@@ -29,6 +29,10 @@ const DataReportPage: React.FC = () => {
         const resultsData = result.data.results as any;
         if (Array.isArray(resultsData)) {
           setData(resultsData);
+        } else if (resultsData?.report_summary_by_name || resultsData?.report_details) {
+          // New moderation report format with two tables
+          setData([resultsData]); // Wrap in array so DataVisualization gets the full object
+          setSummary({ isModeration: true }); // Set a flag so summary section renders
         } else if (resultsData?.reported_entries) {
           // Simplified moderation report: has summary, reported_entries, trends
           setData([resultsData]); // Wrap in array so DataVisualization gets the full object
@@ -40,11 +44,20 @@ const DataReportPage: React.FC = () => {
           setData([]);
         }
       } else {
-        setError("Failed to fetch data report");
+        // Check if there's a specific error message from the backend
+        const errorMessage = (result as any).message || "Failed to fetch data report";
+        setError(errorMessage);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error fetching data report:", err);
-      setError("An unexpected error occurred.");
+      
+      // Extract error message from API response
+      const errorMessage = err?.response?.data?.message || 
+                          err?.response?.data?.error || 
+                          err?.message || 
+                          "An unexpected error occurred.";
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

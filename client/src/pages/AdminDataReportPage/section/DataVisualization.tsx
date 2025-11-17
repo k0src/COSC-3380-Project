@@ -14,10 +14,16 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
   if (!data.length && !summary) return <div className={styles.placeholder}>No data to display yet.</div>;
 
   // Check if this is the new simplified moderation report
-  const isSimplifiedModerationReport = data.length > 0 && data[0] && 'reported_entries' in data[0];
+  const isSimplifiedModerationReport = data.length > 0 && data[0] && ('report_summary_by_name' in data[0] || 'reported_entries' in data[0]);
   
-  // For simplified moderation report, use the reported_entries array
-  const displayData = isSimplifiedModerationReport ? (data[0] as any).reported_entries : data;
+  // For simplified moderation report, extract the two table datasets
+  const reportSummaryByName = isSimplifiedModerationReport && data[0] ? (data[0] as any).report_summary_by_name : null;
+  const reportDetails = isSimplifiedModerationReport && data[0] ? (data[0] as any).report_details : null;
+  
+  // Legacy support: fall back to reported_entries if new fields don't exist
+  const displayData = isSimplifiedModerationReport 
+    ? (reportSummaryByName || (data[0] as any).reported_entries) 
+    : data;
 
   // Helper function to format cell values
   const formatCellValue = (key: string, value: any): string | React.ReactElement => {
@@ -168,8 +174,8 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
       total_users: "Total Users",
       returned_week1: "First-Week Return",
       week1_retention_percent: "Week 1 %",
-      returned_week4: "Week 4 Return",
-      week4_retention_percent: "Week 4 %",
+      returned_week4: "1 Month Return",
+      week4_retention_percent: "1 Month %",
       came_back_this_month: "This Month's Return",
       this_month_retention_percent: "This Month %",
       median_plays: "Median Plays",
@@ -198,7 +204,6 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
     "week4_retention_percent",
     "came_back_this_month", 
     "this_month_retention_percent",
-    "median_plays", 
     "avg_plays"
   ];
 
@@ -351,11 +356,68 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
       )}
 
       <h3 className={styles.sectionTitle}>
-        {isSimplifiedModerationReport ? "Reported Content" : "Data Report Results"}
+        {isSimplifiedModerationReport ? "Content Moderation Report" : "Data Report Results"}
       </h3>
 
-      {isSimplifiedModerationReport ? (
-        // Simplified Moderation Report - Clean table with essential columns only
+      {isSimplifiedModerationReport && reportSummaryByName && reportDetails ? (
+        // New: Two-table layout for moderation reports
+        <>
+          {/* Table 1: Report Summary by Name */}
+          <div className={styles.tableSection}>
+            <h4 className={styles.tableTitle}>Report Summary by Name</h4>
+            <div className={styles.tableContainer}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Content Type</th>
+                    <th>Total Reports</th>
+                    <th>Latest Reported At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportSummaryByName.map((row: any, i: number) => (
+                    <tr key={i}>
+                      <td>{row.name || 'Unknown'}</td>
+                      <td>{formatCellValue("item_type", row.content_type)}</td>
+                      <td>{row.total_reports}</td>
+                      <td>{formatCellValue("created_at", row.latest_reported_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Table 2: Report Details */}
+          <div className={styles.tableSection}>
+            <h4 className={styles.tableTitle}>Report Details</h4>
+            <div className={styles.tableContainer}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Report Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportDetails.map((row: any, i: number) => (
+                    <tr key={i}>
+                      <td>{row.name || 'Unknown'}</td>
+                      <td>{formatCellValue("report_type", row.report_type)}</td>
+                      <td>{formatCellValue("status", row.status)}</td>
+                      <td>{formatCellValue("created_at", row.date)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      ) : isSimplifiedModerationReport ? (
+        // Legacy: Single table for old moderation report format
         <div className={styles.tableContainer}>
           <table className={styles.table}>
             <thead>
@@ -370,7 +432,7 @@ const DataVisualization: React.FC<Props> = ({ data, loading, error, summary }) =
             <tbody>
               {displayData.map((row: any, i: number) => (
                 <tr key={i}>
-                  <td>{formatCellValue("Item ", row.item_type)}</td>
+                  <td>{formatCellValue("item_type", row.item_type)}</td>
                   <td>{row.item_name || row.item_id}</td>
                   <td>{row.report_count || 1}</td>
                   <td>{formatCellValue("created_at", row.created_at)}</td>

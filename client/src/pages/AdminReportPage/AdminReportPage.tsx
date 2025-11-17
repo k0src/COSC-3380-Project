@@ -4,6 +4,7 @@ import {AdminAPI, type Report, type EntityType  } from "../../api/admin.api";
 import ReportDropdown from "./sections/ReportDrpdown";
 import ReportsList from "./sections/ReportList";
 import styles from "./Report.module.css";
+import { useAuth } from "@contexts";
 
 const ReportPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,10 +12,15 @@ const ReportPage: React.FC = () => {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {user, isAuthenticated} = useAuth();
 
   useEffect(() => {
     fetchReports();
   }, [entity]);
+
+  if(!isAuthenticated || !user){
+    return null;
+  }
 
   async function fetchReports() {
   try {
@@ -35,7 +41,8 @@ const ReportPage: React.FC = () => {
     try {
       setLoading(true);
 
-      const adminId = "cbe73006-0fe9-4067-8c1d-d85ad004049e"; 
+      if (!user) return;
+      const adminId = user.id
       const response = await AdminAPI.decideReport(entity, reportId, action, adminId );
 
       if (response.success) {

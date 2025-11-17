@@ -30,7 +30,7 @@ export class UserBehaviorReportsService {
           u.id as user_id,
           u.created_at
         FROM users u
-        WHERE u.created_at BETWEEN $1 AND $2
+        WHERE u.created_at >= $1 AND u.created_at < ($2::date + INTERVAL '1 day')
       ),
       week1_returns AS (
         SELECT DISTINCT
@@ -112,7 +112,7 @@ export class UserBehaviorReportsService {
     
     // Get new users count
     const newUsersResult = await query(
-      `SELECT COUNT(*) as new_users FROM users WHERE created_at BETWEEN $1 AND $2 AND role = 'USER'`,
+      `SELECT COUNT(*) as new_users FROM users WHERE created_at >= $1 AND created_at < ($2::date + INTERVAL '1 day') AND role = 'USER'`,
       [dateRange.from, dateRange.to]
     );
     const newUsers = newUsersResult?.[0]?.new_users || 0;
@@ -126,7 +126,7 @@ export class UserBehaviorReportsService {
         MAX(sh.played_at) as last_listened
       FROM users u
       LEFT JOIN song_history sh ON u.id = sh.user_id
-      WHERE u.role = 'USER' AND u.created_at BETWEEN $1 AND $2
+      WHERE u.role = 'USER' AND u.created_at >= $1 AND u.created_at < ($2::date + INTERVAL '1 day')
       GROUP BY u.id, u.username, u.created_at
       ORDER BY u.created_at DESC`,
       [dateRange.from, dateRange.to]

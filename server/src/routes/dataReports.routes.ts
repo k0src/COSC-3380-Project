@@ -72,10 +72,14 @@ router.post("/generate", async (req, res): Promise<void> => {
 
   } catch (error) {
     console.error("Error generating report:", error);
-    res.status(500).json({
+    
+    // Extract the error message
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    
+    res.status(400).json({
       success: false,
-      message: "Failed to generate report",
-      error: error instanceof Error ? error.message : "Unknown error"
+      message: errorMessage,
+      error: errorMessage
     });
   }
 });
@@ -87,7 +91,7 @@ router.post("/generate", async (req, res): Promise<void> => {
 router.get("/categories", (req, res) => {
   const reportTypes = {
     "daily-monthly-active-users": {
-      name: "Audience Growth",
+      name: "User Retention",
       description: "Shows how many users came back to listen after they joined",
       parameters: [
         {

@@ -290,3 +290,15 @@ input:focus {
 .miniTable tr:hover td {
   background-color: rgba(255, 255, 255, 0.02);
 }
+
+.tableSection {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.tableTitle {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: var(--spacing-md);
+  padding-left: var(--spacing-sm);
+}

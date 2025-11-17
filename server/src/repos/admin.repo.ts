@@ -60,6 +60,7 @@ export default class AdminRepository {
     // Convert the result to the proper status value based on the enum
     const status = result === "reject" ? "DISMISSED" : "ACTION_TAKEN";
 
+    // Update the report status
     const sql = `
       UPDATE ${table}
       SET report_status = $1, reviewer_id = $2
@@ -68,6 +69,51 @@ export default class AdminRepository {
     `;
 
     const res = await query(sql, [status, adminId, reportId]);
-    return Array.isArray(res) ? res[0] : res ?? res;
+    const reportResult = Array.isArray(res) ? res[0] : res ?? res;
+
+    // If action is taken (suspend), update the corresponding entity
+    if (status === "ACTION_TAKEN") {
+      let entityUpdateSql = "";
+      
+      switch (entity) {
+        case "song":
+          entityUpdateSql = `
+            UPDATE songs
+            SET visibility_status = 'PRIVATE'
+            WHERE id = $1;
+          `;
+          break;
+        
+        case "user":
+          entityUpdateSql = `
+            UPDATE users
+            SET status = 'SUSPENDED'
+            WHERE id = $1;
+          `;
+          break;
+        
+        case "album":
+          entityUpdateSql = `
+            UPDATE albums
+            SET visibility_status = 'UNLISTED'
+            WHERE id = $1;
+          `;
+          break;
+        
+        case "playlist":
+          entityUpdateSql = `
+            UPDATE playlists
+            SET is_public = false
+            WHERE id = $1;
+          `;
+          break;
+      }
+
+      if (entityUpdateSql) {
+        await query(entityUpdateSql, [reportId]);
+      }
+    }
+
+    return reportResult;
   }
 }

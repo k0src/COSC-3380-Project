@@ -20,15 +20,19 @@ export class SystemModerationReportsService {
     // A. Get Summary Data
     const summary = await this.getSummaryData(dateRange, reportTypes, contentType, searchTerm);
     
-    // B. Get Reported Entries (simplified table)
-    const reportedEntries = await this.getReportedEntries(dateRange, reportTypes, contentType, searchTerm);
+    // B. Get Report Summary by Name (aggregated)
+    const reportSummaryByName = await this.getReportSummaryByName(dateRange, reportTypes, contentType, searchTerm);
     
-    // C. Get Trends Data
+    // C. Get Report Details (individual reports)
+    const reportDetails = await this.getReportDetails(dateRange, reportTypes, contentType, searchTerm);
+    
+    // D. Get Trends Data
     const trends = await this.getTrendsData(dateRange, reportTypes, contentType, searchTerm);
     
     return {
       summary,
-      reported_entries: reportedEntries,
+      report_summary_by_name: reportSummaryByName,
+      report_details: reportDetails,
       trends
     };
   }
@@ -288,6 +292,191 @@ export class SystemModerationReportsService {
     entries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     
     return entries;
+  }
+
+  // Get Report Summary by Name (aggregated by entity)
+  private static async getReportSummaryByName(dateRange: DateRange, reportTypes?: string[], contentType: string = 'all', searchTerm?: string) {
+    const summaries = [];
+    
+    if (contentType === 'all' || contentType === 'user') {
+      const userSummaries = await this.getReportSummaryForType('user', dateRange, reportTypes, searchTerm);
+      summaries.push(...userSummaries);
+    }
+    
+    if (contentType === 'all' || contentType === 'song') {
+      const songSummaries = await this.getReportSummaryForType('song', dateRange, reportTypes, searchTerm);
+      summaries.push(...songSummaries);
+    }
+    
+    if (contentType === 'all' || contentType === 'album') {
+      const albumSummaries = await this.getReportSummaryForType('album', dateRange, reportTypes, searchTerm);
+      summaries.push(...albumSummaries);
+    }
+    
+    if (contentType === 'all' || contentType === 'playlist') {
+      const playlistSummaries = await this.getReportSummaryForType('playlist', dateRange, reportTypes, searchTerm);
+      summaries.push(...playlistSummaries);
+    }
+    
+    // Sort by total reports descending
+    summaries.sort((a, b) => b.total_reports - a.total_reports);
+    
+    return summaries;
+  }
+
+  private static async getReportSummaryForType(
+    itemType: 'user' | 'song' | 'album' | 'playlist',
+    dateRange: DateRange,
+    reportTypes?: string[],
+    searchTerm?: string
+  ) {
+    let entityJoin = '';
+    let entityName = '';
+    
+    switch (itemType) {
+      case 'user':
+        entityJoin = 'LEFT JOIN users e ON r.reported_id = e.id';
+        entityName = 'e.username';
+        break;
+      case 'song':
+        entityJoin = 'LEFT JOIN songs e ON r.reported_id = e.id';
+        entityName = 'e.title';
+        break;
+      case 'album':
+        entityJoin = 'LEFT JOIN albums e ON r.reported_id = e.id';
+        entityName = 'e.title';
+        break;
+      case 'playlist':
+        entityJoin = 'LEFT JOIN playlists e ON r.reported_id = e.id';
+        entityName = 'e.title';
+        break;
+    }
+    
+    let sql = `
+      SELECT 
+        ${entityName} as name,
+        '${itemType}' as content_type,
+        COUNT(*) as total_reports,
+        MAX(r.reported_at) as latest_reported_at
+      FROM ${itemType}_reports r
+      ${entityJoin}
+      WHERE r.reported_at BETWEEN $1 AND $2
+    `;
+    
+    const params = [dateRange.from, dateRange.to];
+    let paramIndex = 3;
+    
+    if (reportTypes && reportTypes.length > 0) {
+      const placeholders = reportTypes.map((_, index) => `$${paramIndex + index}`).join(', ');
+      sql += ` AND r.report_type IN (${placeholders})`;
+      params.push(...reportTypes);
+      paramIndex += reportTypes.length;
+    }
+    
+    if (searchTerm && searchTerm.trim()) {
+      sql += ` AND ${entityName} ILIKE $${paramIndex}`;
+      params.push(`%${searchTerm.trim()}%`);
+    }
+    
+    sql += ` GROUP BY ${entityName} ORDER BY total_reports DESC`;
+    
+    const result = await query(sql, params);
+    return result || [];
+  }
+
+  // Get Report Details (individual report rows)
+  private static async getReportDetails(dateRange: DateRange, reportTypes?: string[], contentType: string = 'all', searchTerm?: string) {
+    const details = [];
+    
+    if (contentType === 'all' || contentType === 'user') {
+      const userDetails = await this.getReportDetailsForType('user', dateRange, reportTypes, searchTerm);
+      details.push(...userDetails);
+    }
+    
+    if (contentType === 'all' || contentType === 'song') {
+      const songDetails = await this.getReportDetailsForType('song', dateRange, reportTypes, searchTerm);
+      details.push(...songDetails);
+    }
+    
+    if (contentType === 'all' || contentType === 'album') {
+      const albumDetails = await this.getReportDetailsForType('album', dateRange, reportTypes, searchTerm);
+      details.push(...albumDetails);
+    }
+    
+    if (contentType === 'all' || contentType === 'playlist') {
+      const playlistDetails = await this.getReportDetailsForType('playlist', dateRange, reportTypes, searchTerm);
+      details.push(...playlistDetails);
+    }
+    
+    // Sort newest first
+    details.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    return details;
+  }
+
+  private static async getReportDetailsForType(
+    itemType: 'user' | 'song' | 'album' | 'playlist',
+    dateRange: DateRange,
+    reportTypes?: string[],
+    searchTerm?: string
+  ) {
+    let entityJoin = '';
+    let entityName = '';
+    
+    switch (itemType) {
+      case 'user':
+        entityJoin = 'LEFT JOIN users e ON r.reported_id = e.id';
+        entityName = 'e.username';
+        break;
+      case 'song':
+        entityJoin = 'LEFT JOIN songs e ON r.reported_id = e.id';
+        entityName = 'e.title';
+        break;
+      case 'album':
+        entityJoin = 'LEFT JOIN albums e ON r.reported_id = e.id';
+        entityName = 'e.title';
+        break;
+      case 'playlist':
+        entityJoin = 'LEFT JOIN playlists e ON r.reported_id = e.id';
+        entityName = 'e.title';
+        break;
+    }
+    
+    let sql = `
+      SELECT 
+        r.reported_at as date,
+        ${entityName} as name,
+        r.report_type,
+        CASE 
+          WHEN r.report_status = 'PENDING_REVIEW' THEN 'pending'
+          WHEN r.report_status = 'ACTION_TAKEN' THEN 'resolved'
+          WHEN r.report_status = 'DISMISSED' THEN 'dismissed'
+          ELSE 'pending'
+        END as status
+      FROM ${itemType}_reports r
+      ${entityJoin}
+      WHERE r.reported_at BETWEEN $1 AND $2
+    `;
+    
+    const params = [dateRange.from, dateRange.to];
+    let paramIndex = 3;
+    
+    if (reportTypes && reportTypes.length > 0) {
+      const placeholders = reportTypes.map((_, index) => `$${paramIndex + index}`).join(', ');
+      sql += ` AND r.report_type IN (${placeholders})`;
+      params.push(...reportTypes);
+      paramIndex += reportTypes.length;
+    }
+    
+    if (searchTerm && searchTerm.trim()) {
+      sql += ` AND ${entityName} ILIKE $${paramIndex}`;
+      params.push(`%${searchTerm.trim()}%`);
+    }
+    
+    sql += ` ORDER BY r.reported_at DESC LIMIT 500`;
+    
+    const result = await query(sql, params);
+    return result || [];
   }
 
   private static async getReportedEntriesForType(

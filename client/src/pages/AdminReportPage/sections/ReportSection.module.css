@@ -117,6 +117,7 @@
   text-decoration:solid;
   cursor: pointer;
   transition: color 0.2s ease;
+  font-size: inherit;
 }
 
 .reportedLink:hover {

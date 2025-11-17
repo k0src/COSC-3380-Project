@@ -18,6 +18,14 @@ export class ContentStreamingReportsService {
     includeMetrics: boolean = false,
     sortBy: 'streams' | 'alphabetical' | 'genre' = 'streams'
   ) {
+    // Validate genre if provided
+    if (genre && (contentType === 'songs' || contentType === 'albums')) {
+      const genreExists = await this.checkGenreExists(genre, contentType);
+      if (!genreExists) {
+        throw new Error(`The genre "${genre}" was not found in our ${contentType} catalog. Please try a different genre.`);
+      }
+    }
+    
     const results = await this.getContentData(dateRange, contentType, limit, genre, sortBy);
     const summary = await this.getComparativeContext(dateRange, contentType, genre);
     
@@ -25,6 +33,34 @@ export class ContentStreamingReportsService {
       results,
       summary
     };
+  }
+
+  /**
+   * Check if a genre exists in the database for songs or albums
+   */
+  private static async checkGenreExists(genre: string, contentType: 'songs' | 'albums'): Promise<boolean> {
+    let sql = '';
+    
+    if (contentType === 'songs') {
+      sql = `
+        SELECT EXISTS(
+          SELECT 1 FROM songs WHERE genre = $1
+        ) as exists
+      `;
+    } else if (contentType === 'albums') {
+      sql = `
+        SELECT EXISTS(
+          SELECT 1 
+          FROM albums al
+          JOIN album_songs als ON al.id = als.album_id
+          JOIN songs s ON als.song_id = s.id
+          WHERE s.genre = $1
+        ) as exists
+      `;
+    }
+    
+    const result = await query(sql, [genre]);
+    return result?.[0]?.exists || false;
   }
 
   private static async getContentData(

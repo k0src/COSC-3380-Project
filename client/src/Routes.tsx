@@ -22,10 +22,11 @@ export default function AppRoutes() {
         <MainLayout>
           < Pages.dataReport />
         </MainLayout>} />
-      <Route path="/admin/appeals" element={
+      {/* <Route path="/admin/appeals" element={
         <MainLayout>
           < Pages.AdminAppealsPage />
         </MainLayout>} />
+      */}
       <Route path="/login" element={<Pages.LoginPage />} />
       <Route path="/signup" element={<Pages.SignupPage />} />
       <Route path="/" element={<Pages.TestPage />} />
