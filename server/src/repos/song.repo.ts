@@ -90,6 +90,19 @@ export default class SongRepository {
             VALUES ($1, $2, $3)`,
             [album_id, songId, nextTrackNumber]
           );
+
+          if (!image_url) {
+            await client.query(
+              `UPDATE songs
+              SET (image_url, image_url_blurhash) = (
+                SELECT image_url, image_url_blurhash 
+                FROM albums 
+                WHERE id = $1
+              )
+              WHERE id = $2`,
+              [album_id, songId]
+            );
+          }
         }
 
         return insert.rows[0] ?? null;
