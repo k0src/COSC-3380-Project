@@ -26,6 +26,8 @@ export interface Song {
   likes?: number;
   comments?: number;
 
+  is_trending?: boolean;
+
   type: "song";
 }
 

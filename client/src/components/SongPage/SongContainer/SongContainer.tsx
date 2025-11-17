@@ -10,6 +10,7 @@ import {
   LuMessageSquareText,
   LuPencil,
   LuChartLine,
+  LuFlame,
 } from "react-icons/lu";
 import styles from "./SongContainer.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
@@ -67,17 +68,24 @@ const SongContainer: React.FC<SongContainerProps> = ({
 
   return (
     <div className={styles.songContainer} style={gradientStyle}>
-      <LazyImg
-        src={song.image_url || musicPlaceholder}
-        blurHash={song.image_url_blurhash}
-        alt={`${song.title} Cover`}
-        imgClassNames={[
-          styles.coverImage,
-          song.image_url ? styles.coverImageClickable : "",
-        ]}
-        loading="eager"
-        onClick={handleImageClick}
-      />
+      <div className={styles.coverImageWrapper}>
+        <LazyImg
+          src={song.image_url || musicPlaceholder}
+          blurHash={song.image_url_blurhash}
+          alt={`${song.title} Cover`}
+          imgClassNames={[
+            styles.coverImage,
+            song.image_url ? styles.coverImageClickable : "",
+          ]}
+          loading="eager"
+          onClick={handleImageClick}
+        />
+        {song.is_trending && (
+          <div className={styles.trendingBadge}>
+            <LuFlame />
+          </div>
+        )}
+      </div>
       <div className={styles.songRight}>
         <div className={styles.songInfoWrapper}>
           <div className={styles.songInfoContainer}>

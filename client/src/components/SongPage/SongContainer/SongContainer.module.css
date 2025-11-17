@@ -145,3 +145,22 @@
 .ownerButton:hover {
   color: var(--color-white);
 }
+
+.coverImageWrapper {
+  position: relative;
+}
+
+.trendingBadge {
+  position: absolute;
+  top: var(--spacing-sd);
+  right: var(--spacing-sd);
+  background: var(--color-accent);
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-white);
+  font-size: var(--icon-size-md);
+  padding: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

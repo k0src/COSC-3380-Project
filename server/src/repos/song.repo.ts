@@ -279,7 +279,11 @@ export default class SongRepository {
           CASE WHEN $4 THEN
             (SELECT COUNT(*) FROM comments c
             WHERE c.song_id = s.id)
-          ELSE NULL END AS comments
+          ELSE NULL END AS comments,
+          (SELECT 1 FROM 
+          trending_songs ts 
+          WHERE ts.song_id = s.id) 
+          AS is_trending
         FROM songs s
         WHERE s.id = $5
       `;
