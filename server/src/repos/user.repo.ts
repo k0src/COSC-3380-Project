@@ -38,10 +38,11 @@ export default class UserRepository {
       const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || "12", 10);
       const password_hash = await bcrypt.hash(password, saltRounds);
 
+      // Set status to ACTIVE when creating new users so they can login immediately
       const result = await query(
         `INSERT INTO users
-          (username, email, password_hash, authenticated_with, role, profile_picture_url)
-        VALUES ($1, $2, $3, $4, $5, $6)
+          (username, email, password_hash, authenticated_with, role, profile_picture_url, status)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *`,
         [
           username,
@@ -50,6 +51,7 @@ export default class UserRepository {
           "CoogMusic",
           role,
           profile_picture_url,
+          "ACTIVE", // Set status to ACTIVE for new accounts
         ],
       );
 
