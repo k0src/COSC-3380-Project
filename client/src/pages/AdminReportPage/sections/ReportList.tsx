@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./ReportSection.module.css";
 import type { ReportType } from "./ReportDrpdown";
 import type { Report } from "../../../api/admin.api";
@@ -18,9 +19,29 @@ const ReportsList: React.FC<ReportsListProps> = ({
   error,
   onAction,
 }) => {
+  const navigate = useNavigate();
+
   if (loading) return <div className={styles.loading}>Loading reports...</div>;
   if (error) return <div className={styles.error}>{error}</div>;
   if (!reports.length) return <div className={styles.empty}>No reports found for this category.</div>;
+
+  const getEntityRoute = (reportedId: string) => {
+    // Map reportType to route prefix
+    const routeMap: Record<ReportType, string> = {
+      user: "users",
+      song: "songs",
+      album: "albums",
+      playlist: "playlists"
+    };
+    
+    const routePrefix = routeMap[reportType];
+    return `/${routePrefix}/${reportedId}`;
+  };
+
+  const handleReportedClick = (reportedId: string) => {
+    const route = getEntityRoute(reportedId);
+    navigate(route);
+  };
 
   return (
     <div className={styles.reportListSection}>
@@ -34,7 +55,18 @@ const ReportsList: React.FC<ReportsListProps> = ({
             <div className={styles.reportRow}>
               <div className={styles.reportDetails}>
                 <p><strong>Reporter:</strong> {report.reporter_username || report.reporter_id}</p>
-                <p><strong>Reported:</strong> {report.reported_username || report.reported_id}</p>
+                <p>
+                  <strong>Reported:</strong>{" "}
+                  <button
+                    type="button"
+                    className={styles.reportedLink}
+                    onClick={() => handleReportedClick(report.reported_id)}
+                    aria-label={`View details for ${report.reported_username || report.reported_id}`}
+                    style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                  >
+                    {report.reported_username || report.reported_id}
+                  </button>
+                </p>
                 <p><strong>Reason:</strong> {report.report_type}</p>
                 <p><strong>Description:</strong> {report.description || "—"}</p>
                 <p><strong>Status:</strong> {report.report_status?.toUpperCase()}</p>

@@ -111,6 +111,19 @@
   justify-content: space-between;
 }
 
+/* Reported link styling */
+.reportedLink {
+  color: #fefefe;
+  text-decoration:solid;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.reportedLink:hover {
+  color: var(--text-secondary);
+  text-decoration:wavy;
+}
+
 /* Action buttons container */
 .reportActions {
   display: flex;
