@@ -1,0 +1,54 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.noResults {
+  text-align: center;
+  padding: 48px 0;
+  color: #666;
+}
+
+.filterButton {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterButton.active {
+  background: #1db954;
+  color: white;
+  border-color: #1db954;
+}
+
+.loading {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600; /* semi-bold */
+}
+
+.emptyMessage {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 24px;
+  font-size: 14px;
+}

@@ -99,7 +99,16 @@ export default function AppRoutes() {
                 </MainLayout>
               }
             />
+            <Route
+              path="/search"
+              element={
+                <MainLayout>
+                  <Pages.SearchResultsPage />
+                </MainLayout>
+              }
+            />
           </Route>
+
 
 
 

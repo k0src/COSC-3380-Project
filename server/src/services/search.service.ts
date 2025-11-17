@@ -29,13 +29,51 @@ export default class SearchService {
       const results = await query(
         `
         SELECT
-          (SELECT json_agg(s) FROM songs s WHERE s.title ILIKE $1) AS songs,
-          (SELECT json_agg(a) FROM albums a WHERE a.title ILIKE $1) AS albums,
-          (SELECT json_agg(ar) FROM artists ar WHERE ar.display_name ILIKE $1) AS artists,
-          (SELECT json_agg(p) FROM playlists p WHERE p.title ILIKE $1) AS playlists,
-          (SELECT json_agg(u) FROM users u WHERE u.username ILIKE $1) AS users
+          (SELECT json_agg(s ORDER BY 
+            CASE  
+              WHEN LOWER(s.title) = LOWER($2) THEN 1
+              WHEN LOWER(s.title) LIKE LOWER($2) || '%' THEN 2
+              ELSE 3
+            END,
+            s.streams DESC NULLS LAST,
+            s.title
+          ) FROM songs s WHERE s.title ILIKE $1) AS songs,
+          (SELECT json_agg(a ORDER BY 
+            CASE 
+              WHEN LOWER(a.title) = LOWER($2) THEN 1
+              WHEN LOWER(a.title) LIKE LOWER($2) || '%' THEN 2
+              ELSE 3
+            END,
+            a.title
+          ) FROM albums a WHERE a.title ILIKE $1) AS albums,
+          (SELECT jsonb_agg(
+            to_jsonb(ar) || jsonb_build_object('user', to_jsonb(u))
+            ORDER BY 
+              CASE 
+                WHEN LOWER(ar.display_name) = LOWER($2) THEN 1
+                WHEN LOWER(ar.display_name) LIKE LOWER($2) || '%' THEN 2
+                ELSE 3
+              END,
+              ar.display_name
+          )::json FROM artists ar LEFT JOIN users u ON ar.user_id = u.id WHERE ar.display_name ILIKE $1) AS artists,
+          (SELECT json_agg(p ORDER BY 
+            CASE 
+              WHEN LOWER(p.title) = LOWER($2) THEN 1
+              WHEN LOWER(p.title) LIKE LOWER($2) || '%' THEN 2
+              ELSE 3
+            END,
+            p.title
+          ) FROM playlists p WHERE p.title ILIKE $1) AS playlists,
+          (SELECT json_agg(u ORDER BY 
+            CASE 
+              WHEN LOWER(u.username) = LOWER($2) THEN 1
+              WHEN LOWER(u.username) LIKE LOWER($2) || '%' THEN 2
+              ELSE 3
+            END,
+            u.username
+          ) FROM users u WHERE u.username ILIKE $1) AS users
         `,
-        [`%${q}%`]
+        [`%${q}%`, q]
       );
 
       if (!results || results.length === 0) {
@@ -78,6 +116,11 @@ export default class SearchService {
       const artists: Artist[] = row.artists
         ? await Promise.all(
             row.artists.map(async (artist: Artist) => {
+              if (artist.user?.profile_picture_url) {
+                artist.user.profile_picture_url = getBlobUrl(
+                  artist.user.profile_picture_url
+                );
+              }
               artist.type = "artist";
               return artist;
             })
@@ -125,8 +168,15 @@ export default class SearchService {
     try {
       const results = await query(
         `SELECT * FROM users u
-        WHERE u.username ILIKE $1`,
-        [`%${q}%`]
+        WHERE u.username ILIKE $1
+        ORDER BY 
+          CASE 
+            WHEN LOWER(u.username) = LOWER($2) THEN 1
+            WHEN LOWER(u.username) LIKE LOWER($2) || '%' THEN 2
+            ELSE 3
+          END,
+          u.username`,
+        [`%${q}%`, q]
       );
 
       if (!results || results.length === 0) {
@@ -158,8 +208,16 @@ export default class SearchService {
     try {
       const results = await query(
         `SELECT * FROM songs s
-        WHERE s.title ILIKE $1`,
-        [`%${q}%`]
+        WHERE s.title ILIKE $1
+        ORDER BY 
+          CASE 
+            WHEN LOWER(s.title) = LOWER($2) THEN 1
+            WHEN LOWER(s.title) LIKE LOWER($2) || '%' THEN 2
+            ELSE 3
+          END,
+          s.streams DESC NULLS LAST,
+          s.title`,
+        [`%${q}%`, q]
       );
 
       if (!results || results.length === 0) {
@@ -195,8 +253,15 @@ export default class SearchService {
     try {
       const results = await query(
         `SELECT * FROM albums a
-        WHERE a.title ILIKE $1`,
-        [`%${q}%`]
+        WHERE a.title ILIKE $1
+        ORDER BY 
+          CASE 
+            WHEN LOWER(a.title) = LOWER($2) THEN 1
+            WHEN LOWER(a.title) LIKE LOWER($2) || '%' THEN 2
+            ELSE 3
+          END,
+          a.title`,
+        [`%${q}%`, q]
       );
 
       if (!results || results.length === 0) {
@@ -229,8 +294,15 @@ export default class SearchService {
     try {
       const results = await query(
         `SELECT * FROM playlists p
-        WHERE p.title ILIKE $1`,
-        [`%${q}%`]
+        WHERE p.title ILIKE $1
+        ORDER BY 
+          CASE 
+            WHEN LOWER(p.title) = LOWER($2) THEN 1
+            WHEN LOWER(p.title) LIKE LOWER($2) || '%' THEN 2
+            ELSE 3
+          END,
+          p.title`,
+        [`%${q}%`, q]
       );
 
       if (!results || results.length === 0) {
@@ -263,8 +335,16 @@ export default class SearchService {
         `SELECT ar.*, u.*
         FROM artists ar
         JOIN users u ON ar.user_id = u.id
-        WHERE ar.display_name ILIKE $1`,
-        [`%${q}%`]
+        WHERE ar.display_name ILIKE $1
+        ORDER BY 
+          CASE 
+            WHEN LOWER(ar.display_name) = LOWER($2) THEN 1
+            WHEN LOWER(ar.display_name) LIKE LOWER($2) || '%' THEN 2
+            ELSE 3
+          END,
+          ar.streams DESC NULLS LAST,
+          ar.display_name`,
+        [`%${q}%`, q]
       );
 
       if (!results || results.length === 0) {
