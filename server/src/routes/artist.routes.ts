@@ -2,12 +2,12 @@ import express, { Request, Response } from "express";
 import { ArtistRepository } from "@repositories";
 import { validateOrderBy } from "@validators";
 import { FollowService } from "@services";
+import { parseArtistForm } from "@infra/form-parser";
+import { handlePgError } from "@util";
 
 const router = express.Router();
 
 // GET /api/artists
-// Example:
-// /api/artists?includeUser=true&limit=50&offset=0
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
     const { includeUser, orderByColumn, orderByDirection, limit, offset } =
@@ -40,8 +40,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 });
 
 // GET /api/artists/:id
-// Example:
-// /api/artist/:id?includeUser=true
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { includeUser } = req.query;
@@ -67,6 +65,73 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     const errorMessage = error.message || "Internal server error";
     res.status(500).json({ error: errorMessage });
     return;
+  }
+});
+
+// POST /api/artists
+router.post("/", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const artistData = await parseArtistForm(req);
+    const newArtist = await ArtistRepository.create(artistData);
+
+    if (!newArtist) {
+      res.status(400).json({ error: "Failed to create artist" });
+      return;
+    }
+
+    res.status(200).json(newArtist);
+  } catch (error: any) {
+    console.error("Error in POST /api/artists/:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// PUT /api/artists/:id
+router.put("/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Artist ID is required!" });
+      return;
+    }
+
+    const artistData = await parseArtistForm(req);
+    const updatedArtist = await ArtistRepository.update(id, artistData);
+
+    if (!updatedArtist) {
+      res.status(404).json({ error: "Artist not found" });
+      return;
+    }
+
+    res.status(200).json(updatedArtist);
+  } catch (error: any) {
+    console.error("Error in PUT /api/artists/:id:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// DELETE /api/artists/:id
+router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Artist ID is required!" });
+      return;
+    }
+
+    const deleted = await ArtistRepository.delete(id);
+    if (!deleted) {
+      res.status(404).json({ error: "Artist not found" });
+      return;
+    }
+
+    res.status(200).json({ message: "Artist deleted successfully" });
+  } catch (error: any) {
+    console.error("Error in DELETE /api/artists/:id:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
   }
 });
 

@@ -86,7 +86,7 @@ const PlaylistPage: React.FC = () => {
       message: "The requested playlist does not exist.",
     },
     {
-      condition: !!playlist && !playlist.is_public,
+      condition: !!playlist && !playlist.is_public && !isOwner,
       title: "Playlist Not Found",
       message: "The requested playlist does not exist.",
     },

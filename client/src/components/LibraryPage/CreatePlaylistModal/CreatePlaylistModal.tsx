@@ -265,6 +265,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
               placeholder="My favorite songs..."
               disabled={isCreating}
               hint="Enter a description for your playlist (optional)."
+              error={error}
             />
             <SettingsToggle
               label="Playlist Privacy"

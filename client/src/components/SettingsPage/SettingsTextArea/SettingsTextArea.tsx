@@ -11,6 +11,7 @@ export interface SettingsTextAreaProps {
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   placeholder?: string;
   disabled?: boolean;
+  height?: "small" | "medium" | "large";
 }
 
 const SettingsTextArea: React.FC<SettingsTextAreaProps> = ({
@@ -22,6 +23,7 @@ const SettingsTextArea: React.FC<SettingsTextAreaProps> = ({
   onChange,
   placeholder,
   disabled,
+  height = "small",
 }) => {
   return (
     <div className={styles.settingsTextAreaGroup}>
@@ -35,6 +37,9 @@ const SettingsTextArea: React.FC<SettingsTextAreaProps> = ({
         className={classNames(styles.settingsTextArea, {
           [styles.settingsTextAreaDisabled]: disabled,
           [styles.settingsTextAreaError]: !!error,
+          [styles.settingsTextAreaHeightSmall]: height === "small",
+          [styles.settingsTextAreaHeightMedium]: height === "medium",
+          [styles.settingsTextAreaHeightLarge]: height === "large",
         })}
       />
       {error && (

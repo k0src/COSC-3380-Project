@@ -20,8 +20,20 @@
   font-size: var(--font-size-sm);
   width: 100%;
   outline: none;
-  height: var(--height-textarea);
   resize: none;
+  line-height: var(--line-height-normal);
+}
+
+.settingsTextAreaHeightSmall {
+  height: var(--height-textarea-small);
+}
+
+.settingsTextAreaHeightMedium {
+  height: var(--height-textarea-medium);
+}
+
+.settingsTextAreaHeightLarge {
+  height: var(--height-textarea-large);
 }
 
 .settingsTextAreaDisabled {

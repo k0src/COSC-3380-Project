@@ -28,6 +28,18 @@
   justify-content: center;
 }
 
+.settingsBannerImage {
+  width: 26rem;
+  height: 6rem;
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  background: var(--background-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .settingsImageButton {
   font-family: var(--font-main);
   background-color: var(--color-panel-gray-dark);

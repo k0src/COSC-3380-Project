@@ -173,7 +173,9 @@ html {
   --icon-size-3xl: 6.4rem;
   --icon-size-4xl: 8rem;
 
-  --height-textarea: 10rem;
+  --height-textarea-small: 10rem;
+  --height-textarea-medium: 16rem;
+  --height-textarea-large: 24rem;
 
   --line-height-tight: 1.2;
   --line-height-normal: 1.4;

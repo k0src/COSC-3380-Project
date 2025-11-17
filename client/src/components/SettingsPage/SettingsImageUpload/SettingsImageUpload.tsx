@@ -4,8 +4,9 @@ import { LuTrash } from "react-icons/lu";
 import userPlaceholder from "@assets/user-placeholder.webp";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 import artistPlaceholder from "@assets/artist-placeholder.webp";
+import bannerPlaceholder from "@assets/banner-placeholder.webp";
 
-type ImageUploadType = "user" | "music" | "artist";
+type ImageUploadType = "user" | "music" | "artist" | "banner";
 
 interface SettingsImageUploadProps {
   label: string;
@@ -64,6 +65,14 @@ const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
   };
 
   const displayImage = previewUrl !== null ? previewUrl : currentImage;
+  const placeholderImage =
+    type === "user"
+      ? userPlaceholder
+      : type === "music"
+      ? musicPlaceholder
+      : type === "artist"
+      ? artistPlaceholder
+      : bannerPlaceholder;
 
   return (
     <div className={styles.settingsImageUploadGroup}>
@@ -71,18 +80,14 @@ const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
 
       <div className={styles.settingsImageUploadArea}>
         <img
-          src={
-            displayImage ||
-            (type === "user"
-              ? userPlaceholder
-              : type === "music"
-              ? musicPlaceholder
-              : artistPlaceholder)
-          }
+          src={displayImage || placeholderImage}
           alt={alt || "Profile preview"}
-          className={styles.settingsImagePreview}
+          className={
+            type === "banner"
+              ? styles.settingsBannerImage
+              : styles.settingsImagePreview
+          }
         />
-
         <button
           type="button"
           className={styles.settingsImageButton}

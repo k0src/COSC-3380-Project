@@ -32,8 +32,9 @@
 .artistInfo {
   z-index: 2;
   display: flex;
-  gap: var(--spacing-lg);
-  align-items: center;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+  width: 100%;
 }
 
 .artistImage {
@@ -51,7 +52,7 @@
   cursor: pointer;
 }
 
-.artistImage:hover {
+.artistImageClickable:hover {
   box-shadow: var(--shadow-sd-hover);
 }
 
@@ -104,11 +105,11 @@
   font-size: var(--icon-size-xl);
   flex-shrink: 0;
   color: var(--dynamic-text-color, var(--color-white));
-  transition: color var(--transition-speed) ease-in-out;
+  transition: opacity var(--transition-speed) ease-in-out;
 }
 
 .verifiedBadge:hover {
-  color: var(--dynamic-text-color, var(--color-white-alt));
+  opacity: 0.8;
 }
 
 .tooltip::after {
@@ -133,4 +134,28 @@
   white-space: nowrap;
   overflow: hidden;
   max-width: 100%;
+}
+
+.artistInfoWrapper {
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: center;
+  width: 100%;
+}
+
+.ownerButton {
+  background: none;
+  border: none;
+  color: var(--dynamic-text-color, var(--color-white));
+  font-size: var(--icon-size-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--transition-speed) ease;
+  height: fit-content;
+}
+
+.ownerButton:hover {
+  opacity: 0.8;
 }

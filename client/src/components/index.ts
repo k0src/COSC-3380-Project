@@ -41,6 +41,7 @@ export { default as ArtistActions } from "./ArtistPage/ArtistActions/ArtistActio
 export { default as ArtistPlaylists } from "./ArtistPage/ArtistPlaylists/ArtistPlaylists.js";
 export { default as ArtistAbout } from "./ArtistPage/ArtistAbout/ArtistAbout.js";
 export { default as LazyBannerImg } from "./ArtistPage/LazyBannerImg/LazyBannerImg.js";
+export { default as EditArtistModal } from "./ArtistPage/EditArtistModal/EditArtistModal.js";
 
 /* ============================== Playlist Page ============================== */
 export { default as RelatedPlaylists } from "./PlaylistPage/RelatedPlaylists/RelatedPlaylists.js";
