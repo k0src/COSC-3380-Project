@@ -1,13 +1,15 @@
 import { Routes, Route } from "react-router-dom";
 import * as Pages from "./pages";
-import { AppLayout, MainLayout, MeWrapper } from "@components";
+import { AppLayout, MainLayout, MeWrapper, PageLoader } from "@components";
 import { useAuth } from "@contexts";
 
 export default function AppRoutes() {
   const { isAuthenticated, isLoading } = useAuth();
   return (
     <>
-      {!isLoading && (
+      {isLoading ? (
+        <PageLoader />
+      ) : (
         <Routes>
           <Route path="/login" element={<Pages.LoginPage />} />
           <Route path="/signup" element={<Pages.SignupPage />} />
@@ -103,6 +105,22 @@ export default function AppRoutes() {
               element={
                 <MainLayout>
                   <Pages.HistoryPage />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="/feed"
+              element={
+                <MainLayout>
+                  <Pages.FeedPage />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="/search"
+              element={
+                <MainLayout>
+                  <Pages.SearchResultsPage />
                 </MainLayout>
               }
             />

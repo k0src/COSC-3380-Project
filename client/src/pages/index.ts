@@ -1,5 +1,6 @@
 export { default as HomePage } from "./HomePage/HomePage.js";
 export { default as LandingPage } from "./LandingPage/LandingPage.js";
+export { default as FeedPage } from "./FeedPage/FeedPage.js";
 
 export { default as SongPage } from "./SongPage/SongPage.js";
 export { default as ArtistPage } from "./ArtistPage/ArtistPage.js";
@@ -8,6 +9,7 @@ export { default as PlaylistPage } from "./PlaylistPage/PlaylistPage.js";
 export { default as AlbumPage } from "./AlbumPage/AlbumPage.js";
 
 export { default as LibraryPage } from "./LibraryPage/LibraryPage.js";
+export { default as SearchResultsPage } from "./SearchResultsPage/SearchResultsPage.js";
 export { default as HistoryPage } from "./LibraryPage/HistoryPage/HistoryPage.js";
 
 export { default as LoginPage } from "./LoginPage/LoginPage.js";

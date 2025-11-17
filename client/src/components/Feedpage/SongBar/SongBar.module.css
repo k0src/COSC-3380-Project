@@ -1,0 +1,90 @@
+.songBar {
+  display: flex;
+  gap: var(--spacing-lg, 1.6rem);
+  align-items: center;
+  padding: 0.8rem 1rem;
+  border-radius: var(--border-radius-lg, 1.2rem);
+  background-color: var(--color-panel-gray, #181818);
+  border: 1px solid var(--color-panel-border, #1c1c1c);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: background-color var(--transition-speed, 0.1s) ease,
+    transform var(--transition-speed, 0.1s) ease;
+}
+
+.songBar:hover {
+  background-color: var(--color-panel-gray-dark, #0e0e0e);
+  transform: translateY(-2px);
+}
+
+.cover {
+  flex: 0 0 200px;
+  width: 200px;
+  height: 200px;
+  border-radius: var(--border-radius-md, 0.8rem);
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, var(--opacity-low, 0.05));
+}
+
+.coverImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.primaryInfo {
+  display: flex;
+  flex-direction: row;
+  gap: 0.15rem;
+}
+
+.genreContainer{
+    margin-left: auto;
+    margin-right: var(--spacing-lg);
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-white, #f6f6f6);
+}
+
+.artist {
+  font-size: 2rem;
+  color: var(--color-text-gray-light, #a1a1a1);
+}
+
+.genre {
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+  color: var(--color-text-gray, #6d6d6d);
+  text-transform: uppercase;
+}
+
+.stats {
+  display: flex;
+  margin-top: 1rem;
+  gap: 1.4rem;
+  font-size: 0.8rem;
+}
+
+.statLabel {
+  display: block;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-gray, #6d6d6d);
+}
+
+.stats strong {
+  display: block;
+  font-size: 1.2rem;
+  color: var(--color-white, #f6f6f6);
+}
