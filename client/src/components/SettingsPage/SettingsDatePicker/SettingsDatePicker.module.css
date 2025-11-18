@@ -48,3 +48,7 @@
   font-style: italic;
   line-height: var(--line-height-normal);
 }
+
+.red {
+  color: var(--color-red-ui);
+}

@@ -6,7 +6,7 @@ import { useAudioQueue } from "@contexts";
 import { useAsyncData, useFollowStatus } from "@hooks";
 import { formatNumber } from "@util";
 import { artistApi } from "@api";
-import { ShareModal } from "@components";
+import { ShareModal, ReportModal } from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import styles from "./ArtistActions.module.css";
 import classNames from "classnames";
@@ -58,6 +58,7 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
   const { actions } = useAudioQueue();
   const queryClient = useQueryClient();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   const {
     isFollowed,
@@ -119,8 +120,13 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
   }, []);
 
   const handleReport = useCallback(() => {
-    // TODO: open report modal...
-  }, []);
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    setReportModalOpen(true);
+  }, [isAuthenticated, navigate]);
 
   const handleCloseShareModal = useCallback(() => {
     setIsShareModalOpen(false);
@@ -201,6 +207,14 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
         onClose={handleCloseShareModal}
         pageUrl={shareLink}
         pageTitle={artistName}
+      />
+
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        reportedId={userId}
+        reportedTitle={artistName}
+        reportedType="artist"
       />
     </>
   );

@@ -16,6 +16,7 @@ export interface SettingsRadioProps {
   disabled?: boolean;
   hint?: string;
   orientation?: "horizontal" | "vertical";
+  required?: boolean;
 }
 
 const SettingsRadio: React.FC<SettingsRadioProps> = ({
@@ -27,6 +28,7 @@ const SettingsRadio: React.FC<SettingsRadioProps> = ({
   disabled,
   hint,
   orientation = "horizontal",
+  required = false,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -34,7 +36,9 @@ const SettingsRadio: React.FC<SettingsRadioProps> = ({
 
   return (
     <div className={styles.settingsRadioGroup}>
-      <label className={styles.settingsRadioLabel}>{label}</label>
+      <label className={styles.settingsRadioLabel}>
+        {label} {required && <span className={styles.red}>*</span>}
+      </label>
       <div
         className={classNames(styles.radioOptions, {
           [styles.horizontal]: orientation === "horizontal",
@@ -57,6 +61,7 @@ const SettingsRadio: React.FC<SettingsRadioProps> = ({
               onChange={handleChange}
               disabled={disabled}
               className={styles.radioInput}
+              required={required}
             />
             <span className={styles.radioCustom} />
             <span className={styles.radioLabel}>{option.label}</span>

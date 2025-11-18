@@ -14,6 +14,7 @@ export interface SettingsToggleProps {
     on: string;
     off: string;
   };
+  required?: boolean;
 }
 
 const SettingsToggle: React.FC<SettingsToggleProps> = ({
@@ -25,6 +26,7 @@ const SettingsToggle: React.FC<SettingsToggleProps> = ({
   name,
   disabled,
   values = { on: "On", off: "Off" },
+  required = false,
 }) => {
   const [isHintVisible, setIsHintVisible] = useState(false);
   const [hintTimeoutId, setHintTimeoutId] = useState<NodeJS.Timeout | null>(
@@ -89,7 +91,9 @@ const SettingsToggle: React.FC<SettingsToggleProps> = ({
 
   return (
     <div className={styles.settingsToggleGroup}>
-      <label className={styles.settingsToggleLabel}>{label}</label>
+      <label className={styles.settingsToggleLabel}>
+        {label} {required && <span className={styles.red}>*</span>}
+      </label>
       <div
         className={styles.toggleContainer}
         onMouseEnter={handleHintVisibility}

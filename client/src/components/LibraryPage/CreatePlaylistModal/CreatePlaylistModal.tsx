@@ -292,7 +292,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
                   You have unsaved changes.
                 </span>
               )}
-              {error && <span className={styles.unsavedText}>{error}</span>}
+              {error && <span className={styles.error}>{error}</span>}
               <div className={styles.buttons}>
                 {mode === "edit" && (
                   <button

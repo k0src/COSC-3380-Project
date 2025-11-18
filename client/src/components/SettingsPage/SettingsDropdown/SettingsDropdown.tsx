@@ -17,6 +17,7 @@ export interface SettingsDropdownProps {
   options: DropdownOption[];
   placeholder?: string;
   disabled?: boolean;
+  required?: boolean;
 }
 
 const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
@@ -29,6 +30,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
   onChange,
   placeholder,
   disabled,
+  required = false,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onChange(e.target.value);
@@ -36,7 +38,9 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
 
   return (
     <div className={styles.settingsDropdownGroup}>
-      <label className={styles.settingsDropdownLabel}>{label}</label>
+      <label className={styles.settingsDropdownLabel}>
+        {label} {required && <span className={styles.red}>*</span>}
+      </label>
       <select
         name={name}
         value={value}
@@ -45,6 +49,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
         className={classNames(styles.select, {
           [styles.selectError]: !!error,
         })}
+        required={required}
       >
         {placeholder && (
           <option value="" disabled>

@@ -6,3 +6,4 @@ export { default as proxyRoutes } from "./proxy.routes.js";
 export { default as songRoutes } from "./song.routes.js";
 export { default as userRoutes } from "./user.routes.js";
 export { default as searchRoutes } from "./search.routes.js";
+export { default as reportRoutes } from "./report.routes.js";

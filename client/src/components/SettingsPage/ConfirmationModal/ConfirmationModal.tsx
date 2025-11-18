@@ -74,7 +74,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         </div>
 
         <div className={styles.content}>
-          <p className={styles.message}>{message}</p>
+          <span className={styles.message}>{message}</span>
           {warningMessage && (
             <div className={styles.warningBanner}>
               <span>{warningMessage}</span>

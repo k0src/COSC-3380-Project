@@ -1,0 +1,154 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-overlay-bg);
+  backdrop-filter: var(--overlay-blur);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: var(--animation-fade-in);
+}
+
+.modal {
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  width: 90%;
+  max-width: 80rem;
+  box-shadow: var(--shadow-modal);
+  animation: var(--animation-slide-in);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
+}
+
+.title {
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  color: var(--color-white);
+  margin: 0;
+}
+
+.headerButton {
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: var(--icon-size-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed) ease;
+}
+
+.headerButton:hover {
+  color: var(--color-white);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.warningBanner {
+  background: var(--color-orange-ui-bg);
+  border: var(--border-size-sm) solid var(--color-orange-ui-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sd);
+  color: var(--color-orange-ui);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.messageLink {
+  font-weight: 500;
+  text-decoration: none;
+  transition: text-decoration var(--transition-speed) ease;
+}
+
+.messageLink:hover {
+  text-decoration: underline;
+}
+
+.reportForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.error {
+  font-weight: 500;
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+}
+
+.buttonContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+}
+
+.buttons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.cancelButton {
+  font-family: var(--font-main);
+  background: var(--color-gray-button);
+  border: var(--border-size-sm) solid var(--color-gray-button-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-white-alt);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: var(--color-gray-button-border);
+  color: var(--color-white);
+}
+
+.cancelButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.submitButton {
+  font-family: var(--font-main);
+  background: var(--color-red-ui-bg);
+  border: var(--border-size-sm) solid var(--color-red-ui-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-red-ui);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--color-red-ui-bg-hover);
+}
+
+.submitButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}

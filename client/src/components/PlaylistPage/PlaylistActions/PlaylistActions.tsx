@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { Playlist, UUID } from "@types";
 import { useAuth } from "@contexts";
 import { useLikeStatus } from "@hooks";
-import { QueueMenu, ShareModal, RemixDialog } from "@components";
+import { QueueMenu, ShareModal, RemixDialog, ReportModal } from "@components";
 import { playlistApi } from "@api";
 import {
   LuThumbsUp,
@@ -36,6 +36,8 @@ const PlaylistActions: React.FC<PlaylistActionsProps> = ({ playlist }) => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [queueMenuOpen, setQueueMenuOpen] = useState(false);
   const [isRemixDialogOpen, setIsRemixDialogOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+
   const [isRemixing, setIsRemixing] = useState(false);
   const [remixedPlaylistId, setRemixedPlaylistId] = useState<UUID | null>(null);
   const [remixedPlaylistTitle, setRemixedPlaylistTitle] = useState<string>("");
@@ -71,9 +73,14 @@ const PlaylistActions: React.FC<PlaylistActionsProps> = ({ playlist }) => {
     setIsShareModalOpen(true);
   }, []);
 
-  const handleReport = useCallback(async () => {
-    //!: open report modal...
-  }, []);
+  const handleReport = useCallback(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    setReportModalOpen(true);
+  }, [isAuthenticated, navigate]);
 
   const handleRemixClick = useCallback(() => {
     if (!isAuthenticated || !user) {
@@ -103,7 +110,7 @@ const PlaylistActions: React.FC<PlaylistActionsProps> = ({ playlist }) => {
       const remixedId = await playlistApi.createRemixPlaylist(
         playlist.id,
         user.id,
-        20,
+        20
       );
 
       setRemixedPlaylistId(remixedId);
@@ -125,7 +132,7 @@ const PlaylistActions: React.FC<PlaylistActionsProps> = ({ playlist }) => {
   const handleCloseQueueMenu = useCallback(() => setQueueMenuOpen(false), []);
   const handleCloseShareModal = useCallback(
     () => setIsShareModalOpen(false),
-    [],
+    []
   );
 
   return (
@@ -187,6 +194,14 @@ const PlaylistActions: React.FC<PlaylistActionsProps> = ({ playlist }) => {
         onClose={handleCloseShareModal}
         pageUrl={window.location.href}
         pageTitle={playlist.title}
+      />
+
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        reportedId={playlist.id}
+        reportedTitle={playlist.title}
+        reportedType="playlist"
       />
     </>
   );

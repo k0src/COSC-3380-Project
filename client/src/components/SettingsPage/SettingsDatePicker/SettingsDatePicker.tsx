@@ -13,6 +13,7 @@ export interface SettingsDatePickerProps {
   disabled?: boolean;
   min?: string;
   max?: string;
+  required?: boolean;
 }
 
 const SettingsDatePicker: React.FC<SettingsDatePickerProps> = ({
@@ -26,6 +27,7 @@ const SettingsDatePicker: React.FC<SettingsDatePickerProps> = ({
   disabled,
   min,
   max,
+  required = false,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -33,7 +35,9 @@ const SettingsDatePicker: React.FC<SettingsDatePickerProps> = ({
 
   return (
     <div className={styles.settingsDatePickerGroup}>
-      <label className={styles.settingsDatePickerLabel}>{label}</label>
+      <label className={styles.settingsDatePickerLabel}>
+        {label} {required && <span className={styles.red}>*</span>}
+      </label>
       <input
         type="date"
         name={name}
@@ -47,6 +51,7 @@ const SettingsDatePicker: React.FC<SettingsDatePickerProps> = ({
           [styles.settingsDatePickerDisabled]: disabled,
           [styles.settingsDatePickerError]: !!error,
         })}
+        required={required}
       />
       {error && (
         <span className={styles.settingsDatePickerErrorText}>{error}</span>

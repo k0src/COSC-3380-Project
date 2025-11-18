@@ -58,3 +58,7 @@
 .selectError {
   border-color: var(--color-accent);
 }
+
+.red {
+  color: var(--color-red-ui);
+}

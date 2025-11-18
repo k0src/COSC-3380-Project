@@ -16,6 +16,7 @@ interface SettingsImageUploadProps {
   hint?: string;
   type?: ImageUploadType;
   alt?: string;
+  required?: boolean;
 }
 
 const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
@@ -26,6 +27,7 @@ const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
   hint,
   type = "user",
   alt,
+  required = false,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -76,7 +78,9 @@ const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
 
   return (
     <div className={styles.settingsImageUploadGroup}>
-      <label className={styles.settingsImageUploadLabel}>{label}</label>
+      <label className={styles.settingsImageUploadLabel}>
+        {label} {required && <span className={styles.red}>*</span>}
+      </label>
 
       <div className={styles.settingsImageUploadArea}>
         <img
@@ -118,6 +122,7 @@ const SettingsImageUpload: React.FC<SettingsImageUploadProps> = ({
         onChange={handleFileSelect}
         className={styles.hiddenInput}
         disabled={disabled}
+        required={required}
       />
     </div>
   );

@@ -1,9 +1,14 @@
-import { memo, useEffect, useState, useRef } from "react";
+import { memo, useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Album, UUID } from "@types";
 import { useLikeStatus } from "@hooks";
 import { useAuth } from "@contexts";
-import { ShareModal, QueueMenu, PlaylistAddMenu } from "@components";
+import {
+  ShareModal,
+  QueueMenu,
+  PlaylistAddMenu,
+  ReportModal,
+} from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import styles from "./AlbumActions.module.css";
 import classNames from "classnames";
@@ -43,6 +48,7 @@ const AlbumActions: React.FC<AlbumActionsProps> = ({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [queueMenuOpen, setQueueMenuOpen] = useState(false);
   const [playlistMenuOpen, setPlaylistMenuOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   const queueButtonRef = useRef<HTMLButtonElement>(null);
   const playlistButtonRef = useRef<HTMLButtonElement>(null);
@@ -55,16 +61,16 @@ const AlbumActions: React.FC<AlbumActionsProps> = ({
     }
   }, [user?.id, album?.id, queryClient]);
 
-  const handleToggleAlbumLike = async () => {
+  const handleToggleAlbumLike = useCallback(async () => {
     try {
       if (!isAuthenticated) return navigate("/login");
       await toggleLike();
     } catch (error) {
       console.error("Toggling album like failed:", error);
     }
-  };
+  }, [isAuthenticated, navigate, toggleLike]);
 
-  const handleAddToQueue = async () => {
+  const handleAddToQueue = useCallback(async () => {
     try {
       if (isAuthenticated) {
         setQueueMenuOpen((prev) => !prev);
@@ -74,28 +80,32 @@ const AlbumActions: React.FC<AlbumActionsProps> = ({
     } catch (error) {
       console.error("Adding to queue failed:", error);
     }
-  };
+  }, [isAuthenticated, navigate]);
 
-  const handleAddToPlaylist = async () => {
+  const handleAddToPlaylist = useCallback(async () => {
     try {
       if (!isAuthenticated) {
         navigate("/login");
         return;
       }
-
       setPlaylistMenuOpen((prev) => !prev);
     } catch (error) {
       console.error("Adding to playlist failed:", error);
     }
-  };
+  }, [isAuthenticated, navigate]);
 
-  const handleShare = () => {
+  const handleShare = useCallback(() => {
     setIsShareModalOpen(true);
-  };
+  }, []);
 
-  const handleReport = () => {
-    //! open report modal...
-  };
+  const handleReport = useCallback(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    setReportModalOpen(true);
+  }, [isAuthenticated, navigate]);
 
   return (
     <>
@@ -152,6 +162,14 @@ const AlbumActions: React.FC<AlbumActionsProps> = ({
         onClose={() => setIsShareModalOpen(false)}
         pageUrl={albumUrl}
         pageTitle={album.title}
+      />
+
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        reportedId={album.id}
+        reportedTitle={album.title}
+        reportedType="album"
       />
     </>
   );

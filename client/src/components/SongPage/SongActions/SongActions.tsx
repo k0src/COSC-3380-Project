@@ -1,9 +1,14 @@
-import { memo, useEffect, useState, useRef } from "react";
+import { memo, useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Song } from "@types";
 import { useLikeStatus } from "@hooks";
 import { useAuth } from "@contexts";
-import { ShareModal, QueueMenu, PlaylistAddMenu } from "@components";
+import {
+  ShareModal,
+  QueueMenu,
+  PlaylistAddMenu,
+  ReportModal,
+} from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import styles from "./SongActions.module.css";
 import classNames from "classnames";
@@ -38,6 +43,7 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [queueMenuOpen, setQueueMenuOpen] = useState(false);
   const [playlistMenuOpen, setPlaylistMenuOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   const queueButtonRef = useRef<HTMLButtonElement>(null);
   const playlistButtonRef = useRef<HTMLButtonElement>(null);
@@ -50,16 +56,16 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
     }
   }, [user?.id, song?.id]);
 
-  const handleToggleSongLike = async () => {
+  const handleToggleSongLike = useCallback(async () => {
     try {
       if (!isAuthenticated) return navigate("/login");
       await toggleLike();
     } catch (error) {
       console.error("Toggling song like failed:", error);
     }
-  };
+  }, [isAuthenticated, navigate, toggleLike]);
 
-  const handleAddToPlaylist = async () => {
+  const handleAddToPlaylist = useCallback(async () => {
     try {
       if (!isAuthenticated) {
         navigate("/login");
@@ -70,9 +76,9 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
     } catch (error) {
       console.error("Adding to playlist failed:", error);
     }
-  };
+  }, [isAuthenticated, navigate]);
 
-  const handleAddToQueue = async () => {
+  const handleAddToQueue = useCallback(async () => {
     try {
       if (isAuthenticated) {
         setQueueMenuOpen((prev) => !prev);
@@ -82,15 +88,20 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
     } catch (error) {
       console.error("Adding to queue failed:", error);
     }
-  };
+  }, [isAuthenticated, navigate]);
 
-  const handleShare = () => {
+  const handleShare = useCallback(() => {
     setIsShareModalOpen(true);
-  };
+  }, []);
 
-  const handleReport = () => {
-    //! open report modal...
-  };
+  const handleReport = useCallback(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    setReportModalOpen(true);
+  }, [isAuthenticated, navigate]);
 
   return (
     <>
@@ -151,6 +162,14 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
         onClose={() => setIsShareModalOpen(false)}
         pageUrl={songUrl}
         pageTitle={song.title}
+      />
+
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        reportedId={song.id}
+        reportedTitle={song.title}
+        reportedType="song"
       />
     </>
   );

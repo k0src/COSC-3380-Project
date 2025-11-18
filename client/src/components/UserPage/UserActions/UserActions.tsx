@@ -1,10 +1,11 @@
-import { memo, useMemo, useCallback, useEffect } from "react";
+import { memo, useMemo, useState, useCallback, useEffect } from "react";
 import { PuffLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
 import { useAsyncData, useFollowStatus } from "@hooks";
 import { formatNumber, formatRelativeDate } from "@util";
 import { artistApi } from "@api";
+import { ReportModal } from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import styles from "./UserActions.module.css";
 import classNames from "classnames";
@@ -40,6 +41,7 @@ export interface UserActionsProps {
   userIsArtist: boolean;
   userCreatedAt: string;
   userId: string;
+  username: string;
 }
 
 const UserActions: React.FC<UserActionsProps> = ({
@@ -47,6 +49,7 @@ const UserActions: React.FC<UserActionsProps> = ({
   userId,
   userCreatedAt,
   userIsArtist,
+  username,
 }) => {
   if (userIsArtist && !artistId) {
     throw new Error("artistId is required when userIsArtist is true");
@@ -55,6 +58,7 @@ const UserActions: React.FC<UserActionsProps> = ({
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const queryClient = useQueryClient();
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   const {
     isFollowed,
@@ -109,8 +113,13 @@ const UserActions: React.FC<UserActionsProps> = ({
   }, [isAuthenticated, navigate, toggleFollow]);
 
   const handleReport = useCallback(() => {
-    // TODO: open report modal...
-  }, []);
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    setReportModalOpen(true);
+  }, [isAuthenticated, navigate]);
 
   const handleMore = useCallback(() => {
     navigate(`/users/${userId}/info`);
@@ -129,45 +138,55 @@ const UserActions: React.FC<UserActionsProps> = ({
   }
 
   return (
-    <div className={styles.userActionsContainer}>
-      <div className={styles.actionsLayout}>
-        <button
-          className={classNames(styles.actionButton, {
-            [styles.followed]: isFollowed,
-          })}
-          disabled={isFollowLoading}
-          onClick={handleFollowUser}
-        >
-          {isFollowed ? (
-            <>
-              Follow <LuUserRoundCheck />
-            </>
-          ) : (
-            <>
-              Follow <LuUserRoundPlus />
-            </>
-          )}
-        </button>
-        <button className={styles.actionButtonAlt} onClick={handleReport}>
-          Report <LuCircleAlert />
-        </button>
-        <button className={styles.actionButtonAlt} onClick={handleMore}>
-          More <LuEllipsis />
-        </button>
+    <>
+      <div className={styles.userActionsContainer}>
+        <div className={styles.actionsLayout}>
+          <button
+            className={classNames(styles.actionButton, {
+              [styles.followed]: isFollowed,
+            })}
+            disabled={isFollowLoading}
+            onClick={handleFollowUser}
+          >
+            {isFollowed ? (
+              <>
+                Follow <LuUserRoundCheck />
+              </>
+            ) : (
+              <>
+                Follow <LuUserRoundPlus />
+              </>
+            )}
+          </button>
+          <button className={styles.actionButtonAlt} onClick={handleReport}>
+            Report <LuCircleAlert />
+          </button>
+          <button className={styles.actionButtonAlt} onClick={handleMore}>
+            More <LuEllipsis />
+          </button>
 
-        <StatItem
-          icon={LuUsersRound}
-          value={stats.followers}
-          label="Followers"
-        />
-        <StatItem
-          icon={LuUsersRound}
-          value={stats.following}
-          label="Following"
-        />
-        <StatItem value={stats.joinDate} label="Joined" />
+          <StatItem
+            icon={LuUsersRound}
+            value={stats.followers}
+            label="Followers"
+          />
+          <StatItem
+            icon={LuUsersRound}
+            value={stats.following}
+            label="Following"
+          />
+          <StatItem value={stats.joinDate} label="Joined" />
+        </div>
       </div>
-    </div>
+
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        reportedId={userId}
+        reportedTitle={username}
+        reportedType="user"
+      />
+    </>
   );
 };
 

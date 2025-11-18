@@ -112,6 +112,7 @@ const UserPage: React.FC = () => {
               userId={id}
               userCreatedAt={pageUser.created_at}
               userIsArtist={userIsArtist}
+              username={pageUser.username}
             />
             <FollowProfiles
               title="Followers"

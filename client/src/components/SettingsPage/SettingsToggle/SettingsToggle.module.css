@@ -117,3 +117,7 @@
   white-space: normal;
   text-align: center;
 }
+
+.red {
+  color: var(--color-red-ui);
+}

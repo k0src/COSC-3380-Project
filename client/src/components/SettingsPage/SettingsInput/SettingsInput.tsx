@@ -12,6 +12,7 @@ export interface SettingsInputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
   disabled?: boolean;
+  required?: boolean;
 }
 
 const SettingsInput: React.FC<SettingsInputProps> = ({
@@ -24,10 +25,13 @@ const SettingsInput: React.FC<SettingsInputProps> = ({
   onChange,
   placeholder,
   disabled,
+  required = false,
 }) => {
   return (
     <div className={styles.settingsInputGroup}>
-      <label className={styles.settingsInputLabel}>{label}</label>
+      <label className={styles.label}>
+        {label} {required && <span className={styles.red}>*</span>}
+      </label>
       <input
         type={type}
         name={name}
@@ -39,6 +43,7 @@ const SettingsInput: React.FC<SettingsInputProps> = ({
           [styles.settingsInputDisabled]: disabled,
           [styles.settingsInputError]: !!error,
         })}
+        required={required}
       />
       {error && <span className={styles.settingsInputErrorText}>{error}</span>}
       {hint && !error && (

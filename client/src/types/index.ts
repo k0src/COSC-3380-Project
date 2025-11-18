@@ -11,3 +11,4 @@ export * from "./stats.types.js";
 export * from "./library.types.js";
 export * from "./theme.types.js";
 export * from "./notifications.types.js";
+export * from "./report.types.js";

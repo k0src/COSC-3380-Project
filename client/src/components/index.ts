@@ -102,6 +102,7 @@ export { default as SettingsRadio } from "./SettingsPage/SettingsRadio/SettingsR
 export { default as SettingsImageUpload } from "./SettingsPage/SettingsImageUpload/SettingsImageUpload.js";
 export { default as SettingsTextArea } from "./SettingsPage/SettingsTextArea/SettingsTextArea.js";
 export { default as SettingsDatePicker } from "./SettingsPage/SettingsDatePicker/SettingsDatePicker.js";
+export { default as SettingsCheckbox } from "./SettingsPage/SettingsCheckbox/SettingsCheckbox.js";
 
 export { default as ChangePasswordModal } from "./SettingsPage/ChangePasswordModal/ChangePasswordModal.js";
 export { default as ConfirmationModal } from "./SettingsPage/ConfirmationModal/ConfirmationModal.js";
@@ -126,6 +127,7 @@ export { default as CoverLightbox } from "./CoverLightbox/CoverLightbox.js";
 export { default as ContextMenu } from "./ContextMenu/ContextMenu.js";
 export { default as PlaylistAddMenuDCM } from "./ContextMenu/PlaylistAddMenuDCM/PlaylistAddMenuDCM.js";
 export { default as PlaylistAddMenu } from "./PlaylistAddMenu/PlaylistAddMenu.js";
+export { default as ReportModal } from "./ReportModal/ReportModal.js";
 
 /* =============================== Page States ============================== */
 export { default as PageLoader } from "./PageLoader/PageLoader.js";

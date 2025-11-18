@@ -78,6 +78,7 @@ app.use("/api/playlists", Routes.playlistRoutes);
 app.use("/api/users", Routes.userRoutes);
 app.use("/api/proxy", Routes.proxyRoutes);
 app.use("/api/search", Routes.searchRoutes);
+app.use("/api/report", Routes.reportRoutes);
 
 const clientDistPath = path.join(__dirname, "public");
 app.use(express.static(clientDistPath));

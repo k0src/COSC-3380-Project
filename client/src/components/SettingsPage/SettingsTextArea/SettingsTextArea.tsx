@@ -12,6 +12,7 @@ export interface SettingsTextAreaProps {
   placeholder?: string;
   disabled?: boolean;
   height?: "small" | "medium" | "large";
+  required?: boolean;
 }
 
 const SettingsTextArea: React.FC<SettingsTextAreaProps> = ({
@@ -24,10 +25,13 @@ const SettingsTextArea: React.FC<SettingsTextAreaProps> = ({
   placeholder,
   disabled,
   height = "small",
+  required = false,
 }) => {
   return (
     <div className={styles.settingsTextAreaGroup}>
-      <label className={styles.settingsTextAreaLabel}>{label}</label>
+      <label className={styles.settingsTextAreaLabel}>
+        {label} {required && <span className={styles.red}>*</span>}
+      </label>
       <textarea
         name={name}
         value={value}
@@ -41,6 +45,7 @@ const SettingsTextArea: React.FC<SettingsTextAreaProps> = ({
           [styles.settingsTextAreaHeightMedium]: height === "medium",
           [styles.settingsTextAreaHeightLarge]: height === "large",
         })}
+        required={required}
       />
       {error && (
         <span className={styles.settingsTextAreaErrorText}>{error}</span>

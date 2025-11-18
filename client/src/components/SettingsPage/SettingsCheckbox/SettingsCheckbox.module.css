@@ -1,43 +1,65 @@
-.settingsInputGroup {
+.settingsCheckbox {
   display: flex;
-  flex-direction: column;
   gap: var(--spacing-sm);
 }
 
-.settingsInputLabel {
+.label {
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text-gray);
 }
 
-.settingsInput {
-  font-family: var(--font-main);
-  padding: var(--spacing-input);
+.checkbox {
+  appearance: none;
+  width: 2rem;
+  height: 2rem;
   background-color: var(--color-panel-gray-dark);
   border: var(--border-size-sm) solid var(--color-panel-border);
   border-radius: var(--border-radius-sm);
-  color: var(--color-white);
-  font-size: var(--font-size-sm);
-  width: 100%;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
 }
 
-.settingsInputDisabled {
+.checkbox:focus {
+  outline: none;
+}
+
+.checkbox:checked {
+  background-color: var(--color-panel-gray-dark);
+  border-color: var(--color-panel-border);
+}
+
+.checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.375rem;
+  height: 0.625rem;
+  border: solid var(--color-white);
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -60%) rotate(45deg);
+}
+
+.checkboxDisabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
-.settingsInputError {
+.checkboxError {
   border-color: var(--color-accent);
 }
 
-.settingsInputErrorText {
+.errorText {
   font-size: var(--font-size-xs);
   color: var(--color-accent);
   font-weight: 500;
   line-height: var(--line-height-normal);
 }
 
-.settingsInputHint {
+.hintText {
   font-size: var(--font-size-xs);
   color: var(--color-text-gray);
   font-style: italic;
