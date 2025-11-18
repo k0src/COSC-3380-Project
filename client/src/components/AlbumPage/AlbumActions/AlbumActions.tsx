@@ -138,7 +138,11 @@ const AlbumActions: React.FC<AlbumActionsProps> = ({
           />
         </div>
         <div className={styles.playlistButtonContainer}>
-          <button className={styles.actionButton} onClick={handleAddToPlaylist}>
+          <button
+            ref={playlistButtonRef}
+            className={styles.actionButton}
+            onClick={handleAddToPlaylist}
+          >
             <LuListPlus />
           </button>
           <PlaylistAddMenu
