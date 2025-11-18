@@ -87,16 +87,16 @@ const SearchableList = <T extends EntityType>({
         let data;
         switch (entityType) {
           case "song":
-            data = await searchApi.searchSongs(query, ownerId);
+            data = await searchApi.searchSongs(query, { ownerId });
             break;
           case "album":
-            data = await searchApi.searchAlbums(query, ownerId);
+            data = await searchApi.searchAlbums(query, { ownerId });
             break;
           case "artist":
             data = await searchApi.searchArtists(query);
             break;
           case "playlist":
-            data = await searchApi.searchPlaylists(query, ownerId);
+            data = await searchApi.searchPlaylists(query, { ownerId });
             break;
         }
         setResults(data as EntityMap[T][]);

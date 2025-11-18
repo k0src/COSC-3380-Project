@@ -9,15 +9,19 @@ export function useElementWidth(ref: React.RefObject<HTMLDivElement | null>) {
   const [width, setWidth] = useState(0);
   useEffect(() => {
     if (!ref.current) return;
-    setWidth(ref.current.clientWidth);
+
+    const element = ref.current;
+    setWidth(element.clientWidth);
+
     const ro = new ResizeObserver((entries) => {
       for (const e of entries) {
-        const w =
-          (e.contentRect && e.contentRect.width) || ref.current!.clientWidth;
+        if (!element) return;
+        const w = (e.contentRect && e.contentRect.width) || element.clientWidth;
         setWidth(Math.floor(w));
       }
     });
-    ro.observe(ref.current);
+
+    ro.observe(element);
     return () => ro.disconnect();
   }, [ref]);
   return width;

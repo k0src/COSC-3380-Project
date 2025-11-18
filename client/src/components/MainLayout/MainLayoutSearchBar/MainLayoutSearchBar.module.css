@@ -34,3 +34,65 @@
 .searchInput::placeholder {
   color: var(--color-text-gray);
 }
+
+.kbdContainer {
+  position: absolute;
+  right: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  pointer-events: none;
+  transition: opacity var(--transition-speed) ease;
+}
+
+.searchKbd {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+  background-color: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  box-shadow: 0 0.2rem 0 0 var(--color-panel-border);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + var(--spacing-sm));
+  left: 0;
+  right: 0;
+  background-color: var(--color-panel-gray);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  max-height: 40rem;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sd) var(--spacing-md);
+  cursor: pointer;
+  transition: background-color var(--transition-speed) ease;
+}
+
+.dropdownItem:hover,
+.dropdownItemSelected {
+  background-color: var(--color-panel-gray-hover);
+}
+
+.dropdownItem:not(:last-child) {
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
+}
+
+.dropdownItemText {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}

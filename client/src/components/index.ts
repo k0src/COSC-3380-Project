@@ -88,6 +88,10 @@ export { default as HistoryAlbums } from "./LibraryPage/HistoryAlbums/HistoryAlb
 export { default as HistoryArtists } from "./LibraryPage/HistoryArtists/HistoryArtists.js";
 export { default as CreatePlaylistModal } from "./LibraryPage/CreatePlaylistModal/CreatePlaylistModal.js";
 
+/* =========================== Search Results Page ========================== */
+export { default as TopResultCard } from "./SearchResultsPage/TopResultCard/TopResultCard.js";
+export { default as TopResultSection } from "./SearchResultsPage/TopResultSection/TopResultSection.js";
+
 /* ============================== Settings Page ============================= */
 export { default as SettingsSection } from "./SettingsPage/SettingsSection/SettingsSection.js";
 export { default as SettingsInput } from "./SettingsPage/SettingsInput/SettingsInput.js";
@@ -112,6 +116,7 @@ export { default as SlidingCardList } from "./SlidingCardList/SlidingCardList.js
 export { default as EntityItem } from "./EntityItem/EntityItem.js";
 export { default as EntityItemCard } from "./EntityItemCard/EntityItemCard.js";
 export { default as ArtistItem } from "./ArtistItem/ArtistItem.js";
+export { default as UserItem } from "./UserItem/UserItem.js";
 
 /* ================================= Modals ================================= */
 export { default as ShareModal } from "./ShareModal/ShareModal.js";

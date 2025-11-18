@@ -7,47 +7,99 @@ export interface SearchResults {
   artists: Artist[];
   playlists: Playlist[];
   users: User[];
+  top_result?: Song | Album | Artist | Playlist | User;
 }
 
 export const searchApi = {
-  async search(query: string) {
+  async search(query: string, options?: { ownerId?: string }) {
     const response = await api.get<SearchResults>(`/search`, {
-      params: { q: query },
+      params: {
+        q: query,
+        ...options,
+      },
     });
     return response.data;
   },
 
-  async searchUsers(query: string) {
+  async searchUsers(
+    query: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ) {
     const response = await api.get<User[]>(`/search/users`, {
-      params: { q: query },
+      params: {
+        q: query,
+        ...options,
+      },
     });
     return response.data;
   },
 
-  async searchSongs(query: string, ownerId?: string) {
+  async searchSongs(
+    query: string,
+    options?: {
+      ownerId?: string;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
     const response = await api.get<Song[]>(`/search/songs`, {
-      params: { q: query, ownerId },
+      params: {
+        q: query,
+        ...options,
+      },
     });
     return response.data;
   },
 
-  async searchAlbums(query: string, ownerId?: string) {
+  async searchAlbums(
+    query: string,
+    options?: {
+      ownerId?: string;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
     const response = await api.get<Album[]>(`/search/albums`, {
-      params: { q: query, ownerId },
+      params: {
+        q: query,
+        ...options,
+      },
     });
     return response.data;
   },
 
-  async searchPlaylists(query: string, ownerId?: string) {
+  async searchPlaylists(
+    query: string,
+    options?: {
+      ownerId?: string;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
     const response = await api.get<Playlist[]>(`/search/playlists`, {
-      params: { q: query, ownerId },
+      params: {
+        q: query,
+        ...options,
+      },
     });
     return response.data;
   },
 
-  async searchArtists(query: string) {
+  async searchArtists(
+    query: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ) {
     const response = await api.get<Artist[]>(`/search/artists`, {
-      params: { q: query },
+      params: {
+        q: query,
+        ...options,
+      },
     });
     return response.data;
   },

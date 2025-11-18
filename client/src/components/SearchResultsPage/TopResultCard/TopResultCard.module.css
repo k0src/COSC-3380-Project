@@ -1,0 +1,149 @@
+.topResultCard {
+  position: relative;
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+  padding: var(--spacing-lg);
+  background: var(--container-gradient-bg);
+  border-radius: var(--border-radius-sm);
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  max-width: 50rem;
+}
+
+.imageContainer {
+  position: relative;
+  width: 18rem;
+  height: 18rem;
+  flex-shrink: 0;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--border-radius-sm);
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  box-shadow: var(--shadow-sm);
+}
+
+.imageRound {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  box-shadow: var(--shadow-sm);
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  width: 100%;
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  color: var(--color-white);
+  font-weight: 600;
+  transition: color var(--transition-speed) ease;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.title:hover {
+  color: var(--color-accent) !important;
+}
+
+.author {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray) !important;
+  font-weight: 500;
+  transition: color var(--transition-speed) ease;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.authorLink:hover {
+  color: var(--color-white) !important;
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.typeLabel {
+  padding: var(--spacing-sm) var(--spacing-sd);
+  background-color: var(--color-panel-gray-dark);
+  border-radius: var(--border-radius-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-white);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: fit-content;
+  margin-top: var(--spacing-sm);
+}
+
+.buttonContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: var(--border-radius-sm);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-speed) ease;
+  z-index: 2;
+}
+
+.imageContainer:hover .buttonContainer {
+  opacity: 1;
+  visibility: visible;
+}
+
+.entityActionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-panel-gray);
+  border-radius: 50%;
+  border: var(--border-size-md) solid var(--color-panel-border);
+  color: var(--color-white);
+  cursor: pointer;
+  font-size: var(--icon-size-md);
+  padding: var(--spacing-md);
+  transition: all var(--transition-speed) ease;
+  box-shadow: var(--shadow-md);
+}
+
+.entityActionButton:hover {
+  color: var(--color-accent);
+}
+
+.entityActionButtonActive {
+  color: var(--color-accent);
+}
+
+.queueButtonContainer {
+  position: relative;
+}

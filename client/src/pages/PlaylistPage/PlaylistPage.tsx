@@ -82,19 +82,22 @@ const PlaylistPage: React.FC = () => {
     refetch();
   }, [refetch]);
 
+  const refetchRef = useRef(refetch);
+  refetchRef.current = refetch;
+
   const handleRemoveSong = useCallback(
     async (song: Song) => {
-      if (!isOwner || !playlist) return;
+      if (!isOwner) return;
 
       try {
-        await playlistApi.removeSongs(playlist.id, [song.id]);
+        await playlistApi.removeSongs(id, [song.id]);
         songsRefetchRef.current?.();
-        refetch();
+        refetchRef.current();
       } catch (error) {
         console.error("Error removing song from playlist:", error);
       }
     },
-    [isOwner, playlist, refetch]
+    [isOwner, id]
   );
 
   const customActionsProvider = useCallback(

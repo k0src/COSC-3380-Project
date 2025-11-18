@@ -1,0 +1,35 @@
+.userItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.userImage {
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sd);
+  cursor: pointer;
+  transition: opacity var(--transition-speed) ease;
+}
+
+.userImage:hover {
+  opacity: var(--opacity-disabled);
+}
+
+.username {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.username:hover {
+  color: var(--color-accent);
+}

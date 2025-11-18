@@ -362,9 +362,13 @@ const UploadPage: React.FC = () => {
 
               <div className={styles.dropzoneText}>
                 Drag and drop an audio file here to upload
-                <span className={styles.dropzoneHint}>
-                  .mp3 files smaller than 10 MB are accepted
-                </span>
+                {error ? (
+                  <span className={styles.errorText}>{error}</span>
+                ) : (
+                  <span className={styles.dropzoneHint}>
+                    .mp3 files smaller than 10 MB are accepted
+                  </span>
+                )}
               </div>
             </div>
           ) : (
