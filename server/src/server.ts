@@ -71,13 +71,15 @@ app.get("/api/health", (req, res) => {
 
 // Routes
 app.use("/api/auth", Routes.authRoutes);
+app.use("/api/admin", Routes.adminRoutes);
 app.use("/api/songs", Routes.songRoutes);
 app.use("/api/albums", Routes.albumRoutes);
 app.use("/api/artists", Routes.artistRoutes);
 app.use("/api/playlists", Routes.playlistRoutes);
+app.use("/api/data-reports", Routes.dataReportsRoutes);
 app.use("/api/users", Routes.userRoutes);
 app.use("/api/proxy", Routes.proxyRoutes);
-app.use("/api/search", Routes.searchRoutes);
+app.use("/api/search", Routes.searchRoutes); 
 
 const clientDistPath = path.join(__dirname, "public");
 app.use(express.static(clientDistPath));

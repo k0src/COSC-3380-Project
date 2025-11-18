@@ -68,9 +68,6 @@ export { default as AlbumActions } from "./AlbumPage/AlbumActions/AlbumActions.j
 export { default as RelatedAlbums } from "./AlbumPage/RelatedAlbums/RelatedAlbums.js";
 export { default as EditAlbumModal } from "./AlbumPage/EditAlbumModal/EditAlbumModal.js";
 
-/* =============================== HomePage ============================== */
-export { default as FeaturedSection } from "./HomePage/FeaturedSection/FeaturedSection.js";
-
 /* ================================ User Page =============================== */
 export { default as UserContainer } from "./UserPage/UserContainer/UserContainer.js";
 export { default as UserRecentActivity } from "./UserPage/UserRecentActivity/UserRecentActivity.js";
@@ -128,6 +125,7 @@ export { default as CoverLightbox } from "./CoverLightbox/CoverLightbox.js";
 export { default as ContextMenu } from "./ContextMenu/ContextMenu.js";
 export { default as PlaylistAddMenuDCM } from "./ContextMenu/PlaylistAddMenuDCM/PlaylistAddMenuDCM.js";
 export { default as PlaylistAddMenu } from "./PlaylistAddMenu/PlaylistAddMenu.js";
+export { default as ReportModal } from "./ReportModal/ReportModal.js";
 
 /* =============================== Page States ============================== */
 export { default as PageLoader } from "./PageLoader/PageLoader.js";

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { Song } from "@types";
 import { useLikeStatus } from "@hooks";
 import { useAuth } from "@contexts";
-import { ShareModal, QueueMenu, PlaylistAddMenu } from "@components";
+import { ShareModal, QueueMenu, PlaylistAddMenu, ReportModal } from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import styles from "./SongActions.module.css";
 import classNames from "classnames";
@@ -87,9 +87,14 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
   const handleShare = () => {
     setIsShareModalOpen(true);
   };
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const handleReport = () => {
-    //! open report modal...
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+    setIsReportModalOpen(true);
   };
 
   return (
@@ -151,6 +156,13 @@ const SongActions: React.FC<SongActionsProps> = ({ song, songUrl }) => {
         onClose={() => setIsShareModalOpen(false)}
         pageUrl={songUrl}
         pageTitle={song.title}
+      />
+
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        entityId={song.id}
+        entityType="SONG"
       />
     </>
   );

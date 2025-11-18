@@ -124,7 +124,34 @@ export default function AppRoutes() {
                 </MainLayout>
               }
             />
-            <Route path="/upload" element={<Pages.UploadPage />} />
+            <Route path="/upload" 
+              element={
+                <MainLayout>
+                  <Pages.UploadPage />
+                </MainLayout>
+              } 
+            />
+            <Route path="/Admin" element={
+              <MainLayout>
+                < Pages.AdminPage />
+              </MainLayout>} 
+              />
+
+            <Route path="/admin/reports" element={
+              <MainLayout>
+                < Pages.AdminReportPage />
+              </MainLayout>} 
+              />
+
+            <Route path="/admin/data-reports" element={
+              <MainLayout>
+                < Pages.dataReport />
+              </MainLayout>} 
+              />
+
+              <Route path="/report" element={ <Pages.ReportPage />}/>
+
+
           </Route>
         </Routes>
       )}

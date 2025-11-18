@@ -9,6 +9,7 @@ export { albumApi } from "./album.api.js";
 export { searchApi } from "./search.api.js";
 export { libraryApi } from "./library.api.js";
 export { notificationsApi } from "./notifications.api.js";
+export { DataReportsAPI } from "./dataReports.api.js";
 
 export type {
   SignupData,

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import React, {useMemo} from "react";
-=======
 import React, { useMemo } from "react";
->>>>>>> 6ac908a0fa36164e3a21c55e213748718d90ecfd
 import { Link } from "react-router-dom";
 import styles from "./FeaturedSection.module.css";
 import type { Playlist } from "@types";
