@@ -1,61 +1,76 @@
-## project setup
+# CoogMusic
 
-### files
+A full-stack music streaming application built with React and a Node.js backend.
 
-- root:
+## Tech Stack
 
-  - `package.json`
-  - scripts:
-    - `npm run dev` - runs both client and server with `concurrently`
-    - `npm run client` - runs client
-    - `npm run server` - runs server
-    - `npm run build` - builds client and server
-    - `npm run install-all` - installs all dependencies for root, client, and server
-    - `npm run clean` - removes `dist` and `node_modules` folders
-  - `.env` - environment variables for client and server
+- **Client:** React, TypeScript, Vite
+- **Server:** Node.js, Express, TypeScript, PostgreSQL
+- **Authentication:** JWTs stored in cookies
+- **Deployment:** Configured for Azure
 
-- `server`:
+## Features
 
-  - `config/database.ts` - database config
-  - `middleware` - server middleware
-  - `reposiories` - classes for different database tables, makes queries
-    - `index.ts` - barrel export for all repositories. when you add a repository, add it here. you can import repositories using `import { repo } from "@repositories` anywhere in the server
-  - `routes` - express routes
-    - `index.ts` - barrel export for all routes. when you add a route, add it here. you can import routes using `import { route } from "@routes` anywhere in the server
-  - `types` - typescript types for the server
-    - `index.ts` - barrel export for all types. when you add a type, add it here. you can import types using `import { type } from "@types` anywhere in the server
-      - for these barrel exports, make sure you export with `.js` not `.ts` or it will throw errors when you build
-  - `server.ts` - main server file
+- User authentication (signup, login, logout)
+- Browse and play songs, albums, and artist pages
+- Create and manage playlists
+- Like songs and follow artists
+- Persistent audio queue
+- Dynamic theming
 
-- `client`:
-  - `api` - axios api functions, call backend
-  - `types`- typescript types for the client
-    - `index.ts` - barrel export for all types.
-  - `.env.development`:
-  ```
-  VITE_MODE=development
-  VITE_API_URL=http://localhost:8080/api
-  ```
-  - `.env.production`:
-  ```
-  VITE_MODE=production
-  VITE_API_URL=https://cosc-3380.azurewebsites.net/api
-  ```
+## Getting Started
 
-### database
+To run this project locally, you'll need to set up both the client and server.
 
-- psql
-- datagrip/pgadmin
-- https://portal.azure.com
+**1. Installation**
 
-#### building
+There's a root `package.json` to handle installation for both client and server.
+
+```bash
+npm install
+```
+
+**2. Environment Variables**
+
+You will need to create `.env` files for both the `client` and `server`.
+
+- **Server:** Create a `.env` file in the `server/` directory. It will need variables for the database connection, JWT secret, and blob storage. Refer to the database and JWT config files for required variables.
+
+- **Client:** Create a `.env.development` file in the `client/` directory.
 
 ```
-dist/
-  server.js
-  public/
-    index.html
-    icon.svg
-    assets/
-      ...
+VITE_API_URL=http://localhost:8080/api
 ```
+
+**3. Running the App**
+
+You can run both client and server concurrently from the root directory.
+
+```bash
+npm run dev
+```
+
+This will start the Vite dev server for the client (usually on `localhost:5173`) and the Node.js server for the backend (on `localhost:8080`).
+
+## Architecture
+
+The project follows a client-server architecture with a React frontend communicating with a Node.js backend via a RESTful API.
+
+### Client (`client/`)
+
+The client is a single-page application built with React and Vite. It handles all user interface rendering and client-side state.
+
+### Server (`server/`)
+
+The backend is a layered Express application that serves the API and handles all business logic. The structure is designed to separate concerns:
+
+- **Routes:** Define the API endpoints and direct requests to the appropriate controllers/services.
+- **Middleware:** Handles authentication, error handling, and request parsing.
+- **Services:** Contain the core business logic. They orchestrate data flow between the routes and the data access layer.
+- **Repositories:** The data access layer. Each repository corresponds to a database table and encapsulates all the SQL queries and logic for that entity.
+
+### Database & Repositories
+
+The backend uses a **PostgreSQL** database.
+
+Interaction with the database is handled through a **repository pattern**. Each major entity (e.g., `User`, `Song`, `Playlist`) has its own repository class in the `server/src/repos/` directory.

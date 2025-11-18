@@ -7,9 +7,16 @@ import type {
   Album,
   Comment,
   User,
+  UserSettings,
+  Artist,
 } from "@types";
 
 export const userApi = {
+  async getUserCount() {
+    const response = await api.get<{ userCount: number }>(`/users/count`);
+    return response.data.userCount;
+  },
+
   async getUserById(id: UUID) {
     const response = await api.get<User>(`/users/${id}`, {
       params: { includeUser: true },
@@ -172,5 +179,63 @@ export const userApi = {
       `/users/${id}/following/count`
     );
     return response.data.followingCount;
+  },
+
+  async update(
+    id: UUID,
+    data: {
+      username?: string;
+      email?: string;
+      new_password?: string;
+      current_password?: string;
+      authenticated_with?: string;
+      role?: string;
+      profile_picture_url?: File | null;
+      artist_id?: UUID;
+      status?: string;
+      is_private?: boolean;
+    }
+  ) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const response = await api.put<User>(`/users/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  async getSettings(id: UUID) {
+    const response = await api.get<UserSettings>(`/users/${id}/settings`);
+    return response.data;
+  },
+
+  async getRecommendedArtists(id: UUID, limit?: number) {
+    const response = await api.get<Artist[]>(
+      `/users/${id}/recommendedArtists`,
+      {
+        params: { limit },
+      }
+    );
+    return response.data;
+  },
+  async updateSettings(id: UUID, settings: Partial<UserSettings>) {
+    const response = await api.put<UserSettings>(
+      `/users/${id}/settings`,
+      settings
+    );
+    return response.data;
+  },
+
+  async delete(id: UUID) {
+    const response = await api.delete(`/users/${id}`);
+    return response.data;
   },
 };

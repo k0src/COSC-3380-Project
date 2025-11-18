@@ -24,23 +24,23 @@ export const searchApi = {
     return response.data;
   },
 
-  async searchSongs(query: string) {
+  async searchSongs(query: string, ownerId?: string) {
     const response = await api.get<Song[]>(`/search/songs`, {
-      params: { q: query },
+      params: { q: query, ownerId },
     });
     return response.data;
   },
 
-  async searchAlbums(query: string) {
+  async searchAlbums(query: string, ownerId?: string) {
     const response = await api.get<Album[]>(`/search/albums`, {
-      params: { q: query },
+      params: { q: query, ownerId },
     });
     return response.data;
   },
 
-  async searchPlaylists(query: string) {
+  async searchPlaylists(query: string, ownerId?: string) {
     const response = await api.get<Playlist[]>(`/search/playlists`, {
-      params: { q: query },
+      params: { q: query, ownerId },
     });
     return response.data;
   },

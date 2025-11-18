@@ -1,0 +1,100 @@
+.settingsLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+}
+
+.settingsTitle {
+  font-size: var(--font-size-2xl);
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.artistCtaLink {
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  color: var(--color-accent) !important;
+  font-weight: 500;
+  text-decoration: underline transparent !important;
+  transition: text-decoration var(--transition-speed) ease-in-out;
+}
+
+.artistCtaLink:hover {
+  text-decoration: underline var(--color-accent) !important;
+}
+
+.artistToggleGrid,
+.notificationsToggleGrid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.artistToggleGrid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.notificationsToggleGrid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.settingsButton {
+  font-family: var(--font-main);
+  align-self: flex-start;
+  background: var(--color-accent);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: var(--color-accent-200);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.settingsButton:hover:not(:disabled) {
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
+}
+
+.settingsButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.dangerButtonContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.dangerButton {
+  font-family: var(--font-main);
+  align-self: flex-start;
+  background-color: transparent;
+  border-radius: var(--border-radius-sm);
+  border: var(--border-size-sm) solid var(--color-red-ui-border);
+  color: var(--color-red-ui);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: border-color var(--transition-speed) ease-in-out,
+    background-color var(--transition-speed) ease-in-out;
+}
+
+.dangerButton:hover:not(:disabled) {
+  background-color: var(--color-red-ui-bg-hover);
+  border-color: var(--color-red-ui-border-hover);
+}
+
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dangerZoneHint {
+  font-size: var(--font-size-sm);
+  color: var(--color-accent);
+  font-weight: 500;
+  display: flex;
+  line-height: var(--line-height-relaxed);
+  flex-direction: column;
+}

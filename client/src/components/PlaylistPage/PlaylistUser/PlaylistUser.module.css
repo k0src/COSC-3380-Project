@@ -5,7 +5,7 @@
   height: auto;
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   padding: var(--spacing-md);
   min-width: 0;
 }
@@ -17,7 +17,7 @@
   object-fit: cover;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .usernameContainer {
@@ -42,17 +42,17 @@
 }
 
 .usernameText:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .followButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-red);
+  background: var(--color-accent);
   border-radius: var(--border-radius-sm);
   border: none;
-  color: var(--color-red-200);
+  color: var(--color-accent-200);
   cursor: pointer;
   font-size: var(--icon-size-xs);
   padding: var(--spacing-sm);
@@ -60,11 +60,11 @@
 }
 
 .followButton:hover {
-  background-color: var(--color-red-800);
-  color: var(--color-red-300);
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
 }
 
 .followButtonActive {
-  background-color: var(--color-red-800);
-  color: var(--color-red-300);
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
 }

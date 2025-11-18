@@ -1,6 +1,6 @@
 import { memo, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAudioQueue, useAuth } from "@contexts";
+import { useAudioQueue, useAuth, useContextMenu } from "@contexts";
 import type { Song, Playlist, Album } from "@types";
 import { QueueMenu, LazyImg } from "@components";
 import styles from "./EntityItemCard.module.css";
@@ -118,14 +118,15 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
         )}
       </div>
     );
-  }
+  },
 );
 
 type EntityItemCardProps =
   | {
       type: "artist";
       linkTo: string;
-      author: string;
+      author?: string;
+      authorLinkTo?: string;
       title: string;
       subtitle: string;
       imageUrl?: string;
@@ -135,9 +136,10 @@ type EntityItemCardProps =
   | {
       type: "song" | "playlist" | "album";
       linkTo: string;
-      author: string;
+      author?: string;
+      authorLinkTo?: string;
       title: string;
-      subtitle: string;
+      subtitle?: string;
       imageUrl?: string;
       blurHash?: string;
       entity: Song | Playlist | Album;
@@ -149,11 +151,13 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
   blurHash,
   linkTo,
   author,
+  authorLinkTo,
   title,
   subtitle,
   type,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { openContextMenu } = useContextMenu();
 
   const imgSrc = useMemo(() => {
     if (type === "artist") {
@@ -166,11 +170,21 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
     return `${title} ${type === "artist" ? "Image" : "Cover"}`;
   }, [title, type]);
 
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!entity) return;
+      openContextMenu(e.clientX, e.clientY, entity, type);
+    },
+    [entity, type, openContextMenu],
+  );
+
   return (
     <div
       className={styles.entityItemCard}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onContextMenu={handleContextMenu}
     >
       <div className={styles.entityImageContainer}>
         <LazyImg
@@ -186,7 +200,20 @@ const EntityItemCard: React.FC<EntityItemCardProps> = ({
         />
       </div>
       <div className={styles.entityInfo}>
-        <span className={styles.entityAuthor}>{author}</span>
+        {author &&
+          (authorLinkTo ? (
+            <Link
+              to={authorLinkTo}
+              className={classNames(
+                styles.entityAuthor,
+                styles.entityAuthorLink,
+              )}
+            >
+              {author}
+            </Link>
+          ) : (
+            <span className={styles.entityAuthor}>{author}</span>
+          ))}
         <Link to={linkTo} className={styles.entityTitle}>
           {title}
         </Link>

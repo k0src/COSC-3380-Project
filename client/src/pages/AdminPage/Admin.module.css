@@ -1,0 +1,145 @@
+/* Main Admin Container */
+.adminContainer {
+  min-height: 100vh;
+  background-color: var(--color-black);
+}
+
+/* Page Content */
+.pageContent {
+  width: 100%;
+  background-color: var(--color-black);
+  min-height: 100vh;
+  padding: var(--spacing-xl);
+}
+
+/* Dashboard Styles */
+.dashboard {
+  max-width: 120rem;
+  margin: 0 auto;
+  padding: var(--spacing-2xl) 0;
+}
+
+.dashboardTitle {
+  font-size: 4.8rem;
+  font-weight: 700;
+  color: var(--color-white);
+  margin: 0 0 var(--spacing-md) 0;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+}
+
+.dashboardSubtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-gray-light);
+  margin: 0 0 var(--spacing-5xl) 0;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+}
+
+/* Dashboard Cards */
+.dashboardCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(35rem, 1fr));
+  gap: var(--spacing-xl);
+  max-width: 100rem;
+  margin: 0 auto;
+}
+
+.dashboardCard {
+  background-color: var(--color-panel-gray);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-2xl);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 25rem;
+  justify-content: center;
+}
+
+.dashboardCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(213, 49, 49, 0.2);
+}
+
+.cardIcon {
+  font-size: 6rem;
+  margin-bottom: var(--spacing-lg);
+  display: block;
+}
+
+.cardTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-white);
+  margin: 0 0 var(--spacing-md) 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.cardDescription {
+  font-size: var(--font-size-md);
+  color: var(--color-text-gray-light);
+  margin: 0 0 var(--spacing-lg) 0;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.5;
+}
+
+.cardArrow {
+  font-size: var(--font-size-xl);
+  color: var(--color-red);
+  font-weight: bold;
+  position: absolute;
+  bottom: var(--spacing-lg);
+  right: var(--spacing-lg);
+  transition: transform 0.3s ease;
+}
+
+/* Back Button */
+.backButton {
+  background: var(--color-panel-gray);
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  margin-bottom: var(--spacing-lg);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.backButton:hover {
+  background-color: var(--color-red);
+  border-color: var(--color-red);
+}
+
+/* Page Wrapper - handles the embedded admin pages */
+.pageWrapper {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  height: auto !important;
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+/* Override specific admin report page styles when embedded */
+.pageWrapper :global(.contentArea) {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  height: auto !important;
+  min-height: auto !important;
+}

@@ -5,9 +5,9 @@
   margin-bottom: var(--spacing-sm);
   z-index: 1000;
   background-color: var(--color-panel-gray);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-sm);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-tooltip);
   max-height: 20rem;
   overflow-y: auto;
   min-width: 20rem;
@@ -48,9 +48,9 @@
 }
 
 .username {
+  font-family: var(--font-main);
   font-size: var(--font-size-sm);
   color: var(--color-white);
-  font-weight: 500;
 }
 
 .popup::-webkit-scrollbar {
@@ -63,7 +63,7 @@
 }
 
 .popup::-webkit-scrollbar-thumb {
-  background: var(--color-panel-border);
+  background: var(--color-panel-gray-hover);
   border-radius: var(--border-radius-sm);
 }
 

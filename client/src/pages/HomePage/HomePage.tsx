@@ -1,13 +1,12 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsyncData } from "@hooks";
 import { useAuth } from "@contexts";
-import { songApi, playlistApi, userApi } from "@api";
+import { songApi, playlistApi, libraryApi } from "@api";
 import { PuffLoader } from "react-spinners";
 import styles from "./HomePage.module.css";
-import SongCard from "../../components/SongCard/SongCard";
-import { FeaturedSection } from "@components";
-import type { SuggestedSong, UUID, Playlist, Song } from "@types";
+import { FeaturedSection, SongCard } from "@components";
+import type { SuggestedSong, UUID, Song } from "@types";
 
 const HomePage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -22,18 +21,18 @@ const HomePage: React.FC = () => {
     () => ({
       suggestions: async () => {
         // First get a popular song (ordered by streams, most popular first)
-        const songs = await songApi.getSongs({
+        const songs = await songApi.getMany({
           orderByColumn: "streams",
           orderByDirection: "DESC",
           limit: 1,
         });
-        
+
         if (!songs || songs.length === 0) {
           return [];
         }
 
         const popularSongId = songs[0].id;
-        
+
         // Then get suggestions based on that song
         return await songApi.getSuggestedSongs(popularSongId, {
           userId: isAuthenticated && user ? user.id : undefined,
@@ -46,7 +45,7 @@ const HomePage: React.FC = () => {
 
       featuredPlaylist: async () => {
         // Don't fetch if ID is not set
-        if (!FEATURED_PLAYLIST_ID) return null; 
+        if (!FEATURED_PLAYLIST_ID) return null;
 
         return await playlistApi.getPlaylistById(FEATURED_PLAYLIST_ID, {
           includeUser: true, // To show "Created by..."
@@ -60,31 +59,32 @@ const HomePage: React.FC = () => {
       recentSongs: async () => {
         if (!isAuthenticated || !user) return [];
         try {
-          const songs = await userApi.getHistorySongs(user.id, { limit: 10 });
+          const songs = await libraryApi.getSongHistory(user.id, { limit: 10 });
           console.log("Fetched recent songs:", songs);
           return songs;
         } catch (err) {
           return [];
         }
       },
-
     }),
     [isAuthenticated, user]
   );
 
-  
-
-  const { data, loading, error } = useAsyncData(asyncConfig, [isAuthenticated, user], {
-    cacheKey: "homepage_data", // <-- Renamed from "homepage_suggestions"
-    hasBlobUrl: true,
-  });
+  const { data, loading, error } = useAsyncData(
+    asyncConfig,
+    [isAuthenticated, user],
+    {
+      cacheKey: "homepage_data",
+      hasBlobUrl: true,
+    }
+  );
 
   const playlist = data?.featuredPlaylist;
 
   const handleToggleExpand = (event: React.MouseEvent<HTMLAnchorElement>) => {
     // Stop the <a> tag from refreshing the page
-    event.preventDefault(); 
-    
+    event.preventDefault();
+
     // Toggle the state value (from false to true, or true to false)
     setIsExpanded((prevExpanded: any) => !prevExpanded);
   };
@@ -92,7 +92,6 @@ const HomePage: React.FC = () => {
   // Map suggested songs to SongCard format
   const newSongs = useMemo(() => {
     if (!data?.suggestions) return [];
-    
     return data.suggestions.map((song: SuggestedSong) => ({
       id: song.id,
       title: song.title,
@@ -106,13 +105,19 @@ const HomePage: React.FC = () => {
 
   // Map recent songs (from history) to a simple display shape, fallback to mock
   const recentSongsDisplay = useMemo(() => {
-    if (data?.recentSongs && Array.isArray(data.recentSongs) && data.recentSongs.length > 0) {
+    if (
+      data?.recentSongs &&
+      Array.isArray(data.recentSongs) &&
+      data.recentSongs.length > 0
+    ) {
       return (data.recentSongs as Song[]).map((s) => ({
         id: s.id,
         title: s.title,
         artist:
           // prefer a main_artist field if present, otherwise check artists array
-          (s as any).main_artist?.display_name || (s.artists && s.artists[0]?.display_name) || "Unknown Artist",
+          (s as any).main_artist?.display_name ||
+          (s.artists && s.artists[0]?.display_name) ||
+          "Unknown Artist",
         image: s.image_url || "/PlayerBar/Mask group.png",
       }));
     }
@@ -129,7 +134,7 @@ const HomePage: React.FC = () => {
           <section className={styles.section}>
             {/* Featured Section */}
             <h2 className={styles.sectionTitle}>Featured Playlist</h2>
-              {loading && (
+            {loading && (
               <div className="featuredSection">
                 {/* You can put a loading skeleton here */}
                 <p>Loading...</p>
@@ -179,13 +184,23 @@ const HomePage: React.FC = () => {
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>New Releases</h2>
-            <a href="#" className={styles.viewMore} onClick={handleToggleExpand}>
+            <a
+              href="#"
+              className={styles.viewMore}
+              onClick={handleToggleExpand}
+            >
               {isExpanded ? "Show Less" : "View More"}
             </a>
           </div>
-            {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: "2rem" }}>
-              <PuffLoader color="#D53131" size={50} />
+          {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "2rem",
+              }}
+            >
+              <PuffLoader color="var(--color-accent)" size={50} />
             </div>
           ) : error ? (
             <div style={{ padding: "2rem", textAlign: "center" }}>
@@ -195,8 +210,12 @@ const HomePage: React.FC = () => {
             <div style={{ padding: "2rem", textAlign: "center" }}>
               No new releases available.
             </div>
-            ) : (
-            <div className={`${styles.cardsContainer} ${isExpanded ? styles.expanded : ""}`}>
+          ) : (
+            <div
+              className={`${styles.cardsContainer} ${
+                isExpanded ? styles.expanded : ""
+              }`}
+            >
               {newSongs.map((song) => (
                 <Link key={song.id} to={`/songs/${song.id}`}>
                   <SongCard {...song} />

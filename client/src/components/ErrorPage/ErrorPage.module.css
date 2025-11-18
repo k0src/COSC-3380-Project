@@ -4,14 +4,14 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  height: 75vh;
+  height: 70vh;
   width: 100%;
   gap: var(--spacing-sm);
 }
 
 .errorIcon {
   font-size: var(--icon-size-2xl);
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .errorTitle {
@@ -22,7 +22,7 @@
 .errorMessage {
   font-size: var(--font-size-lg);
   max-width: 60rem;
-  line-height: 1.5;
+  line-height: var(--line-height-relaxed);
   color: var(--color-text-gray);
 }
 
@@ -37,21 +37,21 @@
   justify-content: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md);
-  background-color: var(--color-red);
+  background-color: var(--color-accent);
   color: var(--color-white);
   border: none;
   border-radius: var(--border-radius-sm);
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   font-size: var(--font-size-sm);
   cursor: pointer;
   transition: background-color var(--transition-speed) ease-in-out;
 }
 
 .homeButton:hover:not(:disabled) {
-  background-color: var(--color-red-700);
+  background-color: var(--color-accent-700);
 }
 
 .homeButton:disabled {
-  opacity: 0.6;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }

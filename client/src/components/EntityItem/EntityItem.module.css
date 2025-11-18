@@ -14,7 +14,7 @@
   object-fit: cover;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sd);
 }
 
 .entityInfo {
@@ -26,9 +26,14 @@
 }
 
 .entityAuthor {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-gray);
+  font-size: var(--font-size-sm) !important;
+  color: var(--color-text-gray) !important;
   font-weight: 500;
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.entityAuthorLink:hover {
+  color: var(--color-white) !important;
 }
 
 .entityTitle {
@@ -39,7 +44,7 @@
 }
 
 .entityTitle:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .entitySubtitle {
@@ -65,7 +70,7 @@
   justify-content: center;
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   color: var(--color-white);
   cursor: pointer;
   font-size: var(--icon-size-xs);
@@ -74,11 +79,11 @@
 }
 
 .entityActionButton:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .entityActionButtonActive {
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .queueButtonContainer {

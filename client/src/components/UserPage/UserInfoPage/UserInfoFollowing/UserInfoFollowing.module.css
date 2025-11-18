@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  min-height: 15vh;
+  min-height: var(--loader-height-sm);
 }
 
 .error {
@@ -39,7 +39,7 @@
   object-fit: cover;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sd);
   cursor: pointer;
   transition: opacity var(--transition-speed) ease;
 }
@@ -61,5 +61,5 @@
 }
 
 .followName:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }

@@ -8,7 +8,7 @@ import { validateLoginForm, type ValidationErrors } from "@validators";
 import { InputGroup, FormSubmitButton, PageLoader } from "@components";
 
 import styles from "./LoginPage.module.css";
-import logo from "@assets/logo.svg";
+import Logo from "@assets/logo.svg?react";
 
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState<LoginData>({
@@ -91,7 +91,7 @@ const LoginPage: React.FC = () => {
       <div className={styles.loginLayout}>
         <div className={styles.loginContainer}>
           <div className={styles.loginHeader}>
-            <img src={logo} alt="CoogMusic" className={styles.logo} />
+            <Logo className={styles.logo} />
             <div className={styles.loginHeaderBottom}>
               <span className={styles.title}>Welcome Back</span>
               <span className={styles.subtitle}>

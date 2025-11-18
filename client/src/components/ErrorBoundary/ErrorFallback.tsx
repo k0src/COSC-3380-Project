@@ -35,10 +35,9 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({
         <div className={styles.errorContent}>
           <header className={styles.errorHeader}>
             <LuCircleAlert className={styles.errorIcon} />
-            <h1 className={styles.errorTitle}>Oops! Something went wrong</h1>
+            <h1 className={styles.errorTitle}>Something went wrong</h1>
             <span className={styles.errorMessage}>
-              An unexpected error occurred. Please try refreshing the page or
-              returning home.
+              An unexpected error occurred. Try refreshing the page.
             </span>
 
             <div className={styles.buttonGroup}>

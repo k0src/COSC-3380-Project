@@ -1,12 +1,34 @@
 import { Outlet } from "react-router-dom";
-import { AudioQueueProvider } from "@contexts";
-import { DevBanner } from "@components";
+import {
+  AudioQueueProvider,
+  ContextMenuProvider,
+  useContextMenu,
+} from "@contexts";
+import { ContextMenu, ShareModal } from "@components";
+
+const AppLayoutContent: React.FC = () => {
+  const { shareModalState, closeShareModal } = useContextMenu();
+
+  return (
+    <>
+      <Outlet />
+      <ContextMenu />
+      <ShareModal
+        isOpen={shareModalState.isOpen}
+        onClose={closeShareModal}
+        pageUrl={shareModalState.url}
+        pageTitle={shareModalState.title}
+      />
+    </>
+  );
+};
 
 const AppLayout: React.FC = () => {
   return (
     <AudioQueueProvider>
-      <DevBanner />
-      <Outlet />
+      <ContextMenuProvider>
+        <AppLayoutContent />
+      </ContextMenuProvider>
     </AudioQueueProvider>
   );
 };

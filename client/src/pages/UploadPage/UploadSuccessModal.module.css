@@ -1,0 +1,106 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-overlay);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-modal);
+  animation: var(--animation-fade-in);
+}
+
+.modal {
+  background: var(--color-panel-gray);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-modal);
+  max-width: 60rem;
+  width: 90%;
+  animation: var(--animation-slide-up);
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--spacing-md) var(--spacing-md) 0;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-xl);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-speed) ease;
+}
+
+.closeButton:hover {
+  color: var(--color-white);
+}
+
+.content {
+  padding: 0 var(--spacing-xl) var(--spacing-xl);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.iconContainer {
+  width: 5rem;
+  height: 5rem;
+  background: var(--color-accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  font-size: 2.8rem;
+  color: var(--color-white);
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.message {
+  font-size: var(--font-size-md);
+  color: var(--color-text-gray);
+  line-height: var(--line-height-normal);
+}
+
+.message strong {
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+.viewSongButton {
+  font-weight: 500;
+  font-family: var(--font-main);
+  background: var(--color-accent);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: var(--color-accent-200);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sd) var(--spacing-lg);
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.viewSongButton:hover {
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
+}

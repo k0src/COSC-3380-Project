@@ -13,7 +13,7 @@ const CommentsList: React.FC<CommentsListProps> = ({ comments, loading }) => {
   if (loading) {
     return (
       <div className={styles.commentLoaderContainer}>
-        <PuffLoader color="#D53131" size={50} />
+        <PuffLoader color="var(--color-accent)" size={50} />
       </div>
     );
   }

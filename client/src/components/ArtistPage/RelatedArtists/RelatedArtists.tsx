@@ -1,12 +1,10 @@
 import { memo } from "react";
 import { PuffLoader } from "react-spinners";
-import { Link } from "react-router-dom";
 import type { UUID } from "@types";
 import { artistApi } from "@api";
 import { useAsyncData } from "@hooks";
-import { LazyImg } from "@components";
+import { ArtistItem } from "@components";
 import styles from "./RelatedArtists.module.css";
-import artistPlaceholder from "@assets/artist-placeholder.webp";
 
 export interface RelatedArtistsProps {
   artistId: UUID;
@@ -28,7 +26,7 @@ const RelatedArtists: React.FC<RelatedArtistsProps> = ({ artistId }) => {
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
-        <PuffLoader color="#D53131" size={35} />
+        <PuffLoader color="var(--color-accent)" size={35} />
       </div>
     );
   }
@@ -49,20 +47,7 @@ const RelatedArtists: React.FC<RelatedArtistsProps> = ({ artistId }) => {
       <div className={styles.relatedArtistsList}>
         {relatedArtists.map((related) => (
           <div key={related.id} className={styles.relatedArtistItem}>
-            <Link to={`/artists/${related.id}`}>
-              <LazyImg
-                src={related.user?.profile_picture_url || artistPlaceholder}
-                blurHash={related.user?.pfp_blurhash}
-                alt={`${related.display_name}'s profile picture`}
-                imgClassNames={[styles.relatedArtistImage]}
-              />
-            </Link>
-            <Link
-              className={styles.relatedArtistName}
-              to={`/artists/${related.id}`}
-            >
-              {related.display_name}
-            </Link>
+            <ArtistItem artist={related} size={14} />
           </div>
         ))}
       </div>

@@ -4,6 +4,7 @@ export interface SignupData {
   username: string;
   email: string;
   password: string;
+  role?: "USER" | "ARTIST";
 }
 
 export interface LoginData {
@@ -41,11 +42,14 @@ export type AuthAction =
   | { type: "AUTH_ERROR"; payload: string }
   | { type: "AUTH_LOGOUT" }
   | { type: "CLEAR_ERROR" }
-  | { type: "SET_LOADING"; payload: boolean };
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "UPDATE_USER"; payload: User | null };
 
 export interface AuthContextType extends AuthState {
   login: (data: LoginData) => Promise<void>;
   signup: (data: SignupData) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
+  updateUser: (user: User | null) => void;
+  clearAuthState: () => void;
 }

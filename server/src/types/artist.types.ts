@@ -11,7 +11,7 @@ export interface Artist {
   location?: string;
   banner_image_url?: string;
   banner_image_url_blurhash?: string;
-
+  stream_count?: number;
   user?: User;
 
   type: "artist";
@@ -19,4 +19,8 @@ export interface Artist {
 
 export interface SongArtist extends Artist {
   role: string;
+}
+
+export interface LibraryArtist extends Artist {
+  played_at?: string;
 }

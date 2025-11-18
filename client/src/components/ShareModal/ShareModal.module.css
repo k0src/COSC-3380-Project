@@ -4,34 +4,24 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background-color: var(--color-overlay-bg);
+  backdrop-filter: var(--overlay-blur);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  animation: var(--animation-fade-in);
 }
 
 .modal {
   background: var(--color-panel-gray);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-md);
   width: 90%;
   max-width: 46rem;
   padding: var(--spacing-lg);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: slideIn 0.2s ease-out;
+  box-shadow: var(--shadow-modal);
+  animation: var(--animation-slide-in);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
@@ -84,16 +74,16 @@
 }
 
 .socialButton {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   background: var(--color-gray-button);
-  border: 1px solid var(--color-gray-button-border);
+  border: var(--border-size-sm) solid var(--color-gray-button-border);
   border-radius: var(--border-radius-md);
   padding: 2rem 1.2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.2rem;
+  gap: var(--spacing-sd);
   cursor: pointer;
   transition: background var(--transition-speed) ease;
   color: var(--color-white);
@@ -101,13 +91,13 @@
 }
 
 .socialButton:hover {
-  background: var(--color-gray-button-border);
+  background: var(--color-gray-button-hover);
 }
 
 .socialLabel {
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
 }
 
 .linkSection {
@@ -120,7 +110,7 @@
 .linkLabel {
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
 }
 
 .linkInputWrapper {
@@ -130,10 +120,10 @@
 }
 
 .linkInput {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   width: 100%;
   background: var(--color-gray-button);
-  border: 1px solid var(--color-gray-button-border);
+  border: var(--border-size-sm) solid var(--color-gray-button-border);
   border-radius: var(--border-radius-md);
   padding: 1.04rem 4.58rem 1.04rem 1.25rem;
   color: var(--color-text-gray);
@@ -145,11 +135,11 @@
 .copyButton {
   position: absolute;
   right: 0.3125rem;
-  background: var(--color-gray-button-border);
+  background: var(--color-gray-button);
   border: none;
   border-radius: 0.6rem;
   padding: 0.8rem;
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
   font-size: var(--font-size-md);
   cursor: pointer;
   display: flex;
@@ -159,7 +149,7 @@
 }
 
 .copyButton:hover {
-  background: #5d5d5d;
+  background: var(--color-gray-button-hover);
   color: var(--color-white);
 }
 
@@ -170,23 +160,12 @@
   transform: translateX(-50%);
   background: var(--color-white);
   color: var(--color-panel-gray);
-  padding: 0.6rem 1.2rem;
+  padding: var(--spacing-xsd) var(--spacing-sd);
   border-radius: 0.6rem;
   font-size: var(--font-size-sm);
   font-weight: 500;
   white-space: nowrap;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  animation: tooltipFadeIn var(--transition-speed) ease-out;
+  box-shadow: var(--shadow-tooltip);
+  animation: var(--animation-tooltip-fade-in);
   pointer-events: none;
-}
-
-@keyframes tooltipFadeIn {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
 }

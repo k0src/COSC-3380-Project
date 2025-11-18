@@ -1,11 +1,9 @@
 .queueMenu {
   position: absolute;
-  bottom: calc(100% + 0.8rem);
   background: var(--color-panel-gray);
-  border: 2px solid var(--color-panel-border) !important;
+  border: var(--border-size-md) solid var(--color-panel-border) !important;
   border-radius: var(--border-radius-md);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5),
-    0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-tooltip);
   z-index: 1000;
   animation: menuFadeIn var(--transition-speed) ease-out;
   min-width: 15rem;
@@ -14,6 +12,14 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
+}
+
+.positionTop {
+  bottom: calc(100% + 0.8rem);
+}
+
+.positionBottom {
+  top: calc(100% + 0.8rem);
 }
 
 .justifyCenter {
@@ -86,7 +92,7 @@
 }
 
 .menuButton {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-main);
   width: 100%;
   background: var(--color-panel-gray);
   border: none;
@@ -94,7 +100,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  color: var(--color-white-hover);
+  color: var(--color-white-alt);
   font-size: var(--font-size-sm);
   font-weight: 400;
   cursor: pointer;
@@ -102,12 +108,12 @@
 }
 
 .menuButton:hover {
-  background: var(--color-panel-border);
+  background: var(--color-panel-gray-hover);
   color: var(--color-white);
 }
 
 .menuButton:first-child {
-  border-bottom: 1px solid var(--color-panel-border);
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
 }
 
 .menuIcon {

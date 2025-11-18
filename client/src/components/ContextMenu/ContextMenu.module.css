@@ -1,0 +1,50 @@
+.contextMenu {
+  position: fixed;
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-context-menu);
+  z-index: 10000;
+  min-width: 16rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: var(--animation-context-menu-fade-in);
+}
+
+.menuItem {
+  font-family: var(--font-main);
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: var(--spacing-sd);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sd);
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  text-align: left;
+}
+
+.menuItem:hover:not(:disabled) {
+  background: var(--color-panel-gray-hover);
+  color: var(--color-white);
+}
+
+.menuItem:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.menuIcon {
+  font-size: var(--icon-size-sd);
+  flex-shrink: 0;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-panel-border);
+}

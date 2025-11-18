@@ -90,6 +90,10 @@ class AuthApi {
     }
   }
 
+  clearAuthState(): void {
+    this.clearTokensFromStorage();
+  }
+
   async refreshTokens(): Promise<RefreshResponse> {
     if (!this.refreshToken) {
       throw new Error("No refresh token available");

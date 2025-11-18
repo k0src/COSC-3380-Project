@@ -2,12 +2,12 @@ import express, { Request, Response } from "express";
 import { ArtistRepository } from "@repositories";
 import { validateOrderBy } from "@validators";
 import { FollowService } from "@services";
+import { parseForm } from "@infra/form-parser";
+import { handlePgError } from "@util";
 
 const router = express.Router();
 
 // GET /api/artists
-// Example:
-// /api/artists?includeUser=true&limit=50&offset=0
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
     const { includeUser, orderByColumn, orderByDirection, limit, offset } =
@@ -31,15 +31,15 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     });
 
     res.status(200).json(artists);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in GET /artists/:", error);
-    res.status(500).json({ error: "Internal server error" });
+    const errorMessage = error.message || "Internal server error";
+    res.status(500).json({ error: errorMessage });
+    return;
   }
 });
 
 // GET /api/artists/:id
-// Example:
-// /api/artist/:id?includeUser=true
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { includeUser } = req.query;
@@ -60,9 +60,78 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     }
 
     res.status(200).json(artist);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in GET /artists/:id:", error);
-    res.status(500).json({ error: "Internal server error" });
+    const errorMessage = error.message || "Internal server error";
+    res.status(500).json({ error: errorMessage });
+    return;
+  }
+});
+
+// POST /api/artists
+router.post("/", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const artistData = await parseForm(req, "artist");
+    const newArtist = await ArtistRepository.create(artistData);
+
+    if (!newArtist) {
+      res.status(400).json({ error: "Failed to create artist" });
+      return;
+    }
+
+    res.status(200).json(newArtist);
+  } catch (error: any) {
+    console.error("Error in POST /api/artists/:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// PUT /api/artists/:id
+router.put("/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Artist ID is required!" });
+      return;
+    }
+
+    const artistData = await parseForm(req, "artist");
+    const updatedArtist = await ArtistRepository.update(id, artistData);
+
+    if (!updatedArtist) {
+      res.status(404).json({ error: "Artist not found" });
+      return;
+    }
+
+    res.status(200).json(updatedArtist);
+  } catch (error: any) {
+    console.error("Error in PUT /api/artists/:id:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// DELETE /api/artists/:id
+router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Artist ID is required!" });
+      return;
+    }
+
+    const deleted = await ArtistRepository.delete(id);
+    if (!deleted) {
+      res.status(404).json({ error: "Artist not found" });
+      return;
+    }
+
+    res.status(200).json({ message: "Artist deleted successfully" });
+  } catch (error: any) {
+    console.error("Error in DELETE /api/artists/:id:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
   }
 });
 
@@ -108,9 +177,11 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
     });
 
     res.status(200).json(songs);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in GET /artists/:id/songs:", error);
-    res.status(500).json({ error: "Internal server error" });
+    const errorMessage = error.message || "Internal server error";
+    res.status(500).json({ error: errorMessage });
+    return;
   }
 });
 
@@ -155,9 +226,10 @@ router.get(
       });
 
       res.status(200).json(albums);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/albums:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -181,9 +253,10 @@ router.get(
       });
 
       res.status(200).json(relatedArtists);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/related:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -201,9 +274,10 @@ router.get(
 
       const numberOfSongs = await ArtistRepository.getNumberOfSongs(id);
       res.status(200).json({ numberOfSongs });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/number-songs:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -221,9 +295,10 @@ router.get(
 
       const numberOfAlbums = await ArtistRepository.getNumberOfAlbums(id);
       res.status(200).json({ numberOfAlbums });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/number-albums:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -241,9 +316,10 @@ router.get(
 
       const numberOfSingles = await ArtistRepository.getNumberOfSingles(id);
       res.status(200).json({ numberOfSingles });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/number-singles:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -261,9 +337,10 @@ router.get(
 
       const streams = await ArtistRepository.getTotalStreams(id);
       res.status(200).json({ streams });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/streams:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -287,9 +364,10 @@ router.get(
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
       res.status(200).json(followers);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/followers:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -307,9 +385,10 @@ router.get(
 
       const followerCount = await FollowService.getFollowerCount(id);
       res.status(200).json({ followerCount });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/follower-count:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -331,9 +410,10 @@ router.get(
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
       res.status(200).json(following);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/following:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -351,9 +431,10 @@ router.get(
 
       const followingCount = await FollowService.getFollowingCount(id);
       res.status(200).json({ followingCount });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/following-count:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -377,9 +458,10 @@ router.get(
       });
 
       res.status(200).json(playlists);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/playlists:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -397,9 +479,10 @@ router.get(
 
       const monthlyListeners = await ArtistRepository.getMonthlyListeners(id);
       res.status(200).json({ monthlyListeners });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in GET /artists/:id/monthly-listeners:", error);
-      res.status(500).json({ error: "Internal server error" });
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   }
 );

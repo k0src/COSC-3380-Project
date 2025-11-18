@@ -12,7 +12,7 @@
   width: 100%;
   max-width: 40rem;
   background-color: var(--color-panel-gray);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-md);
   padding: var(--spacing-xl);
   gap: var(--spacing-lg);
@@ -57,16 +57,17 @@
 
 .errorText {
   font-size: var(--font-size-xs);
-  color: var(--color-red);
+  color: var(--color-accent);
 }
 
 .serverError {
-  display: flex;
-  justify-content: center;
-  padding: var(--spacing-md);
-  background-color: #d531311a;
-  border: 1px solid var(--color-red);
-  border-radius: var(--border-radius-md);
+  background: var(--color-red-ui-bg);
+  border: var(--border-size-sm) solid var(--color-red-ui-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sd);
+  color: var(--color-red-ui);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
 }
 
 .signupFooter {
@@ -82,5 +83,5 @@
 }
 
 .footerLink:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }

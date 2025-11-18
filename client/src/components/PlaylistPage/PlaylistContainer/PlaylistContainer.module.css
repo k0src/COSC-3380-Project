@@ -3,26 +3,26 @@
   gap: var(--spacing-lg);
   flex: 1;
   padding: var(--spacing-lg);
-  background: linear-gradient(to bottom, #181818, #0f0f0f);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  background: var(--container-gradient-bg);
+  box-shadow: var(--shadow-sd);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   align-items: center;
 }
 
 .coverImage {
-  width: 24rem;
-  height: 24rem;
+  width: var(--container-image-size);
+  height: var(--container-image-size);
   border-radius: var(--border-radius-sm);
   object-fit: cover;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sd);
   transition: box-shadow var(--transition-speed) ease;
 }
 
 .coverImage:hover {
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-sd-hover);
 }
 
 .coverImageClickable {
@@ -31,10 +31,12 @@
 
 .playlistRight {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   padding: var(--spacing-sm) 0;
   gap: var(--spacing-md);
   flex: 1;
+  align-items: flex-start;
 }
 
 .playlistInfoContainer {
@@ -44,13 +46,19 @@
 }
 
 .infoUsername {
-  font-size: 2.4rem;
+  font-size: var(--font-size-xl);
   color: var(--color-text-gray-light) !important;
   font-weight: 500;
+  cursor: pointer;
+  transition: color var(--transition-speed) ease;
+}
+
+.infoUsername:hover {
+  color: var(--color-white) !important;
 }
 
 .playlistTitle {
-  font-size: 4.2rem;
+  font-size: var(--font-size-container-title);
   color: var(--color-white);
   font-weight: 700;
 }
@@ -65,7 +73,7 @@
 }
 
 .statsContainer {
-  padding-top: 1rem;
+  padding-top: var(--spacing-sm);
   display: flex;
   align-items: center;
   gap: var(--spacing-lg);
@@ -84,4 +92,28 @@
   white-space: nowrap;
   overflow: hidden;
   max-width: 100%;
+}
+
+.playlistInfoWrapper {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+  width: 100%;
+}
+
+.ownerButton {
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: var(--icon-size-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-speed) ease;
+  height: fit-content;
+}
+
+.ownerButton:hover {
+  color: var(--color-white);
 }

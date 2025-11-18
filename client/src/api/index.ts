@@ -7,6 +7,8 @@ export { userApi } from "./user.api.js";
 export { playlistApi } from "./playlist.api.js";
 export { albumApi } from "./album.api.js";
 export { searchApi } from "./search.api.js";
+export { libraryApi } from "./library.api.js";
+export { notificationsApi } from "./notifications.api.js";
 
 export type {
   SignupData,

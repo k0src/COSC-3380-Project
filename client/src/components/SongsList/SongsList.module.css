@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  min-height: 15vh;
+  min-height: var(--loader-height-sm);
 }
 
 .error {
@@ -30,6 +30,7 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-gray) !important;
   text-decoration: none;
+  transition: color var(--transition-speed) ease;
 }
 
 .viewMoreLink:hover {

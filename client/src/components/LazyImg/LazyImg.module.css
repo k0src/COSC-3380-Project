@@ -9,7 +9,7 @@
   width: 100%;
   height: 100%;
   opacity: 1;
-  transition: opacity 0.2s ease-out;
+  transition: opacity var(--transition-speed) ease-out;
   pointer-events: none;
 }
 
@@ -28,7 +28,7 @@
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 0.2s ease-in;
+  transition: opacity var(--transition-speed) ease-in;
   display: block;
 }
 

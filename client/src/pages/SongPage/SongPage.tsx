@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { songApi } from "@api";
+import { useAuth } from "@contexts";
 import type { UUID } from "@types";
-import { useAsyncData } from "@hooks";
+import { useAsyncData, useErrorCheck } from "@hooks";
 import {
   ErrorPage,
   SongContainer,
@@ -14,11 +15,15 @@ import {
   SongComments,
   SongSuggestions,
   PageLoader,
+  EditSongModal,
 } from "@components";
 import styles from "./SongPage.module.css";
 
 const SongPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
+
+  const { user, isAuthenticated } = useAuth();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!id) {
     return (
@@ -43,7 +48,7 @@ const SongPage: React.FC = () => {
     [id]
   );
 
-  const { data, loading, error } = useAsyncData(asyncConfig, [id], {
+  const { data, loading, error, refetch } = useAsyncData(asyncConfig, [id], {
     cacheKey: `song_${id}`,
     hasBlobUrl: true,
   });
@@ -63,13 +68,45 @@ const SongPage: React.FC = () => {
     return { mainArtist: main, otherArtists: others };
   }, [song?.artists]);
 
-  if (error) {
-    return (
-      <ErrorPage
-        title="Internal Server Error"
-        message="An unexpected error occurred. Please try again later."
-      />
-    );
+  const isOwner = useMemo(() => {
+    if (!user || !isAuthenticated || !song) {
+      return false;
+    }
+    return user.id === song.owner_id;
+  }, [user, isAuthenticated, song]);
+
+  const handleEditSong = useCallback(() => {
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleSongEdited = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  const { shouldShowError, errorTitle, errorMessage } = useErrorCheck([
+    {
+      condition: !!error,
+      title: "Internal Server Error",
+      message: "An unexpected error occurred. Please try again later.",
+    },
+    {
+      condition: !song && !loading,
+      title: "Song Not Found",
+      message: "The requested song does not exist.",
+    },
+    {
+      condition: song?.visibility_status === "PRIVATE" && !isOwner,
+      title: "Song Not Found",
+      message: "The requested song does not exist.",
+    },
+  ]);
+
+  if (loading) {
+    return <PageLoader />;
+  }
+
+  if (shouldShowError) {
+    return <ErrorPage title={errorTitle} message={errorMessage} />;
   }
 
   return (
@@ -78,37 +115,39 @@ const SongPage: React.FC = () => {
         <title>{song ? `${song.title} - CoogMusic` : "CoogMusic"}</title>
       </Helmet>
 
-      {loading ? (
-        <PageLoader />
-      ) : !song ? (
-        <ErrorPage
-          title="Song Not Found"
-          message="The requested song does not exist."
-        />
-      ) : (
-        <div className={styles.songLayout}>
-          <div className={styles.songLayoutTop}>
-            <SongContainer
-              song={song}
-              mainArtist={mainArtist ?? undefined}
-              coverGradient={coverGradient}
-              numberComments={song.comments}
-            />
-            <div className={styles.songLayoutTopRight}>
-              <SongStats songId={song.id} />
-              <SongDetails genre={song.genre} releaseDate={song.release_date} />
-              <SongActions song={song} songUrl={window.location.href} />
-            </div>
-          </div>
-          <div className={styles.songLayoutBottom}>
-            <ArtistInfo
-              mainArtist={mainArtist ?? undefined}
-              otherArtists={otherArtists}
-            />
-            <SongComments songId={song.id} />
-            <SongSuggestions song={song} mainArtist={mainArtist ?? undefined} />
+      <div className={styles.songLayout}>
+        <div className={styles.songLayoutTop}>
+          <SongContainer
+            song={song}
+            mainArtist={mainArtist ?? undefined}
+            coverGradient={coverGradient}
+            numberComments={song.comments}
+            isOwner={isOwner}
+            onEditButtonClick={handleEditSong}
+          />
+          <div className={styles.songLayoutTopRight}>
+            <SongStats songId={song.id} />
+            <SongDetails genre={song.genre} releaseDate={song.release_date} />
+            <SongActions song={song} songUrl={window.location.href} />
           </div>
         </div>
+        <div className={styles.songLayoutBottom}>
+          <ArtistInfo
+            mainArtist={mainArtist ?? undefined}
+            otherArtists={otherArtists}
+          />
+          <SongComments songId={song.id} />
+          <SongSuggestions song={song} mainArtist={mainArtist ?? undefined} />
+        </div>
+      </div>
+
+      {isOwner && (
+        <EditSongModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          song={song}
+          onSongEdited={handleSongEdited}
+        />
       )}
     </>
   );

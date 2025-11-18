@@ -59,9 +59,34 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
   );
   const suggestedSongs = data?.suggestedSongs;
 
+  const albumAuthor = useMemo(
+    () => (album: Album) => album.artist?.display_name || "Unknown Artist",
+    []
+  );
+
+  const albumAuthorLink = useMemo(
+    () => (album: Album) =>
+      album.artist ? `/artists/${album.artist.id}` : undefined,
+    []
+  );
+
+  const songAuthor = useMemo(
+    () => (song: ArtistSong | SuggestedSong) =>
+      getMainArtist(song.artists ?? [])?.display_name || "Unknown Artist",
+    []
+  );
+
+  const songAuthorLink = useMemo(
+    () => (song: ArtistSong | SuggestedSong) => {
+      const artist = getMainArtist(song.artists ?? []);
+      return artist ? `/artists/${artist.id}` : undefined;
+    },
+    []
+  );
+
   return loading ? (
     <div className={styles.loaderContainer}>
-      <PuffLoader color="#D53131" size={50} />
+      <PuffLoader color="var(--color-accent)" size={50} />
     </div>
   ) : (
     <div className={styles.suggestionsContainer}>
@@ -74,7 +99,8 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
                 key={album.id}
                 imageUrl={album.image_url}
                 blurHash={album.image_url_blurhash}
-                author={album.artist?.display_name || "Unknown Artist"}
+                author={albumAuthor(album)}
+                authorLinkTo={albumAuthorLink(album)}
                 title={album.title}
                 linkTo={`/albums/${album.id}`}
                 subtitle={formatDateString(album.release_date)}
@@ -97,10 +123,8 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
                 key={songItem.id}
                 imageUrl={songItem.image_url}
                 blurHash={songItem.image_url_blurhash}
-                author={
-                  getMainArtist(songItem.artists ?? [])?.display_name ||
-                  "Unknown Artist"
-                }
+                author={songAuthor(songItem)}
+                authorLinkTo={songAuthorLink(songItem)}
                 title={songItem.title}
                 linkTo={`/songs/${songItem.id}`}
                 subtitle={formatDateString(songItem.release_date)}
@@ -121,10 +145,8 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
                 key={songItem.id}
                 imageUrl={songItem.image_url}
                 blurHash={songItem.image_url_blurhash}
-                author={
-                  getMainArtist(songItem.artists ?? [])?.display_name ||
-                  "Unknown Artist"
-                }
+                author={songAuthor(songItem)}
+                authorLinkTo={songAuthorLink(songItem)}
                 title={songItem.title}
                 linkTo={`/songs/${songItem.id}`}
                 subtitle={formatDateString(songItem.release_date)}

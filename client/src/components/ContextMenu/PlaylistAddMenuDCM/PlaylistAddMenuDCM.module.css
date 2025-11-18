@@ -1,0 +1,73 @@
+.playlistAddMenu {
+  position: fixed;
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-context-menu);
+  z-index: 10001;
+  min-width: 16rem;
+  max-width: 20rem;
+  max-height: 20rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: var(--animation-context-menu-fade-in);
+}
+
+.playlistList {
+  overflow-y: auto;
+  max-height: 18rem;
+}
+
+.playlistItem {
+  font-family: var(--font-main);
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: var(--spacing-sd);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sd);
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  text-align: left;
+}
+
+.playlistItem:hover:not(:disabled) {
+  background: var(--color-panel-gray-hover);
+  color: var(--color-white);
+}
+
+.playlistItem:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.playlistName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.emptyState {
+  padding: var(--spacing-md);
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  font-style: italic;
+}
+
+.loading {
+  padding: var(--spacing-md);
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}

@@ -1,21 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "./LandingPage.module.css";
 import { LuSearch } from "react-icons/lu";
-import SongCard from "../../components/SongCard/SongCard";
+import { SongCard, UploadPromptModal } from "@components";
 import { useAsyncData } from "@hooks";
 import { songApi } from "@api";
 import type { Song } from "@types";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 import { getMainArtist } from "@util";
 
 const LandingPage: React.FC = () => {
-  // const singles = Array(4).fill({ // Using your original 'newSongs' data
-  //   title: "New Release",
-  //   artist: "Drake",
-  //   image: "/PlayerBar/Mask group.png",
-  //   year: 2008
-  // });
+  const [searchQuery, setSearchQuery] = useState("");
+    const [showUploadModal, setShowUploadModal] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   const { data, loading, error } = useAsyncData(
     {
@@ -52,15 +57,30 @@ const LandingPage: React.FC = () => {
             Get obsessed, or become part of someone's obsession. All it takes is
             an upload!
           </p>
-          <button className={styles.uploadButton}>UPLOAD NOW</button>
+          <button
+            className={styles.uploadButton}
+            onClick={() => setShowUploadModal(true)}
+          >
+            UPLOAD NOW
+          </button>
         </div>
       </section>
 
+      <UploadPromptModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+      />
+
       <div className={styles.searchBarContainer}>
-        <div className={styles.searchBar}>
+        <form className={styles.searchBar} onSubmit={handleSearchSubmit}>
           <LuSearch />
-          <input type="text" placeholder="SEARCH SONGS, ARTISTS, PLAYLISTS" />
-        </div>
+          <input
+            type="text"
+            placeholder="SEARCH SONGS, ARTISTS, PLAYLISTS"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </form>
       </div>
 
       <main className={styles.mainContent}>

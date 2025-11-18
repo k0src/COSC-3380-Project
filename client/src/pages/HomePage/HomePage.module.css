@@ -1,6 +1,6 @@
 /* Reset and variables */
 :root {
-  --sidebar-width: 80px;
+  /* --sidebar-width: 80px; */
   --topbar-height: 64px;
   --player-height: 90px;
   --content-padding: 32px;
@@ -75,7 +75,11 @@
   padding: 4px 0;
   /* Adds a smooth height change when expanding */
   transition: max-height 0.5s ease-in-out;
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 6ac908a0fa36164e3a21c55e213748718d90ecfd
   /* Set a max-height roughly equal to one row of cards + padding.
     You MUST adjust this value to fit your card height! 
   */
@@ -83,8 +87,11 @@
 
   /* Optional: Add snap scrolling from our last chat */
   scroll-snap-type: x mandatory;
+<<<<<<< HEAD
   
 
+=======
+>>>>>>> 6ac908a0fa36164e3a21c55e213748718d90ecfd
 }
 
 .cardsContainer::-webkit-scrollbar {

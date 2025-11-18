@@ -5,7 +5,7 @@ import React from "react";
 const PageLoader: React.FC = () => {
   return (
     <div className={styles.loaderContainer}>
-      <PuffLoader color="#D53131" size={100} />
+      <PuffLoader color="var(--color-accent)" size={100} />
     </div>
   );
 };

@@ -1,9 +1,9 @@
-import styles from "./MainLayout.module.css";
 import {
   MainLayoutHeader,
   MainLayoutNowPlayingBar,
   MainLayoutSidebar,
 } from "@components";
+import styles from "./MainLayout.module.css";
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (

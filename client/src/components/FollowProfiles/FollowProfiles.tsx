@@ -52,7 +52,7 @@ const FollowProfiles: React.FC<FollowProfilesProps> = ({
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
-        <PuffLoader color="#D53131" size={25} />
+        <PuffLoader color="var(--color-accent)" size={25} />
       </div>
     );
   }

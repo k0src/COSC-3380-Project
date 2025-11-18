@@ -48,7 +48,7 @@ export const useTextContrast = (imageUrl?: string): TextContrastResult => {
               0,
               0,
               canvas.width,
-              canvas.height
+              canvas.height,
             );
             const data = imageData.data;
 
@@ -85,7 +85,7 @@ export const useTextContrast = (imageUrl?: string): TextContrastResult => {
         img.src = url;
       });
     },
-    []
+    [],
   );
 
   const analyzeImage = useMemo(() => {

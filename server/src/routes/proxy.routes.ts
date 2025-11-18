@@ -20,14 +20,19 @@ router.get("/audio/:filename", async (req, res) => {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
       "Access-Control-Allow-Headers": "*",
+      "Access-Control-Expose-Headers":
+        "Content-Length, Content-Range, Accept-Ranges",
+      "Cross-Origin-Resource-Policy": "cross-origin",
+      "Cross-Origin-Embedder-Policy": "unsafe-none",
     });
 
     const buffer = await response.arrayBuffer();
     res.send(Buffer.from(buffer));
     return;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error proxying audio file:", error);
-    res.status(500).json({ error: "Failed to load audio file" });
+    const errorMessage = error.message || "Internal server error";
+    res.status(500).json({ error: errorMessage });
     return;
   }
 });

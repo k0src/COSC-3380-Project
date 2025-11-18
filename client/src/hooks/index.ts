@@ -14,3 +14,4 @@ export {
   keyboardShortcuts,
 } from "./useKeyboardShortcuts.js";
 export { useTextContrast } from "./useTextContrast.js";
+export { useErrorCheck } from "./useErrorCheck.js";

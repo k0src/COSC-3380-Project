@@ -1,12 +1,12 @@
 .detailsContainer {
   background-color: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
-  border: 2px solid var(--color-panel-border);
+  border: var(--border-size-md) solid var(--color-panel-border);
   color: var(--color-white);
   padding: var(--spacing-md);
   display: grid;
   grid-template-columns: 1fr 2rem 1fr;
-  column-gap: 0.4rem;
+  column-gap: var(--spacing-xs);
   align-items: center;
   flex: 1;
 }
@@ -53,5 +53,5 @@
 }
 
 .genreName:hover {
-  color: var(--color-red);
+  color: var(--color-accent);
 }

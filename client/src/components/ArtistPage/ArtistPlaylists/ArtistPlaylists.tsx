@@ -1,6 +1,6 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { PuffLoader } from "react-spinners";
-import type { UUID } from "@types";
+import type { UUID, Playlist } from "@types";
 import { useAsyncData } from "@hooks";
 import { artistApi } from "@api";
 import { EntityItem } from "@components";
@@ -28,10 +28,21 @@ const ArtistPlaylists: React.FC<ArtistPlaylistsProps> = ({
     }
   );
 
+  const playlistAuthor = useMemo(
+    () => (playlist: Playlist) => playlist.user?.username || "Unknown",
+    []
+  );
+
+  const playlistAuthorLink = useMemo(
+    () => (playlist: Playlist) =>
+      playlist.user ? `/users/${playlist.user.id}` : undefined,
+    []
+  );
+
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
-        <PuffLoader color="#D53131" size={35} />
+        <PuffLoader color="var(--color-accent)" size={35} />
       </div>
     );
   }
@@ -52,15 +63,16 @@ const ArtistPlaylists: React.FC<ArtistPlaylistsProps> = ({
         Playlists Featuring {artistName}
       </span>
       <div className={styles.playlistsList}>
-        {data?.playlists?.map((playlist) => (
+        {playlists.map((playlist) => (
           <EntityItem
             key={playlist.id}
             type="playlist"
-            author={playlist.user?.username || "Unknown"}
+            author={playlistAuthor(playlist)}
+            authorLinkTo={playlistAuthorLink(playlist)}
             linkTo={`/playlists/${playlist.id}`}
             title={playlist.title}
             imageUrl={playlist.image_url || musicPlaceholder}
-            //! blurHash={playlist.image_url_blurhash}
+            blurHash={playlist.image_url_blurhash}
             entity={playlist}
           />
         ))}

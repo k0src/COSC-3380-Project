@@ -4,7 +4,11 @@
   justify-content: space-between;
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-lg);
+<<<<<<< HEAD
   border: 2px solid var(--color-panel-border);
+=======
+  border: var(--border-size-md) solid var(--color-panel-border);
+>>>>>>> 6ac908a0fa36164e3a21c55e213748718d90ecfd
   padding: var(--spacing-xl);
   gap: var(--spacing-lg);
   height: 100%;
@@ -94,12 +98,13 @@
   border: none;
   background: var(--color-accent) url("/icons/play.svg") center/50% no-repeat;
   cursor: pointer;
-  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+  transition: transform var(--transition-speed) ease,
+    box-shadow var(--transition-speed) ease;
 }
 
 .playButton:hover {
   transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sd);
 }
 
 @media (max-width: 768px) {

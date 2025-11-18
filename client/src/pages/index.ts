@@ -1,7 +1,6 @@
-export { default as TestPage } from "./TestPage/TestPage.js";
-
 export { default as HomePage } from "./HomePage/HomePage.js";
 export { default as LandingPage } from "./LandingPage/LandingPage.js";
+export { default as FeedPage } from "./FeedPage/FeedPage.js";
 
 export { default as SongPage } from "./SongPage/SongPage.js";
 export { default as ArtistPage } from "./ArtistPage/ArtistPage.js";
@@ -9,7 +8,23 @@ export { default as ArtistDiscography } from "./ArtistPage/ArtistDiscography/Art
 export { default as PlaylistPage } from "./PlaylistPage/PlaylistPage.js";
 export { default as AlbumPage } from "./AlbumPage/AlbumPage.js";
 
+export { default as LibraryPage } from "./LibraryPage/LibraryPage.js";
+export { default as SearchResultsPage } from "./SearchResultsPage/SearchResultsPage.js";
+export { default as HistoryPage } from "./LibraryPage/HistoryPage/HistoryPage.js";
+
 export { default as LoginPage } from "./LoginPage/LoginPage.js";
 export { default as SignupPage } from "./SignupPage/SignupPage.js";
 
+export { default as UserPage } from "./UserPage/UserPage.js";
 export { default as UserInfoPage } from "./UserPage/UserInfoPage/UserInfoPage.js";
+
+export { default as SettingsPage } from "./AccountPage/SettingsPage/SettingsPage.js";
+
+export { default as UploadPage } from "./UploadPage/UploadPage.js";
+
+export { default as AdminReportPage } from "./AdminReportPage/AdminReportPage.js";
+export { default as ReportPage } from "./ReportPage/ReportPage.js";
+export { default as dataReport } from "./AdminDataReportPage/DataReportPage.js";
+export { default as AdminPage } from "./AdminPage/AdminPage.js";
+export { default as AppealsPage } from "./AppealsPage/AppealsPage.js";
+export { default as AdminAppealsPage } from "./AdminAppealsPage/AdminAppealsPage.js";

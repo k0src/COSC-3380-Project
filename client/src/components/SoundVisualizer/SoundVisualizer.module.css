@@ -9,13 +9,13 @@
 
 .bar {
   width: 0.3rem;
-  background-color: var(--bar-color);
+  background-color: var(--color-accent);
   border-radius: var(--border-radius-sm);
   will-change: height;
 }
 
 .barPaused {
-  height: 0.4rem !important;
+  height: var(--spacing-xs) !important;
   animation: none !important;
   transition: height 0.15s ease-out !important;
 }

@@ -1,0 +1,70 @@
+.colorSchemeSelectorGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.colorSchemeSelectorLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-gray);
+}
+
+.colorSchemeOptions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xs);
+}
+
+.colorSchemeButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding-top: calc(var(--spacing-sm) / 2);
+}
+
+.colorSchemeButton:hover:not(.colorSchemeButtonDisabled) .colorSchemeImage {
+  outline: var(--border-size-md) solid var(--color-white);
+  outline-offset: 4px;
+}
+
+.colorSchemeButtonActive .colorSchemeImage {
+  outline: var(--border-size-md) solid var(--color-white);
+  outline-offset: 4px;
+}
+
+.colorSchemeButtonActive .colorSchemeLabel {
+  color: var(--color-white);
+}
+
+.colorSchemeButtonDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.colorSchemeImage {
+  width: 18rem;
+  height: auto;
+  border-radius: 0.6rem;
+  display: block;
+  transition: outline var(--transition-speed) ease;
+}
+
+.colorSchemeLabel {
+  font-family: var(--font-main);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  text-align: center;
+  padding-top: calc(var(--spacing-sm) / 2);
+}
+
+.colorSchemeSelectorErrorText {
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+  font-weight: 500;
+}

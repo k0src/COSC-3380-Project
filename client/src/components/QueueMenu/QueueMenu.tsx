@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { LuListStart, LuListEnd } from "react-icons/lu";
 import { useAudioQueue } from "@contexts";
 import type { Song, Playlist, Album } from "@types";
@@ -13,6 +13,7 @@ interface QueueMenuProps {
   entityType: "song" | "list";
   buttonRef: React.RefObject<HTMLButtonElement | null>;
   justification?: "left" | "center" | "right";
+  position?: "top" | "bottom";
 }
 
 const QueueMenu: React.FC<QueueMenuProps> = ({
@@ -22,6 +23,7 @@ const QueueMenu: React.FC<QueueMenuProps> = ({
   entityType,
   buttonRef,
   justification = "center",
+  position = "top",
 }) => {
   const { actions } = useAudioQueue();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -32,7 +34,7 @@ const QueueMenu: React.FC<QueueMenuProps> = ({
         onClose();
       }
     },
-    [onClose],
+    [onClose]
   );
 
   const handleClickOutside = useCallback(
@@ -46,8 +48,19 @@ const QueueMenu: React.FC<QueueMenuProps> = ({
         onClose();
       }
     },
-    [onClose, buttonRef],
+    [onClose, buttonRef]
   );
+
+  const positionClass = useMemo(() => {
+    switch (position) {
+      case "top":
+        return styles.positionTop;
+      case "bottom":
+        return styles.positionBottom;
+      default:
+        return "";
+    }
+  }, [position]);
 
   useEffect(() => {
     if (isOpen) {
@@ -84,7 +97,7 @@ const QueueMenu: React.FC<QueueMenuProps> = ({
   return (
     <div
       ref={menuRef}
-      className={classNames(styles.queueMenu, {
+      className={classNames(styles.queueMenu, positionClass, {
         [styles.justifyLeft]: justification === "left",
         [styles.justifyCenter]: justification === "center",
         [styles.justifyRight]: justification === "right",
