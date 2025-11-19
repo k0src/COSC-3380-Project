@@ -6,13 +6,19 @@ import { songApi, playlistApi, libraryApi } from "@api";
 import { PuffLoader } from "react-spinners";
 import styles from "./HomePage.module.css";
 import { FeaturedSection, SongCard } from "@components";
-import type { SuggestedSong, UUID, Song } from "@types";
+import type { SuggestedSong, UUID, Song, AccessContext } from "@types";
 
 const HomePage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const FEATURED_PLAYLIST_ID: UUID = "0b44c6a2-6dc5-42ef-a847-85b291df8eb5"; //hardcoded for now
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
 
   // No mock recent songs; we'll show a friendly empty state when user has no history
 
@@ -21,7 +27,7 @@ const HomePage: React.FC = () => {
     () => ({
       suggestions: async () => {
         // First get a popular song (ordered by streams, most popular first)
-        const songs = await songApi.getMany({
+        const songs = await songApi.getMany(accessContext, {
           orderByColumn: "streams",
           orderByDirection: "DESC",
           limit: 1,
@@ -47,12 +53,16 @@ const HomePage: React.FC = () => {
         // Don't fetch if ID is not set
         if (!FEATURED_PLAYLIST_ID) return null;
 
-        return await playlistApi.getPlaylistById(FEATURED_PLAYLIST_ID, {
-          includeUser: true, // To show "Created by..."
-          includeLikes: true,
-          includeSongCount: true, // To show "X songs"
-          includeRuntime: true, // To show total runtime
-        });
+        return await playlistApi.getPlaylistById(
+          FEATURED_PLAYLIST_ID,
+          accessContext,
+          {
+            includeUser: true, // To show "Created by..."
+            includeLikes: true,
+            includeSongCount: true, // To show "X songs"
+            includeRuntime: true, // To show total runtime
+          }
+        );
       },
 
       // Recent songs from user's history (limit 10)

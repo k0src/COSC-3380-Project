@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { SongRepository as SongRepo } from "@repositories";
-import { handlePgError, getCoverGradient } from "@util";
+import { handlePgError, getCoverGradient, parseAccessContext } from "@util";
+import type { AccessContext, SongOptions } from "@types";
 import { parseForm } from "@infra/form-parser";
 import { CommentService, StatsService, LikeService } from "@services";
 import { validateOrderBy } from "@validators";
@@ -23,14 +24,15 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 
     let column = (orderByColumn as string) || "created_at";
     let direction = (orderByDirection as string) || "DESC";
-
     if (!validateOrderBy(column, direction, "song")) {
       console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
       column = "created_at";
       direction = "DESC";
     }
 
-    const songs = await SongRepo.getMany({
+    const accessContext = parseAccessContext(req.query);
+
+    const songs = await SongRepo.getMany(accessContext, {
       includeAlbums: includeAlbums === "true",
       includeArtists: includeArtists === "true",
       includeLikes: includeLikes === "true",
@@ -54,19 +56,20 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { includeAlbums, includeArtists, includeLikes, includeComments } =
-      req.query;
+
     if (!id) {
       res.status(400).json({ error: "Song ID is required" });
       return;
     }
 
-    const song = await SongRepo.getOne(id, {
-      includeAlbums: includeAlbums === "true",
-      includeArtists: includeArtists === "true",
-      includeLikes: includeLikes === "true",
-      includeComments: includeComments === "true",
+    const accessContext = parseAccessContext(req.query);
+    const song = await SongRepo.getOne(id, accessContext, {
+      includeAlbums: req.query.includeAlbums === "true",
+      includeArtists: req.query.includeArtists === "true",
+      includeLikes: req.query.includeLikes === "true",
+      includeComments: req.query.includeComments === "true",
     });
+
     if (!song) {
       res.status(404).json({ error: "Song not found" });
       return;
@@ -292,12 +295,8 @@ router.get(
         return;
       }
 
-      const song = await SongRepo.getOne(id);
-      if (!song) {
-        res.status(404).json({ error: "Song not found" });
-        return;
-      }
-      if (!song.image_url) {
+      const imageUrl = await SongRepo.getCoverImage(id);
+      if (!imageUrl) {
         res.status(200).json({
           color1: { r: 8, g: 8, b: 8 },
           color2: { r: 213, g: 49, b: 49 },
@@ -305,7 +304,7 @@ router.get(
         return;
       }
 
-      const gradient = await getCoverGradient(song.image_url);
+      const gradient = await getCoverGradient(imageUrl);
       res.status(200).json(gradient);
     } catch (error: any) {
       console.error("Error in GET /songs/:id/cover-gradient:", error);
@@ -443,20 +442,21 @@ router.get(
       } = req.query;
 
       if (!id) {
-        res.status(400).json({ error: "Song ID is required!" });
+        res.status(400).json({ error: "Song ID is required" });
         return;
       }
 
       let column = (orderByColumn as string) || "created_at";
       let direction = (orderByDirection as string) || "DESC";
-
       if (!validateOrderBy(column, direction, "album")) {
         console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
         column = "created_at";
         direction = "DESC";
       }
 
-      const albums = await SongRepo.getAlbums(id, {
+      const accessContext = parseAccessContext(req.query);
+
+      const albums = await SongRepo.getAlbums(id, accessContext, {
         includeArtist: includeArtist === "true",
         includeLikes: includeLikes === "true",
         includeRuntime: includeRuntime === "true",

@@ -1,4 +1,9 @@
-import type { UUID, Artist, VisibilityStatus } from "./index.js";
+import type {
+  UUID,
+  Artist,
+  VisibilityStatus,
+  OrderByDirection,
+} from "./index.js";
 
 export interface Album {
   id: UUID;
@@ -9,6 +14,7 @@ export interface Album {
   image_url?: string;
   image_url_blurhash?: string;
   created_at: string;
+  updated_at: string;
   genre: string;
   visibility_status: VisibilityStatus;
 
@@ -23,4 +29,24 @@ export interface Album {
 
 export interface LibraryAlbum extends Album {
   played_at?: string;
+}
+
+export type AlbumOrderByColumn =
+  | "title"
+  | "created_at"
+  | "release_date"
+  | "likes"
+  | "runtime"
+  | "songCount";
+
+export interface AlbumOptions {
+  includeArtist?: boolean;
+  includeLikes?: boolean;
+  includeRuntime?: boolean;
+  includeSongCount?: boolean;
+  includeSongIds?: boolean;
+  orderByColumn?: AlbumOrderByColumn;
+  orderByDirection?: OrderByDirection;
+  limit?: number;
+  offset?: number;
 }

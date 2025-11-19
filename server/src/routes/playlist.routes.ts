@@ -1,9 +1,10 @@
 import express, { Request, Response } from "express";
 import { PlaylistRepository } from "@repositories";
-import { generatePlaylistImage } from "@util";
+import { generatePlaylistImage, parseAccessContext } from "@util";
 import { parseForm } from "@infra/form-parser";
 import { LikeService } from "@services";
 import { handlePgError } from "@util/pgErrorHandler.util";
+import { validateOrderBy } from "@validators";
 
 const router = express.Router();
 
@@ -15,11 +16,23 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
       includeLikes,
       includeSongCount,
       includeRuntime,
+      orderByColumn,
+      orderByDirection,
       limit,
       offset,
     } = req.query;
 
-    const playlists = await PlaylistRepository.getMany({
+    let column = (orderByColumn as string) || "created_at";
+    let direction = (orderByDirection as string) || "DESC";
+    if (!validateOrderBy(column, direction, "playlist")) {
+      console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+      column = "created_at";
+      direction = "DESC";
+    }
+
+    const accessContext = parseAccessContext(req.query);
+
+    const playlists = await PlaylistRepository.getMany(accessContext, {
       includeUser: includeUser === "true",
       includeLikes: includeLikes === "true",
       includeSongCount: includeSongCount === "true",
@@ -31,6 +44,40 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(playlists);
   } catch (error: any) {
     console.error("Error in GET /playlists/:", error);
+    const errorMessage = error.message || "Internal server error";
+    res.status(500).json({ error: errorMessage });
+  }
+});
+
+// GET /api/playlists/:id
+router.get("/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { includeUser, includeLikes, includeSongCount, includeRuntime } =
+      req.query;
+
+    if (!id) {
+      res.status(400).json({ error: "Playlist ID is required" });
+      return;
+    }
+
+    const accessContext = parseAccessContext(req.query);
+
+    const playlist = await PlaylistRepository.getOne(id, accessContext, {
+      includeUser: includeUser === "true",
+      includeLikes: includeLikes === "true",
+      includeSongCount: includeSongCount === "true",
+      includeRuntime: includeRuntime === "true",
+    });
+
+    if (!playlist) {
+      res.status(404).json({ error: "Playlist not found" });
+      return;
+    }
+
+    res.status(200).json(playlist);
+  } catch (error: any) {
+    console.error("Error in GET /playlists/:id:", error);
     const errorMessage = error.message || "Internal server error";
     res.status(500).json({ error: errorMessage });
   }
@@ -50,38 +97,6 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
     console.error("Error in POST /playlists/:", error);
     const { message, statusCode } = handlePgError(error);
     res.status(statusCode).json({ error: message });
-  }
-});
-
-// GET /api/playlists/:id
-router.get("/:id", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const { includeUser, includeLikes, includeSongCount, includeRuntime } =
-    req.query;
-
-  if (!id) {
-    res.status(400).json({ error: "Playlist ID is required" });
-    return;
-  }
-
-  try {
-    const playlist = await PlaylistRepository.getOne(id, {
-      includeUser: includeUser === "true",
-      includeLikes: includeLikes === "true",
-      includeSongCount: includeSongCount === "true",
-      includeRuntime: includeRuntime === "true",
-    });
-
-    if (!playlist) {
-      res.status(404).json({ error: "Playlist not found" });
-      return;
-    }
-
-    res.status(200).json(playlist);
-  } catch (error: any) {
-    console.error("Error in GET /playlists/:id:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
   }
 });
 
@@ -135,17 +150,19 @@ router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
 
 // GET /api/playlists/:id/songs
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const { includeAlbums, includeArtists, includeLikes, limit, offset } =
-    req.query;
-
-  if (!id) {
-    res.status(400).json({ error: "Playlist ID is required" });
-    return;
-  }
-
   try {
-    const songs = await PlaylistRepository.getSongs(id, {
+    const { id } = req.params;
+    const { includeAlbums, includeArtists, includeLikes, limit, offset } =
+      req.query;
+
+    if (!id) {
+      res.status(400).json({ error: "Playlist ID is required" });
+      return;
+    }
+
+    const accessContext = parseAccessContext(req.query);
+
+    const songs = await PlaylistRepository.getSongs(id, accessContext, {
       includeAlbums: includeAlbums === "true",
       includeArtists: includeArtists === "true",
       includeLikes: includeLikes === "true",

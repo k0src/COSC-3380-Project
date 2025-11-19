@@ -4,9 +4,9 @@ import type {
   SongArtist,
   Artist,
   VisibilityStatus,
+  OrderByDirection,
 } from "./index.js";
 
-// Main Song type
 export interface Song {
   id: UUID;
   owner_id: UUID;
@@ -51,4 +51,24 @@ export interface SuggestedSong extends Song {
 
 export interface LibrarySong extends Song {
   played_at?: string;
+}
+
+export type SongOrderByColumn =
+  | "title"
+  | "created_at"
+  | "streams"
+  | "release_date"
+  | "likes"
+  | "comments"
+  | "duration";
+
+export interface SongOptions {
+  includeAlbums?: boolean;
+  includeArtists?: boolean;
+  includeLikes?: boolean;
+  includeComments?: boolean;
+  orderByColumn?: SongOrderByColumn;
+  orderByDirection?: OrderByDirection;
+  limit?: number;
+  offset?: number;
 }

@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { songApi } from "@api";
 import { useAuth } from "@contexts";
-import type { UUID } from "@types";
+import type { AccessContext, UUID } from "@types";
 import { useAsyncData, useErrorCheck } from "@hooks";
 import {
   ErrorPage,
@@ -25,6 +25,12 @@ const SongPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "single",
+  };
+
   if (!id) {
     return (
       <ErrorPage
@@ -37,7 +43,7 @@ const SongPage: React.FC = () => {
   const asyncConfig = useMemo(
     () => ({
       song: () =>
-        songApi.getSongById(id, {
+        songApi.getSongById(id, accessContext, {
           includeAlbums: true,
           includeArtists: true,
           includeLikes: true,
@@ -112,23 +118,23 @@ const SongPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{song ? `${song.title} - CoogMusic` : "CoogMusic"}</title>
+        <title>{song!.title} - CoogMusic</title>
       </Helmet>
 
       <div className={styles.songLayout}>
         <div className={styles.songLayoutTop}>
           <SongContainer
-            song={song}
+            song={song!}
             mainArtist={mainArtist ?? undefined}
             coverGradient={coverGradient}
-            numberComments={song.comments}
+            numberComments={song!.comments}
             isOwner={isOwner}
             onEditButtonClick={handleEditSong}
           />
           <div className={styles.songLayoutTopRight}>
-            <SongStats songId={song.id} />
-            <SongDetails genre={song.genre} releaseDate={song.release_date} />
-            <SongActions song={song} songUrl={window.location.href} />
+            <SongStats songId={song!.id} />
+            <SongDetails genre={song!.genre} releaseDate={song!.release_date} />
+            <SongActions song={song!} songUrl={window.location.href} />
           </div>
         </div>
         <div className={styles.songLayoutBottom}>
@@ -136,8 +142,8 @@ const SongPage: React.FC = () => {
             mainArtist={mainArtist ?? undefined}
             otherArtists={otherArtists}
           />
-          <SongComments songId={song.id} />
-          <SongSuggestions song={song} mainArtist={mainArtist ?? undefined} />
+          <SongComments songId={song!.id} />
+          <SongSuggestions song={song!} mainArtist={mainArtist ?? undefined} />
         </div>
       </div>
 
@@ -145,7 +151,7 @@ const SongPage: React.FC = () => {
         <EditSongModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          song={song}
+          song={song!}
           onSongEdited={handleSongEdited}
         />
       )}

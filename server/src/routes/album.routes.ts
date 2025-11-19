@@ -1,8 +1,9 @@
 import express, { Request, Response } from "express";
 import { AlbumRepository } from "@repositories";
 import { LikeService } from "@services";
-import { handlePgError } from "@util";
+import { handlePgError, parseAccessContext } from "@util";
 import { parseForm } from "@infra/form-parser";
+import { validateOrderBy } from "@validators";
 
 const router = express.Router();
 
@@ -14,15 +15,29 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
       includeRuntime,
       includeSongCount,
       includeLikes,
+      orderByColumn,
+      orderByDirection,
       limit,
       offset,
     } = req.query;
 
-    const albums = await AlbumRepository.getMany({
+    let column = (orderByColumn as string) || "created_at";
+    let direction = (orderByDirection as string) || "DESC";
+    if (!validateOrderBy(column, direction, "album")) {
+      console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+      column = "created_at";
+      direction = "DESC";
+    }
+
+    const accessContext = parseAccessContext(req.query);
+
+    const albums = await AlbumRepository.getMany(accessContext, {
       includeArtist: includeArtist === "true",
       includeRuntime: includeRuntime === "true",
       includeLikes: includeLikes === "true",
       includeSongCount: includeSongCount === "true",
+      orderByColumn: column as any,
+      orderByDirection: direction as any,
       limit: limit ? parseInt(limit as string, 10) : undefined,
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });
@@ -38,22 +53,24 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 
 // GET /api/albums/:id
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const {
-    includeArtist,
-    includeRuntime,
-    includeSongCount,
-    includeLikes,
-    includeSongIds,
-  } = req.query;
-
-  if (!id) {
-    res.status(400).json({ error: "Album ID is required" });
-    return;
-  }
-
   try {
-    const album = await AlbumRepository.getOne(id, {
+    const { id } = req.params;
+    const {
+      includeArtist,
+      includeRuntime,
+      includeSongCount,
+      includeLikes,
+      includeSongIds,
+    } = req.query;
+
+    if (!id) {
+      res.status(400).json({ error: "Album ID is required" });
+      return;
+    }
+
+    const accessContext = parseAccessContext(req.query);
+
+    const album = await AlbumRepository.getOne(id, accessContext, {
       includeArtist: includeArtist === "true",
       includeRuntime: includeRuntime === "true",
       includeLikes: includeLikes === "true",
@@ -144,16 +161,18 @@ router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
 
 // GET /api/albums/:id/songs
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const { includeArtists, includeLikes, limit, offset } = req.query;
-
-  if (!id) {
-    res.status(400).json({ error: "Album ID is required" });
-    return;
-  }
-
   try {
-    const songs = await AlbumRepository.getSongs(id, {
+    const { id } = req.params;
+    const { includeArtists, includeLikes, limit, offset } = req.query;
+
+    if (!id) {
+      res.status(400).json({ error: "Album ID is required" });
+      return;
+    }
+
+    const accessContext = parseAccessContext(req.query);
+
+    const songs = await AlbumRepository.getSongs(id, accessContext, {
       includeArtists: includeArtists === "true",
       includeLikes: includeLikes === "true",
       limit: limit ? parseInt(limit as string, 10) : undefined,

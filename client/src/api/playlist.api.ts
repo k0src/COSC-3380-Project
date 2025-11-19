@@ -1,36 +1,78 @@
 import api from "./api";
-import type { PlaylistSong, Playlist, UUID, User } from "@types";
+import type {
+  PlaylistSong,
+  Playlist,
+  UUID,
+  User,
+  PlaylistOptions,
+  SongOptions,
+  AccessContext,
+} from "@types";
 
 export const playlistApi = {
   async getPlaylistById(
     id: UUID,
-    options?: {
-      includeUser?: boolean;
-      includeLikes?: boolean;
-      includeSongCount?: boolean;
-      includeRuntime?: boolean;
-    }
+    accessContext: AccessContext,
+    options?: PlaylistOptions
   ) {
-    const response = await api.get<Playlist>(`/playlists/${id}`, {
-      params: options,
-    });
-    return response.data;
+    try {
+      const response = await api.get<Playlist>(`/playlists/${id}`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  async getMany(accessContext: AccessContext, options?: PlaylistOptions) {
+    try {
+      const response = await api.get<Playlist[]>(`/playlists`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   async getSongs(
     id: UUID,
-    options?: {
-      includeAlbums?: boolean;
-      includeArtists?: boolean;
-      includeLikes?: boolean;
-      limit?: number;
-      offset?: number;
-    }
+    accessContext: AccessContext,
+    options?: SongOptions
   ) {
-    const response = await api.get<PlaylistSong[]>(`/playlists/${id}/songs`, {
-      params: options,
-    });
-    return response.data;
+    try {
+      const response = await api.get<PlaylistSong[]>(`/playlists/${id}/songs`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
   },
 
   async getLikedBy(
@@ -46,17 +88,7 @@ export const playlistApi = {
     return response.data;
   },
 
-  async getRelatedPlaylists(
-    id: UUID,
-    options?: {
-      includeUser?: boolean;
-      includeLikes?: boolean;
-      includeSongCount?: boolean;
-      includeRuntime?: boolean;
-      limit?: number;
-      offset?: number;
-    }
-  ) {
+  async getRelatedPlaylists(id: UUID, options?: PlaylistOptions) {
     const response = await api.get<Playlist[]>(`/playlists/${id}/related`, {
       params: options,
     });
@@ -82,7 +114,7 @@ export const playlistApi = {
     created_by: UUID;
     title: string;
     description?: string;
-    is_public: boolean;
+    visibility_status?: "PUBLIC" | "PRIVATE";
     image_url?: File | null;
   }) {
     const formData = new FormData();
@@ -106,7 +138,7 @@ export const playlistApi = {
     data: {
       title?: string;
       description?: string;
-      is_public?: boolean;
+      visibility_status?: "PUBLIC" | "PRIVATE";
       image_url?: File | null;
     }
   ) {

@@ -1,6 +1,15 @@
-import { Playlist, PlaylistSong, UUID } from "@types";
+import {
+  AccessContext,
+  Playlist,
+  PlaylistOptions,
+  PlaylistSong,
+  SongOptions,
+  UUID,
+  VisibilityStatus,
+} from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
+import { getAccessPredicate } from "@util";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -8,30 +17,18 @@ dotenv.config();
 const API_URL = process.env.API_URL;
 
 export default class PlaylistRepository {
-  /**
-   * Creates a new playlist.
-   * @param playlistData The data for the new playlist.
-   * @param playlist.title The title of the playlist.
-   * @param playlist.description The description of the playlist.
-   * @param playlist.created_by The ID of the user who created the playlist.
-   * @param playlist.is_public Whether the playlist is public (optional, defaults to true).
-   * @param playlist.image_url The image URL of the playlist (optional).
-   * @param playlist.image_url_blurhash The blurhash of the playlist image (optional).
-   * @returns The created playlist, or null if creation fails.
-   * @throws Error if the operation fails.
-   */
   static async create({
     title,
     description,
     created_by,
-    is_public = true,
+    visibility_status = "PUBLIC",
     image_url,
     image_url_blurhash,
   }: {
     title: string;
     description: string;
     created_by: UUID;
-    is_public?: boolean;
+    visibility_status?: VisibilityStatus;
     image_url?: string;
     image_url_blurhash?: string;
   }): Promise<Playlist | null> {
@@ -42,14 +39,14 @@ export default class PlaylistRepository {
 
       const res = await withTransaction(async (client) => {
         const insert = await client.query(
-          `INSERT INTO playlists (title, description, created_by, is_public, image_url, image_url_blurhash)
+          `INSERT INTO playlists (title, description, created_by, visibility_status, image_url, image_url_blurhash)
           VALUES ($1, $2, $3, $4, $5, $6)
           RETURNING *`,
           [
             title,
             description,
             created_by,
-            is_public,
+            visibility_status,
             image_url,
             image_url_blurhash,
           ]
@@ -71,33 +68,20 @@ export default class PlaylistRepository {
     }
   }
 
-  /**
-   * Updates a playlist.
-   * @param id The ID of the playlist to update.
-   * @param playlistData The new data for the playlist.
-   * @param playlist.title The new title of the playlist (optional).
-   * @param playlist.description The new description of the playlist (optional).
-   * @param playlist.created_by The new ID of the user who created the playlist (optional).
-   * @param playlist.is_public Whether the playlist is public (optional).
-   * @param playlist.image_url The new image URL of the playlist (optional).
-   * @param playlist.image_url_blurhash The new blurhash of the playlist image (optional).
-   * @returns The updated playlist, or null if the update fails.
-   * @throws Error if the operation fails.
-   */
   static async update(
     id: UUID,
     {
       title,
       description,
       created_by,
-      is_public,
+      visibility_status,
       image_url,
       image_url_blurhash,
     }: {
       title?: string;
       description?: string;
       created_by?: UUID;
-      is_public?: boolean;
+      visibility_status?: VisibilityStatus;
       image_url?: string;
       image_url_blurhash?: string;
     }
@@ -125,9 +109,9 @@ export default class PlaylistRepository {
         fields.push(`created_by = $${values.length + 1}`);
         values.push(created_by);
       }
-      if (is_public !== undefined) {
-        fields.push(`is_public = $${values.length + 1}`);
-        values.push(is_public);
+      if (visibility_status !== undefined) {
+        fields.push(`visibility_status = $${values.length + 1}`);
+        values.push(visibility_status);
       }
       if (image_url !== undefined) {
         fields.push(`image_url = $${values.length + 1}`);
@@ -187,77 +171,71 @@ export default class PlaylistRepository {
       throw error;
     }
   }
-
-  /**
-   * Gets a single playlist by ID.
-   * @param id The ID of the playlist to get.
-   * @param options Options for including related data.
-   * @param options.includeUser Option to include the user who created the playlist.
-   * @param options.includeLikes Option to include the like count.
-   * @param options.includeSongCount Option to include the total number of songs on the playlist.
-   * @param options.includeRuntime Option to include the total runtime of the playlist.
-   * @returns The playlist, or null if not found.
-   * @throws Error if the operation fails.
-   */
   static async getOne(
     id: UUID,
-    options?: {
-      includeUser?: boolean;
-      includeLikes?: boolean;
-      includeSongCount?: boolean;
-      includeRuntime?: boolean;
-    }
+    accessContext: AccessContext,
+    options?: PlaylistOptions
   ): Promise<Playlist | null> {
     try {
-      const sql = `
-        SELECT p.*,
-        CASE WHEN $1 THEN row_to_json(u.*)
-        ELSE NULL END as user,
-        CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_likes pl
-          WHERE pl.playlist_id = p.id)
-        ELSE NULL END as likes,
-        CASE WHEN $3 THEN (SELECT COUNT(*) FROM playlist_songs ps
-          WHERE ps.playlist_id = p.id)
-        ELSE NULL END as song_count,
-        CASE WHEN $4 THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
+      const selectFields: string[] = ["p.*"];
+
+      if (options?.includeUser) {
+        selectFields.push(`
+        row_to_json(u.*) AS user
+      `);
+      }
+
+      if (options?.includeLikes) {
+        selectFields.push(`
+        (SELECT COUNT(*) FROM playlist_likes pl WHERE pl.playlist_id = p.id) AS likes
+      `);
+      }
+
+      if (options?.includeSongCount) {
+        selectFields.push(`
+        (SELECT COUNT(*) FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS song_count
+      `);
+      }
+
+      if (options?.includeRuntime) {
+        selectFields.push(`
+        (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
           JOIN playlist_songs ps ON ps.song_id = s.id
-          WHERE ps.playlist_id = p.id)
-        ELSE NULL END as runtime,
-        (SELECT EXISTS (
-          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
-        )) AS has_song
+          WHERE ps.playlist_id = p.id) AS runtime
+      `);
+      }
+
+      selectFields.push(`
+      EXISTS (SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS has_song
+    `);
+
+      const sql = `
+        SELECT ${selectFields.join(",\n")}
         FROM playlists p
         LEFT JOIN users u ON p.created_by = u.id
-        WHERE p.id = $5
+        WHERE p.id = $1
         LIMIT 1
       `;
 
-      const params = [
-        options?.includeUser ?? false,
-        options?.includeLikes ?? false,
-        options?.includeSongCount ?? false,
-        options?.includeRuntime ?? false,
-        id,
-      ];
-
+      const params = [id];
       const res = await query(sql, params);
-      if (!res || res.length === 0) {
-        return null;
-      }
+      if (!res || res.length === 0) return null;
 
       const playlist: Playlist = res[0];
-      if (playlist.user && playlist.user.profile_picture_url) {
+
+      if (playlist.user?.profile_picture_url) {
         playlist.user.profile_picture_url = getBlobUrl(
           playlist.user.profile_picture_url
         );
       }
+
       if (playlist.image_url) {
         playlist.image_url = getBlobUrl(playlist.image_url);
       } else if ((playlist as any).has_song) {
         playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
       }
-      delete (playlist as any).has_song;
 
+      delete (playlist as any).has_song;
       playlist.type = "playlist";
 
       return playlist;
@@ -267,219 +245,211 @@ export default class PlaylistRepository {
     }
   }
 
-  /**
-   * Gets multiple playlists.
-   * @param options Options for pagination and including related data.
-   * @param options.includeUser Option to include the user who created each playlist.
-   * @param options.includeLikes Option to include the like count for each playlist.
-   * @param options.includeSongCount Option to include the total number of songs on each playlist.
-   * @param options.includeRuntime Option to include the total runtime of the playlist.
-   * @param options.limit Maximum number of playlists to return.
-   * @param options.offset Number of playlists to skip.
-   * @returns A list of playlists.
-   * @throws Error if the operation fails.
-   */
-  static async getMany(options?: {
-    includeUser?: boolean;
-    includeLikes?: boolean;
-    includeSongCount?: boolean;
-    includeRuntime?: boolean;
-    limit?: number;
-    offset?: number;
-  }): Promise<Playlist[]> {
+  static async getMany(
+    accessContext: AccessContext,
+    options?: PlaylistOptions
+  ): Promise<Playlist[]> {
     try {
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
 
-      const sql = `
-        SELECT p.*,
-        CASE WHEN $1 THEN row_to_json(u.*)
-        ELSE NULL END as user,
-        CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_likes pl
-          WHERE pl.playlist_id = p.id)
-        ELSE NULL END as likes,
-        CASE WHEN $3 THEN (SELECT COUNT(*) FROM playlist_songs ps
-          WHERE ps.playlist_id = p.id)
-        ELSE NULL END as song_count,
-        CASE WHEN $4 THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
+      const selectFields: string[] = ["p.*"];
+
+      if (options?.includeUser) {
+        selectFields.push(`
+        row_to_json(u.*) AS user
+      `);
+      }
+
+      if (options?.includeLikes) {
+        selectFields.push(`
+        (SELECT COUNT(*) FROM playlist_likes pl WHERE pl.playlist_id = p.id) AS likes
+      `);
+      }
+
+      if (options?.includeSongCount) {
+        selectFields.push(`
+        (SELECT COUNT(*) FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS song_count
+      `);
+      }
+
+      if (options?.includeRuntime) {
+        selectFields.push(`
+        (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
           JOIN playlist_songs ps ON ps.song_id = s.id
-          WHERE ps.playlist_id = p.id)
-        ELSE NULL END as runtime,
-        (SELECT EXISTS (
-          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
-        )) AS has_song
+          WHERE ps.playlist_id = p.id) AS runtime
+      `);
+      }
+
+      selectFields.push(`
+      EXISTS (SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS has_song
+    `);
+
+      const sql = `
+        SELECT ${selectFields.join(",\n")}
         FROM playlists p
         LEFT JOIN users u ON p.created_by = u.id
         ORDER BY p.created_at DESC
-        LIMIT $5 OFFSET $6
+        LIMIT $1 OFFSET $2
       `;
 
-      const params = [
-        options?.includeUser ?? false,
-        options?.includeLikes ?? false,
-        options?.includeSongCount ?? false,
-        options?.includeRuntime ?? false,
-        limit,
-        offset,
-      ];
-
+      const params = [limit, offset];
       const playlists = await query(sql, params);
-      if (!playlists || playlists.length === 0) {
-        return [];
-      }
+      if (!playlists || playlists.length === 0) return [];
 
-      const processedPlaylists = await Promise.all(
-        playlists.map(async (playlist: Playlist) => {
-          if (playlist.user && playlist.user.profile_picture_url) {
-            playlist.user.profile_picture_url = getBlobUrl(
-              playlist.user.profile_picture_url
-            );
-          }
-          if (playlist.image_url) {
-            playlist.image_url = getBlobUrl(playlist.image_url);
-          } else if ((playlist as any).has_song) {
-            playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
-          }
-          delete (playlist as any).has_song;
+      return playlists.map((playlist: Playlist) => {
+        if (playlist.user?.profile_picture_url) {
+          playlist.user.profile_picture_url = getBlobUrl(
+            playlist.user.profile_picture_url
+          );
+        }
 
-          playlist.type = "playlist";
-          return playlist;
-        })
-      );
+        if (playlist.image_url) {
+          playlist.image_url = getBlobUrl(playlist.image_url);
+        } else if ((playlist as any).has_song) {
+          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+        }
 
-      return processedPlaylists;
+        delete (playlist as any).has_song;
+        playlist.type = "playlist";
+
+        return playlist;
+      });
     } catch (error) {
       console.error("Error fetching playlists:", error);
       throw error;
     }
   }
 
-  /**
-   * Fetches all songs in a specific playlist.
-   * @param playlistId The ID of the playlist.
-   * @param options Options for pagination and including related data.
-   * @param options.includeAlbums Option to include the albums data.
-   * @param options.includeArtists Option to include the artists data.
-   * @param options.includeLikes Option to include the like count.
-   * @param options.limit Maximum number of songs to return.
-   * @param options.offset Number of songs to skip.
-   * @returns An array of songs in the playlist, with added_at timestamp.
-   * @throws Error if the operation fails
-   */
   static async getSongs(
     playlistId: UUID,
-    options?: {
-      includeAlbums?: boolean;
-      includeArtists?: boolean;
-      includeLikes?: boolean;
-      limit?: number;
-      offset?: number;
-    }
+    accessContext: AccessContext,
+    options?: SongOptions
   ): Promise<PlaylistSong[]> {
     try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "s");
+
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
+      const orderByColumn = options?.orderByColumn ?? "created_at";
+      const orderByDirection =
+        (options?.orderByDirection ?? "DESC").toUpperCase() === "ASC"
+          ? "ASC"
+          : "DESC";
 
-      const sql = `
-        SELECT s.*, ps.added_at,
-          CASE WHEN $1 THEN
-            (SELECT json_agg(row_to_json(album_with_artist))
-            FROM (
-              SELECT a.*,
-                row_to_json(ar) AS artist
-              FROM albums a
-              JOIN album_songs als ON als.album_id = a.id
-              LEFT JOIN artists ar ON ar.id = a.created_by
-              WHERE als.song_id = s.id
-            ) AS album_with_artist)
-          ELSE NULL END AS albums,
-          CASE WHEN $2 THEN
-            (SELECT json_agg(row_to_json(ar_with_role))
-            FROM (
-              SELECT
-                ar.*,
-                sa.role,
-                row_to_json(u) AS user
-              FROM artists ar
-              JOIN users u ON u.artist_id = ar.id
-              JOIN song_artists sa ON sa.artist_id = ar.id
-              WHERE sa.song_id = s.id
-            ) AS ar_with_role)
-          ELSE NULL END AS artists,
-          CASE WHEN $3 THEN
-            (SELECT COUNT(*) FROM song_likes sl
-            WHERE sl.song_id = s.id)
-          ELSE NULL END as likes
-        FROM songs s
-        JOIN playlist_songs ps ON s.id = ps.song_id
-        WHERE ps.playlist_id = $4
-        ORDER BY ps.added_at
-        LIMIT $5 OFFSET $6
-      `;
+      const orderByMap: Record<string, string> = {
+        title: "s.title",
+        created_at: "s.created_at",
+        streams: "s.streams",
+        release_date: "s.release_date",
+        likes: "likes",
+        comments: "comments",
+        duration: "s.duration",
+      };
 
-      const params = [
-        options?.includeAlbums ?? false,
-        options?.includeArtists ?? false,
-        options?.includeLikes ?? false,
-        playlistId,
-        limit,
-        offset,
-      ];
+      const sqlOrderByColumn = orderByMap[orderByColumn] ?? "s.created_at";
 
-      const songs = await query(sql, params);
-      if (!songs || songs.length === 0) {
-        return [];
+      const selectFields: string[] = ["s.*"];
+
+      if (options?.includeAlbums) {
+        selectFields.push(`
+        (
+          SELECT json_agg(row_to_json(album_with_artist))
+          FROM (
+            SELECT a.*, row_to_json(ar) AS artist
+            FROM albums a
+            JOIN album_songs als ON als.album_id = a.id
+            LEFT JOIN artists ar ON ar.id = a.created_by
+            WHERE als.song_id = s.id
+          ) AS album_with_artist
+        ) AS albums
+      `);
       }
 
-      const processedSongs = await Promise.all(
-        songs.map(async (song: PlaylistSong) => {
-          if (song.image_url) {
-            song.image_url = getBlobUrl(song.image_url);
-          }
-          if (song.audio_url) {
-            song.audio_url = getBlobUrl(song.audio_url);
-          }
-          if (song.albums && song.albums?.length > 0) {
-            song.albums = song.albums.map((album) => {
-              if (album.image_url) {
-                album.image_url = getBlobUrl(album.image_url);
-              }
-              if (album.artist) {
-                album.artist.type = "artist";
-              }
-              album.type = "album";
-              return album;
-            });
-          }
-          if (song.artists && song.artists?.length > 0) {
-            song.artists = song.artists.map((artist) => {
-              if (artist.user && artist.user.profile_picture_url) {
-                artist.user.profile_picture_url = getBlobUrl(
-                  artist.user.profile_picture_url
-                );
-              }
-              artist.type = "artist";
-              return artist;
-            });
-          }
-          song.type = "song";
-          return song;
-        })
+      if (options?.includeArtists) {
+        selectFields.push(`
+        (
+          SELECT json_agg(row_to_json(ar_with_role))
+          FROM (
+            SELECT ar.*, sa.role, row_to_json(u) AS user
+            FROM artists ar
+            JOIN users u ON u.artist_id = ar.id
+            JOIN song_artists sa ON sa.artist_id = ar.id
+            WHERE sa.song_id = s.id
+          ) AS ar_with_role
+        ) AS artists
+      `);
+      }
+
+      if (options?.includeLikes) {
+        selectFields.push(
+          `(SELECT COUNT(*) FROM song_likes sl WHERE sl.song_id = s.id) AS likes`
+        );
+      }
+
+      if (options?.includeComments) {
+        selectFields.push(
+          `(SELECT COUNT(*) FROM comments c WHERE c.song_id = s.id) AS comments`
+        );
+      }
+
+      selectFields.push(
+        `EXISTS (SELECT 1 FROM trending_songs ts WHERE ts.song_id = s.id) AS is_trending`
       );
 
-      return processedSongs;
+      const playlistIdIndex = predicateParams.length + 1;
+      const limitIndex = predicateParams.length + 2;
+      const offsetIndex = predicateParams.length + 3;
+
+      const sql = `
+        SELECT ${selectFields.join(",\n")}, ps.added_at
+        FROM songs s
+        JOIN playlist_songs ps ON s.id = ps.song_id
+        WHERE (${predicateSql}) AND ps.playlist_id = $${playlistIdIndex}
+        ORDER BY ${sqlOrderByColumn} ${orderByDirection}
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
+      `;
+
+      const params = [...predicateParams, playlistId, limit, offset];
+      const songs = await query(sql, params);
+      if (!songs || songs.length === 0) return [];
+
+      return songs.map((song: PlaylistSong) => {
+        if (song.image_url) song.image_url = getBlobUrl(song.image_url);
+        if (song.audio_url) song.audio_url = getBlobUrl(song.audio_url);
+
+        if (song.albums?.length) {
+          song.albums.forEach((album) => {
+            if (album.image_url) album.image_url = getBlobUrl(album.image_url);
+            if (album.artist) album.artist.type = "artist";
+            album.type = "album";
+          });
+        }
+
+        if (song.artists?.length) {
+          song.artists.forEach((artist) => {
+            if (artist.user?.profile_picture_url) {
+              artist.user.profile_picture_url = getBlobUrl(
+                artist.user.profile_picture_url
+              );
+            }
+            artist.type = "artist";
+          });
+        }
+
+        song.type = "song";
+        return song;
+      });
     } catch (error) {
       console.error("Error fetching playlist songs:", error);
       throw error;
     }
   }
 
-  /**
-   * Adds songs to a playlist.
-   * @param playlistId The ID of the playlist.
-   * @param songIds An array of song IDs to add to the playlist.
-   * @throws Error if the operation fails.
-   */
   static async addSongs(playlistId: UUID, songIds: UUID[]) {
     try {
       await withTransaction(async (client) => {
@@ -498,12 +468,6 @@ export default class PlaylistRepository {
     }
   }
 
-  /**
-   * Removes songs from a playlist.
-   * @param playlistId The ID of the playlist.
-   * @param songIds An array of song IDs to remove from the playlist.
-   * @throws Error if the operation fails.
-   */
   static async removeSongs(playlistId: UUID, songIds: UUID[]) {
     try {
       await withTransaction(async (client) => {
@@ -521,11 +485,6 @@ export default class PlaylistRepository {
     }
   }
 
-  /**
-   * Counts the total number of playlists.
-   * @return The total number of playlists.
-   * @throws Error if the operation fails.
-   */
   static async count(): Promise<number> {
     try {
       const res = await query("SELECT COUNT(*) FROM playlists");
@@ -536,13 +495,6 @@ export default class PlaylistRepository {
     }
   }
 
-  /**
-   * Fetches song image URLs from a playlist for cover generation.
-   * @param playlistId The ID of the playlist.
-   * @param limit Maximum number of song images to fetch (default: 4).
-   * @returns An array of song image URLs with SAS tokens.
-   * @throws Error if the operation fails.
-   */
   static async getCoverImageUrls(
     playlistId: UUID,
     limit: number = 4
@@ -569,30 +521,9 @@ export default class PlaylistRepository {
       throw error;
     }
   }
-
-  /**
-   * Fetches related playlists for a given playlist.
-   * @param playlistId The ID of the playlist.
-   * @param options Options for pagination and including related data.
-   * @param options.includeUser Option to include the user who created each playlist.
-   * @param options.includeLikes Option to include the like count for each playlist.
-   * @param options.includeSongCount Option to include the total number of songs on each playlist.
-   * @param options.includeRuntime Option to include the total runtime of the playlist.
-   * @param options.limit Maximum number of playlists to return.
-   * @param options.offset Number of playlists to skip.
-   * @returns A list of related playlists.
-   * @throws Error if the operation fails.
-   */
   static async getRelatedPlaylists(
     playlistId: UUID,
-    options?: {
-      includeUser?: boolean;
-      includeLikes?: boolean;
-      includeSongCount?: boolean;
-      includeRuntime?: boolean;
-      limit?: number;
-      offset?: number;
-    }
+    options?: PlaylistOptions
   ): Promise<Playlist[]> {
     try {
       const limit = options?.limit ?? 20;
@@ -641,14 +572,6 @@ export default class PlaylistRepository {
     }
   }
 
-  /**
-   * Creates a remix playlist based on an existing playlist.
-   * @param userId The ID of the user creating the remix.
-   * @param playlistId The ID of the original playlist to remix.
-   * @param numberOfSongs The number of songs to include in the remix playlist (default: 30).
-   * @returns The ID of the newly created remix playlist.
-   * @throws Error if the operation fails.
-   */
   static async createRemixPlaylist(
     userId: UUID,
     playlistId: UUID,

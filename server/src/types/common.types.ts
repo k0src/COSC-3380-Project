@@ -1,6 +1,5 @@
 export type UUID = string;
-export type UserRole = "USER" | "ARTIST" | "ADMIN";
-export type UserStatus = "ACTIVE" | "DEACTIVATED" | "SUSPENDED";
+
 export type VisibilityStatus = "PUBLIC" | "PRIVATE" | "UNLISTED";
 
 export interface Comment {
@@ -22,3 +21,5 @@ export interface Comment {
     end: number;
   }>;
 }
+
+export type OrderByDirection = "ASC" | "DESC";

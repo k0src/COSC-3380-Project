@@ -1,4 +1,7 @@
-import type { UUID, UserRole, UserStatus } from "./index.js";
+import type { UUID } from "./index.js";
+
+export type UserRole = "USER" | "ARTIST" | "ADMIN";
+export type UserStatus = "ACTIVE" | "DEACTIVATED" | "SUSPENDED";
 
 export interface User {
   id: UUID;

@@ -1,36 +1,78 @@
 import api from "./api";
-import type { Album, AlbumSong, UUID, User } from "@types";
+import type {
+  Album,
+  AlbumOptions,
+  AlbumSong,
+  SongOptions,
+  UUID,
+  User,
+  AccessContext,
+} from "@types";
 
 export const albumApi = {
   async getAlbumById(
     id: UUID,
-    options?: {
-      includeArtist?: boolean;
-      includeLikes?: boolean;
-      includeSongCount?: boolean;
-      includeRuntime?: boolean;
-      includeSongIds?: boolean;
-    }
+    accessContext: AccessContext,
+    options?: AlbumOptions
   ) {
-    const response = await api.get(`/albums/${id}`, {
-      params: options,
-    });
-    return response.data;
+    try {
+      const response = await api.get<Album>(`/albums/${id}`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  async getMany(accessContext: AccessContext, options?: AlbumOptions) {
+    try {
+      const response = await api.get<Album[]>(`/albums`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   async getSongs(
-    id: UUID,
-    options?: {
-      includeArtists?: boolean;
-      includeLikes?: boolean;
-      limit?: number;
-      offset?: number;
-    }
+    albumId: UUID,
+    accessContext: AccessContext,
+    options?: SongOptions
   ) {
-    const response = await api.get<AlbumSong[]>(`/albums/${id}/songs`, {
-      params: options,
-    });
-    return response.data;
+    try {
+      const response = await api.get<AlbumSong[]>(`/albums/${albumId}/songs`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   async getLikedBy(
@@ -46,17 +88,7 @@ export const albumApi = {
     return response.data;
   },
 
-  async getRelatedAlbums(
-    id: UUID,
-    options?: {
-      includeArtist?: boolean;
-      includeLikes?: boolean;
-      includeSongCount?: boolean;
-      includeRuntime?: boolean;
-      limit?: number;
-      offset?: number;
-    }
-  ) {
+  async getRelatedAlbums(id: UUID, options?: AlbumOptions) {
     const response = await api.get<Album[]>(`/albums/${id}/related`, {
       params: options,
     });

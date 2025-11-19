@@ -1,7 +1,7 @@
 export type UUID = string;
-export type UserRole = "USER" | "ARTIST" | "ADMIN";
+
 export type EntityType = "song" | "album" | "artist" | "playlist" | "comment";
-export type UserStatus = "ACTIVE" | "DEACTIVATED" | "SUSPENDED";
+
 export type VisibilityStatus = "PUBLIC" | "PRIVATE" | "UNLISTED";
 
 export interface Comment {
@@ -22,3 +22,5 @@ export interface Comment {
     end: number;
   }>;
 }
+
+export type OrderByDirection = "ASC" | "DESC";

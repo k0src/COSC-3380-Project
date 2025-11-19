@@ -352,7 +352,6 @@ export default class SearchService {
           )
         : [];
 
-      // Process top result
       let top_result: Song | Album | Artist | Playlist | User | undefined;
       if (row.top_result) {
         const topEntity = row.top_result;

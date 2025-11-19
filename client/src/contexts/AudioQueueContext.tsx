@@ -16,8 +16,11 @@ import type {
   RepeatMode,
   Playlist,
   Album,
+  UUID,
+  AccessContext,
 } from "@types";
 import { useAudioManager } from "@hooks";
+import { useAuth } from "./AuthContext";
 import {
   createQueueItem,
   createQueueItems,
@@ -551,6 +554,8 @@ interface AudioQueueProviderProps {
 }
 
 export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
+  const { user, isAuthenticated } = useAuth();
+
   const initialState: AudioState = {
     isPlaying: false,
     currentSong: null,
@@ -564,6 +569,24 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
     error: null,
     repeatMode: "none",
     isShuffled: false,
+  };
+
+  const buildAccessContext = (
+    authenticated: boolean,
+    user: { id: UUID; role: string } | null
+  ): AccessContext => {
+    if (authenticated && user) {
+      return {
+        role: user.role === "ADMIN" ? "admin" : "user",
+        userId: user.id,
+        scope: "single",
+      };
+    } else {
+      return {
+        role: "anonymous",
+        scope: "single",
+      };
+    }
   };
 
   const [state, dispatch] = useReducer(audioQueueReducer, initialState);
@@ -590,9 +613,13 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
 
           for (const persistedItem of persistedState.queue) {
             try {
-              const song = await songApi.getSongById(persistedItem.songId, {
-                includeArtists: true,
-              });
+              const ctx = buildAccessContext(isAuthenticated, user);
+              const song = await songApi.getSongById(
+                persistedItem.songId,
+                ctx,
+                { includeArtists: true }
+              );
+
               if (song) {
                 restoredItems.push({
                   song,
@@ -677,14 +704,6 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
       dispatch({ type: "SET_PROGRESS", progress });
       dispatch({ type: "SET_DURATION", duration });
       const currentLoading = audioManager.isLoading;
-      if (currentLoading !== state.isLoading) {
-        console.log(
-          "AudioQueue - isLoading changed from",
-          state.isLoading,
-          "to",
-          currentLoading
-        );
-      }
       dispatch({ type: "SET_LOADING", isLoading: currentLoading });
       dispatch({ type: "SET_ERROR", error: audioManager.error });
 
@@ -737,6 +756,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
   const actions = {
     play: async (playable: PlayableEntity) => {
       try {
+        const ctx = buildAccessContext(isAuthenticated, user);
         if (isSong(playable)) {
           dispatch({ type: "PLAY_SONG", song: playable });
           await audioManager.play(playable);
@@ -748,21 +768,21 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
             dispatch({ type: "SET_PLAYING", isPlaying: true });
           }
         } else if (isPlaylist(playable)) {
-          const songs = await playlistApi.getSongs(playable.id, {
+          const songs = await playlistApi.getSongs(playable.id, ctx, {
             includeArtists: true,
           });
           dispatch({
             type: "PLAY_LIST",
-            songs,
+            songs: songs!,
             sourceId: playable.id,
             sourceType: "playlist",
           });
-          if (songs.length > 0) {
+          if (songs && songs.length > 0) {
             await audioManager.play(songs[0]);
             dispatch({ type: "SET_PLAYING", isPlaying: true });
           }
         } else if (isAlbum(playable)) {
-          const songs = await albumApi.getSongs(playable.id, {
+          const songs = await albumApi.getSongs(playable.id, ctx, {
             includeArtists: true,
           });
           dispatch({
@@ -885,14 +905,16 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
 
     queueListNext: async (entity: Playlist | Album) => {
       try {
+        const ctx = buildAccessContext(isAuthenticated, user);
         let songs: Song[] = [];
 
         if (isPlaylist(entity)) {
-          songs = await playlistApi.getSongs(entity.id, {
+          const playlistSongs = await playlistApi.getSongs(entity.id, ctx, {
             includeArtists: true,
           });
+          songs = playlistSongs ?? [];
         } else if (isAlbum(entity)) {
-          songs = await albumApi.getSongs(entity.id, {
+          songs = await albumApi.getSongs(entity.id, ctx, {
             includeArtists: true,
           });
         }
@@ -910,14 +932,16 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
 
     queueListLast: async (entity: Playlist | Album) => {
       try {
+        const ctx = buildAccessContext(isAuthenticated, user);
         let songs: Song[] = [];
 
         if (isPlaylist(entity)) {
-          songs = await playlistApi.getSongs(entity.id, {
+          const playlistSongs = await playlistApi.getSongs(entity.id, ctx, {
             includeArtists: true,
           });
+          songs = playlistSongs ?? [];
         } else if (isAlbum(entity)) {
-          songs = await albumApi.getSongs(entity.id, {
+          songs = await albumApi.getSongs(entity.id, ctx, {
             includeArtists: true,
           });
         }
@@ -1023,9 +1047,11 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
         const restoredItems: QueueItem[] = [];
         for (const persistedItem of persistedState.queue) {
           try {
-            const song = await songApi.getSongById(persistedItem.songId, {
+            const ctx = buildAccessContext(isAuthenticated, user);
+            const song = await songApi.getSongById(persistedItem.songId, ctx, {
               includeArtists: true,
             });
+
             if (song) {
               restoredItems.push({
                 song,

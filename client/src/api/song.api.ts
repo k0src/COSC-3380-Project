@@ -6,45 +6,51 @@ import type {
   SuggestedSong,
   WeeklyPlays,
   User,
+  SongOptions,
+  AccessContext,
 } from "@types";
 
 export const songApi = {
   async getSongById(
     id: UUID,
-    options?: {
-      includeAlbums?: boolean;
-      includeArtists?: boolean;
-      includeLikes?: boolean;
-      includeComments?: boolean;
-    }
+    accessContext: AccessContext,
+    options?: SongOptions
   ) {
-    const response = await api.get<Song>(`/songs/${id}`, {
-      params: options,
-    });
-    return response.data;
+    try {
+      const response = await api.get<Song>(`/songs/${id}`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
   },
 
-  async getMany(options?: {
-    includeAlbums?: boolean;
-    includeArtists?: boolean;
-    includeLikes?: boolean;
-    includeComments?: boolean;
-    orderByColumn?:
-      | "title"
-      | "created_at"
-      | "streams"
-      | "release_date"
-      | "likes"
-      | "comments"
-      | "duration";
-    orderByDirection?: "ASC" | "DESC";
-    limit?: number;
-    offset?: number;
-  }) {
-    const response = await api.get<Song[]>(`/songs`, {
-      params: options,
-    });
-    return response.data;
+  async getMany(accessContext: AccessContext, options?: SongOptions) {
+    try {
+      const response = await api.get<Song[]>(`/songs`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   async getSuggestedSongs(

@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@contexts";
-import type { UUID } from "@types";
+import type { UUID, AccessContext } from "@types";
 import { useAsyncData, useErrorCheck } from "@hooks";
 import { albumApi } from "@api";
 import {
@@ -23,6 +23,12 @@ const AlbumPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { id } = useParams<{ id: UUID }>();
 
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "single",
+  };
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!id) {
@@ -37,7 +43,7 @@ const AlbumPage: React.FC = () => {
   const { data, loading, error, refetch } = useAsyncData(
     {
       album: () =>
-        albumApi.getAlbumById(id, {
+        albumApi.getAlbumById(id, accessContext, {
           includeArtist: true,
           includeLikes: true,
           includeSongCount: true,
@@ -55,7 +61,16 @@ const AlbumPage: React.FC = () => {
   const album = data?.album;
 
   const fetchSongs = useCallback(
-    () => albumApi.getSongs(id, { includeArtists: true }),
+    () =>
+      albumApi.getSongs(
+        id,
+        {
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: "globalList",
+        },
+        { includeArtists: true }
+      ),
     [id]
   );
 
@@ -109,22 +124,25 @@ const AlbumPage: React.FC = () => {
       <div className={styles.albumLayout}>
         <div className={styles.albumLayoutTop}>
           <AlbumContainer
-            album={album}
+            album={album!}
             isOwner={isOwner}
             onEditButtonClick={handleEditAlbum}
           />
           <div className={styles.albumLayoutTopRight}>
-            <AlbumArtist artist={album.artist} updatedAt={album.updated_at} />
-            <AlbumInfo releaseDate={album.release_date} genre={album.genre} />
+            <AlbumArtist
+              artist={album!.artist!}
+              updatedAt={album!.updated_at}
+            />
+            <AlbumInfo releaseDate={album!.release_date} genre={album!.genre} />
             <AlbumActions
-              album={album}
+              album={album!}
               albumUrl={window.location.href}
-              songIds={album.song_ids ?? []}
+              songIds={album!.song_ids ?? []}
             />
           </div>
         </div>
         <div className={styles.albumLayoutBottom}>
-          {(album.song_count ?? 0) > 0 ? (
+          {(album!.song_count ?? 0) > 0 ? (
             <SongsList
               fetchData={fetchSongs}
               cacheKey={`album_${id}_songs`}
@@ -138,19 +156,19 @@ const AlbumPage: React.FC = () => {
           <div className={styles.suggestionsContainer}>
             <LikeProfiles
               title="Liked By"
-              entityId={album.id}
+              entityId={album!.id!}
               entityType="album"
               profileMin={4}
               profileLimit={6}
             />
             <RelatedAlbums
               mode="artist"
-              artistId={album.artist?.id}
-              artistName={album.artist?.display_name}
-              albumId={album.id}
+              artistId={album!.artist?.id!}
+              artistName={album!.artist?.display_name!}
+              albumId={album!.id}
             />
 
-            <RelatedAlbums mode="related" albumId={album.id} />
+            <RelatedAlbums mode="related" albumId={album!.id} />
           </div>
         </div>
       </div>
@@ -159,7 +177,7 @@ const AlbumPage: React.FC = () => {
         <EditAlbumModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          album={album}
+          album={album!}
           onAlbumEdited={handleAlbumEdited}
         />
       )}

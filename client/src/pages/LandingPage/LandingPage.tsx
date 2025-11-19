@@ -4,13 +4,21 @@ import { LuSearch } from "react-icons/lu";
 import { SongCard, UploadPromptModal } from "@components";
 import { useAsyncData } from "@hooks";
 import { songApi } from "@api";
-import type { Song } from "@types";
+import { useAuth } from "@contexts";
+import type { AccessContext, Song } from "@types";
 import { Link } from "react-router-dom";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 import { getMainArtist } from "@util";
 
 const LandingPage: React.FC = () => {
+  const { user } = useAuth();
   const [showUploadModal, setShowUploadModal] = useState(false);
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
 
   // const singles = Array(4).fill({ // Using your original 'newSongs' data
   //   title: "New Release",
@@ -21,7 +29,8 @@ const LandingPage: React.FC = () => {
 
   const { data, loading, error } = useAsyncData(
     {
-      singles: () => songApi.getMany({ includeArtists: true, limit: 4 }),
+      singles: () =>
+        songApi.getMany(accessContext, { includeArtists: true, limit: 4 }),
     },
     [],
     { cacheKey: "landing_page" }

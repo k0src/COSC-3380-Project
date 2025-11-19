@@ -7,7 +7,7 @@ import type {
   ContextMenuEntity,
   ContextMenuEntityType,
 } from "@contexts";
-import type { UUID, Song } from "@types";
+import type { UUID, Song, AccessContext } from "@types";
 import { useAsyncData, useErrorCheck } from "@hooks";
 import { playlistApi } from "@api";
 import {
@@ -33,6 +33,12 @@ const PlaylistPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const songsRefetchRef = useRef<(() => void) | null>(null);
 
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "single",
+  };
+
   if (!id) {
     return (
       <ErrorPage
@@ -45,7 +51,7 @@ const PlaylistPage: React.FC = () => {
   const { data, loading, error, refetch } = useAsyncData(
     {
       playlist: () =>
-        playlistApi.getPlaylistById(id, {
+        playlistApi.getPlaylistById(id, accessContext, {
           includeUser: true,
           includeSongCount: true,
           includeLikes: true,
@@ -61,11 +67,13 @@ const PlaylistPage: React.FC = () => {
 
   const playlist = data?.playlist;
 
-  const fetchSongs = useCallback(
-    () =>
-      playlistApi.getSongs(id, { includeArtists: true, includeAlbums: true }),
-    [id]
-  );
+  const fetchSongs = useCallback(async () => {
+    const result = await playlistApi.getSongs(id, accessContext, {
+      includeArtists: true,
+      includeAlbums: true,
+    });
+    return result ?? [];
+  }, [id, accessContext]);
 
   const isOwner = useMemo(() => {
     if (!user || !isAuthenticated || !playlist) {
@@ -143,7 +151,8 @@ const PlaylistPage: React.FC = () => {
       message: "The requested playlist does not exist.",
     },
     {
-      condition: !!playlist && !playlist.is_public && !isOwner,
+      condition:
+        !!playlist && playlist.visibility_status === "PRIVATE" && !isOwner,
       title: "Playlist Not Found",
       message: "The requested playlist does not exist.",
     },
@@ -168,7 +177,7 @@ const PlaylistPage: React.FC = () => {
       <div className={styles.playlistLayout}>
         <div className={styles.playlistLayoutTop}>
           <PlaylistContainer
-            playlist={playlist}
+            playlist={playlist!}
             isOwner={isOwner}
             onEditButtonClick={handleEditPlaylist}
           />
@@ -176,13 +185,13 @@ const PlaylistPage: React.FC = () => {
             {playlist?.user && <PlaylistUser user={playlist.user} />}
             <PlaylistDescription
               description={playlist?.description}
-              updatedAt={playlist.updated_at}
+              updatedAt={playlist!.updated_at!}
             />
-            <PlaylistActions playlist={playlist} />
+            <PlaylistActions playlist={playlist!} />
           </div>
         </div>
         <div className={styles.playlistLayoutBottom}>
-          {(playlist.song_count ?? 0) > 0 ? (
+          {(playlist!.song_count ?? 0) > 0 ? (
             <SongsList
               fetchData={fetchSongs}
               cacheKey={`playlist_${id}_songs`}
@@ -197,20 +206,20 @@ const PlaylistPage: React.FC = () => {
           <div className={styles.suggestionsContainer}>
             <LikeProfiles
               title="Liked By"
-              entityId={playlist.id}
+              entityId={playlist!.id!}
               entityType="playlist"
               profileMin={4}
               profileLimit={6}
             />
-            {playlist.user?.id && (
+            {playlist!.user?.id && (
               <RelatedPlaylists
                 mode="user"
-                userId={playlist.user.id}
-                username={playlist.user.username}
-                playlistId={playlist.id}
+                userId={playlist!.user.id}
+                username={playlist!.user.username}
+                playlistId={playlist!.id}
               />
             )}
-            <RelatedPlaylists mode="related" playlistId={playlist.id} />
+            <RelatedPlaylists mode="related" playlistId={playlist!.id} />
           </div>
         </div>
       </div>
@@ -220,7 +229,7 @@ const PlaylistPage: React.FC = () => {
           mode="edit"
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          playlist={playlist}
+          playlist={playlist!}
           onPlaylistCreated={handlePlaylistEdited}
         />
       )}

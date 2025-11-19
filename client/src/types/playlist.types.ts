@@ -1,4 +1,4 @@
-import type { UUID, User } from "./index.js";
+import type { UUID, User, VisibilityStatus } from "./index.js";
 
 export interface Playlist {
   id: UUID;
@@ -7,7 +7,7 @@ export interface Playlist {
   created_by: UUID;
   created_at: string;
   updated_at: string;
-  is_public: boolean;
+  visibility_status: VisibilityStatus;
 
   song_count?: number;
   user?: User;
@@ -22,4 +22,22 @@ export interface Playlist {
 export interface LibraryPlaylist extends Playlist {
   is_pinned?: boolean;
   played_at?: string;
+}
+
+export type PlaylistOrderByColumn =
+  | "title"
+  | "created_at"
+  | "likes"
+  | "runtime"
+  | "songCount";
+
+export interface PlaylistOptions {
+  includeUser?: boolean;
+  includeLikes?: boolean;
+  includeRuntime?: boolean;
+  includeSongCount?: boolean;
+  orderByColumn?: PlaylistOrderByColumn;
+  orderByDirection?: "ASC" | "DESC";
+  limit?: number;
+  offset?: number;
 }
