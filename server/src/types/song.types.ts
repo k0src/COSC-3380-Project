@@ -5,8 +5,13 @@ import type {
   Artist,
   VisibilityStatus,
   OrderByDirection,
-  AccessContext,
 } from "./index.js";
+
+export interface WaveformData {
+  peaks: number[][];
+  channels: number;
+  duration: number;
+}
 
 export interface Song {
   id: UUID;
@@ -18,6 +23,7 @@ export interface Song {
   image_url?: string;
   image_url_blurhash?: string;
   audio_url: string;
+  waveform_data?: WaveformData;
   created_at: string;
   streams?: number;
   visibility_status: VisibilityStatus;

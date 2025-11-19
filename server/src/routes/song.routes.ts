@@ -1,7 +1,11 @@
 import express, { Request, Response } from "express";
 import { SongRepository as SongRepo } from "@repositories";
-import { handlePgError, getCoverGradient, parseAccessContext } from "@util";
-import type { AccessContext, SongOptions } from "@types";
+import {
+  handlePgError,
+  getCoverGradient,
+  parseAccessContext,
+  generateWaveform,
+} from "@util";
 import { parseForm } from "@infra/form-parser";
 import { CommentService, StatsService, LikeService } from "@services";
 import { validateOrderBy } from "@validators";
@@ -120,6 +124,14 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
         .status(400)
         .json({ error: 'Exactly one artist must have the "Main" role' });
       return;
+    }
+
+    if (songData._audioBuffer) {
+      const waveformData = await generateWaveform(songData._audioBuffer);
+      if (waveformData) {
+        songData.waveform_data = waveformData;
+      }
+      delete songData._audioBuffer;
     }
 
     const newSong = await SongRepo.create(songData);

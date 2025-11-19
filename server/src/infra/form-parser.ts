@@ -172,6 +172,7 @@ export function parseForm(
             }
 
             formData.duration = duration;
+            formData._audioBuffer = buffer;
           }
 
           const bufferStream = Readable.from(buffer);

@@ -7,6 +7,12 @@ import type {
   OrderByDirection,
 } from "./index.js";
 
+export interface WaveformData {
+  peaks: number[][];
+  channels: number;
+  duration: number;
+}
+
 export interface Song {
   id: UUID;
   owner_id: UUID;
@@ -17,6 +23,7 @@ export interface Song {
   image_url?: string;
   image_url_blurhash?: string;
   audio_url: string;
+  waveform_data?: WaveformData;
   created_at: string;
   streams?: number;
   visibility_status: VisibilityStatus;
@@ -31,7 +38,6 @@ export interface Song {
   type: "song";
 }
 
-// Extended types with additional fields for specifc contexts
 export interface PlaylistSong extends Song {
   added_at: string;
 }

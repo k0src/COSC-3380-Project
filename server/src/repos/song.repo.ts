@@ -24,6 +24,7 @@ export default class SongRepository {
     image_url,
     image_url_blurhash,
     audio_url,
+    waveform_data,
     visibility_status,
   }: {
     title: string;
@@ -36,6 +37,7 @@ export default class SongRepository {
     image_url?: string;
     image_url_blurhash?: string;
     audio_url: string;
+    waveform_data?: any;
     visibility_status?: string;
   }): Promise<Song | null> {
     try {
@@ -58,9 +60,10 @@ export default class SongRepository {
             image_url,
             image_url_blurhash,
             audio_url,
+            waveform_data,
             visibility_status
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
           RETURNING *`,
           [
             title,
@@ -71,6 +74,7 @@ export default class SongRepository {
             image_url,
             image_url_blurhash,
             audio_url,
+            waveform_data ? JSON.stringify(waveform_data) : null,
             visibility_status,
           ]
         );
@@ -142,6 +146,7 @@ export default class SongRepository {
       image_url,
       image_url_blurhash,
       audio_url,
+      waveform_data,
       visibility_status,
     }: {
       title?: string;
@@ -151,6 +156,7 @@ export default class SongRepository {
       image_url?: string;
       image_url_blurhash?: string;
       audio_url?: string;
+      waveform_data?: any;
       visibility_status?: string;
     }
   ): Promise<Song | null> {
@@ -192,6 +198,10 @@ export default class SongRepository {
       if (audio_url !== undefined) {
         fields.push(`audio_url = $${values.length + 1}`);
         values.push(audio_url);
+      }
+      if (waveform_data !== undefined) {
+        fields.push(`waveform_data = $${values.length + 1}`);
+        values.push(JSON.stringify(waveform_data));
       }
       if (visibility_status !== undefined) {
         fields.push(`visibility_status = $${values.length + 1}`);

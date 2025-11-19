@@ -16,12 +16,14 @@ const SKELETON_PADDING = 8;
 
 export interface WaveformPlayerProps {
   audioSrc: string;
+  waveformData?: { peaks: number[][]; channels: number; duration: number };
   onPlay?: () => void;
   disabled?: boolean;
 }
 
 const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
   audioSrc,
+  waveformData,
   onPlay,
   disabled,
 }) => {
@@ -116,7 +118,7 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
   useEffect(() => {
     if (!waveformRef.current || !audioSrc) return;
 
-    const loadAudioWithCORSBypass = async () => {
+    const loadAudio = async () => {
       try {
         const styles = getComputedStyle(document.documentElement);
         const accentColor = styles.getPropertyValue("--color-accent").trim();
@@ -147,32 +149,39 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
         const API_BASE = import.meta.env.VITE_API_URL || "/api";
         const proxyUrl = `${API_BASE}/proxy/audio/${filename}`;
 
-        const response = await fetch(proxyUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch audio: ${response.status}`);
+        // Use cached waveform data if available
+        if (waveformData?.peaks && waveformData?.duration) {
+          console.log("Using cached waveform data");
+          ws.load(proxyUrl, waveformData.peaks, waveformData.duration);
+        } else {
+          console.log("Generating waveform from audio file");
+          const response = await fetch(proxyUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch audio: ${response.status}`);
+          }
+
+          const arrayBuffer = await response.arrayBuffer();
+
+          const audioContext = new (window.AudioContext ||
+            (window as any).webkitAudioContext)();
+          const decodedData = await audioContext.decodeAudioData(arrayBuffer);
+
+          const channelsNumber = decodedData.numberOfChannels;
+          const peaks =
+            channelsNumber > 1
+              ? [decodedData.getChannelData(0), decodedData.getChannelData(1)]
+              : [decodedData.getChannelData(0)];
+          const duration = decodedData.duration;
+
+          ws.load(proxyUrl, peaks, duration);
         }
-
-        const arrayBuffer = await response.arrayBuffer();
-
-        const audioContext = new (window.AudioContext ||
-          (window as any).webkitAudioContext)();
-        const decodedData = await audioContext.decodeAudioData(arrayBuffer);
-
-        const channelsNumber = decodedData.numberOfChannels;
-        const peaks =
-          channelsNumber > 1
-            ? [decodedData.getChannelData(0), decodedData.getChannelData(1)]
-            : [decodedData.getChannelData(0)];
-        const duration = decodedData.duration;
-
-        ws.load(proxyUrl, peaks, duration);
       } catch (error) {
         console.error("Failed to load audio:", error);
         handleError(error);
       }
     };
 
-    loadAudioWithCORSBypass();
+    loadAudio();
 
     return () => {
       if (wavesurferRef.current) {
@@ -181,7 +190,7 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
         wavesurferRef.current.destroy();
       }
     };
-  }, [audioSrc, handleReady, handleError, hoverPlugin]);
+  }, [audioSrc, waveformData, handleReady, handleError, hoverPlugin]);
 
   useEffect(() => {
     const ws = wavesurferRef.current;

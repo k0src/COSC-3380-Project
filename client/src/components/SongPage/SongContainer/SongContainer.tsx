@@ -129,7 +129,11 @@ const SongContainer: React.FC<SongContainerProps> = ({
           )}
         </div>
         {song.audio_url && (
-          <WaveformPlayer audioSrc={song.audio_url} onPlay={handlePlay} />
+          <WaveformPlayer
+            audioSrc={song.audio_url}
+            waveformData={song.waveform_data}
+            onPlay={handlePlay}
+          />
         )}
       </div>
 
