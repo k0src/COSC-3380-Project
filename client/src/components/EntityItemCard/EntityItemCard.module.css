@@ -62,7 +62,6 @@
 
 .entityTitle,
 .entityAuthor,
-.entitySubtitle,
 .entitySubtitle {
   text-overflow: ellipsis;
   white-space: nowrap;

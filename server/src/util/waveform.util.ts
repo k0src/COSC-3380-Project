@@ -110,12 +110,6 @@ export async function generateWaveform(
       duration: duration,
     };
 
-    console.log(
-      `Waveform generated: ${
-        waveformData.channels
-      } channels, ${duration.toFixed(2)}s, ${leftChannel.length} points`
-    );
-
     return waveformData;
   } catch (error) {
     console.error("Error generating waveform:", error);

@@ -7,3 +7,5 @@ export { default as songRoutes } from "./song.routes.js";
 export { default as userRoutes } from "./user.routes.js";
 export { default as searchRoutes } from "./search.routes.js";
 export { default as reportRoutes } from "./report.routes.js";
+export { default as statsRoutes } from "./stats.routes.js";
+export { default as commentRoutes } from "./comment.routes.js";

@@ -1,0 +1,54 @@
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.viewMoreLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray) !important;
+  text-decoration: none;
+  transition: color var(--transition-speed) ease;
+}
+
+.viewMoreLink:hover {
+  color: var(--color-white) !important;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.sectionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: var(--loader-height-sm);
+}
+
+.error {
+  text-align: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
+
+.releaseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--spacing-md);
+}

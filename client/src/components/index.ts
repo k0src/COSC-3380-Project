@@ -11,10 +11,6 @@ export { default as MainLayoutNowPlayingBar } from "./MainLayout/MainLayoutNowPl
 export { default as QueueManager } from "./MainLayout/QueueManager/QueueManager.js";
 export { default as NotificationModal } from "./MainLayout/NotificationModal/NotificationModal.js";
 
-/* ============================== Artist Layout ============================= */
-export { default as ArtistLayout } from "./ArtistLayout/ArtistLayout.js";
-export { default as ArtistLayoutSidebar } from "./ArtistLayout/ArtistLayoutSidebar/ArtistLayoutSidebar.js";
-
 /* ================================= Routes ================================= */
 export { default as ProtectedRoute } from "./ProtectedRoute/ProtectedRoute.js";
 export { default as AppLayout } from "./AppLayout/AppLayout.js";
@@ -111,6 +107,14 @@ export { default as SettingsCheckbox } from "./SettingsPage/SettingsCheckbox/Set
 export { default as ChangePasswordModal } from "./SettingsPage/ChangePasswordModal/ChangePasswordModal.js";
 export { default as ConfirmationModal } from "./SettingsPage/ConfirmationModal/ConfirmationModal.js";
 
+/* ============================ Artist Dashboard ============================ */
+export { default as ArtistLayoutSidebar } from "./ArtistDashboard/ArtistLayoutSidebar/ArtistLayoutSidebar.js";
+export { default as ArtistDashboardHero } from "./ArtistDashboard/ArtistDashboardHero/ArtistDashboardHero.js";
+export { default as ArtistDashboardStreamsChart } from "./ArtistDashboard/ArtistDashboardStreamsChart/ArtistDashboardStreamsChart.js";
+export { default as ArtistDashboardRecentReleases } from "./ArtistDashboard/ArtistDashboardRecentReleases/ArtistDashboardRecentReleases.js";
+export { default as ArtistEntityCard } from "./ArtistDashboard/ArtistEntityCard/ArtistEntityCard.js";
+export { default as ArtistDashboardComments } from "./ArtistDashboard/ArtistDashboardComments/ArtistDashboardComments.js";
+
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";
 export { default as FollowProfiles } from "./FollowProfiles/FollowProfiles.js";
@@ -136,6 +140,7 @@ export { default as ReportModal } from "./ReportModal/ReportModal.js";
 /* =============================== Page States ============================== */
 export { default as PageLoader } from "./PageLoader/PageLoader.js";
 export { default as ErrorPage } from "./ErrorPage/ErrorPage.js";
+export { default as ErrorPageBig } from "./ErrorPageBig/ErrorPageBig.js";
 export { default as ErrorBoundary } from "./ErrorBoundary/ErrorBoundary.js";
 
 /* ================================ Dev Tools =============================== */

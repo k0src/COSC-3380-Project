@@ -6,7 +6,6 @@
   padding: var(--spacing-lg);
   background: var(--container-gradient-bg);
   border-radius: var(--border-radius-sm);
-  position: relative;
   min-width: 0;
   width: 100%;
   max-width: 50rem;

@@ -1,0 +1,211 @@
+.sectionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.viewMoreLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray) !important;
+  text-decoration: none;
+  transition: color var(--transition-speed) ease;
+}
+
+.viewMoreLink:hover {
+  color: var(--color-white) !important;
+}
+
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20rem;
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.error {
+  text-align: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-lg);
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: var(--border-size-md) solid var(--color-panel-border);
+  min-height: 20rem;
+}
+
+.noDataContainer {
+  text-align: center;
+  padding: var(--spacing-lg);
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 20rem;
+  border: var(--border-size-md) solid var(--color-panel-border);
+}
+
+.noDataMessage {
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
+
+.tableContainer {
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  border: var(--border-size-md) solid var(--color-panel-border);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.thead {
+  background: var(--color-panel-gray-hover);
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
+}
+
+.sortOption {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  transition: color var(--transition-speed) ease;
+  width: fit-content;
+}
+
+.sortOption:hover {
+  color: var(--color-white);
+}
+
+.th {
+  padding: var(--spacing-sd) var(--spacing-md);
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-white-alt);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tbody {
+  background: transparent;
+}
+
+.tr {
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
+  transition: background-color var(--transition-speed) ease;
+}
+
+.tr:last-child {
+  border-bottom: none;
+}
+
+.tr:hover {
+  background: var(--color-panel-gray-hover);
+}
+
+.td {
+  padding: var(--spacing-sd) var(--spacing-md);
+  color: var(--color-text-gray);
+  vertical-align: middle;
+}
+
+.tdCenter {
+  padding: var(--spacing-sd) var(--spacing-md);
+  color: var(--color-text-gray);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.songLink {
+  color: var(--color-white) !important;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-speed) ease;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.songLink:hover {
+  color: var(--color-accent) !important;
+}
+
+.userLink {
+  color: var(--color-white-alt) !important;
+  text-decoration: none;
+  transition: color var(--transition-speed) ease;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userLink:hover {
+  color: var(--color-accent) !important;
+}
+
+.commentText {
+  color: var(--color-text-gray);
+  display: block;
+  max-width: 52rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+
+.likesCount {
+  color: var(--color-white-alt);
+  font-weight: 500;
+}
+
+.deleteButton {
+  align-items: center;
+  padding: var(--spacing-xsd);
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--color-text-gray);
+  cursor: pointer;
+  transition: color var(--transition-speed) ease;
+  font-size: var(--icon-size-sm);
+}
+
+.deleteButton:hover:not(:disabled) {
+  color: var(--color-red-ui);
+}
+
+.deleteButton:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}

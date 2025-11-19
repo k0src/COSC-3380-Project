@@ -225,4 +225,53 @@ export default class CommentService {
       throw error;
     }
   }
+
+  /**
+   * Fetches all comments on an artist's songs
+   * @param artistId The ID of the artist
+   * @param limit Maximum number of comments to return
+   * @returns An array of comments with song title, username, and likes
+   * @throws Error if the operation fails.
+   */
+  static async getCommentsByArtistId(
+    artistId: UUID,
+    limit: number = 10
+  ): Promise<any[]> {
+    try {
+      const sql = `
+        SELECT 
+          c.id,
+          c.comment_text,
+          c.commented_at,
+          c.song_id,
+          s.title AS song_title,
+          u.id AS user_id,
+          u.username,
+          u.profile_picture_url,
+          COALESCE(COUNT(cl.comment_id), 0) AS likes
+        FROM comments c
+        JOIN songs s ON c.song_id = s.id
+        JOIN song_artists sa ON s.id = sa.song_id
+        JOIN users u ON c.user_id = u.id
+        LEFT JOIN comment_likes cl ON c.id = cl.comment_id
+        WHERE sa.artist_id = $1
+        GROUP BY c.id, s.title, u.id, u.username, u.profile_picture_url
+        ORDER BY c.commented_at DESC
+        LIMIT $2
+      `;
+
+      const comments = await query(sql, [artistId, limit]);
+
+      for (const comment of comments) {
+        if (comment.profile_picture_url) {
+          comment.profile_picture_url = getBlobUrl(comment.profile_picture_url);
+        }
+      }
+
+      return comments;
+    } catch (error) {
+      console.error("Error fetching artist comments:", error);
+      throw error;
+    }
+  }
 }

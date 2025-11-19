@@ -13,7 +13,7 @@
 .sidebarTop {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xl);
+  gap: var(--spacing-2xl);
 }
 
 .sidebarBottom {
@@ -48,12 +48,32 @@
 .sidebarLink {
   display: flex;
   align-items: center;
+  gap: var(--spacing-md);
   color: var(--color-text-gray) !important;
-  border-radius: var(--border-radius-md);
   transition: color var(--transition-speed) ease-in-out;
 }
 
 .sidebarLink:hover {
+  color: var(--color-white) !important;
+}
+
+.sidebarLink:hover .sidebarText {
+  color: var(--color-white) !important;
+}
+
+.sidebarText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray) !important;
+}
+
+.sidebarLinkActive {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  color: var(--color-white) !important;
+}
+
+.sidebarLinkActive .sidebarText {
   color: var(--color-white) !important;
 }
 
@@ -80,7 +100,7 @@
 .artistLinkContainer {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-sd);
 }
 
 .artistProfileImg {

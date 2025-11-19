@@ -10,6 +10,7 @@ export { searchApi } from "./search.api.js";
 export { libraryApi } from "./library.api.js";
 export { notificationsApi } from "./notifications.api.js";
 export { reportApi } from "./report.api.js";
+export { statsApi } from "./stats.api.js";
 
 export type {
   SignupData,

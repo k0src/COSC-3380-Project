@@ -1,0 +1,70 @@
+.artistEntityCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sd);
+  min-width: 0;
+  width: 18rem;
+  transition: all var(--transition-speed) ease;
+}
+
+.artistEntityCard:hover .entityTitle {
+  color: var(--color-accent);
+}
+
+.imageContainer {
+  width: 18rem;
+  height: 18rem;
+  flex-shrink: 0;
+}
+
+.entityImage {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--border-radius-sm);
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  box-shadow: var(--shadow-sd);
+}
+
+.entityInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  width: 100%;
+}
+
+.entitySubtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  font-weight: 500;
+}
+
+.entityTitle {
+  font-size: var(--font-size-md);
+  color: var(--color-white);
+  font-weight: 500;
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.entityType {
+  padding: var(--spacing-sm) var(--spacing-sd);
+  background-color: var(--color-panel-gray);
+  border-radius: var(--border-radius-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-white-alt);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: fit-content;
+  margin-top: var(--spacing-2xs);
+}
+
+.entityTitle,
+.entitySubtitle {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+}

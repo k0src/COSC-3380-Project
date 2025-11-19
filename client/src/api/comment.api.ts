@@ -24,4 +24,9 @@ export const commentApi = {
     });
     return response.data;
   },
+
+  async deleteComment(commentId: UUID) {
+    const response = await api.delete(`/comments/${commentId}`);
+    return response.data;
+  },
 };

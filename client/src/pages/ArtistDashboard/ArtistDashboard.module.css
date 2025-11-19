@@ -1,0 +1,127 @@
+body {
+  font-family: var(--font-main);
+  background-color: var(--color-black);
+  color: var(--color-white);
+  font-size: var(--font-size-md);
+}
+
+/* Layout Container */
+.layoutContainer {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  padding: var(--spacing-sm);
+}
+
+/* Main Content */
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-left: var(--spacing-sm);
+  position: relative;
+}
+
+/* Content Area */
+.contentArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-xl) calc(var(--spacing-xl) - var(--spacing-sm))
+    calc(var(--now-playing-height) + var(--spacing-xl))
+    calc(var(--spacing-xl) - var(--spacing-sm));
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0;
+  }
+
+  .mainContent {
+    padding-left: 0;
+  }
+}
+
+.adLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+  min-height: 100%;
+  position: relative;
+}
+
+.adHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.adTitle {
+  font-size: var(--font-size-2xl);
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.adHeaderButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray) !important;
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.adHeaderButton:hover {
+  color: var(--color-white) !important;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.viewMoreLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray) !important;
+  text-decoration: none;
+  transition: color var(--transition-speed) ease;
+}
+
+.viewMoreLink:hover {
+  color: var(--color-white) !important;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.sectionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.contentAreaBottom {
+  display: grid;
+  grid-template-columns: 2.5fr 1fr;
+  column-gap: var(--layout-gap-hor);
+  row-gap: var(--layout-gap-ver);
+  min-height: 100%;
+}
+
+.contentAreaBottomLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+}

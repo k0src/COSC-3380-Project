@@ -149,12 +149,9 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
         const API_BASE = import.meta.env.VITE_API_URL || "/api";
         const proxyUrl = `${API_BASE}/proxy/audio/${filename}`;
 
-        // Use cached waveform data if available
         if (waveformData?.peaks && waveformData?.duration) {
-          console.log("Using cached waveform data");
           ws.load(proxyUrl, waveformData.peaks, waveformData.duration);
         } else {
-          console.log("Generating waveform from audio file");
           const response = await fetch(proxyUrl);
           if (!response.ok) {
             throw new Error(`Failed to fetch audio: ${response.status}`);
