@@ -26,9 +26,14 @@ export const statsApi = {
     return response.data;
   },
 
-  async getArtistComments(artistId: UUID, limit: number = 10) {
+  async getArtistComments(
+    artistId: UUID,
+    limit: number = 10,
+    orderBy: string = "commented_at",
+    orderDirection: "ASC" | "DESC" = "DESC"
+  ) {
     const response = await api.get(`/stats/artists/${artistId}/comments`, {
-      params: { limit },
+      params: { limit, orderBy, orderDirection },
     });
     return response.data;
   },

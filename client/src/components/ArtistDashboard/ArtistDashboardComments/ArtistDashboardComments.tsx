@@ -26,6 +26,9 @@ interface ArtistComment {
   likes: number;
 }
 
+type SortColumn = "song_title" | "username" | "commented_at" | "likes";
+type SortDirection = "ASC" | "DESC";
+
 const ArtistDashboardComments: React.FC<ArtistDashboardCommentsProps> = ({
   artistId,
   maxItems = 10,
@@ -33,19 +36,39 @@ const ArtistDashboardComments: React.FC<ArtistDashboardCommentsProps> = ({
   const [deletingId, setDeletingId] = useState<UUID | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<UUID | null>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("commented_at");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("DESC");
 
   const { data, loading, error, refetch } = useAsyncData(
     {
-      comments: () => statsApi.getArtistComments(artistId, maxItems),
+      comments: () =>
+        statsApi.getArtistComments(
+          artistId,
+          maxItems,
+          sortColumn,
+          sortDirection
+        ),
     },
-    [artistId, maxItems],
+    [artistId, maxItems, sortColumn, sortDirection],
     {
-      cacheKey: `artist_comments_${artistId}_${maxItems}`,
+      cacheKey: `artist_comments_${artistId}_${maxItems}_${sortColumn}_${sortDirection}`,
       enabled: !!artistId,
     }
   );
 
   const comments = (data?.comments || []) as ArtistComment[];
+
+  const handleSort = useCallback(
+    (column: SortColumn) => {
+      if (sortColumn === column) {
+        setSortDirection((prev) => (prev === "ASC" ? "DESC" : "ASC"));
+      } else {
+        setSortColumn(column);
+        setSortDirection("DESC");
+      }
+    },
+    [sortColumn]
+  );
 
   const handleDeleteClick = useCallback((commentId: UUID) => {
     setCommentToDelete(commentId);
@@ -134,30 +157,44 @@ const ArtistDashboardComments: React.FC<ArtistDashboardCommentsProps> = ({
           <thead className={styles.thead}>
             <tr>
               <th className={styles.th}>
-                <div className={styles.sortOption}>
+                <button
+                  className={styles.sortButton}
+                  onClick={() => handleSort("song_title")}
+                >
                   <span>Song</span>
-                  <LuArrowUpDown />
-                </div>
+                  <LuArrowUpDown
+                    className={
+                      sortColumn === "song_title" ? styles.sortActive : ""
+                    }
+                  />
+                </button>
               </th>
               <th className={styles.th}>
-                <div className={styles.sortOption}>
+                <button
+                  className={styles.sortButton}
+                  onClick={() => handleSort("username")}
+                >
                   <span>User</span>
-                  <LuArrowUpDown />
-                </div>
+                  <LuArrowUpDown
+                    className={
+                      sortColumn === "username" ? styles.sortActive : ""
+                    }
+                  />
+                </button>
               </th>
+              <th className={styles.th}>Comment</th>
               <th className={styles.th}>
-                <div className={styles.sortOption}>
-                  <span>Comment</span>
-                  <LuArrowUpDown />
-                </div>
-              </th>
-              <th className={styles.th}>
-                <div className={styles.sortOption}>
+                <button
+                  className={styles.sortButton}
+                  onClick={() => handleSort("likes")}
+                >
                   <span>Likes</span>
-                  <LuArrowUpDown />
-                </div>
+                  <LuArrowUpDown
+                    className={sortColumn === "likes" ? styles.sortActive : ""}
+                  />
+                </button>
               </th>
-              <th className={styles.th}></th>
+              <th className={styles.th}>Actions</th>
             </tr>
           </thead>
           <tbody className={styles.tbody}>

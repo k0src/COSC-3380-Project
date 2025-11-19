@@ -91,7 +91,7 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
-      const { limit } = req.query;
+      const { limit, orderBy, orderDirection } = req.query;
 
       if (!artistId) {
         res.status(400).json({ error: "Artist ID is required" });
@@ -101,7 +101,9 @@ router.get(
       const limitNum = limit ? parseInt(limit as string, 10) : 10;
       const comments = await CommentService.getCommentsByArtistId(
         artistId,
-        limitNum
+        limitNum,
+        orderBy as string,
+        orderDirection as string
       );
       res.status(200).json(comments);
     } catch (error: any) {

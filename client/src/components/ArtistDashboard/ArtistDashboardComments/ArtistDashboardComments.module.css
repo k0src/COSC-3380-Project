@@ -92,16 +92,25 @@
   border-bottom: var(--border-size-sm) solid var(--color-panel-border);
 }
 
-.sortOption {
+.sortButton {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
   cursor: pointer;
   transition: color var(--transition-speed) ease;
   width: fit-content;
+  background: none;
+  border: none;
+  font-family: var(--font-main);
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-white-alt);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.sortOption:hover {
+.sortButton:hover {
   color: var(--color-white);
 }
 
