@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   MainLayoutHeader,
   MainLayoutNowPlayingBar,
@@ -18,4 +19,4 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
-export default MainLayout;
+export default memo(MainLayout);

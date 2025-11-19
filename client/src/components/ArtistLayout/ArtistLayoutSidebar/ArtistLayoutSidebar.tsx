@@ -1,9 +1,11 @@
 import { memo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { BarLoader } from "react-spinners";
 import { useAuth } from "@contexts";
-import { isWeb } from "@util";
-import styles from "./MainLayoutSidebar.module.css";
-import Logo from "@assets/logo.svg?react";
+import { useAsyncData } from "@hooks";
+import { artistApi } from "@api";
+import { LazyImg } from "@components";
+import styles from "./ArtistLayoutSidebar.module.css";
 import {
   LuListMusic,
   LuLibrary,
@@ -12,12 +14,28 @@ import {
   LuHistory,
   LuLogOut,
   LuUpload,
-  LuAppWindowMac,
+  LuChevronRight,
 } from "react-icons/lu";
+import Logo from "@assets/logo.svg?react";
+import artistPlaceholder from "@assets/artist-placeholder.webp";
 
-const MainLayoutSidebar: React.FC = () => {
+const ArtistLayoutSidebar: React.FC = () => {
   const { logout, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const artistId = user?.artist_id;
+
+  const { data, loading } = useAsyncData(
+    {
+      artist: () => artistApi.getArtistById(artistId!),
+    },
+    [artistId!],
+    {
+      cacheKey: `artist_layout_${artistId}`,
+      enabled: !!artistId,
+    }
+  );
+
+  const artist = data?.artist;
 
   const handleLogout = useCallback(async () => {
     try {
@@ -28,21 +46,34 @@ const MainLayoutSidebar: React.FC = () => {
     }
   }, [logout, navigate]);
 
-  const handleDownloadApp = useCallback(() => {
-    window.open(
-      "https://github.com/k0src/COSC-3380-Project/releases/latest",
-      "_blank"
-    );
-  }, []);
-
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarTop}>
-        <div className={styles.sidebarLogo}>
-          <Logo className={styles.logoImage} />
+        <div className={styles.artistLinkContainer}>
+          <LazyImg
+            src={user?.profile_picture_url || artistPlaceholder}
+            alt="Artist Profile"
+            imgClassNames={[styles.artistProfileImg]}
+            blurHash={user?.pfp_blurhash}
+          />
+          {loading ? (
+            <div className={styles.loaderContainer}>
+              <BarLoader color="var(--color-accent)" />
+            </div>
+          ) : (
+            <div className={styles.artistNameContainer}>
+              <span className={styles.artistName}>{artist?.display_name}</span>
+              <Link
+                className={styles.artistPageLink}
+                to={`/artists/${user?.artist_id}`}
+              >
+                View Artist Page <LuChevronRight />
+              </Link>
+            </div>
+          )}
         </div>
         <nav className={styles.sidebarNav}>
-          <Link to="/library" className={styles.sidebarLink}>
+          <Link to="/artist-dashboard/???" className={styles.sidebarLink}>
             <LuLibrary className={styles.sidebarIcon} />
           </Link>
           <Link to="/library/playlists" className={styles.sidebarLink}>
@@ -67,11 +98,10 @@ const MainLayoutSidebar: React.FC = () => {
         </nav>
       </div>
       <div className={styles.sidebarBottom}>
-        {isWeb && (
-          <button onClick={handleDownloadApp} className={styles.logoutButton}>
-            <LuAppWindowMac className={styles.sidebarIcon} />
-          </button>
-        )}
+        <div className={styles.sidebarLogo}>
+          <Logo className={styles.logoImage} />
+          <span className={styles.logoText}>Artists</span>
+        </div>
         {isAuthenticated && (
           <button onClick={handleLogout} className={styles.logoutButton}>
             <LuLogOut className={styles.sidebarIcon} />
@@ -82,4 +112,4 @@ const MainLayoutSidebar: React.FC = () => {
   );
 };
 
-export default memo(MainLayoutSidebar);
+export default memo(ArtistLayoutSidebar);

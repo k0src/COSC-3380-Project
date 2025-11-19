@@ -106,6 +106,7 @@ html {
   --sidebar-width: 8rem;
   --header-height: 6.4rem;
   --now-playing-height: 9.6rem;
+  --artist-sidebar-width: 24rem;
 
   /* Spacing */
   --spacing-2xs: 0.2rem;

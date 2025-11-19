@@ -1,4 +1,9 @@
-import type { UUID, User, VisibilityStatus } from "./index.js";
+import type {
+  UUID,
+  User,
+  VisibilityStatus,
+  OrderByDirection,
+} from "./index.js";
 
 export interface Playlist {
   id: UUID;
@@ -37,7 +42,7 @@ export interface PlaylistOptions {
   includeRuntime?: boolean;
   includeSongCount?: boolean;
   orderByColumn?: PlaylistOrderByColumn;
-  orderByDirection?: "ASC" | "DESC";
+  orderByDirection?: OrderByDirection;
   limit?: number;
   offset?: number;
 }

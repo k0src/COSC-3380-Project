@@ -11,6 +11,10 @@ export { default as MainLayoutNowPlayingBar } from "./MainLayout/MainLayoutNowPl
 export { default as QueueManager } from "./MainLayout/QueueManager/QueueManager.js";
 export { default as NotificationModal } from "./MainLayout/NotificationModal/NotificationModal.js";
 
+/* ============================== Artist Layout ============================= */
+export { default as ArtistLayout } from "./ArtistLayout/ArtistLayout.js";
+export { default as ArtistLayoutSidebar } from "./ArtistLayout/ArtistLayoutSidebar/ArtistLayoutSidebar.js";
+
 /* ================================= Routes ================================= */
 export { default as ProtectedRoute } from "./ProtectedRoute/ProtectedRoute.js";
 export { default as AppLayout } from "./AppLayout/AppLayout.js";

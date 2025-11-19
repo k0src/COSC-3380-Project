@@ -1,0 +1,137 @@
+.sidebar {
+  width: var(--artist-sidebar-width);
+  background-color: var(--color-panel-gray);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  z-index: 100;
+}
+
+.sidebarTop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.sidebarBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.sidebarLogo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sd);
+}
+
+.logoText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}
+
+.logoImage {
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.sidebarLink {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-gray) !important;
+  border-radius: var(--border-radius-md);
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.sidebarLink:hover {
+  color: var(--color-white) !important;
+}
+
+.sidebarIcon {
+  font-size: var(--icon-size-md);
+}
+
+.logoutButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-gray) !important;
+  border-radius: var(--border-radius-md);
+  transition: color var(--transition-speed) ease-in-out;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.logoutButton:hover {
+  color: var(--color-white) !important;
+}
+
+.artistLinkContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.artistProfileImg {
+  width: 4.8rem;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sd);
+}
+
+.artistNameContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+  min-width: 0;
+}
+
+.artistName {
+  font-size: var(--font-size-md);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.artistPageLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray) !important;
+  text-decoration: none;
+  transition: color var(--transition-speed) ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.artistPageLink:hover {
+  color: var(--color-white) !important;
+}
+
+.loaderContainer {
+  display: flex;
+  z-index: 9999;
+  opacity: 0.8;
+  padding: 0 var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}

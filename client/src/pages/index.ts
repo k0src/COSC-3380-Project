@@ -21,3 +21,5 @@ export { default as SettingsPage } from "./AccountPage/SettingsPage/SettingsPage
 export { default as UploadPage } from "./UploadPage/UploadPage.js";
 
 export { default as SearchResultsPage } from "./SearchResultsPage/SearchResultsPage.js";
+
+export { default as ArtistDashboard } from "./ArtistDashboard/ArtistDashboard.js";

@@ -1,6 +1,12 @@
 import { Routes, Route } from "react-router-dom";
 import * as Pages from "./pages";
-import { AppLayout, MainLayout, MeWrapper } from "@components";
+import {
+  AppLayout,
+  MainLayout,
+  MeWrapper,
+  ProtectedRoute,
+  ArtistLayout,
+} from "@components";
 import { useAuth } from "@contexts";
 
 export default function AppRoutes() {
@@ -114,7 +120,24 @@ export default function AppRoutes() {
                 </MainLayout>
               }
             />
-            <Route path="/upload" element={<Pages.UploadPage />} />
+            <Route
+              path="/upload"
+              element={
+                <ProtectedRoute>
+                  <Pages.UploadPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/artist-dashboard"
+              element={
+                <ProtectedRoute>
+                  <ArtistLayout>
+                    <Pages.ArtistDashboard />
+                  </ArtistLayout>
+                </ProtectedRoute>
+              }
+            />
           </Route>
         </Routes>
       )}

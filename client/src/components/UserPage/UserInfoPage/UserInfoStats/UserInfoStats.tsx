@@ -32,7 +32,7 @@ const UserInfoStats: React.FC<{ userId: UUID }> = ({ userId }) => {
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
-        <BarLoader color="#D53131" />
+        <BarLoader color="var(--color-accent)" />
       </div>
     );
   }
