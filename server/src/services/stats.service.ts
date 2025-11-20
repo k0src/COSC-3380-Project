@@ -1,6 +1,11 @@
 import type { UUID, WeeklyPlays, Song } from "@types";
 import { query } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const API_URL = process.env.API_URL;
 
 interface ArtistQuickStats {
   listeners: number;
@@ -172,6 +177,132 @@ export default class StatsService {
       return result.map((row) => parseInt(row.streams) || 0);
     } catch (error) {
       console.error("Error retrieving artist daily streams:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get top performing songs for an artist
+   */
+  static async getArtistTopSongs(
+    artistId: UUID,
+    days: number = 30,
+    limit: number = 5
+  ): Promise<Song[]> {
+    try {
+      const result = await query(
+        `WITH song_plays AS (
+          SELECT 
+            s.id,
+            COUNT(sh.song_id) AS recent_plays
+          FROM songs s
+          JOIN song_artists sa ON s.id = sa.song_id
+          LEFT JOIN song_history sh ON s.id = sh.song_id 
+            AND sh.played_at >= NOW() - INTERVAL '1 day' * $2
+          WHERE sa.artist_id = $1
+          GROUP BY s.id
+        )
+        SELECT 
+          s.*
+        FROM songs s
+        JOIN song_plays sp ON s.id = sp.id
+        WHERE sp.recent_plays > 0
+        ORDER BY sp.recent_plays DESC, s.streams DESC
+        LIMIT $3`,
+        [artistId, days, limit]
+      );
+
+      return result.map((song) => {
+        if (song.image_url) {
+          song.image_url = getBlobUrl(song.image_url);
+        }
+        if (song.audio_url) {
+          song.audio_url = getBlobUrl(song.audio_url);
+        }
+        song.type = "song";
+        return song as Song;
+      });
+    } catch (error) {
+      console.error("Error retrieving artist top songs:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get top playlists containing an artist's songs
+   */
+  static async getArtistTopPlaylists(
+    artistId: UUID,
+    days: number = 30,
+    limit: number = 5
+  ): Promise<any[]> {
+    try {
+      const result = await query(
+        `WITH artist_songs AS (
+          SELECT s.id
+          FROM songs s
+          JOIN song_artists sa ON s.id = sa.song_id
+          WHERE sa.artist_id = $1
+        ),
+        playlist_plays AS (
+          SELECT 
+            p.id,
+            COUNT(ph.playlist_id) AS total_plays
+          FROM playlists p
+          JOIN playlist_songs ps ON p.id = ps.playlist_id
+          JOIN artist_songs asongs ON ps.song_id = asongs.id
+          LEFT JOIN playlist_history ph ON p.id = ph.playlist_id
+            AND ph.played_at >= NOW() - INTERVAL '1 day' * $2
+          GROUP BY p.id
+        )
+        SELECT 
+          p.*,
+          COALESCE(pp.total_plays, 0) AS total_streams,
+          COUNT(DISTINCT pl.user_id) AS likes,
+          COUNT(DISTINCT ps.song_id) AS song_count
+        FROM playlists p
+        JOIN playlist_plays pp ON p.id = pp.id
+        LEFT JOIN playlist_likes pl ON p.id = pl.playlist_id
+        LEFT JOIN playlist_songs ps ON p.id = ps.playlist_id
+        WHERE pp.total_plays > 0
+        GROUP BY p.id, pp.total_plays
+        ORDER BY pp.total_plays DESC
+        LIMIT $3`,
+        [artistId, days, limit]
+      );
+
+      return result.map((playlist) => {
+        if (playlist.image_url) {
+          playlist.image_url = getBlobUrl(playlist.image_url);
+        } else {
+          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+        }
+        playlist.type = "playlist";
+        return playlist;
+      });
+    } catch (error) {
+      console.error("Error retrieving artist top playlists:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if an artist has any songs
+   */
+  static async checkArtistHasSongs(artistId: UUID): Promise<boolean> {
+    try {
+      const result = await query(
+        `SELECT EXISTS(
+          SELECT 1
+          FROM song_artists
+          WHERE artist_id = $1
+        ) AS has_songs`,
+        [artistId]
+      );
+
+      return result[0]?.has_songs || false;
+    } catch (error) {
+      console.error("Error checking if artist has songs:", error);
       throw error;
     }
   }

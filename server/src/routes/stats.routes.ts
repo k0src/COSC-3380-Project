@@ -84,4 +84,87 @@ router.get(
   }
 );
 
+// GET /api/stats/artists/:artistId/top-songs
+router.get(
+  "/artists/:artistId/top-songs",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { artistId } = req.params;
+      const { days, limit } = req.query;
+
+      if (!artistId) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const daysNum = days ? parseInt(days as string, 10) : 30;
+      const limitNum = limit ? parseInt(limit as string, 10) : 5;
+      const topSongs = await StatsService.getArtistTopSongs(
+        artistId,
+        daysNum,
+        limitNum
+      );
+      res.status(200).json(topSongs);
+    } catch (error: any) {
+      console.error("Error in GET /stats/artists/:artistId/top-songs:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
+// GET /api/stats/artists/:artistId/top-playlists
+router.get(
+  "/artists/:artistId/top-playlists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { artistId } = req.params;
+      const { days, limit } = req.query;
+
+      if (!artistId) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const daysNum = days ? parseInt(days as string, 10) : 30;
+      const limitNum = limit ? parseInt(limit as string, 10) : 5;
+      const topPlaylists = await StatsService.getArtistTopPlaylists(
+        artistId,
+        daysNum,
+        limitNum
+      );
+      res.status(200).json(topPlaylists);
+    } catch (error: any) {
+      console.error(
+        "Error in GET /stats/artists/:artistId/top-playlists:",
+        error
+      );
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
+// GET /api/stats/artists/:artistId/has-songs
+router.get(
+  "/artists/:artistId/has-songs",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { artistId } = req.params;
+
+      if (!artistId) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const hasSongs = await StatsService.checkArtistHasSongs(artistId);
+      res.status(200).json({ hasSongs });
+    } catch (error: any) {
+      console.error("Error in GET /stats/artists/:artistId/has-songs:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 export default router;

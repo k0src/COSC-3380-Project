@@ -82,7 +82,7 @@ const ArtistDashboardStreamsChart: React.FC<
   return (
     <div className={styles.sectionContainer}>
       <div className={styles.sectionHeader}>
-        <span className={styles.sectionTitle}>Streams (Last 30 days)</span>
+        <span className={styles.sectionTitle}>Streams This Month</span>
         <Link to="/artist-dashboard/stats" className={styles.viewMoreLink}>
           View More
         </Link>

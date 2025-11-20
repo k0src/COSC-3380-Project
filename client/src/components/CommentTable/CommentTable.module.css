@@ -185,7 +185,7 @@
   text-decoration: none;
   font-weight: 500;
   transition: color var(--transition-speed) ease;
-  max-width: 200px;
+  max-width: 20rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -199,7 +199,7 @@
   color: var(--color-white-alt) !important;
   text-decoration: none;
   transition: color var(--transition-speed) ease;
-  max-width: 150px;
+  max-width: 16rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

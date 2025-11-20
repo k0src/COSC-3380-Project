@@ -37,4 +37,35 @@ export const statsApi = {
     });
     return response.data;
   },
+
+  async getArtistTopSongs(
+    artistId: UUID,
+    options: { timeRange?: string; limit?: number } = {}
+  ) {
+    const { timeRange = "30d", limit = 5 } = options;
+    const days = timeRange === "30d" ? 30 : 7;
+    const response = await api.get(`/stats/artists/${artistId}/top-songs`, {
+      params: { days, limit },
+    });
+    return response.data;
+  },
+
+  async getArtistTopPlaylists(
+    artistId: UUID,
+    options: { timeRange?: string; limit?: number } = {}
+  ) {
+    const { timeRange = "30d", limit = 5 } = options;
+    const days = timeRange === "30d" ? 30 : 7;
+    const response = await api.get(`/stats/artists/${artistId}/top-playlists`, {
+      params: { days, limit },
+    });
+    return response.data;
+  },
+
+  async checkArtistHasSongs(artistId: UUID) {
+    const response = await api.get<{ hasSongs: boolean }>(
+      `/stats/artists/${artistId}/has-songs`
+    );
+    return response.data;
+  },
 };

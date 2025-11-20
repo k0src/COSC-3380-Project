@@ -188,7 +188,7 @@ const CommentTable: React.FC<CommentTableProps> = ({
                   />
                 </button>
               </th>
-              <th className={styles.th}>Actions</th>
+              <th className={styles.th}>Remove</th>
             </tr>
           </thead>
 

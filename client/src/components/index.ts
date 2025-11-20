@@ -108,11 +108,15 @@ export { default as ChangePasswordModal } from "./SettingsPage/ChangePasswordMod
 export { default as ConfirmationModal } from "./SettingsPage/ConfirmationModal/ConfirmationModal.js";
 
 /* ============================ Artist Dashboard ============================ */
+export { default as ArtistDashboardLayout } from "./ArtistDashboard/ArtistDashboardLayout/ArtistDashboardLayout.js";
 export { default as ArtistLayoutSidebar } from "./ArtistDashboard/ArtistLayoutSidebar/ArtistLayoutSidebar.js";
 export { default as ArtistDashboardHero } from "./ArtistDashboard/ArtistDashboardHero/ArtistDashboardHero.js";
 export { default as ArtistDashboardStreamsChart } from "./ArtistDashboard/ArtistDashboardStreamsChart/ArtistDashboardStreamsChart.js";
 export { default as ArtistDashboardRecentReleases } from "./ArtistDashboard/ArtistDashboardRecentReleases/ArtistDashboardRecentReleases.js";
 export { default as ArtistEntityCard } from "./ArtistDashboard/ArtistEntityCard/ArtistEntityCard.js";
+export { default as ArtistDashboardChecklist } from "./ArtistDashboard/ArtistDashboardChecklist/ArtistDashboardChecklist.js";
+export { default as ArtistDashboardTopSongs } from "./ArtistDashboard/ArtistDashboardTopSongs/ArtistDashboardTopSongs.js";
+export { default as ArtistDashboardTopPlaylists } from "./ArtistDashboard/ArtistDashboardTopPlaylists/ArtistDashboardTopPlaylists.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

@@ -50,7 +50,7 @@
 .entityType {
   padding: var(--spacing-sm) var(--spacing-sd);
   background-color: var(--color-panel-gray);
-  border-radius: var(--border-radius-xs);
+  border-radius: var(--border-radius-sm);
   font-size: var(--font-size-xs);
   color: var(--color-white-alt);
   font-weight: 600;

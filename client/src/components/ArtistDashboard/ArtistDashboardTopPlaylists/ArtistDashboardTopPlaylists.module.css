@@ -1,4 +1,4 @@
-.topSongsContainer {
+.topPlaylistsContainer {
   display: flex;
   flex-direction: column;
   background: var(--color-panel-gray);
@@ -7,7 +7,7 @@
   max-width: 40rem;
 }
 
-.topSongsTitle {
+.topPlaylistsTitle {
   font-size: var(--font-size-lg);
   color: var(--color-white);
   font-weight: 500;
@@ -15,14 +15,14 @@
   border-bottom: var(--border-size-sm) solid var(--color-panel-border);
 }
 
-.topSongsList {
+.topPlaylistsList {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
 }
 
-.topSongItem {
+.topPlaylistItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -34,11 +34,11 @@
   border-radius: var(--border-radius-sm);
 }
 
-.topSongItem:hover .topSongTitle {
+.topPlaylistItem:hover .topPlaylistTitle {
   color: var(--color-accent);
 }
 
-.topSongLeft {
+.topPlaylistLeft {
   display: flex;
   align-items: center;
   gap: var(--spacing-sd);
@@ -46,7 +46,7 @@
   flex: 1;
 }
 
-.topSongImage {
+.topPlaylistImage {
   width: 6.4rem;
   height: 6.4rem;
   border-radius: var(--border-radius-xs);
@@ -56,16 +56,15 @@
   box-shadow: var(--shadow-sm);
 }
 
-.topSongInfo {
+.topPlaylistInfo {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xsd);
   min-width: 0;
   flex: 1;
-  overflow: hidden;
 }
 
-.topSongTitle {
+.topPlaylistTitle {
   font-size: var(--font-size-md);
   color: var(--color-white);
   font-weight: 500;
@@ -76,7 +75,7 @@
   transition: color var(--transition-speed) ease;
 }
 
-.topSongDate {
+.topPlaylistSongCount {
   font-size: var(--font-size-sm);
   color: var(--color-text-gray);
   text-overflow: ellipsis;
@@ -84,7 +83,7 @@
   overflow: hidden;
 }
 
-.topSongStreams {
+.topPlaylistStreams {
   font-size: var(--font-size-xs);
   color: var(--color-white-alt);
   font-weight: 500;
