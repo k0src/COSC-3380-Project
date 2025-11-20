@@ -84,34 +84,4 @@ router.get(
   }
 );
 
-//! move to comment routes
-// GET /api/stats/artists/:artistId/comments
-router.get(
-  "/artists/:artistId/comments",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { artistId } = req.params;
-      const { limit, orderBy, orderDirection } = req.query;
-
-      if (!artistId) {
-        res.status(400).json({ error: "Artist ID is required" });
-        return;
-      }
-
-      const limitNum = limit ? parseInt(limit as string, 10) : 10;
-      const comments = await CommentService.getCommentsByArtistId(
-        artistId,
-        limitNum,
-        orderBy as string,
-        orderDirection as string
-      );
-      res.status(200).json(comments);
-    } catch (error: any) {
-      console.error("Error in GET /stats/artists/:artistId/comments:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
 export default router;

@@ -10,6 +10,7 @@ export interface Comment {
   username: string;
   profile_picture_url: string;
   commented_at: string;
+  song_title?: string;
 
   likes?: number;
   user_liked?: boolean;

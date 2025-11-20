@@ -240,7 +240,7 @@ export default class CommentService {
     limit: number = 10,
     orderBy: string = "commented_at",
     orderDirection: string = "DESC"
-  ): Promise<any[]> {
+  ): Promise<Comment[]> {
     try {
       const validColumns = ["song_title", "username", "commented_at", "likes"];
       const column = validColumns.includes(orderBy) ? orderBy : "commented_at";

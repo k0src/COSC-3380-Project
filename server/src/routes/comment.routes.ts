@@ -23,4 +23,32 @@ router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+router.get(
+  "/artists/:artistId",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { artistId } = req.params;
+      const { limit, orderBy, orderDirection } = req.query;
+
+      if (!artistId) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const limitNum = limit ? parseInt(limit as string, 10) : 10;
+      const comments = await CommentService.getCommentsByArtistId(
+        artistId,
+        limitNum,
+        orderBy as string,
+        orderDirection as string
+      );
+      res.status(200).json(comments);
+    } catch (error: any) {
+      console.error("Error in GET /comments/artists/:artistId:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 export default router;

@@ -1,37 +1,28 @@
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { PuffLoader } from "react-spinners";
 import { useAsyncData } from "@hooks";
-import { statsApi } from "@api";
 import { commentApi } from "@api";
 import { ConfirmationModal } from "@components";
-import type { UUID } from "@types";
-import styles from "./ArtistDashboardComments.module.css";
+import type { UUID, Comment } from "@types";
+import styles from "./CommentTable.module.css";
 import { LuTrash2, LuArrowUpDown } from "react-icons/lu";
 
-export interface ArtistDashboardCommentsProps {
-  artistId: UUID;
-  maxItems?: number;
-}
-
-interface ArtistComment {
-  id: UUID;
-  comment_text: string;
-  commented_at: string;
-  song_id: UUID;
-  song_title: string;
-  user_id: UUID;
-  username: string;
-  profile_picture_url?: string;
-  likes: number;
+export interface CommentTableProps {
+  fetchData: (sortColumn: string, sortDirection: string) => Promise<Comment[]>;
+  cacheKey: string;
+  dependencies?: any[];
+  onRefetchNeeded?: React.RefObject<(() => void) | null>;
 }
 
 type SortColumn = "song_title" | "username" | "commented_at" | "likes";
 type SortDirection = "ASC" | "DESC";
 
-const ArtistDashboardComments: React.FC<ArtistDashboardCommentsProps> = ({
-  artistId,
-  maxItems = 10,
+const CommentTable: React.FC<CommentTableProps> = ({
+  fetchData,
+  cacheKey,
+  dependencies = [],
+  onRefetchNeeded,
 }) => {
   const [deletingId, setDeletingId] = useState<UUID | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -41,22 +32,22 @@ const ArtistDashboardComments: React.FC<ArtistDashboardCommentsProps> = ({
 
   const { data, loading, error, refetch } = useAsyncData(
     {
-      comments: () =>
-        statsApi.getArtistComments(
-          artistId,
-          maxItems,
-          sortColumn,
-          sortDirection
-        ),
+      comments: () => fetchData(sortColumn, sortDirection),
     },
-    [artistId, maxItems, sortColumn, sortDirection],
+    [...dependencies, sortColumn, sortDirection],
     {
-      cacheKey: `artist_comments_${artistId}_${maxItems}_${sortColumn}_${sortDirection}`,
-      enabled: !!artistId,
+      cacheKey,
+      hasBlobUrl: true,
     }
   );
 
-  const comments = (data?.comments || []) as ArtistComment[];
+  useEffect(() => {
+    if (onRefetchNeeded) {
+      onRefetchNeeded.current = refetch;
+    }
+  }, [refetch, onRefetchNeeded]);
+
+  const comments: Comment[] = data?.comments || [];
 
   const handleSort = useCallback(
     (column: SortColumn) => {
@@ -159,6 +150,7 @@ const ArtistDashboardComments: React.FC<ArtistDashboardCommentsProps> = ({
               <th className={styles.th}>
                 <button
                   className={styles.sortButton}
+                  disabled={loading}
                   onClick={() => handleSort("song_title")}
                 >
                   <span>Song</span>
@@ -172,6 +164,7 @@ const ArtistDashboardComments: React.FC<ArtistDashboardCommentsProps> = ({
               <th className={styles.th}>
                 <button
                   className={styles.sortButton}
+                  disabled={loading}
                   onClick={() => handleSort("username")}
                 >
                   <span>User</span>
@@ -186,6 +179,7 @@ const ArtistDashboardComments: React.FC<ArtistDashboardCommentsProps> = ({
               <th className={styles.th}>
                 <button
                   className={styles.sortButton}
+                  disabled={loading}
                   onClick={() => handleSort("likes")}
                 >
                   <span>Likes</span>
@@ -197,6 +191,7 @@ const ArtistDashboardComments: React.FC<ArtistDashboardCommentsProps> = ({
               <th className={styles.th}>Actions</th>
             </tr>
           </thead>
+
           <tbody className={styles.tbody}>
             {comments.map((comment) => (
               <tr key={comment.id} className={styles.tr}>
@@ -253,4 +248,4 @@ const ArtistDashboardComments: React.FC<ArtistDashboardCommentsProps> = ({
   );
 };
 
-export default memo(ArtistDashboardComments);
+export default memo(CommentTable);

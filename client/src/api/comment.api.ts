@@ -29,4 +29,16 @@ export const commentApi = {
     const response = await api.delete(`/comments/${commentId}`);
     return response.data;
   },
+
+  async getCommentsByArtistId(
+    artistId: UUID,
+    limit: number = 10,
+    orderBy: string = "commented_at",
+    orderDirection: "ASC" | "DESC" = "DESC"
+  ) {
+    const response = await api.get<Comment[]>(`/comments/artists/${artistId}`, {
+      params: { limit, orderBy, orderDirection },
+    });
+    return response.data;
+  },
 };

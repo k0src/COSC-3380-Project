@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import { useAsyncData, useErrorCheck } from "@hooks";
-import { artistApi } from "@api";
+import { artistApi, commentApi } from "@api";
 import {
   ArtistLayoutSidebar,
   MainLayoutHeader,
@@ -12,7 +12,7 @@ import {
   ArtistDashboardHero,
   ArtistDashboardStreamsChart,
   ArtistDashboardRecentReleases,
-  ArtistDashboardComments,
+  CommentTable,
 } from "@components";
 import styles from "./ArtistDashboard.module.css";
 import classNames from "classnames";
@@ -36,6 +36,18 @@ const ArtistDashboard: React.FC = () => {
   );
 
   const artist = data?.artist;
+
+  const fetchArtistComments = useCallback(
+    (sortColumn: string, sortDirection: string) => {
+      return commentApi.getCommentsByArtistId(
+        artistId!,
+        10,
+        sortColumn,
+        sortDirection as "ASC" | "DESC"
+      );
+    },
+    [artistId]
+  );
 
   const artistName = useMemo(() => {
     if (!artist) return "";
@@ -110,14 +122,18 @@ const ArtistDashboard: React.FC = () => {
                 artistImageUrl={artistImageUrl}
                 artistImageUrlBlurhash={artist.user?.pfp_blurhash}
               />
-              <ArtistDashboardStreamsChart artistId={artistId!} />
               <div className={styles.contentAreaBottom}>
                 <div className={styles.contentAreaBottomLeft}>
+                  <ArtistDashboardStreamsChart artistId={artistId!} />
                   <ArtistDashboardRecentReleases
                     artistId={artistId!}
                     maxItems={5}
                   />
-                  <ArtistDashboardComments artistId={artistId!} maxItems={10} />
+                  <CommentTable
+                    fetchData={fetchArtistComments}
+                    cacheKey={`artist_${artistId}_comments`}
+                    dependencies={[artistId]}
+                  />
                   <div className={styles.profileCta}></div>
                 </div>
                 <div className={styles.contentAreaBottomRight}></div>

@@ -113,13 +113,15 @@ export { default as ArtistDashboardHero } from "./ArtistDashboard/ArtistDashboar
 export { default as ArtistDashboardStreamsChart } from "./ArtistDashboard/ArtistDashboardStreamsChart/ArtistDashboardStreamsChart.js";
 export { default as ArtistDashboardRecentReleases } from "./ArtistDashboard/ArtistDashboardRecentReleases/ArtistDashboardRecentReleases.js";
 export { default as ArtistEntityCard } from "./ArtistDashboard/ArtistEntityCard/ArtistEntityCard.js";
-export { default as ArtistDashboardComments } from "./ArtistDashboard/ArtistDashboardComments/ArtistDashboardComments.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";
 export { default as FollowProfiles } from "./FollowProfiles/FollowProfiles.js";
 export { default as LikeProfiles } from "./LikeProfiles/LikeProfiles.js";
 export { default as SlidingCardList } from "./SlidingCardList/SlidingCardList.js";
+
+/* ================================= Tables ================================= */
+export { default as CommentTable } from "./CommentTable/CommentTable.js";
 
 /* ================================== Cards ================================== */
 export { default as EntityItem } from "./EntityItem/EntityItem.js";
