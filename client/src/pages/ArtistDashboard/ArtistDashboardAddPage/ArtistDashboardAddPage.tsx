@@ -493,7 +493,6 @@ const ArtistDashboardAddPage: React.FC = () => {
                     placeholder="Select an album..."
                     ownerId={user?.id}
                     hint="Add this song to an existing album (Optional)"
-                    value={uploadForm.albumId}
                     displayValue={uploadForm.albumName}
                   />
 

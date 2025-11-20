@@ -147,11 +147,12 @@ const SongPage: React.FC = () => {
         </div>
       </div>
 
-      {isOwner && (
+      {isOwner && user && (
         <EditSongModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           song={song!}
+          userId={user.id}
           onSongEdited={handleSongEdited}
         />
       )}

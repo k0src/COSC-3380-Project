@@ -61,6 +61,34 @@ const SearchableList = <T extends EntityType>({
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    if (value.length > 0) {
+      const newEntityMap = new Map(entityMap);
+      let hasChanges = false;
+
+      value.forEach((item) => {
+        if (!entityMap.has(item.id) && item.name) {
+          const mockEntity: any = {
+            id: item.id,
+          };
+
+          if (entityType === "artist") {
+            mockEntity.display_name = item.name;
+          } else {
+            mockEntity.title = item.name;
+          }
+
+          newEntityMap.set(item.id, mockEntity as EntityMap[T]);
+          hasChanges = true;
+        }
+      });
+
+      if (hasChanges) {
+        setEntityMap(newEntityMap);
+      }
+    }
+  }, [value, entityType]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -277,4 +305,4 @@ const SearchableList = <T extends EntityType>({
   );
 };
 
-export default memo(SearchableList) as typeof SearchableList;
+export default memo(SearchableList);

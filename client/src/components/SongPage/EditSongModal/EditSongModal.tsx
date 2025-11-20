@@ -9,18 +9,22 @@ import {
   SettingsImageUpload,
   SettingsDatePicker,
   ConfirmationModal,
+  SearchableDropdown,
+  SearchableList,
 } from "@components";
 import styles from "./EditSongModal.module.css";
 import { LuX } from "react-icons/lu";
+
+import type { SearchableListItem } from "@components";
 
 export interface EditSongModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSongEdited?: () => void;
   song: Song;
+  userId: string;
 }
 
-// todo: add album stuff later
 interface EditSongForm {
   title: string;
   genre: string;
@@ -28,6 +32,9 @@ interface EditSongForm {
   visibility_status: VisibilityStatus;
   image?: File | null;
   removeImage?: boolean;
+  albumId: string;
+  albumName: string;
+  artists: SearchableListItem[];
 }
 
 const EditSongModal: React.FC<EditSongModalProps> = ({
@@ -35,6 +42,7 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
   onClose,
   onSongEdited,
   song,
+  userId,
 }) => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -42,6 +50,17 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const initialFormState: EditSongForm = useMemo(() => {
+    const featuredArtists =
+      song.artists
+        ?.filter((a) => a.role.toLowerCase() !== "main")
+        .map((a) => ({
+          id: a.id,
+          name: a.display_name,
+          role: a.role,
+        })) || [];
+
+    const albumData = song.albums?.[0];
+
     return {
       title: song.title,
       genre: song.genre,
@@ -49,6 +68,9 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
       visibility_status: song.visibility_status,
       image: null,
       removeImage: false,
+      albumId: albumData?.id || "",
+      albumName: albumData?.title || "",
+      artists: featuredArtists,
     };
   }, [song]);
 
@@ -69,9 +91,16 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
       formState.release_date !== initialFormState.release_date ||
       formState.visibility_status !== initialFormState.visibility_status ||
       formState.image !== initialFormState.image ||
-      formState.removeImage === true;
+      formState.removeImage === true ||
+      formState.albumId !== initialFormState.albumId ||
+      formState.artists.length !== initialFormState.artists.length ||
+      formState.artists.some(
+        (a, i) =>
+          a.id !== initialFormState.artists[i]?.id ||
+          a.role !== initialFormState.artists[i]?.role
+      );
     setIsDirty(isFormDirty);
-  }, [formState]);
+  }, [formState, initialFormState]);
 
   const handleFormChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -130,6 +159,14 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
     }
   };
 
+  const handleDropdownChange = useCallback(
+    (name: string, value: string) => {
+      setFormState((prev) => ({ ...prev, [name]: value }));
+      if (error) setError("");
+    },
+    [error]
+  );
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -143,11 +180,24 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
       setError("");
 
       try {
+        for (const artist of formState.artists) {
+          if (!artist.role || artist.role.trim() === "") {
+            setError("All featured artists must have a role");
+            return;
+          }
+          if (artist.role.toLowerCase() === "main") {
+            setError('Only the uploader can have the "Main" role');
+            return;
+          }
+        }
+
         const songData: any = {
           title: formState.title.trim(),
           genre: formState.genre.trim(),
           release_date: formState.release_date.trim(),
           visibility_status: formState.visibility_status,
+          album_id: formState.albumId || undefined,
+          artists: JSON.stringify(formState.artists),
         };
 
         if (formState.removeImage) {
@@ -265,6 +315,34 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
                 { label: "Unlisted", value: "UNLISTED" },
               ]}
               disabled={isEditing}
+            />
+            <SearchableDropdown
+              label="Album"
+              name="albumId"
+              entityType="album"
+              onChange={(value) => handleDropdownChange("albumId", value)}
+              disabled={isEditing}
+              placeholder="Select an album..."
+              ownerId={userId}
+              hint="Add this song to an existing album (Optional)"
+              displayValue={formState.albumName}
+            />
+            <SearchableList
+              label="Featured Artists"
+              name="artists"
+              entityType="artist"
+              value={formState.artists}
+              onChange={(artists) =>
+                setFormState((prev) => ({ ...prev, artists }))
+              }
+              disabled={isEditing}
+              placeholder="Search for artists..."
+              secondaryField={{
+                name: "role",
+                label: "Role",
+                placeholder: "e.g., Featured, Producer",
+              }}
+              hint="Add featured artists and specify their roles (Optional)"
             />
             <SettingsImageUpload
               label="Cover Image"

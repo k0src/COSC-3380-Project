@@ -142,6 +142,8 @@ export const songApi = {
       release_date?: string;
       visibility_status?: string;
       image_url?: File | null;
+      album_id?: UUID;
+      artists?: string;
     }
   ) {
     const formData = new FormData();

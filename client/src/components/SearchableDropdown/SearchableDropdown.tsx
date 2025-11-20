@@ -23,7 +23,6 @@ export interface SearchableDropdownProps<T extends EntityType> {
   placeholder?: string;
   disabled?: boolean;
   ownerId?: string;
-  value?: string;
   displayValue?: string;
 }
 
@@ -37,7 +36,6 @@ const SearchableDropdown = <T extends EntityType>({
   placeholder = "Search...",
   disabled,
   ownerId,
-  value,
   displayValue,
 }: SearchableDropdownProps<T>) => {
   const [searchQuery, setSearchQuery] = useState(displayValue || "");

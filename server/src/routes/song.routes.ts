@@ -159,6 +159,35 @@ router.put("/:id", async (req: Request, res: Response): Promise<void> => {
     }
 
     const songData = await parseForm(req, "song");
+
+    if (songData.artists) {
+      try {
+        songData.artists = JSON.parse(songData.artists);
+      } catch (e) {
+        res.status(400).json({ error: "Invalid artists data" });
+        return;
+      }
+
+      if (!Array.isArray(songData.artists)) {
+        res.status(400).json({ error: "Artists must be an array" });
+        return;
+      }
+
+      for (const artist of songData.artists) {
+        if (
+          !artist.id ||
+          !artist.role ||
+          typeof artist.role !== "string" ||
+          artist.role.trim() === ""
+        ) {
+          res
+            .status(400)
+            .json({ error: "All artists must have an id and role" });
+          return;
+        }
+      }
+    }
+
     const updatedSong = await SongRepo.update(id, songData);
 
     if (!updatedSong) {

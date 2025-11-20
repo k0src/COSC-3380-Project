@@ -148,6 +148,8 @@ export default class SongRepository {
       audio_url,
       waveform_data,
       visibility_status,
+      album_id,
+      artists,
     }: {
       title?: string;
       duration?: number;
@@ -158,6 +160,8 @@ export default class SongRepository {
       audio_url?: string;
       waveform_data?: any;
       visibility_status?: string;
+      album_id?: UUID | null;
+      artists?: { id: UUID; role: string }[];
     }
   ): Promise<Song | null> {
     try {
@@ -207,18 +211,73 @@ export default class SongRepository {
         fields.push(`visibility_status = $${values.length + 1}`);
         values.push(visibility_status);
       }
-      if (fields.length === 0) {
+      if (
+        fields.length === 0 &&
+        artists === undefined &&
+        album_id === undefined
+      ) {
         throw new Error("No fields to update");
       }
 
       values.push(id);
 
       const res = await withTransaction(async (client) => {
-        const sql = `UPDATE songs SET ${fields.join(", ")} WHERE id = $${
-          values.length
-        } RETURNING *`;
-        const res = await client.query(sql, values);
-        return res.rows[0] ?? null;
+        let updateRes;
+
+        if (fields.length > 0) {
+          const sql = `UPDATE songs SET ${fields.join(", ")} WHERE id = $${
+            values.length
+          } RETURNING *`;
+          updateRes = await client.query(sql, values);
+        } else {
+          updateRes = await client.query(`SELECT * FROM songs WHERE id = $1`, [
+            id,
+          ]);
+        }
+
+        const song = updateRes.rows[0];
+        if (!song) return null;
+
+        if (artists !== undefined) {
+          await client.query(
+            `DELETE FROM song_artists WHERE song_id = $1 AND role != 'Main'`,
+            [id]
+          );
+
+          for (const artist of artists) {
+            await client.query(
+              `INSERT INTO song_artists (song_id, artist_id, role)
+              VALUES ($1, $2, $3)`,
+              [id, artist.id, artist.role]
+            );
+          }
+        }
+
+        if (album_id !== undefined) {
+          await client.query(`DELETE FROM album_songs WHERE song_id = $1`, [
+            id,
+          ]);
+
+          if (album_id) {
+            const maxTrackNumberRes = await client.query(
+              `SELECT COALESCE(MAX(track_number), 0) AS max_track_number
+              FROM album_songs
+              WHERE album_id = $1`,
+              [album_id]
+            );
+
+            const nextTrackNumber =
+              maxTrackNumberRes.rows[0].max_track_number + 1;
+
+            await client.query(
+              `INSERT INTO album_songs (album_id, song_id, track_number)
+              VALUES ($1, $2, $3)`,
+              [album_id, id, nextTrackNumber]
+            );
+          }
+        }
+
+        return song;
       });
 
       if (res) {
