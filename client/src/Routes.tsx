@@ -121,14 +121,6 @@ export default function AppRoutes() {
               }
             />
             <Route
-              path="/upload"
-              element={
-                <ProtectedRoute>
-                  <Pages.UploadPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/artist-dashboard"
               element={
                 <ProtectedRoute>
@@ -153,7 +145,27 @@ export default function AppRoutes() {
               element={
                 <ProtectedRoute>
                   <ArtistDashboardLayout>
-                    <Pages.ArtistDashboardComments />
+                    <Pages.ArtistDashboardCommentsPage />
+                  </ArtistDashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/artist-dashboard/manage"
+              element={
+                <ProtectedRoute>
+                  <ArtistDashboardLayout>
+                    <Pages.ArtistDashboardManagePage />
+                  </ArtistDashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/artist-dashboard/add"
+              element={
+                <ProtectedRoute>
+                  <ArtistDashboardLayout>
+                    <Pages.ArtistDashboardAddPage />
                   </ArtistDashboardLayout>
                 </ProtectedRoute>
               }

@@ -10,11 +10,12 @@ import {
   SettingsDatePicker,
   SearchableDropdown,
   SearchableList,
+  CreateAlbumModal,
 } from "@components";
+import UploadSuccessModal from "./UploadSuccessModal/UploadSuccessModal.js";
 import type { SearchableListItem } from "@components";
-import UploadSuccessModal from "./UploadSuccessModal";
-import styles from "./UploadPage.module.css";
-import { LuFileUp } from "react-icons/lu";
+import styles from "./ArtistDashboardAddPage.module.css";
+import { LuFileUp, LuPlus } from "react-icons/lu";
 import { LuCirclePause, LuCirclePlay } from "react-icons/lu";
 
 interface UploadForm {
@@ -26,9 +27,10 @@ interface UploadForm {
   coverImage: File | null;
   audioFile: File | null;
   albumId: string;
+  albumName: string;
 }
 
-const UploadPage: React.FC = () => {
+const ArtistDashboardAddPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -43,6 +45,7 @@ const UploadPage: React.FC = () => {
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [uploadedSongId, setUploadedSongId] = useState<string | null>(null);
+  const [isAlbumModalOpen, setIsAlbumModalOpen] = useState(false);
 
   const initialFormState: UploadForm = useMemo(
     () => ({
@@ -54,6 +57,7 @@ const UploadPage: React.FC = () => {
       coverImage: null,
       audioFile: null,
       albumId: "",
+      albumName: "",
     }),
     []
   );
@@ -314,6 +318,20 @@ const UploadPage: React.FC = () => {
     handleReset();
   }, [handleReset]);
 
+  const handleAlbumCreated = useCallback(
+    (album: any) => {
+      if (uploadForm.audioFile) {
+        setUploadForm((prev) => ({
+          ...prev,
+          albumId: album.id,
+          albumName: album.title,
+        }));
+      }
+      setIsAlbumModalOpen(false);
+    },
+    [uploadForm.audioFile]
+  );
+
   useEffect(() => {
     return () => {
       if (audioPreviewUrl) {
@@ -325,196 +343,212 @@ const UploadPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Upload Song - CoogMusic</title>
+        <title>Artist Dashboard - Add Content</title>
       </Helmet>
 
       <div className={styles.uploadLayout}>
-        <div className={styles.uploadContainer}>
-          {!uploadForm.audioFile ? (
-            <div
-              className={`${styles.dropzone} ${
-                dragOver ? styles.dropzoneHover : ""
-              }`}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOver(true);
-              }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={onDrop}
-              onClick={onChooseFile}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") onChooseFile();
-              }}
-            >
-              <input
-                ref={audioInputRef}
-                type="file"
-                accept="audio/mpeg,.mp3"
-                style={{ display: "none" }}
-                onChange={handleFileInputChange}
-              />
+        <div className={styles.actionsContainer}>
+          <button
+            className={styles.createAlbumButton}
+            onClick={() => setIsAlbumModalOpen(true)}
+          >
+            <LuPlus /> Create Album
+          </button>
+        </div>
 
-              <div className={styles.dropzoneIcon}>
-                <LuFileUp />
-              </div>
+        {!uploadForm.audioFile ? (
+          <div
+            className={`${styles.dropzone} ${
+              dragOver ? styles.dropzoneHover : ""
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={onDrop}
+            onClick={onChooseFile}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onChooseFile();
+            }}
+          >
+            <input
+              ref={audioInputRef}
+              type="file"
+              accept="audio/mpeg,.mp3"
+              style={{ display: "none" }}
+              onChange={handleFileInputChange}
+            />
 
-              <div className={styles.dropzoneText}>
-                Drag and drop an audio file here to upload
-                {error ? (
-                  <span className={styles.errorText}>{error}</span>
-                ) : (
-                  <span className={styles.dropzoneHint}>
-                    .mp3 files smaller than 10 MB are accepted
+            <div className={styles.dropzoneIcon}>
+              <LuFileUp />
+            </div>
+
+            <div className={styles.dropzoneText}>
+              Drag and drop an audio file here to upload
+              {error ? (
+                <span className={styles.errorText}>{error}</span>
+              ) : (
+                <span className={styles.dropzoneHint}>
+                  .mp3 files smaller than 10 MB are accepted
+                </span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className={styles.uploadCard}>
+            <div className={styles.audioInfoContainer}>
+              <div className={styles.audioFileInfo}>
+                <div className={styles.audioFileDetails}>
+                  <span className={styles.audioFileName}>
+                    {uploadForm.audioFile.name}
                   </span>
+                  <span className={styles.audioFileMeta}>
+                    {formatFileSize(uploadForm.audioFile.size)} MB &bull;{" "}
+                    {formatDuration(audioDuration)}
+                  </span>
+                </div>
+                {audioPreviewUrl && (
+                  <button
+                    type="button"
+                    className={styles.playButton}
+                    onClick={togglePlayPause}
+                  >
+                    {!isPlaying ? <LuCirclePlay /> : <LuCirclePause />}
+                  </button>
                 )}
               </div>
-            </div>
-          ) : (
-            <div className={styles.uploadCard}>
-              <div className={styles.audioInfoContainer}>
-                <div className={styles.audioFileInfo}>
-                  <div className={styles.audioFileDetails}>
-                    <span className={styles.audioFileName}>
-                      {uploadForm.audioFile.name}
-                    </span>
-                    <span className={styles.audioFileMeta}>
-                      {formatFileSize(uploadForm.audioFile.size)} MB &bull;{" "}
-                      {formatDuration(audioDuration)}
-                    </span>
-                  </div>
-                  {audioPreviewUrl && (
-                    <button
-                      type="button"
-                      className={styles.playButton}
-                      onClick={togglePlayPause}
-                    >
-                      {!isPlaying ? <LuCirclePlay /> : <LuCirclePause />}
-                    </button>
-                  )}
-                </div>
 
-                <div className={styles.progressBar}>
-                  <div
-                    className={styles.progressFill}
-                    style={{ width: `${uploadProgress}%` }}
+              <div className={styles.progressBar}>
+                <div
+                  className={styles.progressFill}
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+
+            <audio
+              ref={audioRef}
+              src={audioPreviewUrl || undefined}
+              onEnded={() => setIsPlaying(false)}
+              style={{ display: "none" }}
+            />
+
+            <form className={styles.uploadForm} onSubmit={handleSubmit}>
+              <div className={styles.formGrid}>
+                <div className={styles.formLeft}>
+                  <SettingsInput
+                    label="Song Title"
+                    name="title"
+                    value={uploadForm.title}
+                    onChange={handleFormChange}
+                    placeholder="Enter song title"
+                    disabled={isUploading}
+                    required={true}
+                  />
+
+                  <SettingsInput
+                    label="Genre"
+                    name="genre"
+                    value={uploadForm.genre}
+                    onChange={handleFormChange}
+                    placeholder="Pop, Hip-Hop, Rock..."
+                    disabled={isUploading}
+                    required={true}
+                  />
+
+                  <SettingsDatePicker
+                    label="Release Date"
+                    name="releaseDate"
+                    value={uploadForm.releaseDate}
+                    onChange={handleDateChange}
+                    disabled={isUploading}
+                    max={new Date().toISOString().split("T")[0]}
+                  />
+
+                  <SettingsRadio
+                    label="Visibility"
+                    name="visibilityStatus"
+                    value={uploadForm.visibilityStatus}
+                    onChange={(value) =>
+                      handleDropdownChange("visibilityStatus", value)
+                    }
+                    options={[
+                      { label: "Public", value: "PUBLIC" },
+                      { label: "Private", value: "PRIVATE" },
+                      { label: "Unlisted", value: "UNLISTED" },
+                    ]}
+                    disabled={isUploading}
+                  />
+                </div>
+                <div className={styles.formRight}>
+                  <SearchableDropdown
+                    label="Album"
+                    name="albumId"
+                    entityType="album"
+                    onChange={(value) => handleDropdownChange("albumId", value)}
+                    disabled={isUploading}
+                    placeholder="Select an album..."
+                    ownerId={user?.id}
+                    hint="Add this song to an existing album (Optional)"
+                    value={uploadForm.albumId}
+                    displayValue={uploadForm.albumName}
+                  />
+
+                  <SearchableList
+                    label="Featured Artists"
+                    name="artists"
+                    entityType="artist"
+                    value={uploadForm.artists}
+                    onChange={(artists) =>
+                      setUploadForm((prev) => ({ ...prev, artists }))
+                    }
+                    disabled={isUploading}
+                    placeholder="Search for artists..."
+                    secondaryField={{
+                      name: "role",
+                      label: "Role",
+                      placeholder: "e.g., Featured, Producer",
+                    }}
+                    hint="Add featured artists and specify their roles (Optional)"
+                  />
+
+                  <SettingsImageUpload
+                    label="Cover Image"
+                    onImageChange={handleCoverImageChange}
+                    type="music"
+                    disabled={isUploading}
+                    alt="Song Cover Preview"
+                    hint="Upload a cover image for your song (optional)"
                   />
                 </div>
               </div>
 
-              <audio
-                ref={audioRef}
-                src={audioPreviewUrl || undefined}
-                onEnded={() => setIsPlaying(false)}
-                style={{ display: "none" }}
-              />
-
-              <form className={styles.uploadForm} onSubmit={handleSubmit}>
-                <SettingsInput
-                  label="Song Title"
-                  name="title"
-                  value={uploadForm.title}
-                  onChange={handleFormChange}
-                  placeholder="Enter song title"
-                  disabled={isUploading}
-                />
-
-                <SettingsInput
-                  label="Genre"
-                  name="genre"
-                  value={uploadForm.genre}
-                  onChange={handleFormChange}
-                  placeholder="Pop, Hip-Hop, Rock..."
-                  disabled={isUploading}
-                />
-
-                <SettingsDatePicker
-                  label="Release Date"
-                  name="releaseDate"
-                  value={uploadForm.releaseDate}
-                  onChange={handleDateChange}
-                  disabled={isUploading}
-                  max={new Date().toISOString().split("T")[0]}
-                />
-
-                <SearchableDropdown
-                  label="Album"
-                  name="albumId"
-                  entityType="album"
-                  onChange={(value) => handleDropdownChange("albumId", value)}
-                  disabled={isUploading}
-                  placeholder="Select an album..."
-                  ownerId={user?.id}
-                  hint="Add this song to an existing album (Optional)"
-                />
-
-                <SearchableList
-                  label="Featured Artists"
-                  name="artists"
-                  entityType="artist"
-                  value={uploadForm.artists}
-                  onChange={(artists) =>
-                    setUploadForm((prev) => ({ ...prev, artists }))
-                  }
-                  disabled={isUploading}
-                  placeholder="Search for artists..."
-                  secondaryField={{
-                    name: "role",
-                    label: "Role",
-                    placeholder: "e.g., Featured, Producer",
-                  }}
-                  hint="Add featured artists and specify their roles (Optional)"
-                />
-
-                <SettingsRadio
-                  label="Visibility"
-                  name="visibilityStatus"
-                  value={uploadForm.visibilityStatus}
-                  onChange={(value) =>
-                    handleDropdownChange("visibilityStatus", value)
-                  }
-                  options={[
-                    { label: "Public", value: "PUBLIC" },
-                    { label: "Private", value: "PRIVATE" },
-                    { label: "Unlisted", value: "UNLISTED" },
-                  ]}
-                  disabled={isUploading}
-                />
-
-                <SettingsImageUpload
-                  label="Cover Image"
-                  onImageChange={handleCoverImageChange}
-                  type="music"
-                  disabled={isUploading}
-                  alt="Song Cover Preview"
-                  hint="Upload a cover image for your song (optional)"
-                />
-
-                <div className={styles.buttonContainer}>
-                  {error && <span className={styles.errorText}>{error}</span>}
-                  <div className={styles.buttons}>
-                    <button
-                      type="button"
-                      className={styles.cancelButton}
-                      onClick={handleReset}
-                      disabled={isUploading}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className={styles.uploadButton}
-                      disabled={isUploading || !isDirty}
-                    >
-                      {isUploading ? "Uploading..." : "Upload Song"}
-                    </button>
-                  </div>
+              <div className={styles.buttonContainer}>
+                {error && <span className={styles.errorText}>{error}</span>}
+                <div className={styles.buttons}>
+                  <button
+                    type="button"
+                    className={styles.cancelButton}
+                    onClick={handleReset}
+                    disabled={isUploading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className={styles.uploadButton}
+                    disabled={isUploading || !isDirty}
+                  >
+                    {isUploading ? "Uploading..." : "Upload Song"}
+                  </button>
                 </div>
-              </form>
-            </div>
-          )}
-        </div>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
 
       {uploadedSongId && (
@@ -525,8 +559,19 @@ const UploadPage: React.FC = () => {
           songId={uploadedSongId}
         />
       )}
+
+      {user && (
+        <CreateAlbumModal
+          mode="create"
+          userId={user.id}
+          artistId={user.artist_id!}
+          isOpen={isAlbumModalOpen}
+          onClose={() => setIsAlbumModalOpen(false)}
+          onAlbumCreated={handleAlbumCreated}
+        />
+      )}
     </>
   );
 };
 
-export default memo(UploadPage);
+export default memo(ArtistDashboardAddPage);

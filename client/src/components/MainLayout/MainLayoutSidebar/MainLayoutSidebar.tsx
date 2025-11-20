@@ -59,7 +59,7 @@ const MainLayoutSidebar: React.FC = () => {
               <Link to="/artist-dashboard" className={styles.sidebarLink}>
                 <LuUserPen className={styles.sidebarIcon} />
               </Link>
-              <Link to="/upload" className={styles.sidebarLink}>
+              <Link to="/artist-dashboard/add" className={styles.sidebarLink}>
                 <LuUpload className={styles.sidebarIcon} />
               </Link>
             </>

@@ -117,6 +117,7 @@ export { default as ArtistEntityCard } from "./ArtistDashboard/ArtistEntityCard/
 export { default as ArtistDashboardChecklist } from "./ArtistDashboard/ArtistDashboardChecklist/ArtistDashboardChecklist.js";
 export { default as ArtistDashboardTopSongs } from "./ArtistDashboard/ArtistDashboardTopSongs/ArtistDashboardTopSongs.js";
 export { default as ArtistDashboardTopPlaylists } from "./ArtistDashboard/ArtistDashboardTopPlaylists/ArtistDashboardTopPlaylists.js";
+export { default as CreateAlbumModal } from "./ArtistDashboard/CreateAlbumModal/CreateAlbumModal.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

@@ -1,15 +1,31 @@
 .uploadLayout {
+  padding: var(--spacing-2xl) var(--spacing-4xl);
+}
+
+.actionsContainer {
+  padding: var(--spacing-sd) 0;
+}
+
+.createAlbumButton {
+  font-family: var(--font-main);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  max-width: 80rem;
-  margin: 0 auto;
+  gap: var(--spacing-sm);
+  background: var(--color-accent);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: var(--color-accent-200);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: all var(--transition-speed) ease-in-out;
+  margin-left: auto;
 }
 
-.uploadContainer {
-  max-width: 80rem;
-  margin: 0 auto;
+.createAlbumButton:hover {
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
 }
 
 .dropzone {
@@ -64,7 +80,6 @@
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-card);
-  min-width: 96rem;
 }
 
 .audioInfoContainer {
@@ -133,6 +148,24 @@
 }
 
 .uploadForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+}
+
+.formLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.formRight {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);

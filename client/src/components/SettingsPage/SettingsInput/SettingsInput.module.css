@@ -4,7 +4,7 @@
   gap: var(--spacing-sm);
 }
 
-.settingsInputLabel {
+.label {
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text-gray);

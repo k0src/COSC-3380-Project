@@ -18,9 +18,9 @@ export { default as UserInfoPage } from "./UserPage/UserInfoPage/UserInfoPage.js
 
 export { default as SettingsPage } from "./AccountPage/SettingsPage/SettingsPage.js";
 
-export { default as UploadPage } from "./UploadPage/UploadPage.js";
-
 export { default as SearchResultsPage } from "./SearchResultsPage/SearchResultsPage.js";
 
 export { default as ArtistDashboard } from "./ArtistDashboard/ArtistDashboard.js";
-export { default as ArtistDashboardComments } from "./ArtistDashboard/ArtistDashboardComments/ArtistDashboardComments.js";
+export { default as ArtistDashboardCommentsPage } from "./ArtistDashboard/ArtistDashboardCommentsPage/ArtistDashboardCommentsPage.js";
+export { default as ArtistDashboardManagePage } from "./ArtistDashboard/ArtistDashboardManagePage/ArtistDashboardManagePage.js";
+export { default as ArtistDashboardAddPage } from "./ArtistDashboard/ArtistDashboardAddPage/ArtistDashboardAddPage.js";

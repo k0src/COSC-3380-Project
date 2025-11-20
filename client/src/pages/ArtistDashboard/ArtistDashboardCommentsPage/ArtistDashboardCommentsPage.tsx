@@ -3,9 +3,9 @@ import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import { commentApi } from "@api";
 import { CommentTable } from "@components";
-import styles from "./ArtistDashboardComments.module.css";
+import styles from "./ArtistDashboardCommentsPage.module.css";
 
-const ArtistDashboardComments: React.FC = () => {
+const ArtistDashboardCommentsPage: React.FC = () => {
   const { user } = useAuth();
   const artistId = user?.artist_id;
 
@@ -44,4 +44,4 @@ const ArtistDashboardComments: React.FC = () => {
   );
 };
 
-export default memo(ArtistDashboardComments);
+export default memo(ArtistDashboardCommentsPage);

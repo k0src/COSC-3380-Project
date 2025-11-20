@@ -23,6 +23,8 @@ export interface SearchableDropdownProps<T extends EntityType> {
   placeholder?: string;
   disabled?: boolean;
   ownerId?: string;
+  value?: string;
+  displayValue?: string;
 }
 
 const SearchableDropdown = <T extends EntityType>({
@@ -35,13 +37,21 @@ const SearchableDropdown = <T extends EntityType>({
   placeholder = "Search...",
   disabled,
   ownerId,
+  value,
+  displayValue,
 }: SearchableDropdownProps<T>) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(displayValue || "");
   const [results, setResults] = useState<EntityMap[T][]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (displayValue !== undefined) {
+      setSearchQuery(displayValue);
+    }
+  }, [displayValue]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

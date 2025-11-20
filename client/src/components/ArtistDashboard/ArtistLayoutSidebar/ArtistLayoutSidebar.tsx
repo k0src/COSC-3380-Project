@@ -74,7 +74,7 @@ const ArtistLayoutSidebar: React.FC<ArtistLayoutSidebarProps> = ({
             }
           >
             <LuPlus className={styles.sidebarIcon} />
-            <span className={styles.sidebarText}>Add New Content</span>
+            <span className={styles.sidebarText}>Add Content</span>
           </NavLink>
           <NavLink
             to="/artist-dashboard/manage"
