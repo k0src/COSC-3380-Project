@@ -151,4 +151,9 @@ export const albumApi = {
     const response = await api.delete(`/albums/${albumId}`);
     return response.data;
   },
+
+  async removeSong(albumId: UUID, songId: UUID) {
+    const response = await api.delete(`/albums/${albumId}/songs/${songId}`);
+    return response.data;
+  },
 };

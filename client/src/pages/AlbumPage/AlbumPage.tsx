@@ -1,8 +1,13 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "react-router-dom";
-import { useAuth } from "@contexts";
-import type { UUID, AccessContext } from "@types";
+import { useAuth, useContextMenu } from "@contexts";
+import type {
+  ContextMenuAction,
+  ContextMenuEntity,
+  ContextMenuEntityType,
+} from "@contexts";
+import type { UUID, Song, AccessContext } from "@types";
 import { useAsyncData, useErrorCheck } from "@hooks";
 import { albumApi } from "@api";
 import {
@@ -17,19 +22,22 @@ import {
   RelatedAlbums,
   EditAlbumModal,
 } from "@components";
+import { LuTrash } from "react-icons/lu";
 import styles from "./AlbumPage.module.css";
 
 const AlbumPage: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
   const { id } = useParams<{ id: UUID }>();
+
+  const { user, isAuthenticated } = useAuth();
+  const { setCustomActionsProvider } = useContextMenu();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const songsRefetchRef = useRef<(() => void) | null>(null);
 
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
     scope: "single",
   };
-
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!id) {
     return (
@@ -60,19 +68,12 @@ const AlbumPage: React.FC = () => {
 
   const album = data?.album;
 
-  const fetchSongs = useCallback(
-    () =>
-      albumApi.getSongs(
-        id,
-        {
-          role: accessContext.role,
-          userId: accessContext.userId,
-          scope: "globalList",
-        },
-        { includeArtists: true }
-      ),
-    [id]
-  );
+  const fetchSongs = useCallback(async () => {
+    const result = await albumApi.getSongs(id, accessContext, {
+      includeArtists: true,
+    });
+    return result ?? [];
+  }, [id, accessContext]);
 
   const isOwner = useMemo(() => {
     if (!user || !isAuthenticated || !album) {
@@ -88,6 +89,55 @@ const AlbumPage: React.FC = () => {
   const handleAlbumEdited = useCallback(() => {
     refetch();
   }, [refetch]);
+
+  const refetchRef = useRef(refetch);
+  refetchRef.current = refetch;
+
+  const handleRemoveSong = useCallback(
+    async (song: Song) => {
+      if (!isOwner) return;
+
+      try {
+        await albumApi.removeSong(id, song.id);
+        songsRefetchRef.current?.();
+        refetchRef.current();
+      } catch (error) {
+        console.error("Error removing song from album:", error);
+      }
+    },
+    [isOwner, id]
+  );
+
+  const customActionsProvider = useCallback(
+    (
+      entity: ContextMenuEntity | null,
+      entityType: ContextMenuEntityType | null
+    ): ContextMenuAction[] => {
+      if (entityType !== "song" || !isOwner) {
+        return [];
+      }
+
+      const song = entity as Song;
+
+      return [
+        {
+          id: "remove-from-album",
+          label: "Remove from Album",
+          icon: LuTrash,
+          onClick: () => handleRemoveSong(song),
+          show: true,
+        },
+      ];
+    },
+    [isOwner, handleRemoveSong]
+  );
+
+  useEffect(() => {
+    setCustomActionsProvider(customActionsProvider);
+    return () => {
+      setCustomActionsProvider(null);
+    };
+  }, [customActionsProvider, setCustomActionsProvider]);
 
   const { shouldShowError, errorTitle, errorMessage } = useErrorCheck([
     {
@@ -147,6 +197,7 @@ const AlbumPage: React.FC = () => {
               fetchData={fetchSongs}
               cacheKey={`album_${id}_songs`}
               dependencies={[id]}
+              onRefetchNeeded={songsRefetchRef}
             />
           ) : (
             <div className={styles.noSongsMessage}>

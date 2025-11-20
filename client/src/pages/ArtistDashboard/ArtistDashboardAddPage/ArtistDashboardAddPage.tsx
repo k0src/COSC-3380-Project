@@ -561,7 +561,6 @@ const ArtistDashboardAddPage: React.FC = () => {
 
       {user && (
         <CreateAlbumModal
-          mode="create"
           userId={user.id}
           artistId={user.artist_id!}
           isOpen={isAlbumModalOpen}

@@ -52,7 +52,6 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
   }, [album]);
 
   const [formState, setFormState] = useState(() => initialFormState);
-
   const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {

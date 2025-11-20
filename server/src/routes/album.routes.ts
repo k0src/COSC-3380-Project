@@ -254,4 +254,24 @@ router.get(
   }
 );
 
+// DELETE /api/albums/:albumId/songs/:songId
+router.delete(
+  "/:albumId/songs/:songId",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { albumId, songId } = req.params;
+      if (!albumId || !songId) {
+        res.status(400).json({ error: "Album ID and Song ID are required" });
+        return;
+      }
+      await AlbumRepository.removeSong(albumId, songId);
+      res.status(200).json({ message: "Song removed from album successfully" });
+    } catch (error: any) {
+      console.error("Error in DELETE /albums/:albumId/songs/:songId:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 export default router;
