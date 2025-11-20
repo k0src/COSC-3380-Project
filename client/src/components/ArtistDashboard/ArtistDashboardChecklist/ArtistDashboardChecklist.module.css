@@ -6,7 +6,7 @@
   border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-md);
   padding: var(--spacing-md);
-  max-width: 40rem;
+  max-width: 48rem;
 }
 
 .checklistHeader {

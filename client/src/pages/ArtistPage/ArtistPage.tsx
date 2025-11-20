@@ -194,7 +194,11 @@ const ArtistPage: React.FC = () => {
           </div>
         </div>
         <RelatedArtists artistId={artist.id} />
-        <ArtistAbout artistId={artist.id} artistName={artist.display_name} />
+        <ArtistAbout
+          artistId={artist.id}
+          artistName={artist.display_name}
+          artistBio={artist.bio}
+        />
       </div>
 
       {isOwner && (

@@ -69,7 +69,7 @@
 
 .contentAreaBottom {
   display: grid;
-  grid-template-columns: 2.5fr 1fr;
+  grid-template-columns: 1fr 48rem;
   column-gap: var(--layout-gap-hor);
   row-gap: var(--layout-gap-ver);
   min-height: 100%;
