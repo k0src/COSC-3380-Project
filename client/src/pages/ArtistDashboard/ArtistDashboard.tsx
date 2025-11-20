@@ -2,11 +2,10 @@ import { memo, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
-import { useAsyncData, useErrorCheck } from "@hooks";
+import { useAsyncData } from "@hooks";
 import { artistApi, commentApi, statsApi } from "@api";
 import {
   PageLoader,
-  ErrorPageBig,
   ArtistDashboardHero,
   ArtistDashboardStreamsChart,
   ArtistDashboardRecentReleases,
@@ -26,18 +25,18 @@ import {
 import artistPlaceholder from "@assets/artist-placeholder.webp";
 
 const ArtistDashboard: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
 
   const artistId = user?.artist_id;
 
-  const { data, loading, error } = useAsyncData(
+  const { data, loading } = useAsyncData(
     {
       artist: () => artistApi.getArtistById(artistId!, { includeUser: true }),
       hasSongs: () => statsApi.checkArtistHasSongs(artistId!),
     },
     [artistId!],
     {
-      cacheKey: `artist_layout_${artistId}`,
+      cacheKey: `artist_dashboard_data_${artistId}`,
       enabled: !!artistId,
     }
   );
@@ -107,35 +106,8 @@ const ArtistDashboard: React.FC = () => {
     ];
   }, [artist, artistId, hasSongs]);
 
-  const { shouldShowError, errorTitle, errorMessage } = useErrorCheck([
-    {
-      condition: !!error,
-      title: "Internal Server Error",
-      message: "An unexpected error occurred. Please try again later.",
-    },
-    {
-      condition: !isAuthenticated || !user || !artistId,
-      title: "Access Denied",
-      message: "You do not have permission to access this page.",
-    },
-    {
-      condition: !artist && !loading,
-      title: "Artist Not Found",
-      message: "The requested artist does not exist.",
-    },
-    {
-      condition: artist?.user?.status !== "ACTIVE",
-      title: "Artist Not Found",
-      message: "The requested artist does not exist.",
-    },
-  ]);
-
-  if (loading) {
+  if (loading || !artist) {
     return <PageLoader />;
-  }
-
-  if (shouldShowError) {
-    return <ErrorPageBig title={errorTitle} message={errorMessage} />;
   }
 
   return (

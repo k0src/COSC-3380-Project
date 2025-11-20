@@ -13,6 +13,8 @@ export interface CommentTableProps {
   cacheKey: string;
   dependencies?: any[];
   onRefetchNeeded?: React.RefObject<(() => void) | null>;
+  title: string;
+  viewAllLink?: boolean;
 }
 
 type SortColumn = "song_title" | "username" | "commented_at" | "likes";
@@ -23,6 +25,8 @@ const CommentTable: React.FC<CommentTableProps> = ({
   cacheKey,
   dependencies = [],
   onRefetchNeeded,
+  title,
+  viewAllLink = true,
 }) => {
   const [deletingId, setDeletingId] = useState<UUID | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -91,7 +95,7 @@ const CommentTable: React.FC<CommentTableProps> = ({
     return (
       <div className={styles.sectionContainer}>
         <div className={styles.sectionHeader}>
-          <span className={styles.sectionTitle}>Recent Comments</span>
+          <span className={styles.sectionTitle}>{title}</span>
           <Link to="/artist-dashboard/comments" className={styles.viewMoreLink}>
             View All
           </Link>
@@ -107,10 +111,15 @@ const CommentTable: React.FC<CommentTableProps> = ({
     return (
       <div className={styles.sectionContainer}>
         <div className={styles.sectionHeader}>
-          <span className={styles.sectionTitle}>Recent Comments</span>
-          <Link to="/artist-dashboard/comments" className={styles.viewMoreLink}>
-            View All
-          </Link>
+          <span className={styles.sectionTitle}>{title}</span>
+          {viewAllLink && (
+            <Link
+              to="/artist-dashboard/comments"
+              className={styles.viewMoreLink}
+            >
+              View All
+            </Link>
+          )}
         </div>
         <div className={styles.error}>Failed to load comments.</div>
       </div>
@@ -121,10 +130,15 @@ const CommentTable: React.FC<CommentTableProps> = ({
     return (
       <div className={styles.sectionContainer}>
         <div className={styles.sectionHeader}>
-          <span className={styles.sectionTitle}>Recent Comments</span>
-          <Link to="/artist-dashboard/comments" className={styles.viewMoreLink}>
-            View All
-          </Link>
+          <span className={styles.sectionTitle}>{title}</span>
+          {viewAllLink && (
+            <Link
+              to="/artist-dashboard/comments"
+              className={styles.viewMoreLink}
+            >
+              View All
+            </Link>
+          )}
         </div>
         <div className={styles.noDataContainer}>
           <span className={styles.noDataMessage}>
@@ -138,10 +152,12 @@ const CommentTable: React.FC<CommentTableProps> = ({
   return (
     <div className={styles.sectionContainer}>
       <div className={styles.sectionHeader}>
-        <span className={styles.sectionTitle}>Recent Comments</span>
-        <Link to="/artist-dashboard/comments" className={styles.viewMoreLink}>
-          View All
-        </Link>
+        <span className={styles.sectionTitle}>{title}</span>
+        {viewAllLink && (
+          <Link to="/artist-dashboard/comments" className={styles.viewMoreLink}>
+            View All
+          </Link>
+        )}
       </div>
       <div className={styles.tableContainer}>
         <table className={styles.table}>

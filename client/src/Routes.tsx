@@ -138,6 +138,26 @@ export default function AppRoutes() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/artist-dashboard/overview"
+              element={
+                <ProtectedRoute>
+                  <ArtistDashboardLayout>
+                    <Pages.ArtistDashboard />
+                  </ArtistDashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/artist-dashboard/comments"
+              element={
+                <ProtectedRoute>
+                  <ArtistDashboardLayout>
+                    <Pages.ArtistDashboardComments />
+                  </ArtistDashboardLayout>
+                </ProtectedRoute>
+              }
+            />
           </Route>
         </Routes>
       )}
