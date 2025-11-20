@@ -126,7 +126,6 @@ const ArtistDashboard: React.FC = () => {
             <ArtistDashboardStreamsChart artistId={artistId!} />
             <ArtistDashboardRecentReleases artistId={artistId!} maxItems={5} />
             <CommentTable
-              title="Recent Comments"
               fetchData={fetchArtistComments}
               cacheKey={`artist_${artistId}_comments`}
               dependencies={[artistId]}

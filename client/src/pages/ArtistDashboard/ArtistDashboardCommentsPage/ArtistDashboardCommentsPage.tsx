@@ -25,8 +25,6 @@ const ArtistDashboardCommentsPage: React.FC = () => {
         </header>
 
         <CommentTable
-          title="Comments on Your Songs"
-          viewAllLink={false}
           fetchData={fetchArtistComments}
           cacheKey={`artist_${artistId}_all_comments`}
           dependencies={[artistId]}

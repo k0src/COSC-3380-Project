@@ -13,8 +13,6 @@ export interface CommentTableProps {
   cacheKey: string;
   dependencies?: any[];
   onRefetchNeeded?: React.RefObject<(() => void) | null>;
-  title: string;
-  viewAllLink?: boolean;
   hasBulkEdit?: boolean;
 }
 
@@ -26,8 +24,6 @@ const CommentTable: React.FC<CommentTableProps> = ({
   cacheKey,
   dependencies = [],
   onRefetchNeeded,
-  title,
-  viewAllLink = true,
   hasBulkEdit = false,
 }) => {
   const [deletingId, setDeletingId] = useState<UUID | null>(null);
@@ -187,7 +183,6 @@ const CommentTable: React.FC<CommentTableProps> = ({
     return (
       <div className={styles.sectionContainer}>
         <div className={styles.sectionHeader}>
-          <span className={styles.sectionTitle}>{title}</span>
           <Link to="/artist-dashboard/comments" className={styles.viewMoreLink}>
             View All
           </Link>
@@ -202,17 +197,6 @@ const CommentTable: React.FC<CommentTableProps> = ({
   if (error) {
     return (
       <div className={styles.sectionContainer}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionTitle}>{title}</span>
-          {viewAllLink && (
-            <Link
-              to="/artist-dashboard/comments"
-              className={styles.viewMoreLink}
-            >
-              View All
-            </Link>
-          )}
-        </div>
         <div className={styles.error}>Failed to load comments.</div>
       </div>
     );
@@ -221,17 +205,6 @@ const CommentTable: React.FC<CommentTableProps> = ({
   if (comments.length === 0) {
     return (
       <div className={styles.sectionContainer}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionTitle}>{title}</span>
-          {viewAllLink && (
-            <Link
-              to="/artist-dashboard/comments"
-              className={styles.viewMoreLink}
-            >
-              View All
-            </Link>
-          )}
-        </div>
         <div className={styles.noDataContainer}>
           <span className={styles.noDataMessage}>
             No comments on your songs yet.
@@ -244,7 +217,6 @@ const CommentTable: React.FC<CommentTableProps> = ({
   return (
     <div className={styles.sectionContainer}>
       <div className={styles.sectionHeader}>
-        <span className={styles.sectionTitle}>{title}</span>
         <div className={styles.headerActions}>
           {hasBulkEdit && (
             <div className={styles.bulkDeleteButtonContainer}>
@@ -260,10 +232,6 @@ const CommentTable: React.FC<CommentTableProps> = ({
               )}
             </div>
           )}
-
-          <Link to="/artist-dashboard/comments" className={styles.viewMoreLink}>
-            View All
-          </Link>
         </div>
       </div>
       <div className={styles.tableContainer}>
