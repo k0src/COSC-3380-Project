@@ -30,14 +30,14 @@ export const commentApi = {
     return response.data;
   },
 
-  async getCommentsByArtistId(
-    artistId: UUID,
-    limit: number = 10,
-    orderBy: string = "commented_at",
-    orderDirection: "ASC" | "DESC" = "DESC"
-  ) {
+  async bulkDeleteComments(commentIds: UUID[]) {
+    const response = await api.post(`/comments/bulk-delete`, { commentIds });
+    return response.data;
+  },
+
+  async getCommentsByArtistId(artistId: UUID, limit: number = 10) {
     const response = await api.get<Comment[]>(`/comments/artists/${artistId}`, {
-      params: { limit, orderBy, orderDirection },
+      params: { limit },
     });
     return response.data;
   },

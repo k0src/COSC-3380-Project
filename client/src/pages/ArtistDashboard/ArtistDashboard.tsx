@@ -44,17 +44,9 @@ const ArtistDashboard: React.FC = () => {
   const artist = data?.artist;
   const hasSongs = data?.hasSongs?.hasSongs || false;
 
-  const fetchArtistComments = useCallback(
-    (sortColumn: string, sortDirection: string) => {
-      return commentApi.getCommentsByArtistId(
-        artistId!,
-        6,
-        sortColumn,
-        sortDirection as "ASC" | "DESC"
-      );
-    },
-    [artistId]
-  );
+  const fetchArtistComments = useCallback(() => {
+    return commentApi.getCommentsByArtistId(artistId!, 6);
+  }, [artistId]);
 
   const artistName = useMemo(() => {
     if (!artist) return "";

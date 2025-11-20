@@ -110,6 +110,20 @@ export default class CommentService {
   }
 
   /**
+   * Deletes multiple comments by their IDs.
+   * @param commentIds Array of comment IDs to delete.
+   * @throws Error if the operation fails.
+   */
+  static async bulkDeleteComments(commentIds: UUID[]) {
+    try {
+      await query("DELETE FROM comments WHERE id = ANY($1)", [commentIds]);
+    } catch (error) {
+      console.error("Error bulk deleting comments:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Clears all comments for a specific song.
    * @param songId The ID of the song whose comments are to be cleared.
    * @throws Error if the operation fails.
@@ -230,22 +244,14 @@ export default class CommentService {
    * Fetches all comments on an artist's songs
    * @param artistId The ID of the artist
    * @param limit Maximum number of comments to return
-   * @param orderBy Column to sort by
-   * @param orderDirection Sort direction (ASC or DESC)
    * @returns An array of comments with song title, username, and likes
    * @throws Error if the operation fails.
    */
   static async getCommentsByArtistId(
     artistId: UUID,
-    limit: number = 10,
-    orderBy: string = "commented_at",
-    orderDirection: string = "DESC"
+    limit: number = 10
   ): Promise<Comment[]> {
     try {
-      const validColumns = ["song_title", "username", "commented_at", "likes"];
-      const column = validColumns.includes(orderBy) ? orderBy : "commented_at";
-      const direction = orderDirection.toUpperCase() === "ASC" ? "ASC" : "DESC";
-
       const sql = `
         SELECT 
           c.id,
@@ -264,7 +270,7 @@ export default class CommentService {
         LEFT JOIN comment_likes cl ON c.id = cl.comment_id
         WHERE sa.artist_id = $1
         GROUP BY c.id, s.title, u.id, u.username, u.profile_picture_url
-        ORDER BY ${column} ${direction}
+        ORDER BY c.commented_at DESC
         LIMIT $2
       `;
 

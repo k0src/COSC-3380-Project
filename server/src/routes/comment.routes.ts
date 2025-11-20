@@ -23,12 +23,42 @@ router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// POST /api/comments/bulk-delete
+router.post(
+  "/bulk-delete",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { commentIds } = req.body;
+
+      if (
+        !commentIds ||
+        !Array.isArray(commentIds) ||
+        commentIds.length === 0
+      ) {
+        res.status(400).json({ error: "Comment IDs array is required" });
+        return;
+      }
+
+      await CommentService.bulkDeleteComments(commentIds);
+      res.status(200).json({
+        message: `${commentIds.length} comment${
+          commentIds.length === 1 ? "" : "s"
+        } deleted successfully`,
+      });
+    } catch (error: any) {
+      console.error("Error in POST /comments/bulk-delete:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 router.get(
   "/artists/:artistId",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
-      const { limit, orderBy, orderDirection } = req.query;
+      const { limit } = req.query;
 
       if (!artistId) {
         res.status(400).json({ error: "Artist ID is required" });
@@ -38,9 +68,7 @@ router.get(
       const limitNum = limit ? parseInt(limit as string, 10) : 10;
       const comments = await CommentService.getCommentsByArtistId(
         artistId,
-        limitNum,
-        orderBy as string,
-        orderDirection as string
+        limitNum
       );
       res.status(200).json(comments);
     } catch (error: any) {

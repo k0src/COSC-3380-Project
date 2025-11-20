@@ -9,17 +9,9 @@ const ArtistDashboardCommentsPage: React.FC = () => {
   const { user } = useAuth();
   const artistId = user?.artist_id;
 
-  const fetchArtistComments = useCallback(
-    (sortColumn: string, sortDirection: string) => {
-      return commentApi.getCommentsByArtistId(
-        artistId!,
-        500,
-        sortColumn,
-        sortDirection as "ASC" | "DESC"
-      );
-    },
-    [artistId]
-  );
+  const fetchArtistComments = useCallback(() => {
+    return commentApi.getCommentsByArtistId(artistId!, 500);
+  }, [artistId]);
 
   return (
     <>
@@ -38,6 +30,7 @@ const ArtistDashboardCommentsPage: React.FC = () => {
           fetchData={fetchArtistComments}
           cacheKey={`artist_${artistId}_all_comments`}
           dependencies={[artistId]}
+          hasBulkEdit={true}
         />
       </div>
     </>
