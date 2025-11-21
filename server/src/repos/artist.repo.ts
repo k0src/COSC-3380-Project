@@ -981,4 +981,20 @@ export default class ArtistRepository {
       throw error;
     }
   }
+
+  static async checkArtistHasPlaylists(artistId: UUID): Promise<boolean> {
+    try {
+      const res = await query(
+        `SELECT EXISTS (
+          SELECT 1 FROM artist_playlists ap
+          WHERE ap.artist_id = $1
+        ) AS has_playlists`,
+        [artistId]
+      );
+      return res[0]?.has_playlists ?? false;
+    } catch (error) {
+      console.error("Error checking if artist has playlists:", error);
+      throw error;
+    }
+  }
 }

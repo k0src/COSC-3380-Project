@@ -4,7 +4,8 @@
   background: var(--color-panel-gray);
   border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-md);
-  max-width: 48rem;
+  max-width: 40rem;
+  min-width: 0;
 }
 
 .topPlaylistsTitle {
@@ -29,7 +30,7 @@
   text-decoration: none;
   cursor: pointer;
   min-width: 0;
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
   background: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
 }

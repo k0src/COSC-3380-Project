@@ -53,6 +53,14 @@ const ArtistDashboardChecklist: React.FC<ArtistDashboardChecklistProps> = ({
     return Math.round((completed / items.length) * 100);
   }, [items]);
 
+  const allCompleted = useMemo(() => {
+    return items.every((item) => item.completed);
+  }, [items]);
+
+  if (allCompleted) {
+    return null;
+  }
+
   return (
     <div className={styles.checklistContainer}>
       <div className={styles.checklistHeader}>

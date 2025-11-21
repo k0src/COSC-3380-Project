@@ -588,4 +588,25 @@ router.post(
   }
 );
 
+// GET /api/artists/:id/has-artist-playlists
+router.get(
+  "/:id/has-artist-playlists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const hasPlaylists = await ArtistRepository.checkArtistHasPlaylists(id);
+      res.status(200).json({ hasPlaylists });
+    } catch (error: any) {
+      console.error("Error in GET /artists/:id/has-artist-playlists:", error);
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
+    }
+  }
+);
+
 export default router;

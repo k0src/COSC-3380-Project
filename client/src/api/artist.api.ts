@@ -245,4 +245,11 @@ export const artistApi = {
     });
     return response.data;
   },
+
+  async checkArtistHasPlaylists(artistId: UUID) {
+    const response = await api.get<{ hasPlaylists: boolean }>(
+      `/artists/${artistId}/has-artist-playlists`
+    );
+    return response.data;
+  },
 };

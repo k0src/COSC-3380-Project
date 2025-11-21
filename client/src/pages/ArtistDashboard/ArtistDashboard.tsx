@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
 import type { Artist } from "@types";
-import { commentApi, statsApi } from "@api";
+import { artistApi, commentApi, statsApi } from "@api";
 import {
   PageLoader,
   ArtistDashboardHero,
@@ -38,6 +38,7 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
   const { data, loading } = useAsyncData(
     {
       hasSongs: () => statsApi.checkArtistHasSongs(artistId!),
+      hasArtistPlaylists: () => artistApi.checkArtistHasPlaylists(artistId!),
     },
     [artistId!],
     {
@@ -47,6 +48,7 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
   );
 
   const hasSongs = data?.hasSongs?.hasSongs || false;
+  const hasArtistPlaylists = data?.hasArtistPlaylists?.hasPlaylists || false;
 
   const fetchArtistComments = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
@@ -99,7 +101,7 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
         id: "artist_playlist",
         label: "Create an Artist Playlist",
         icon: LuListMusic,
-        completed: false,
+        completed: hasArtistPlaylists,
         link: "/artist-dashboard/add",
       },
     ];
