@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, Children, isValidElement, cloneElement } from "react";
 import { useAuth } from "@contexts";
 import { useAsyncData, useErrorCheck } from "@hooks";
 import { artistApi } from "@api";
@@ -44,6 +44,17 @@ const ArtistDashboardLayout: React.FC<ArtistDashboardLayoutProps> = ({
     return artist.user?.profile_picture_url || artistPlaceholder;
   }, [artist]);
 
+  const injected = useMemo(
+    () =>
+      Children.map(children, (child) => {
+        if (isValidElement(child)) {
+          return cloneElement(child as React.ReactElement<any>, { artist });
+        }
+        return child;
+      }),
+    [children, artist]
+  );
+
   const { shouldShowError, errorTitle, errorMessage } = useErrorCheck([
     {
       condition: !!error,
@@ -83,7 +94,7 @@ const ArtistDashboardLayout: React.FC<ArtistDashboardLayoutProps> = ({
       />
       <div className={styles.mainContent}>
         <MainLayoutHeader />
-        <main className={styles.contentArea}>{children}</main>
+        <main className={styles.contentArea}>{injected}</main>
       </div>
     </div>
   );

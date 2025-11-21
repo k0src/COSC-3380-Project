@@ -11,7 +11,9 @@ import {
   SearchableDropdown,
   SearchableList,
   CreateAlbumModal,
+  CreatePlaylistModal,
 } from "@components";
+import type { Artist } from "@types";
 import UploadSuccessModal from "./UploadSuccessModal/UploadSuccessModal.js";
 import type { SearchableListItem } from "@components";
 import styles from "./ArtistDashboardAddPage.module.css";
@@ -30,7 +32,13 @@ interface UploadForm {
   albumName: string;
 }
 
-const ArtistDashboardAddPage: React.FC = () => {
+interface ArtistDashboardAddPageProps {
+  artist: Artist;
+}
+
+const ArtistDashboardAddPage: React.FC<ArtistDashboardAddPageProps> = ({
+  artist,
+}) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -46,6 +54,7 @@ const ArtistDashboardAddPage: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [uploadedSongId, setUploadedSongId] = useState<string | null>(null);
   const [isAlbumModalOpen, setIsAlbumModalOpen] = useState(false);
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
 
   const initialFormState: UploadForm = useMemo(
     () => ({
@@ -550,7 +559,7 @@ const ArtistDashboardAddPage: React.FC = () => {
           </div>
           <div
             className={styles.actionButton}
-            onClick={() => setIsAlbumModalOpen(true)}
+            onClick={() => setIsPlaylistModalOpen(true)}
           >
             <LuListMusic className={styles.actionIcon} />
             <span className={styles.actionText}>Create Artist Playlist</span>
@@ -567,14 +576,25 @@ const ArtistDashboardAddPage: React.FC = () => {
         />
       )}
 
-      {user && (
-        <CreateAlbumModal
-          userId={user.id}
-          artistId={user.artist_id!}
-          isOpen={isAlbumModalOpen}
-          onClose={() => setIsAlbumModalOpen(false)}
-          onAlbumCreated={handleAlbumCreated}
-        />
+      {user && user.artist_id && (
+        <>
+          <CreateAlbumModal
+            userId={user.id}
+            artistId={user.artist_id!}
+            isOpen={isAlbumModalOpen}
+            onClose={() => setIsAlbumModalOpen(false)}
+            onAlbumCreated={handleAlbumCreated}
+          />
+
+          <CreatePlaylistModal
+            mode="createArtist"
+            userId={user.id}
+            artistId={user.artist_id}
+            artistName={artist.display_name}
+            isOpen={isPlaylistModalOpen}
+            onClose={() => setIsPlaylistModalOpen(false)}
+          />
+        </>
       )}
     </>
   );

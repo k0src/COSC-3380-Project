@@ -16,6 +16,8 @@ type CreatePlaylistModalProps =
   | {
       mode?: "create";
       userId: UUID;
+      artistId?: never;
+      artistName?: never;
       username: string;
       isOpen: boolean;
       onClose: () => void;
@@ -25,11 +27,24 @@ type CreatePlaylistModalProps =
   | {
       mode: "edit";
       userId?: never;
+      artistId?: never;
+      artistName?: never;
       username?: never;
       isOpen: boolean;
       onClose: () => void;
       onPlaylistCreated?: () => void;
       playlist: LibraryPlaylist | Playlist;
+    }
+  | {
+      mode: "createArtist";
+      userId: UUID;
+      artistId: UUID;
+      artistName: UUID;
+      username?: never;
+      isOpen: boolean;
+      onClose: () => void;
+      onPlaylistCreated?: () => void;
+      playlist?: never;
     };
 
 interface CreatePlaylistForm {
@@ -43,6 +58,8 @@ interface CreatePlaylistForm {
 const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
   mode = "create",
   userId,
+  artistId,
+  artistName,
   username,
   isOpen,
   onClose,
@@ -62,6 +79,15 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
         description: playlist.description || "",
         visibilityStatus:
           playlist.visibility_status === "PUBLIC" ? "PUBLIC" : "PRIVATE",
+        image: null,
+        removeImage: false,
+      };
+    }
+    if (mode === "createArtist") {
+      return {
+        title: `${artistName} - Artist Playlist`,
+        description: `Official playlist by ${artistName}`,
+        visibilityStatus: "PUBLIC",
         image: null,
         removeImage: false,
       };
@@ -157,8 +183,12 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
           visibility_status: playlistForm.visibilityStatus,
         };
 
-        if (mode === "create") {
+        if (mode === "create" || "createArtist") {
           playlistData.owner_id = userId;
+        }
+
+        if (mode === "createArtist") {
+          playlistData.artist_id = artistId;
         }
 
         if (playlistForm.removeImage) {
@@ -242,7 +272,11 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
         <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
           <div className={styles.header}>
             <span className={styles.title}>
-              {mode === "edit" ? "Edit Playlist" : "Create Playlist"}
+              {mode === "edit"
+                ? "Edit Playlist"
+                : mode === "createArtist"
+                ? "Create Artist Playlist"
+                : "Create Playlist"}
             </span>
             <button className={styles.headerButton} onClick={onClose}>
               <LuX />

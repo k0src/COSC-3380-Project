@@ -22,6 +22,7 @@ export default class PlaylistRepository {
     title,
     description,
     owner_id,
+    artist_id,
     visibility_status = "PUBLIC",
     image_url,
     image_url_blurhash,
@@ -29,6 +30,7 @@ export default class PlaylistRepository {
     title: string;
     description: string;
     owner_id: UUID;
+    artist_id?: UUID;
     visibility_status?: VisibilityStatus;
     image_url?: string;
     image_url_blurhash?: string;
@@ -52,6 +54,15 @@ export default class PlaylistRepository {
             image_url_blurhash,
           ]
         );
+
+        if (artist_id) {
+          await client.query(
+            `INSERT INTO artist_playlists (artist_id, playlist_id)
+            VALUES ($1, $2)`,
+            [artist_id, insert.rows[0].id]
+          );
+        }
+
         return insert.rows[0] ?? null;
       });
 

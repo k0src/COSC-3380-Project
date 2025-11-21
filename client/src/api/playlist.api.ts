@@ -112,6 +112,7 @@ export const playlistApi = {
 
   async create(data: {
     owner_id: UUID;
+    artist_id?: UUID;
     title: string;
     description?: string;
     visibility_status?: "PUBLIC" | "PRIVATE";

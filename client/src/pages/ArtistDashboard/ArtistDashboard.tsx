@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
-import { artistApi, commentApi, statsApi } from "@api";
+import type { Artist } from "@types";
+import { commentApi, statsApi } from "@api";
 import {
   PageLoader,
   ArtistDashboardHero,
@@ -25,14 +26,17 @@ import {
 } from "react-icons/lu";
 import artistPlaceholder from "@assets/artist-placeholder.webp";
 
-const ArtistDashboard: React.FC = () => {
+interface ArtistDashboardProps {
+  artist: Artist;
+}
+
+const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
   const { user } = useAuth();
 
   const artistId = user?.artist_id;
 
   const { data, loading } = useAsyncData(
     {
-      artist: () => artistApi.getArtistById(artistId!, { includeUser: true }),
       hasSongs: () => statsApi.checkArtistHasSongs(artistId!),
     },
     [artistId!],
@@ -42,7 +46,6 @@ const ArtistDashboard: React.FC = () => {
     }
   );
 
-  const artist = data?.artist;
   const hasSongs = data?.hasSongs?.hasSongs || false;
 
   const fetchArtistComments = useCallback(
