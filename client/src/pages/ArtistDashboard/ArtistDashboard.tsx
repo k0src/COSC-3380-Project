@@ -27,7 +27,7 @@ import {
 import artistPlaceholder from "@assets/artist-placeholder.webp";
 
 interface ArtistDashboardProps {
-  artist: Artist;
+  artist?: Artist;
 }
 
 const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {

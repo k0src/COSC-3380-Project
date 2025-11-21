@@ -33,7 +33,7 @@ interface UploadForm {
 }
 
 interface ArtistDashboardAddPageProps {
-  artist: Artist;
+  artist?: Artist;
 }
 
 const ArtistDashboardAddPage: React.FC<ArtistDashboardAddPageProps> = ({
@@ -576,11 +576,11 @@ const ArtistDashboardAddPage: React.FC<ArtistDashboardAddPageProps> = ({
         />
       )}
 
-      {user && user.artist_id && (
+      {user && artist && (
         <>
           <CreateAlbumModal
             userId={user.id}
-            artistId={user.artist_id!}
+            artistId={artist.id}
             isOpen={isAlbumModalOpen}
             onClose={() => setIsAlbumModalOpen(false)}
             onAlbumCreated={handleAlbumCreated}
@@ -589,7 +589,7 @@ const ArtistDashboardAddPage: React.FC<ArtistDashboardAddPageProps> = ({
           <CreatePlaylistModal
             mode="createArtist"
             userId={user.id}
-            artistId={user.artist_id}
+            artistId={artist.id}
             artistName={artist.display_name}
             isOpen={isPlaylistModalOpen}
             onClose={() => setIsPlaylistModalOpen(false)}
