@@ -49,6 +49,7 @@ export interface DataTableProps<T = any> {
   className?: string;
   cacheKey: string;
   dependencies?: any[];
+  theme?: "default" | "dark";
 }
 
 export interface DataTableState<T> {

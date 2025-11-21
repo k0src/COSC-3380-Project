@@ -45,7 +45,7 @@
   padding: var(--spacing-sm) var(--spacing-md);
   background: transparent;
   border: none;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-xs);
   color: var(--color-white-alt);
   font-size: var(--font-size-sm);
   font-family: var(--font-main);
@@ -59,6 +59,7 @@
 .dropdownOption:hover {
   background: var(--color-panel-gray-hover);
   color: var(--color-white);
+  width: 100%;
 }
 
 .dropdownOptionDanger {
@@ -66,14 +67,15 @@
 }
 
 .dropdownOptionDanger:hover {
-  background: rgba(var(--color-red-ui-rgb), 0.1);
+  background: var(--color-red-ui-bg-hover);
   color: var(--color-red-ui);
 }
 
 .dropdownOptionIcon {
-  font-size: var(--icon-size-sm);
+  font-size: var(--icon-size-xs);
   flex-shrink: 0;
 }
+
 .dropdownLabel {
   min-width: 0;
   white-space: nowrap;

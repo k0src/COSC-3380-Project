@@ -13,7 +13,7 @@ export const commentColumns: DataTableColumn<Comment>[] = [
         style={{
           color: "var(--color-white)",
           textDecoration: "none",
-          transition: "color var(--transistion-speed) ease",
+          transition: "color var(--transition-speed) ease",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.color = "var(--color-accent)";
@@ -37,7 +37,7 @@ export const commentColumns: DataTableColumn<Comment>[] = [
         style={{
           color: "var(--color-white-alt)",
           textDecoration: "none",
-          transition: "color var(--transistion-speed) ease",
+          transition: "color var(--transition-speed) ease",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.color = "var(--color-accent)";

@@ -27,10 +27,14 @@
   position: relative;
   display: flex;
   align-items: center;
-  background: var(--color-panel-gray);
+  background: none;
   border: var(--border-size-sm) solid var(--color-panel-border);
   border-radius: var(--border-radius-sm);
   transition: border-color var(--transition-speed) ease;
+}
+
+.filterContainerDefault {
+  background: var(--color-panel-gray) !important;
 }
 
 .filterContainer:focus-within {
@@ -86,8 +90,8 @@
 
 .bulkActionButton {
   font-family: var(--font-main);
-  background: var(--color-panel-gray);
-  border: var(--border-size-sm) solid var(--color-gray-button-border);
+  background: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
   border-radius: var(--border-radius-sm);
   padding: var(--spacing-sm) var(--spacing-md);
   color: var(--color-white-alt);
@@ -96,14 +100,21 @@
   cursor: pointer;
   transition: all var(--transition-speed) ease;
   display: flex;
+  height: 3.2rem;
   align-items: center;
   gap: var(--spacing-sm);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
+.bulkActionButtonDefault {
+  background: var(--color-panel-gray);
+  color: var(--color-white);
+}
+
 .bulkActionButton:hover:not(:disabled) {
-  background: var(--color-gray-button-hover);
+  border-color: var(--color-gray-button-border);
+  background-color: var(--color-panel-gray-hover);
 }
 
 .bulkActionButton:disabled {
@@ -137,19 +148,25 @@
   align-items: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--color-panel-gray);
+  background: var(--color-panel-gray-dark);
   border: var(--border-size-sm) solid var(--color-panel-border);
   border-radius: var(--border-radius-sm);
-  color: var(--color-white);
+  color: var(--color-white-alt);
   font-size: var(--font-size-sm);
-  transition: border-color var(--transition-speed) ease;
+  transition: all var(--transition-speed) ease;
   min-width: 6rem;
   height: 3.2rem;
   justify-content: space-between;
 }
 
+.rowsPerPageTriggerDefault {
+  background: var(--color-panel-gray);
+  color: var(--color-white);
+}
+
 .rowsPerPageTrigger:hover:not(:disabled) {
   border-color: var(--color-gray-button-border);
+  background-color: var(--color-panel-gray-hover);
 }
 
 .dropdownTrigger:disabled .rowsPerPageTrigger {
@@ -186,10 +203,10 @@
   align-items: center;
   justify-content: center;
   padding: var(--spacing-xs);
-  background: var(--color-panel-gray);
+  background: var(--color-panel-gray-dark);
   border: var(--border-size-sm) solid var(--color-panel-border);
   border-radius: var(--border-radius-sm);
-  color: var(--color-white);
+  color: var(--color-white-alt);
   cursor: pointer;
   transition: all var(--transition-speed) ease;
   font-size: var(--icon-size-sm);
@@ -197,9 +214,14 @@
   height: 3.2rem;
 }
 
+.paginationButtonDefault {
+  color: var(--color-white);
+  background: var(--color-panel-gray);
+}
+
 .paginationButton:hover:not(:disabled) {
-  background: var(--color-panel-gray-hover);
   border-color: var(--color-gray-button-border);
+  background-color: var(--color-panel-gray-hover);
 }
 
 .paginationButton:disabled {

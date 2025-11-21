@@ -18,6 +18,7 @@ function DataTable<T extends Record<string, any> = any>({
   className,
   cacheKey,
   dependencies = [],
+  theme = "default",
 }: DataTableProps<T>) {
   const [isActionExecuting, setIsActionExecuting] = useState(false);
   const [isBulkActionExecuting, setIsBulkActionExecuting] = useState(false);
@@ -126,6 +127,7 @@ function DataTable<T extends Record<string, any> = any>({
           onPrevPage={goToPrevPage}
           onNextPage={goToNextPage}
           disabled={isDisabled}
+          theme={theme}
         />
       )}
 
@@ -151,11 +153,20 @@ function DataTable<T extends Record<string, any> = any>({
       )}
 
       {!loading && !error && hasData && (
-        <div className={styles.dataTableWrapper}>
+        <div
+          className={classNames(styles.dataTableWrapper, {
+            [styles.dataTableWrapperDark]: theme === "dark",
+            [styles.dataTableWrapperDefault]: theme === "default",
+          })}
+        >
           <div className={styles.dataTableGrid} style={{ gridTemplateColumns }}>
             <div className={styles.headerRow}>
               {hasCheckbox && (
-                <div className={styles.headerCell}>
+                <div
+                  className={classNames(styles.headerCell, {
+                    [styles.headerCellDefault]: theme === "default",
+                  })}
+                >
                   <DataTableCheckbox
                     checked={isAllSelected}
                     onChange={toggleSelectAll}
@@ -167,6 +178,7 @@ function DataTable<T extends Record<string, any> = any>({
                 <div
                   key={column.key}
                   className={classNames(styles.headerCell, {
+                    [styles.headerCellDefault]: theme === "default",
                     [styles.headerCellCenter]: column.align === "center",
                     [styles.headerCellRight]: column.align === "right",
                   })}
@@ -192,7 +204,11 @@ function DataTable<T extends Record<string, any> = any>({
               ))}
 
               {hasActions && (
-                <div className={styles.headerCell}>
+                <div
+                  className={classNames(styles.headerCell, {
+                    [styles.headerCellDefault]: theme === "default",
+                  })}
+                >
                   <span>Actions</span>
                 </div>
               )}
@@ -201,7 +217,12 @@ function DataTable<T extends Record<string, any> = any>({
             {sortedData.map((row, rowIndex) => (
               <div key={row.id || rowIndex} className={styles.dataRow}>
                 {hasCheckbox && (
-                  <div className={styles.dataCell}>
+                  <div
+                    className={classNames(styles.dataCell, {
+                      [styles.dataCellDefault]: theme === "default",
+                      [styles.dataCellDark]: theme === "dark",
+                    })}
+                  >
                     <DataTableCheckbox
                       checked={selectedIds.has(row.id)}
                       onChange={() => toggleSelection(row.id)}
@@ -215,6 +236,8 @@ function DataTable<T extends Record<string, any> = any>({
                     className={classNames(styles.dataCell, column.className, {
                       [styles.dataCellCenter]: column.align === "center",
                       [styles.dataCellRight]: column.align === "right",
+                      [styles.dataCellDefault]: theme === "default",
+                      [styles.dataCellDark]: theme === "dark",
                     })}
                   >
                     <div className={styles.cellContent}>
@@ -229,6 +252,8 @@ function DataTable<T extends Record<string, any> = any>({
                   <div
                     className={classNames(styles.dataCell, {
                       [styles.dataCellCenter]: actions.length === 1,
+                      [styles.dataCellDefault]: theme === "default",
+                      [styles.dataCellDark]: theme === "dark",
                     })}
                   >
                     <div className={styles.actionButtons}>

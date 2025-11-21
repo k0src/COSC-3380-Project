@@ -7,9 +7,12 @@
 }
 
 .dataTableWrapper {
-  background: var(--color-panel-gray);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
+}
+
+.dataTableWrapperDefault {
+  background: var(--color-panel-gray);
   border: var(--border-size-md) solid var(--color-panel-border);
 }
 
@@ -24,7 +27,6 @@
 }
 
 .headerCell {
-  background: var(--color-panel-gray-hover);
   border-bottom: var(--border-size-sm) solid var(--color-panel-border);
   padding: var(--spacing-sd) var(--spacing-md);
   text-align: left;
@@ -35,6 +37,10 @@
   letter-spacing: 0.05em;
   display: flex;
   align-items: center;
+}
+
+.headerCellDefault {
+  background: var(--color-panel-gray-hover);
 }
 
 .headerCellCenter {
@@ -88,7 +94,14 @@
   display: flex;
   align-items: center;
   border-bottom: var(--border-size-sm) solid var(--color-panel-border);
+}
+
+.dataCellDefault {
   min-height: 5rem;
+}
+
+.dataCellDark {
+  min-height: 8rem;
 }
 
 .dataCellCenter {

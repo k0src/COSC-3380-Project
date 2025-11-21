@@ -29,6 +29,7 @@ interface DataTableHeaderProps<T = any> {
   onPrevPage: () => void;
   onNextPage: () => void;
   disabled?: boolean;
+  theme?: "default" | "dark";
 }
 
 function DataTableHeader<T = any>({
@@ -49,6 +50,7 @@ function DataTableHeader<T = any>({
   onPrevPage,
   onNextPage,
   disabled = false,
+  theme = "default",
 }: DataTableHeaderProps<T>) {
   const hasBulkActions = bulkActions.length > 0;
 
@@ -77,7 +79,11 @@ function DataTableHeader<T = any>({
     <div className={styles.headerContainer}>
       <div className={styles.headerLeft}>
         {hasFilter && (
-          <div className={styles.filterContainer}>
+          <div
+            className={classNames(styles.filterContainer, {
+              [styles.filterContainerDefault]: theme === "default",
+            })}
+          >
             <LuSearch className={styles.filterIcon} />
             <input
               type="text"
@@ -102,6 +108,7 @@ function DataTableHeader<T = any>({
                   className={classNames(styles.bulkActionButton, {
                     [styles.bulkActionButtonDanger]:
                       bulkActions[0].variant === "danger",
+                    [styles.bulkActionButtonDefault]: theme === "default",
                   })}
                   onClick={() => onBulkAction(bulkActions[0])}
                   disabled={isBulkActionExecuting}
@@ -140,7 +147,11 @@ function DataTableHeader<T = any>({
                 options={rowsPerPageDropdownOptions}
                 disabled={disabled}
                 trigger={
-                  <div className={styles.rowsPerPageTrigger}>
+                  <div
+                    className={classNames(styles.rowsPerPageTrigger, {
+                      [styles.rowsPerPageTriggerDefault]: theme === "default",
+                    })}
+                  >
                     <span>{rowsPerPage}</span>
                     <LuChevronDown className={styles.rowsPerPageChevron} />
                   </div>
@@ -149,7 +160,9 @@ function DataTableHeader<T = any>({
             </div>
 
             <button
-              className={styles.paginationButton}
+              className={classNames(styles.paginationButton, {
+                [styles.paginationButtonDefault]: theme === "default",
+              })}
               onClick={onPrevPage}
               disabled={disabled || currentPage === 0}
             >
@@ -157,7 +170,9 @@ function DataTableHeader<T = any>({
             </button>
 
             <button
-              className={styles.paginationButton}
+              className={classNames(styles.paginationButton, {
+                [styles.paginationButtonDefault]: theme === "default",
+              })}
               onClick={onNextPage}
               disabled={disabled || !hasMore}
             >
