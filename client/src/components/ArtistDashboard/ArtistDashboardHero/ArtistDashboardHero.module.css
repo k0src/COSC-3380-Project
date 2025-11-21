@@ -2,7 +2,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-md);
-  padding: 0 var(--spacing-sm);
 }
 
 .heroLeft {
@@ -13,6 +12,7 @@
   border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-md);
   padding: var(--spacing-md);
+  flex: 1;
 }
 
 .heroArtistImg {

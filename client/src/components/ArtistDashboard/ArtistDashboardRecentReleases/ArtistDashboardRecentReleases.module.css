@@ -47,8 +47,7 @@
   font-size: var(--font-size-sm);
 }
 
-.releaseGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+.releaseList {
+  display: flex;
   gap: var(--spacing-md);
 }

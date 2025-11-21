@@ -128,7 +128,7 @@ const ArtistDashboard: React.FC = () => {
         <div className={styles.contentAreaBottom}>
           <div className={styles.contentAreaBottomLeft}>
             <ArtistDashboardStreamsChart artistId={artistId!} />
-            <ArtistDashboardRecentReleases artistId={artistId!} maxItems={5} />
+            <ArtistDashboardRecentReleases artistId={artistId!} maxItems={6} />
             <div className={styles.sectionContainer}>
               <div className={styles.sectionHeader}>
                 <span className={styles.sectionTitle}>Recent Comments</span>

@@ -78,7 +78,7 @@ const ArtistDashboardRecentReleases: React.FC<
           View More
         </Link>
       </div>
-      <div className={styles.releaseGrid}>
+      <div className={styles.releaseList}>
         {recentReleases.map((release) => (
           <ArtistEntityCard
             key={release.id}
