@@ -17,7 +17,6 @@ const SongComments: React.FC<SongCommentsProps> = ({ songId }) => {
     {
       comments: () =>
         commentApi.getCommentsBySongId(songId, {
-          includeLikes: true,
           currentUserId: isAuthenticated && user ? user.id : undefined,
           limit: 25,
         }),

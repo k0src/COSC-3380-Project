@@ -168,6 +168,7 @@ html {
 
   /* Icon Sizes */
   --icon-size-xs: 1.4rem;
+  --icon-size-xsd: 1.5rem;
   --icon-size-sm: 1.8rem;
   --icon-size-md: 2rem;
   --icon-size-lg: 2.4rem;
@@ -202,6 +203,7 @@ html {
     forwards;
   --animation-context-menu-fade-in: contextMenufadeIn var(--transition-speed)
     ease-out;
+  --animation-dropdown-fade-in: dropdownFadeIn var(--transition-speed) ease-out;
 
   /* For Color Scheme Selector Previews */
   --color-theme-dark-preview-bg: #080808;
@@ -232,6 +234,17 @@ html {
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

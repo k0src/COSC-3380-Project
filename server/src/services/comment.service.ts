@@ -149,7 +149,6 @@ export default class CommentService {
   static async getCommentsBySongId(
     songId: UUID,
     options?: {
-      includeLikes?: boolean;
       limit?: number;
       offset?: number;
     }
@@ -159,18 +158,23 @@ export default class CommentService {
       const offset = options?.offset ?? 0;
 
       const sql = `
-        SELECT c.*, u.username, u.id AS user_id, u.profile_picture_url,
-          CASE WHEN $2 THEN (
-            SELECT COUNT(*) 
-            FROM comment_likes cl WHERE cl.comment_id = c.id
-          ) ELSE NULL END AS likes
+        SELECT 
+          c.*, 
+          s.title AS song_title,
+          u.id AS user_id, 
+          u.username,
+          u.profile_picture_url,
+          COALESCE(COUNT(cl.comment_id), 0) AS likes
         FROM comments c 
+        JOIN songs s ON c.song_id = s.id
         JOIN users u ON c.user_id = u.id
+        LEFT JOIN comment_likes cl ON c.id = cl.comment_id
         WHERE c.song_id = $1
+        GROUP BY c.id, s.title, u.id, u.username, u.profile_picture_url
         ORDER BY c.commented_at DESC
-        LIMIT $3 OFFSET $4`;
+        LIMIT $2 OFFSET $3`;
 
-      const params = [songId, options?.includeLikes ?? false, limit, offset];
+      const params = [songId, limit, offset];
 
       const comments = await query(sql, params);
       if (comments.length === 0) return [];
@@ -243,21 +247,26 @@ export default class CommentService {
   /**
    * Fetches all comments on an artist's songs
    * @param artistId The ID of the artist
-   * @param limit Maximum number of comments to return
+   * @param options Optional pagination options
+   * @param options.limit Maximum number of comments to return
+   * @param options.offset Number of comments to skip
    * @returns An array of comments with song title, username, and likes
    * @throws Error if the operation fails.
    */
   static async getCommentsByArtistId(
     artistId: UUID,
-    limit: number = 10
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
   ): Promise<Comment[]> {
     try {
+      const limit = options?.limit ?? 10;
+      const offset = options?.offset ?? 0;
+
       const sql = `
         SELECT 
-          c.id,
-          c.comment_text,
-          c.commented_at,
-          c.song_id,
+          c.*, 
           s.title AS song_title,
           u.id AS user_id,
           u.username,
@@ -265,16 +274,15 @@ export default class CommentService {
           COALESCE(COUNT(cl.comment_id), 0) AS likes
         FROM comments c
         JOIN songs s ON c.song_id = s.id
-        JOIN song_artists sa ON s.id = sa.song_id
         JOIN users u ON c.user_id = u.id
         LEFT JOIN comment_likes cl ON c.id = cl.comment_id
-        WHERE sa.artist_id = $1
+        WHERE s.owner_id = (SELECT id FROM users WHERE artist_id = $1)
         GROUP BY c.id, s.title, u.id, u.username, u.profile_picture_url
         ORDER BY c.commented_at DESC
-        LIMIT $2
+        LIMIT $2 OFFSET $3
       `;
 
-      const comments = await query(sql, [artistId, limit]);
+      const comments = await query(sql, [artistId, limit, offset]);
 
       for (const comment of comments) {
         if (comment.profile_picture_url) {

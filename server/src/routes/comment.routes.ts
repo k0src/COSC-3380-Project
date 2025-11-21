@@ -53,22 +53,27 @@ router.post(
   }
 );
 
+// GET /api/comments/artists/:artistId
 router.get(
   "/artists/:artistId",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
-      const { limit } = req.query;
+      const { limit, offset } = req.query;
 
       if (!artistId) {
         res.status(400).json({ error: "Artist ID is required" });
         return;
       }
 
-      const limitNum = limit ? parseInt(limit as string, 10) : 10;
+      const options = {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      };
+
       const comments = await CommentService.getCommentsByArtistId(
         artistId,
-        limitNum
+        options
       );
       res.status(200).json(comments);
     } catch (error: any) {

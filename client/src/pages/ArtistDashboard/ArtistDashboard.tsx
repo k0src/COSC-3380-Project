@@ -9,11 +9,12 @@ import {
   ArtistDashboardHero,
   ArtistDashboardStreamsChart,
   ArtistDashboardRecentReleases,
-  CommentTable,
   ArtistDashboardChecklist,
   ArtistDashboardTopSongs,
   ArtistDashboardTopPlaylists,
+  DataTable,
 } from "@components";
+import { commentColumns } from "@components/DataTable/columnDefinitions/commentColumns";
 import styles from "./ArtistDashboard.module.css";
 import {
   LuPlus,
@@ -44,9 +45,12 @@ const ArtistDashboard: React.FC = () => {
   const artist = data?.artist;
   const hasSongs = data?.hasSongs?.hasSongs || false;
 
-  const fetchArtistComments = useCallback(() => {
-    return commentApi.getCommentsByArtistId(artistId!, 6);
-  }, [artistId]);
+  const fetchArtistComments = useCallback(
+    ({ limit, offset }: { limit: number; offset: number }) => {
+      return commentApi.getCommentsByArtistId(artistId!, { limit, offset });
+    },
+    [artistId]
+  );
 
   const artistName = useMemo(() => {
     if (!artist) return "";
@@ -125,11 +129,25 @@ const ArtistDashboard: React.FC = () => {
           <div className={styles.contentAreaBottomLeft}>
             <ArtistDashboardStreamsChart artistId={artistId!} />
             <ArtistDashboardRecentReleases artistId={artistId!} maxItems={5} />
-            <CommentTable
-              fetchData={fetchArtistComments}
-              cacheKey={`artist_${artistId}_comments`}
-              dependencies={[artistId]}
-            />
+            <div className={styles.sectionContainer}>
+              <div className={styles.sectionHeader}>
+                <span className={styles.sectionTitle}>Recent Comments</span>
+                <Link
+                  to="/artist-dashboard/comments"
+                  className={styles.viewMoreLink}
+                >
+                  View More
+                </Link>
+              </div>
+              <DataTable
+                fetchData={fetchArtistComments}
+                columns={commentColumns}
+                cacheKey={`artist_${artistId}_comments`}
+                dependencies={[artistId]}
+                initialRowsPerPage={6}
+                rowsPerPageOptions={[]}
+              />
+            </div>
           </div>
           <div className={styles.contentAreaBottomRight}>
             <ArtistDashboardChecklist items={artistChecklistItems} />

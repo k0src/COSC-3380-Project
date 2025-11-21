@@ -1,0 +1,214 @@
+.dataTableContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.dataTableWrapper {
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  border: var(--border-size-md) solid var(--color-panel-border);
+}
+
+.dataTableGrid {
+  display: grid;
+  width: 100%;
+  font-size: var(--font-size-sm);
+}
+
+.headerRow {
+  display: contents;
+}
+
+.headerCell {
+  background: var(--color-panel-gray-hover);
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
+  padding: var(--spacing-sd) var(--spacing-md);
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-white-alt);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+}
+
+.headerCellCenter {
+  justify-content: center;
+  text-align: center;
+}
+
+.headerCellRight {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.sortButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  transition: color var(--transition-speed) ease;
+  width: fit-content;
+  background: none;
+  border: none;
+  font-family: var(--font-main);
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-white-alt);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0;
+}
+
+.sortButton:hover {
+  color: var(--color-white);
+}
+
+.sortIcon {
+  font-size: var(--icon-size-xs);
+}
+
+.sortIconDesc {
+  transform: rotate(180deg);
+}
+
+.dataRow {
+  display: contents;
+}
+
+.dataCell {
+  padding: var(--spacing-sd) var(--spacing-md);
+  color: var(--color-text-gray);
+  display: flex;
+  align-items: center;
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
+  min-height: 5rem;
+}
+
+.dataCellCenter {
+  justify-content: center;
+  text-align: center;
+}
+
+.dataCellRight {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.dataRow:hover .dataCell {
+  background: var(--color-panel-gray-hover);
+}
+
+.dataRow:last-child .dataCell {
+  border-bottom: none;
+}
+
+.cellContent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20rem;
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.errorContainer {
+  text-align: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-lg);
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  justify-content: center;
+  align-items: center;
+  border: var(--border-size-md) solid var(--color-panel-border);
+  min-height: 20rem;
+}
+
+.retryButton {
+  font-family: var(--font-main);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-accent);
+  color: var(--color-accent-200);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: all var(--transition-speed) ease;
+}
+
+.retryButton:hover {
+  background: var(--color-accent-800);
+  color: var(--color-accent-300);
+}
+
+.emptyContainer {
+  text-align: center;
+  padding: var(--spacing-lg);
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 20rem;
+  border: var(--border-size-md) solid var(--color-panel-border);
+}
+
+.emptyMessage {
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  justify-content: center;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: var(--spacing-sm);
+  background: transparent;
+  border: none;
+  color: var(--color-text-gray);
+  cursor: pointer;
+  transition: color var(--transition-speed) ease;
+  font-size: var(--icon-size-sm);
+  border-radius: var(--border-radius-xs);
+}
+
+.actionButton:hover:not(:disabled) {
+  color: var(--color-white);
+  background: rgba(var(--color-accent-rgb), 0.1);
+}
+
+.actionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.actionButtonDanger:hover:not(:disabled) {
+  color: var(--color-red-ui);
+  background: rgba(var(--color-red-ui-rgb), 0.1);
+}

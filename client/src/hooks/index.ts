@@ -15,3 +15,5 @@ export {
 } from "./useKeyboardShortcuts.js";
 export { useTextContrast } from "./useTextContrast.js";
 export { useErrorCheck } from "./useErrorCheck.js";
+export { useColumnWidths } from "./useColumnWidths.js";
+export { useDataTableState } from "./useDataTableState.js";

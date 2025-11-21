@@ -1,0 +1,208 @@
+.headerContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.verticalRule {
+  width: var(--border-size-sm);
+  height: 2.4rem;
+  background: var(--color-panel-border);
+}
+
+.filterContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--color-panel-gray);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  transition: border-color var(--transition-speed) ease;
+}
+
+.filterContainer:focus-within {
+  outline: none;
+  border-color: var(--color-gray-button-border);
+}
+
+.filterIcon {
+  position: absolute;
+  left: var(--spacing-sm);
+  color: var(--color-text-gray);
+  pointer-events: none;
+  font-size: var(--icon-size-sm);
+}
+
+.filterInput {
+  font-family: var(--font-main);
+  padding: var(--spacing-sm) 3.5rem var(--spacing-sm) 3.5rem;
+  background: transparent;
+  border: none;
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  width: 24rem;
+  outline: none;
+}
+
+.filterInput::placeholder {
+  color: var(--color-text-gray);
+}
+
+.filterClear {
+  position: absolute;
+  right: var(--spacing-sm);
+  color: var(--color-text-gray);
+  cursor: pointer;
+  transition: color var(--transition-speed) ease;
+  font-size: var(--icon-size-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filterClear:hover {
+  color: var(--color-white);
+}
+
+.bulkActionsContainer {
+  width: 24rem;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.bulkActionButton {
+  font-family: var(--font-main);
+  background: var(--color-panel-gray);
+  border: var(--border-size-sm) solid var(--color-gray-button-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-white-alt);
+  font-size: var(--font-size-xsd);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bulkActionButton:hover:not(:disabled) {
+  background: var(--color-gray-button-hover);
+}
+
+.bulkActionButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.bulkActionButtonDanger {
+  background: var(--color-red-ui-bg);
+  border-color: var(--color-red-ui-border);
+  color: var(--color-red-ui);
+}
+
+.bulkActionButtonDanger:hover:not(:disabled) {
+  background: var(--color-red-ui-bg-hover);
+  border-color: var(--color-red-ui);
+}
+
+.bulkActionIcon {
+  font-size: var(--icon-size-xs);
+  margin: 0;
+}
+
+.bulkActionChevron {
+  font-size: var(--icon-size-xs);
+  margin: 0;
+}
+
+.rowsPerPageTrigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-panel-gray);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  transition: border-color var(--transition-speed) ease;
+  min-width: 6rem;
+  height: 3.2rem;
+  justify-content: space-between;
+}
+
+.rowsPerPageTrigger:hover:not(:disabled) {
+  border-color: var(--color-gray-button-border);
+}
+
+.dropdownTrigger:disabled .rowsPerPageTrigger {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.rowsPerPageChevron {
+  font-size: var(--icon-size-xs);
+  color: var(--color-text-gray);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.rowsPerPageContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.rowsPerPageLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  white-space: nowrap;
+}
+
+.paginationButton {
+  font-family: var(--font-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs);
+  background: var(--color-panel-gray);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  font-size: var(--icon-size-sm);
+  width: 3.2rem;
+  height: 3.2rem;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: var(--color-panel-gray-hover);
+  border-color: var(--color-gray-button-border);
+}
+
+.paginationButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}

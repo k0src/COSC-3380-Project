@@ -5,7 +5,6 @@ export const commentApi = {
   async getCommentsBySongId(
     songId: UUID,
     options?: {
-      includeLikes?: boolean;
       currentUserId?: UUID;
       limit?: number;
       offset?: number;
@@ -35,9 +34,15 @@ export const commentApi = {
     return response.data;
   },
 
-  async getCommentsByArtistId(artistId: UUID, limit: number = 10) {
+  async getCommentsByArtistId(
+    artistId: UUID,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ) {
     const response = await api.get<Comment[]>(`/comments/artists/${artistId}`, {
-      params: { limit },
+      params: options,
     });
     return response.data;
   },

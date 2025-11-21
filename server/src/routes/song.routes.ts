@@ -275,7 +275,6 @@ router.get(
       }
 
       const comments = await CommentService.getCommentsBySongId(id, {
-        includeLikes: req.query.includeLikes === "true",
         limit: req.query.limit
           ? parseInt(req.query.limit as string, 10)
           : undefined,

@@ -12,7 +12,8 @@
     "crc": "node ../scripts/crc.js",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "cross-env VITE_PLATFORM=desktop tauri build"
+    "tauri:build": "cross-env VITE_PLATFORM=desktop tauri build",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

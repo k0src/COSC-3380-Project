@@ -13,3 +13,4 @@ export * from "./theme.types.js";
 export * from "./notifications.types.js";
 export * from "./report.types.js";
 export * from "./access.types.js";
+export * from "./dataTable.types.js";

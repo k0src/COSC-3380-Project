@@ -125,9 +125,6 @@ export { default as FollowProfiles } from "./FollowProfiles/FollowProfiles.js";
 export { default as LikeProfiles } from "./LikeProfiles/LikeProfiles.js";
 export { default as SlidingCardList } from "./SlidingCardList/SlidingCardList.js";
 
-/* ================================= Tables ================================= */
-export { default as CommentTable } from "./CommentTable/CommentTable.js";
-
 /* ================================== Cards ================================== */
 export { default as EntityItem } from "./EntityItem/EntityItem.js";
 export { default as EntityItemCard } from "./EntityItemCard/EntityItemCard.js";
@@ -166,3 +163,9 @@ export { default as Dropdown } from "./Forms/Dropdown/Dropdown.js";
 export { default as SearchableDropdown } from "./SearchableDropdown/SearchableDropdown.js";
 export { default as SearchableList } from "./SearchableList/SearchableList.js";
 export type { SearchableListItem } from "./SearchableList/SearchableList.js";
+
+/* =============================== Data Table =============================== */
+export { default as DataTable } from "./DataTable/DataTable.js";
+export { default as TableDropdown } from "./DataTable/TableDropdown/TableDropdown.js";
+export { default as DataTableHeader } from "./DataTable/DataTableHeader/DataTableHeader.js";
+export { default as DataTableCheckbox } from "./DataTable/DataTableCheckbox/DataTableCheckbox.js";
