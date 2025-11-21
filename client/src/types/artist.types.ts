@@ -7,7 +7,6 @@ export interface Artist {
   user_id: UUID;
   created_at: string;
   verified: boolean;
-  streams: number;
   location?: string;
   banner_image_url?: string;
   banner_image_url_blurhash?: string;

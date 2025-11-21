@@ -6,7 +6,7 @@ import { ConfirmationModal, DataTable } from "@components";
 import {
   commentColumns,
   commentFilterKeys,
-} from "@components/DataTable/columnDefinitions/commentColumns";
+} from "@components/DataTable/columnDefinitions";
 import type { Comment, DataTableAction, DataTableBulkAction } from "@types";
 import styles from "./ArtistDashboardCommentsPage.module.css";
 import { LuTrash2 } from "react-icons/lu";
