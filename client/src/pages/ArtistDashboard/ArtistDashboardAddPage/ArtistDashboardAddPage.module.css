@@ -1,31 +1,41 @@
 .uploadLayout {
   padding: var(--spacing-2xl) var(--spacing-4xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sd);
 }
 
-.actionsContainer {
-  padding: var(--spacing-sd) 0;
+.actionsButtonsContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sd);
 }
 
-.createAlbumButton {
-  font-family: var(--font-main);
+.actionButton {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  background: var(--color-accent);
-  border-radius: var(--border-radius-sm);
-  border: none;
-  color: var(--color-accent-200);
+  padding: var(--spacing-xl) var(--spacing-2xl);
+  background: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  color: var(--color-white-alt);
   cursor: pointer;
-  font-size: var(--font-size-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
   transition: all var(--transition-speed) ease-in-out;
-  margin-left: auto;
 }
 
-.createAlbumButton:hover {
-  background-color: var(--color-accent-800);
-  color: var(--color-accent-300);
+.actionButton:hover {
+  border-color: var(--color-gray-button-border);
+  background-color: var(--color-panel-gray-hover);
+}
+
+.actionIcon {
+  font-size: var(--icon-size-sm);
+}
+
+.actionText {
+  font-size: var(--font-size-sm);
 }
 
 .dropzone {

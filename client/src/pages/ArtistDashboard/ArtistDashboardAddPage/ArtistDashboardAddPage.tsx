@@ -15,7 +15,7 @@ import {
 import UploadSuccessModal from "./UploadSuccessModal/UploadSuccessModal.js";
 import type { SearchableListItem } from "@components";
 import styles from "./ArtistDashboardAddPage.module.css";
-import { LuFileUp, LuPlus } from "react-icons/lu";
+import { LuFileUp, LuListMusic, LuPlus } from "react-icons/lu";
 import { LuCirclePause, LuCirclePlay } from "react-icons/lu";
 
 interface UploadForm {
@@ -347,15 +347,6 @@ const ArtistDashboardAddPage: React.FC = () => {
       </Helmet>
 
       <div className={styles.uploadLayout}>
-        <div className={styles.actionsContainer}>
-          <button
-            className={styles.createAlbumButton}
-            onClick={() => setIsAlbumModalOpen(true)}
-          >
-            <LuPlus /> Create Album
-          </button>
-        </div>
-
         {!uploadForm.audioFile ? (
           <div
             className={`${styles.dropzone} ${
@@ -548,6 +539,23 @@ const ArtistDashboardAddPage: React.FC = () => {
             </form>
           </div>
         )}
+
+        <div className={styles.actionsButtonsContainer}>
+          <div
+            className={styles.actionButton}
+            onClick={() => setIsAlbumModalOpen(true)}
+          >
+            <LuPlus className={styles.actionIcon} />
+            <span className={styles.actionText}>Create Album</span>
+          </div>
+          <div
+            className={styles.actionButton}
+            onClick={() => setIsAlbumModalOpen(true)}
+          >
+            <LuListMusic className={styles.actionIcon} />
+            <span className={styles.actionText}>Create Artist Playlist</span>
+          </div>
+        </div>
       </div>
 
       {uploadedSongId && (
