@@ -5,7 +5,14 @@ import { useAuth } from "@contexts";
 import { songApi, artistApi } from "@api";
 import { formatDateString, getMainArtist } from "@util";
 import { EntityItem } from "@components";
-import type { Song, Album, Artist, ArtistSong, SuggestedSong } from "@types";
+import type {
+  Song,
+  Album,
+  Artist,
+  ArtistSong,
+  SuggestedSong,
+  AccessContext,
+} from "@types";
 import styles from "./SongSuggestions.module.css";
 
 export interface SongSuggestionsProps {
@@ -20,11 +27,17 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
   const songId = song.id;
   const { user, isAuthenticated } = useAuth();
 
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
+
   const asyncConfig = useMemo(
     () => ({
       ...(mainArtist && {
         moreSongsByArtist: async () =>
-          artistApi.getSongs(mainArtist.id, {
+          artistApi.getSongs(mainArtist.id, accessContext, {
             includeArtists: true,
             limit: 5,
           }),

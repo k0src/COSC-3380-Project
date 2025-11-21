@@ -118,6 +118,9 @@ export { default as ArtistDashboardChecklist } from "./ArtistDashboard/ArtistDas
 export { default as ArtistDashboardTopSongs } from "./ArtistDashboard/ArtistDashboardTopSongs/ArtistDashboardTopSongs.js";
 export { default as ArtistDashboardTopPlaylists } from "./ArtistDashboard/ArtistDashboardTopPlaylists/ArtistDashboardTopPlaylists.js";
 export { default as CreateAlbumModal } from "./ArtistDashboard/CreateAlbumModal/CreateAlbumModal.js";
+export { default as ArtistDashboardManageSongs } from "./ArtistDashboard/ArtistDashboardManagePage/ArtistDashboardManageSongs.js";
+export { default as ArtistDashboardManageAlbums } from "./ArtistDashboard/ArtistDashboardManagePage/ArtistDashboardManageAlbums.js";
+export { default as ArtistDashboardManagePlaylists } from "./ArtistDashboard/ArtistDashboardManagePage/ArtistDashboardManagePlaylists/ArtistDashboardManagePlaylists.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

@@ -9,7 +9,7 @@ export interface Playlist {
   id: UUID;
   title: string;
   description: string;
-  created_by: UUID;
+  owner_id: UUID;
   created_at: string;
   updated_at: string;
   visibility_status: VisibilityStatus;

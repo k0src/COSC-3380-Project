@@ -1,12 +1,13 @@
 import { memo, useMemo } from "react";
 import { PuffLoader } from "react-spinners";
-import type { Album, UUID } from "@types";
+import type { Album, UUID, AccessContext } from "@types";
 import { useAsyncData } from "@hooks";
 import { albumApi, artistApi } from "@api";
+import { pluralize } from "@util";
+import { useAuth } from "@contexts";
 import { EntityItem } from "@components";
 import styles from "./RelatedAlbums.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
-import { pluralize } from "@util";
 
 export type RelatedAlbumsProps =
   | {
@@ -28,6 +29,14 @@ const RelatedAlbums: React.FC<RelatedAlbumsProps> = ({
   albumId,
   mode,
 }) => {
+  const { user } = useAuth();
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "ownerList",
+  };
+
   const getApiFn = () => {
     switch (mode) {
       case "related":
@@ -38,7 +47,10 @@ const RelatedAlbums: React.FC<RelatedAlbumsProps> = ({
           });
       case "artist":
         return () =>
-          artistApi.getAlbums(artistId, { includeSongCount: true, limit: 10 });
+          artistApi.getAlbums(artistId, accessContext, {
+            includeSongCount: true,
+            limit: 10,
+          });
       default:
         throw new Error(`Invalid mode: ${mode}`);
     }

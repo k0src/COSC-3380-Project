@@ -148,6 +148,36 @@ router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// POST /api/playlists/bulk-delete
+router.post(
+  "/bulk-delete",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { playlistIds } = req.body;
+
+      if (
+        !playlistIds ||
+        !Array.isArray(playlistIds) ||
+        playlistIds.length === 0
+      ) {
+        res.status(400).json({ error: "Playlist IDs array is required" });
+        return;
+      }
+
+      await PlaylistRepository.bulkDelete(playlistIds);
+      res.status(200).json({
+        message: `${playlistIds.length} playlist${
+          playlistIds.length === 1 ? "" : "s"
+        } deleted successfully`,
+      });
+    } catch (error: any) {
+      console.error("Error in POST /playlists/bulk-delete:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 // GET /api/playlists/:id/songs
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   try {

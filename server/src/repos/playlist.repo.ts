@@ -6,6 +6,7 @@ import {
   SongOptions,
   UUID,
   VisibilityStatus,
+  PlaylistOrderByColumn,
 } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
@@ -20,14 +21,14 @@ export default class PlaylistRepository {
   static async create({
     title,
     description,
-    created_by,
+    owner_id,
     visibility_status = "PUBLIC",
     image_url,
     image_url_blurhash,
   }: {
     title: string;
     description: string;
-    created_by: UUID;
+    owner_id: UUID;
     visibility_status?: VisibilityStatus;
     image_url?: string;
     image_url_blurhash?: string;
@@ -39,13 +40,13 @@ export default class PlaylistRepository {
 
       const res = await withTransaction(async (client) => {
         const insert = await client.query(
-          `INSERT INTO playlists (title, description, created_by, visibility_status, image_url, image_url_blurhash)
+          `INSERT INTO playlists (title, description, owner_id, visibility_status, image_url, image_url_blurhash)
           VALUES ($1, $2, $3, $4, $5, $6)
           RETURNING *`,
           [
             title,
             description,
-            created_by,
+            owner_id,
             visibility_status,
             image_url,
             image_url_blurhash,
@@ -73,14 +74,14 @@ export default class PlaylistRepository {
     {
       title,
       description,
-      created_by,
+      owner_id,
       visibility_status,
       image_url,
       image_url_blurhash,
     }: {
       title?: string;
       description?: string;
-      created_by?: UUID;
+      owner_id?: UUID;
       visibility_status?: VisibilityStatus;
       image_url?: string;
       image_url_blurhash?: string;
@@ -105,9 +106,9 @@ export default class PlaylistRepository {
         fields.push(`description = $${values.length + 1}`);
         values.push(description);
       }
-      if (created_by !== undefined) {
-        fields.push(`created_by = $${values.length + 1}`);
-        values.push(created_by);
+      if (owner_id !== undefined) {
+        fields.push(`owner_id = $${values.length + 1}`);
+        values.push(owner_id);
       }
       if (visibility_status !== undefined) {
         fields.push(`visibility_status = $${values.length + 1}`);
@@ -171,12 +172,31 @@ export default class PlaylistRepository {
       throw error;
     }
   }
+
+  static async bulkDelete(playlistIds: UUID[]) {
+    try {
+      await withTransaction(async (client) => {
+        await client.query(`DELETE FROM playlists WHERE id = ANY($1)`, [
+          playlistIds,
+        ]);
+      });
+    } catch (error) {
+      console.error("Error bulk deleting playlists:", error);
+      throw error;
+    }
+  }
+
   static async getOne(
     id: UUID,
     accessContext: AccessContext,
     options?: PlaylistOptions
   ): Promise<Playlist | null> {
     try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "p", 1);
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
       const selectFields: string[] = ["p.*"];
 
       if (options?.includeUser) {
@@ -212,12 +232,13 @@ export default class PlaylistRepository {
       const sql = `
         SELECT ${selectFields.join(",\n")}
         FROM playlists p
-        LEFT JOIN users u ON p.created_by = u.id
-        WHERE p.id = $1
+        LEFT JOIN users u ON p.owner_id = u.id
+        WHERE p.id = $1 AND (${predicateSql})
         LIMIT 1
       `;
 
-      const params = [id];
+      const params = [id, ...predicateParams];
+
       const res = await query(sql, params);
       if (!res || res.length === 0) return null;
 
@@ -250,14 +271,39 @@ export default class PlaylistRepository {
     options?: PlaylistOptions
   ): Promise<Playlist[]> {
     try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "p");
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
+
+      const orderByColumn = options?.orderByColumn ?? "created_at";
+      const orderByDirection =
+        (options?.orderByDirection ?? "DESC").toUpperCase() === "ASC"
+          ? "ASC"
+          : "DESC";
+
+      const orderByMap: Record<PlaylistOrderByColumn, string> = {
+        title: "p.title",
+        created_at: "p.created_at",
+        likes: "likes",
+        runtime: "runtime",
+        songCount: "song_count",
+      };
+
+      const sqlOrderByColumn = orderByMap[orderByColumn] ?? "p.created_at";
 
       const selectFields: string[] = ["p.*"];
 
       if (options?.includeUser) {
         selectFields.push(`
-        row_to_json(u.*) AS user
+        (
+          SELECT row_to_json(u)
+          FROM users u
+          WHERE u.id = p.owner_id
+        ) AS user
       `);
       }
 
@@ -275,29 +321,37 @@ export default class PlaylistRepository {
 
       if (options?.includeRuntime) {
         selectFields.push(`
-        (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
-          JOIN playlist_songs ps ON ps.song_id = s.id
-          WHERE ps.playlist_id = p.id) AS runtime
+        (SELECT COALESCE(SUM(s.duration), 0)
+         FROM songs s
+         JOIN playlist_songs ps ON ps.song_id = s.id
+         WHERE ps.playlist_id = p.id
+        ) AS runtime
       `);
       }
 
       selectFields.push(`
-      EXISTS (SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS has_song
-    `);
+        EXISTS (
+          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+        ) AS has_song
+      `);
+
+      const limitIndex = predicateParams.length + 1;
+      const offsetIndex = predicateParams.length + 2;
 
       const sql = `
-        SELECT ${selectFields.join(",\n")}
-        FROM playlists p
-        LEFT JOIN users u ON p.created_by = u.id
-        ORDER BY p.created_at DESC
-        LIMIT $1 OFFSET $2
-      `;
+      SELECT ${selectFields.join(",\n")}
+      FROM playlists p
+      WHERE (${predicateSql})
+      ORDER BY ${sqlOrderByColumn} ${orderByDirection}
+      LIMIT $${limitIndex} OFFSET $${offsetIndex}
+    `;
 
-      const params = [limit, offset];
-      const playlists = await query(sql, params);
-      if (!playlists || playlists.length === 0) return [];
+      const params = [...predicateParams, limit, offset];
 
-      return playlists.map((playlist: Playlist) => {
+      const rows = await query(sql, params);
+      if (!rows || rows.length === 0) return [];
+
+      return rows.map((playlist: Playlist) => {
         if (playlist.user?.profile_picture_url) {
           playlist.user.profile_picture_url = getBlobUrl(
             playlist.user.profile_picture_url

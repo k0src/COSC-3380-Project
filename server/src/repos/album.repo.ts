@@ -185,6 +185,17 @@ export default class AlbumRepository {
     }
   }
 
+  static async bulkDelete(albumIds: UUID[]) {
+    try {
+      await withTransaction(async (client) => {
+        await client.query(`DELETE FROM albums WHERE id = ANY($1)`, [albumIds]);
+      });
+    } catch (error) {
+      console.error("Error bulk deleting albums:", error);
+      throw error;
+    }
+  }
+
   static async getOne(
     id: UUID,
     accessContext: AccessContext,
@@ -295,6 +306,22 @@ export default class AlbumRepository {
 
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
+      const orderByColumn = options?.orderByColumn ?? "created_at";
+      const orderByDirection =
+        (options?.orderByDirection ?? "DESC").toUpperCase() === "ASC"
+          ? "ASC"
+          : "DESC";
+
+      const orderByMap: Record<string, string> = {
+        title: "a.title",
+        created_at: "a.created_at",
+        release_date: "a.release_date",
+        likes: "likes",
+        runtime: "runtime",
+        songCount: "song_count",
+      };
+
+      const sqlOrderByColumn = orderByMap[orderByColumn] ?? "a.created_at";
 
       const selectFields: string[] = ["a.*"];
 
@@ -347,12 +374,12 @@ export default class AlbumRepository {
       const offsetIndex = predicateParams.length + 2;
 
       const sql = `
-      SELECT ${selectFields.join(",\n")}
-      FROM albums a
-      WHERE (${predicateSql})
-      ORDER BY a.created_at DESC
-      LIMIT $${limitIndex} OFFSET $${offsetIndex}
-    `;
+        SELECT ${selectFields.join(",\n")}
+        FROM albums a
+        WHERE (${predicateSql})
+        ORDER BY ${sqlOrderByColumn} ${orderByDirection}
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
+      `;
 
       const params = [...predicateParams, limit, offset];
 

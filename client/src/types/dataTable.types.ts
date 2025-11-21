@@ -50,6 +50,7 @@ export interface DataTableProps<T = any> {
   cacheKey: string;
   dependencies?: any[];
   theme?: "default" | "dark";
+  noDataMessage?: ReactNode;
 }
 
 export interface DataTableState<T> {

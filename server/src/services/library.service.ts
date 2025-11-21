@@ -86,7 +86,7 @@ export default class LibraryService {
           (SELECT COUNT(*) FROM playlist_songs ps
           WHERE ps.playlist_id = p.id) as song_count
         FROM playlists p
-        LEFT JOIN users u ON p.created_by = u.id
+        LEFT JOIN users u ON p.owner_id = u.id
         JOIN playlist_likes pl ON pl.playlist_id = p.id
         WHERE pl.user_id = $1 AND p.title ILIKE $2
         ORDER BY pl.liked_at DESC
@@ -281,7 +281,7 @@ export default class LibraryService {
             SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
           )) AS has_song
         FROM playlists p
-        LEFT JOIN users u ON p.created_by = u.id
+        LEFT JOIN users u ON p.owner_id = u.id
         JOIN playlist_history ph ON ph.playlist_id = p.id
         WHERE ph.user_id = $1
         GROUP BY p.id, u.id
@@ -470,7 +470,7 @@ export default class LibraryService {
           SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
         )) AS has_song
       FROM playlists p
-      LEFT JOIN users u ON p.created_by = u.id
+      LEFT JOIN users u ON p.owner_id = u.id
       JOIN playlist_history ph ON ph.playlist_id = p.id
       WHERE ph.user_id = $1
       GROUP BY p.id, u.id
@@ -716,12 +716,10 @@ export default class LibraryService {
             SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
           )) AS has_song
         FROM playlists p
-        LEFT JOIN users u ON p.created_by = u.id
+        LEFT JOIN users u ON p.owner_id = u.id
         LEFT JOIN playlist_likes pl ON pl.playlist_id = p.id AND pl.user_id = $1
         WHERE ${
-          omitLikes
-            ? "p.created_by = $1"
-            : "(pl.user_id = $1 OR p.created_by = $1)"
+          omitLikes ? "p.owner_id = $1" : "(pl.user_id = $1 OR p.owner_id = $1)"
         }
         ORDER BY is_pinned DESC, sort_date DESC, p.id
         LIMIT $2 OFFSET $3
@@ -1045,7 +1043,7 @@ export default class LibraryService {
             SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
           )) AS has_song
         FROM playlists p
-        LEFT JOIN users u ON p.created_by = u.id
+        LEFT JOIN users u ON p.owner_id = u.id
         JOIN playlist_history ph ON ph.playlist_id = p.id
         WHERE ph.user_id = $1 AND ph.played_at >= NOW() - INTERVAL '${timeRange}'
         GROUP BY p.id, u.id

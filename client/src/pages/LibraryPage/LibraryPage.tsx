@@ -167,7 +167,7 @@ const LibraryPage: React.FC = () => {
 
   const handleTogglePrivacy = useCallback(
     async (playlist: LibraryPlaylist) => {
-      if (!user?.id || playlist.created_by !== user.id) return;
+      if (!user?.id || playlist.owner_id !== user.id) return;
 
       try {
         await playlistApi.update(playlist.id, {
@@ -185,7 +185,7 @@ const LibraryPage: React.FC = () => {
 
   const handleDeletePlaylist = useCallback(
     (playlist: LibraryPlaylist) => {
-      if (!user?.id || playlist.created_by !== user.id) return;
+      if (!user?.id || playlist.owner_id !== user.id) return;
 
       setPlaylistToDelete(playlist);
       setIsDeleteModalOpen(true);
@@ -213,7 +213,7 @@ const LibraryPage: React.FC = () => {
       entityType: ContextMenuEntityType | null
     ): ContextMenuAction[] => {
       const playlist = entity as LibraryPlaylist;
-      const isOwner = user?.id === playlist.created_by;
+      const isOwner = user?.id === playlist.owner_id;
 
       return [
         {

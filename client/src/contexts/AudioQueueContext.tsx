@@ -808,8 +808,8 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
 
     playArtist: async (artistId: string) => {
       try {
-        // TODO: pagination
-        const songs = await artistApi.getSongs(artistId, {
+        const ctx = buildAccessContext(isAuthenticated, user);
+        const songs = await artistApi.getSongs(artistId, ctx, {
           includeArtists: true,
           orderByColumn: "streams",
           orderByDirection: "DESC",

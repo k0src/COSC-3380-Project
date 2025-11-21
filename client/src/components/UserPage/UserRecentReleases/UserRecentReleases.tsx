@@ -1,6 +1,7 @@
 import { memo, useCallback, useState, useMemo, useRef, useEffect } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
-import type { UUID, Song } from "@types";
+import type { UUID, Song, AccessContext } from "@types";
+import { useAuth } from "@contexts";
 import { EntityItemCard } from "@components";
 import { artistApi } from "@api";
 import { formatRelativeDate, getMainArtist } from "@util";
@@ -18,15 +19,22 @@ const UserRecentReleases: React.FC<{
   maxItems: number;
   itemsPerView?: number;
 }> = ({ artistId, maxItems, itemsPerView = 6 }) => {
+  const { user } = useAuth();
   const [scrollPosition, setScrollPosition] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
 
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
+
   const { data, loading, error } = useAsyncData(
     {
       recentSongs: () =>
-        artistApi.getSongs(artistId, {
+        artistApi.getSongs(artistId, accessContext, {
           orderByColumn: "release_date",
           orderByDirection: "DESC",
           limit: maxItems,

@@ -1,14 +1,9 @@
 import { Link } from "react-router-dom";
 import { LazyImg } from "@components";
 import type { User, DataTableColumn } from "@types";
+import { formatNumber } from "@util";
 import { LuCheck } from "react-icons/lu";
 import userPlaceholder from "@assets/user-placeholder.webp";
-
-const formatNumber = (num: number): string => {
-  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-  return num.toString();
-};
 
 export const userColumns: DataTableColumn<User>[] = [
   {
@@ -158,7 +153,7 @@ export const userColumns: DataTableColumn<User>[] = [
     align: "center",
     render: (value) => (
       <span style={{ color: "var(--color-white-alt)", fontWeight: 500 }}>
-        {value ? formatNumber(value) : "0"}
+        {formatNumber(value ?? 0)}
       </span>
     ),
   },
@@ -170,7 +165,7 @@ export const userColumns: DataTableColumn<User>[] = [
     align: "center",
     render: (value) => (
       <span style={{ color: "var(--color-white-alt)", fontWeight: 500 }}>
-        {value ? formatNumber(value) : "0"}
+        {formatNumber(value ?? 0)}
       </span>
     ),
   },

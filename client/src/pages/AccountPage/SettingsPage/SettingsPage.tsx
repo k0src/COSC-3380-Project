@@ -347,7 +347,7 @@ const SettingsPage: React.FC = () => {
     } catch (error: any) {
       console.error("Error saving artist settings:", error);
       const errorMessage =
-        error.response?.data?.message || "Failed to save artist settings";
+        error.response?.data?.error || "Failed to save artist settings";
       setArtistError(errorMessage);
     } finally {
       setIsArtistSaving(false);
@@ -373,7 +373,7 @@ const SettingsPage: React.FC = () => {
     } catch (error: any) {
       console.error("Error saving notification settings:", error);
       const errorMessage =
-        error.response?.data?.message || "Failed to save notification settings";
+        error.response?.data?.error || "Failed to save notification settings";
       setNotificationError(errorMessage);
     } finally {
       setIsNotificationSaving(false);
@@ -398,7 +398,7 @@ const SettingsPage: React.FC = () => {
     } catch (error: any) {
       console.error("Error saving appearance settings:", error);
       const errorMessage =
-        error.response?.data?.message || "Failed to save appearance settings";
+        error.response?.data?.error || "Failed to save appearance settings";
       setAppearanceError(errorMessage);
     } finally {
       setIsAppearanceSaving(false);

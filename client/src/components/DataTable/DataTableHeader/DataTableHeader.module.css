@@ -144,6 +144,7 @@
 }
 
 .rowsPerPageTrigger {
+  font-family: var(--font-main);
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);

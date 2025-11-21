@@ -16,7 +16,7 @@ export const commentApi = {
     return response.data;
   },
 
-  async addComment(userId: UUID, songId: UUID, commentText: string) {
+  async add(userId: UUID, songId: UUID, commentText: string) {
     const response = await api.post<{ id: UUID }>(`/songs/${songId}/comments`, {
       userId,
       commentText,
@@ -24,12 +24,12 @@ export const commentApi = {
     return response.data;
   },
 
-  async deleteComment(commentId: UUID) {
+  async delete(commentId: UUID) {
     const response = await api.delete(`/comments/${commentId}`);
     return response.data;
   },
 
-  async bulkDeleteComments(commentIds: UUID[]) {
+  async bulkDelete(commentIds: UUID[]) {
     const response = await api.post(`/comments/bulk-delete`, { commentIds });
     return response.data;
   },

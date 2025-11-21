@@ -111,7 +111,7 @@ export const playlistApi = {
   },
 
   async create(data: {
-    created_by: UUID;
+    owner_id: UUID;
     title: string;
     description?: string;
     visibility_status?: "PUBLIC" | "PRIVATE";
@@ -164,6 +164,11 @@ export const playlistApi = {
 
   async delete(playlistId: UUID) {
     const response = await api.delete(`/playlists/${playlistId}`);
+    return response.data;
+  },
+
+  async bulkDelete(playlistIds: UUID[]) {
+    const response = await api.post(`/playlists/bulk-delete`, { playlistIds });
     return response.data;
   },
 

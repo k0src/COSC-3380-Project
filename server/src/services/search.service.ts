@@ -132,7 +132,7 @@ export default class SearchService {
                    'user', (
                      SELECT row_to_json(u.*)
                      FROM users u
-                     WHERE u.id = p.created_by
+                     WHERE u.id = p.owner_id
                    ),
                    'song_count', (
                      SELECT COUNT(*) FROM playlist_songs ps
@@ -252,7 +252,7 @@ export default class SearchService {
             WHERE ps.playlist_id = p.id) as song_count,
             similarity(p.title, $1) as sim_score
           FROM playlists p
-          LEFT JOIN users u ON p.created_by = u.id
+          LEFT JOIN users u ON p.owner_id = u.id
           WHERE (p.title ILIKE $2 OR similarity(p.title, $1) > 0.2)
           ORDER BY
             CASE WHEN p.title ILIKE $3 THEN 1
@@ -593,7 +593,7 @@ export default class SearchService {
       let paramIndex = 3;
 
       if (ownerId) {
-        sql += ` AND p.created_by = $${paramIndex}`;
+        sql += ` AND p.owner_id = $${paramIndex}`;
         params.push(ownerId);
         paramIndex++;
       }

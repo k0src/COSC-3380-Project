@@ -79,20 +79,7 @@ export function useColumnWidths<T>({
     }
 
     if (hasActions) {
-      let actionWidth;
-
-      switch (actionsCount) {
-        case 1:
-          actionWidth = 6 + actionsCount * 3.5;
-          break;
-        case 2:
-          actionWidth = 3 + actionsCount * 3.5;
-          break;
-        default:
-          actionWidth = 2 + actionsCount * 3.5;
-      }
-
-      widths.push(`${actionWidth}rem`);
+      widths.push("auto");
     }
 
     const result = widths.join(" ");

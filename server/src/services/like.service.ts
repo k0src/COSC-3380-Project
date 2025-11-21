@@ -209,7 +209,7 @@ export default class LikeService {
             WHERE ps.playlist_id = p.id)
           ELSE NULL END as runtime
           FROM playlists p
-          LEFT JOIN users u ON p.created_by = u.id
+          LEFT JOIN users u ON p.owner_id = u.id
           JOIN ${likeTable} l ON p.id = l.playlist_id
           WHERE l.user_id = $1
           LIMIT $6 OFFSET $7

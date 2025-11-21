@@ -226,6 +226,32 @@ router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// POST /api/songs/bulk-delete
+router.post(
+  "/bulk-delete",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { songIds } = req.body;
+
+      if (!songIds || !Array.isArray(songIds) || songIds.length === 0) {
+        res.status(400).json({ error: "Song IDs array is required" });
+        return;
+      }
+
+      await SongRepo.bulkDelete(songIds);
+      res.status(200).json({
+        message: `${songIds.length} song${
+          songIds.length === 1 ? "" : "s"
+        } deleted successfully`,
+      });
+    } catch (error: any) {
+      console.error("Error in POST /songs/bulk-delete:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 router.get(
   "/:id/suggestions",
   async (req: Request, res: Response): Promise<void> => {

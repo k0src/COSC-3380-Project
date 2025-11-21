@@ -151,7 +151,7 @@ export default function AppRoutes() {
               }
             />
             <Route
-              path="/artist-dashboard/manage"
+              path="/artist-dashboard/manage/:tab?"
               element={
                 <ProtectedRoute>
                   <ArtistDashboardLayout>

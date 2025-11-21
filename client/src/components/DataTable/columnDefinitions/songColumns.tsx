@@ -1,44 +1,23 @@
 import { Link } from "react-router-dom";
 import { LazyImg } from "@components";
+import { formatDateString, formatNumber, formatRuntime } from "@util";
 import type { Song, DataTableColumn } from "@types";
+import styles from "./columns.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
-
-const formatDuration = (seconds: number): string => {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-};
-
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
-
-const formatNumber = (num: number): string => {
-  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-  return num.toString();
-};
 
 export const songColumns: DataTableColumn<Song>[] = [
   {
     key: "image_url",
     header: "Cover",
-    width: 80,
+    width: 110,
     align: "center",
     render: (value, row) => (
-      <div style={{ width: "4rem", height: "4rem" }}>
-        <LazyImg
-          src={value || musicPlaceholder}
-          blurHash={row.image_url_blurhash}
-          alt={row.title}
-          imgClassNames={[]}
-          size={64}
-        />
-      </div>
+      <LazyImg
+        src={value || musicPlaceholder}
+        blurHash={row.image_url_blurhash}
+        alt={row.title}
+        imgClassNames={[styles.image]}
+      />
     ),
   },
   {
@@ -53,7 +32,7 @@ export const songColumns: DataTableColumn<Song>[] = [
           color: "var(--color-white)",
           textDecoration: "none",
           fontWeight: 500,
-          transition: "color 0.2s ease",
+          transition: "color var(--transition-speed) ease",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.color = "var(--color-accent)";
@@ -70,13 +49,11 @@ export const songColumns: DataTableColumn<Song>[] = [
     key: "duration",
     header: "Duration",
     sortable: true,
-    width: 100,
+    width: "flex",
     align: "center",
     render: (value) => (
-      <span
-        style={{ color: "var(--color-text-gray)", fontFamily: "monospace" }}
-      >
-        {formatDuration(value)}
+      <span style={{ color: "var(--color-text-gray)" }}>
+        {formatRuntime(value)}
       </span>
     ),
   },
@@ -93,10 +70,10 @@ export const songColumns: DataTableColumn<Song>[] = [
     key: "release_date",
     header: "Release Date",
     sortable: true,
-    width: 120,
+    width: "flex",
     render: (value) => (
       <span style={{ color: "var(--color-text-gray)" }}>
-        {formatDate(value)}
+        {formatDateString(value)}
       </span>
     ),
   },
@@ -104,11 +81,11 @@ export const songColumns: DataTableColumn<Song>[] = [
     key: "streams",
     header: "Streams",
     sortable: true,
-    width: 100,
+    width: "flex",
     align: "center",
     render: (value) => (
       <span style={{ color: "var(--color-white-alt)", fontWeight: 500 }}>
-        {value ? formatNumber(value) : "0"}
+        {formatNumber(value ?? 0)}
       </span>
     ),
   },
@@ -116,8 +93,7 @@ export const songColumns: DataTableColumn<Song>[] = [
     key: "visibility_status",
     header: "Status",
     sortable: true,
-    width: 100,
-    align: "center",
+    width: "flex",
     render: (value) => (
       <span
         style={{
@@ -125,13 +101,13 @@ export const songColumns: DataTableColumn<Song>[] = [
             value === "PUBLIC"
               ? "var(--color-green-ui)"
               : value === "PRIVATE"
-              ? "var(--color-text-gray)"
-              : "var(--color-yellow-ui)",
+              ? "var(--color-red-ui)"
+              : "var(--color-orange-ui)",
           fontWeight: 500,
-          textTransform: "capitalize",
+          textTransform: "uppercase",
         }}
       >
-        {value.toLowerCase()}
+        {value}
       </span>
     ),
   },
@@ -139,11 +115,11 @@ export const songColumns: DataTableColumn<Song>[] = [
     key: "likes",
     header: "Likes",
     sortable: true,
-    width: 80,
+    width: "flex",
     align: "center",
     render: (value) => (
       <span style={{ color: "var(--color-white-alt)", fontWeight: 500 }}>
-        {value ? formatNumber(value) : "0"}
+        {formatNumber(value ?? 0)}
       </span>
     ),
   },

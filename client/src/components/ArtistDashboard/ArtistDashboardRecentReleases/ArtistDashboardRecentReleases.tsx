@@ -2,8 +2,9 @@ import { memo, useMemo } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
 import { Link } from "react-router-dom";
 import { artistApi } from "@api";
+import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
-import type { UUID } from "@types";
+import type { UUID, AccessContext } from "@types";
 import { ArtistEntityCard } from "@components";
 import styles from "./ArtistDashboardRecentReleases.module.css";
 import { formatRelativeDate } from "@util";
@@ -16,16 +17,24 @@ export interface ArtistDashboardRecentReleasesProps {
 const ArtistDashboardRecentReleases: React.FC<
   ArtistDashboardRecentReleasesProps
 > = ({ artistId, maxItems }) => {
+  const { user } = useAuth();
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "ownerList",
+  };
+
   const { data, loading, error } = useAsyncData(
     {
       recentSongs: () =>
-        artistApi.getSongs(artistId, {
+        artistApi.getSongs(artistId, accessContext, {
           orderByColumn: "release_date",
           orderByDirection: "DESC",
           limit: maxItems,
         }),
       recentAlbums: () =>
-        artistApi.getAlbums(artistId, {
+        artistApi.getAlbums(artistId, accessContext, {
           orderByColumn: "release_date",
           orderByDirection: "DESC",
           limit: maxItems,

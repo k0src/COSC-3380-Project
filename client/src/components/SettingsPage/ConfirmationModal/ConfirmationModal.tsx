@@ -56,7 +56,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       onClose();
     } catch (error: any) {
       console.error("Confirmation error:", error);
-      const errorMessage = error.response?.data?.message || "Operation failed";
+      const errorMessage = error.response?.data?.error || "Operation failed";
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);

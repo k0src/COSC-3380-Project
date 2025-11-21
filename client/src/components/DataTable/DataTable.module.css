@@ -7,11 +7,11 @@
 }
 
 .dataTableWrapper {
-  border-radius: var(--border-radius-sm);
   overflow: hidden;
 }
 
 .dataTableWrapperDefault {
+  border-radius: var(--border-radius-sm);
   background: var(--color-panel-gray);
   border: var(--border-size-md) solid var(--color-panel-border);
 }
@@ -115,6 +115,10 @@
 }
 
 .dataRow:hover .dataCell {
+  background: var(--color-panel-gray-dark);
+}
+
+.dataRowDefault:hover .dataCell {
   background: var(--color-panel-gray-hover);
 }
 
@@ -134,6 +138,9 @@
   align-items: center;
   justify-content: center;
   min-height: 20rem;
+}
+
+.loaderContainerDefault {
   background: var(--color-panel-gray);
   border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-sm);
@@ -144,15 +151,18 @@
   color: var(--color-text-gray);
   font-size: var(--font-size-sm);
   padding: var(--spacing-lg);
-  background: var(--color-panel-gray);
-  border-radius: var(--border-radius-sm);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
   justify-content: center;
   align-items: center;
-  border: var(--border-size-md) solid var(--color-panel-border);
   min-height: 20rem;
+}
+
+.errorContainerDefault {
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
+  border: var(--border-size-md) solid var(--color-panel-border);
 }
 
 .retryButton {
@@ -176,12 +186,15 @@
 .emptyContainer {
   text-align: center;
   padding: var(--spacing-lg);
-  background: var(--color-panel-gray);
-  border-radius: var(--border-radius-sm);
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 20rem;
+}
+
+.emptyContainerDefault {
+  background: var(--color-panel-gray);
+  border-radius: var(--border-radius-sm);
   border: var(--border-size-md) solid var(--color-panel-border);
 }
 
@@ -193,7 +206,7 @@
 .actionButtons {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-md);
   justify-content: center;
 }
 
@@ -201,14 +214,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-right: var(--spacing-sm);
   background: transparent;
   border: none;
   color: var(--color-text-gray);
   cursor: pointer;
   transition: color var(--transition-speed) ease;
   font-size: var(--icon-size-sm);
-  border-radius: var(--border-radius-xs);
 }
 
 .actionButton:hover:not(:disabled) {
@@ -217,7 +228,7 @@
 }
 
 .actionButton:disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 

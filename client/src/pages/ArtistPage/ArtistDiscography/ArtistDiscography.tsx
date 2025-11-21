@@ -2,7 +2,8 @@ import { memo, useState, useCallback, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { artistApi } from "@api";
-import type { UUID } from "@types";
+import { useAuth } from "@contexts";
+import type { UUID, AccessContext } from "@types";
 import { useAsyncData, useErrorCheck } from "@hooks";
 import {
   ErrorPage,
@@ -30,8 +31,15 @@ const StatItem = memo(({ value, label }: { value: number; label: string }) => (
 
 const ArtistDiscography: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
+  const { user } = useAuth();
 
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
 
   if (!id) {
     return (
@@ -45,16 +53,16 @@ const ArtistDiscography: React.FC = () => {
   //! ADD LIMITS AND PAGINATION
   const { data, loading, error } = useAsyncData(
     {
-      artist: () => artistApi.getArtistById(id || "", { includeUser: true }),
-      albums: () => artistApi.getAlbums(id || ""),
+      artist: () => artistApi.getArtistById(id, { includeUser: true }),
+      albums: () => artistApi.getAlbums(id, accessContext),
       singles: () =>
-        artistApi.getSongs(id || "", {
+        artistApi.getSongs(id, accessContext, {
           includeArtists: true,
           onlySingles: true,
         }),
-      numberOfSongs: () => artistApi.getNumberOfSongs(id || ""),
-      numberOfAlbums: () => artistApi.getNumberOfAlbums(id || ""),
-      numberOfSingles: () => artistApi.getNumberOfSingles(id || ""),
+      numberOfSongs: () => artistApi.getNumberOfSongs(id),
+      numberOfAlbums: () => artistApi.getNumberOfAlbums(id),
+      numberOfSingles: () => artistApi.getNumberOfSingles(id),
     },
     [id],
     {

@@ -19,6 +19,7 @@ function DataTable<T extends Record<string, any> = any>({
   cacheKey,
   dependencies = [],
   theme = "default",
+  noDataMessage,
 }: DataTableProps<T>) {
   const [isActionExecuting, setIsActionExecuting] = useState(false);
   const [isBulkActionExecuting, setIsBulkActionExecuting] = useState(false);
@@ -71,6 +72,7 @@ function DataTable<T extends Record<string, any> = any>({
       setIsActionExecuting(true);
       try {
         await action.onClick(row, refetch);
+        clearSelection();
       } catch (error) {
         console.error("Failed to execute action:", error);
       } finally {
@@ -132,13 +134,21 @@ function DataTable<T extends Record<string, any> = any>({
       )}
 
       {loading && (
-        <div className={styles.loaderContainer}>
+        <div
+          className={classNames(styles.loaderContainer, {
+            [styles.loaderContainerDefault]: theme === "default",
+          })}
+        >
           <PuffLoader color="var(--color-accent)" size={35} />
         </div>
       )}
 
       {error && !loading && (
-        <div className={styles.errorContainer}>
+        <div
+          className={classNames(styles.errorContainer, {
+            [styles.errorContainerDefault]: theme === "default",
+          })}
+        >
           <span>Failed to load data</span>
           <button className={styles.retryButton} onClick={refetch}>
             Retry
@@ -147,8 +157,14 @@ function DataTable<T extends Record<string, any> = any>({
       )}
 
       {!loading && !error && !hasData && (
-        <div className={styles.emptyContainer}>
-          <span className={styles.emptyMessage}>No data available</span>
+        <div
+          className={classNames(styles.emptyContainer, {
+            [styles.emptyContainerDefault]: theme === "default",
+          })}
+        >
+          {noDataMessage || (
+            <span className={styles.emptyMessage}>No data available</span>
+          )}
         </div>
       )}
 
@@ -215,7 +231,12 @@ function DataTable<T extends Record<string, any> = any>({
             </div>
 
             {sortedData.map((row, rowIndex) => (
-              <div key={row.id || rowIndex} className={styles.dataRow}>
+              <div
+                key={row.id || rowIndex}
+                className={classNames(styles.dataRow, {
+                  [styles.dataRowDefault]: theme === "default",
+                })}
+              >
                 {hasCheckbox && (
                   <div
                     className={classNames(styles.dataCell, {

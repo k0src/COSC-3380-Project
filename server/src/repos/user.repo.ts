@@ -463,7 +463,7 @@ export default class UserRepository {
             SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
           )) AS has_song
         FROM playlists p
-        WHERE p.created_by = $4
+        WHERE p.owner_id = $4
         ORDER BY p.created_at DESC
         LIMIT $5 OFFSET $6
       `;

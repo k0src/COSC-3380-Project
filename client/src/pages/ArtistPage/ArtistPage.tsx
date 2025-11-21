@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import { artistApi } from "@api";
-import type { UUID } from "@types";
+import type { UUID, AccessContext } from "@types";
 import { useAsyncData, useErrorCheck } from "@hooks";
 import {
   ErrorPage,
@@ -22,8 +22,14 @@ import styles from "./ArtistPage.module.css";
 
 const ArtistPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
-
   const { user, isAuthenticated } = useAuth();
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!id) {
@@ -57,7 +63,7 @@ const ArtistPage: React.FC = () => {
 
   const fetchPopularSongs = useCallback(
     () =>
-      artistApi.getSongs(id, {
+      artistApi.getSongs(id, accessContext, {
         includeAlbums: true,
         includeArtists: true,
         orderByColumn: "streams",
@@ -68,13 +74,13 @@ const ArtistPage: React.FC = () => {
   );
 
   const fetchAlbums = useCallback(
-    () => artistApi.getAlbums(id, { limit: 10 }),
+    () => artistApi.getAlbums(id, accessContext, { limit: 10 }),
     [id]
   );
 
   const fetchSingles = useCallback(
     () =>
-      artistApi.getSongs(id, {
+      artistApi.getSongs(id, accessContext, {
         includeArtists: true,
         onlySingles: true,
         limit: 10,

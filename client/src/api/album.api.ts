@@ -152,6 +152,11 @@ export const albumApi = {
     return response.data;
   },
 
+  async bulkDelete(albumIds: UUID[]) {
+    const response = await api.post(`/albums/bulk-delete`, { albumIds });
+    return response.data;
+  },
+
   async removeSong(albumId: UUID, songId: UUID) {
     const response = await api.delete(`/albums/${albumId}/songs/${songId}`);
     return response.data;

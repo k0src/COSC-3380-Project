@@ -147,7 +147,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     } catch (error: any) {
       console.error("Error changing password:", error);
       const errorMessage =
-        error.response?.data?.message || "Failed to change password";
+        error.response?.data?.error || "Failed to change password";
       setApiError(errorMessage);
     } finally {
       setIsSubmitting(false);

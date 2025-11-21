@@ -75,6 +75,7 @@ export interface SongOptions {
   includeComments?: boolean;
   orderByColumn?: SongOrderByColumn;
   orderByDirection?: OrderByDirection;
+  onlySingles?: boolean;
   limit?: number;
   offset?: number;
 }

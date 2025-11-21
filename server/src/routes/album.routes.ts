@@ -159,6 +159,32 @@ router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// POST /api/albums/bulk-delete
+router.post(
+  "/bulk-delete",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { albumIds } = req.body;
+
+      if (!albumIds || !Array.isArray(albumIds) || albumIds.length === 0) {
+        res.status(400).json({ error: "Album IDs array is required" });
+        return;
+      }
+
+      await AlbumRepository.bulkDelete(albumIds);
+      res.status(200).json({
+        message: `${albumIds.length} album${
+          albumIds.length === 1 ? "" : "s"
+        } deleted successfully`,
+      });
+    } catch (error: any) {
+      console.error("Error in POST /albums/bulk-delete:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 // GET /api/albums/:id/songs
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   try {

@@ -158,7 +158,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
         };
 
         if (mode === "create") {
-          playlistData.created_by = userId;
+          playlistData.owner_id = userId;
         }
 
         if (playlistForm.removeImage) {

@@ -311,6 +311,17 @@ export default class SongRepository {
     }
   }
 
+  static async bulkDelete(songIds: UUID[]) {
+    try {
+      await withTransaction(async (client) => {
+        await client.query(`DELETE FROM songs WHERE id = ANY($1)`, [songIds]);
+      });
+    } catch (error) {
+      console.error("Error bulk deleting songs:", error);
+      throw error;
+    }
+  }
+
   static async getOne(
     id: UUID,
     accessContext: AccessContext,
@@ -664,13 +675,13 @@ export default class SongRepository {
       const offsetIndex = predicateParams.length + 3;
 
       const sql = `
-      SELECT ${selectFields.join(",\n")}
-      FROM albums a
-      JOIN album_songs als ON als.album_id = a.id
-      WHERE (${predicateSql}) AND als.song_id = $${songIdIndex}
-      ORDER BY ${sqlOrderByColumn} ${orderByDirection}
-      LIMIT $${limitIndex} OFFSET $${offsetIndex}
-    `;
+        SELECT ${selectFields.join(",\n")}
+        FROM albums a
+        JOIN album_songs als ON als.album_id = a.id
+        WHERE (${predicateSql}) AND als.song_id = $${songIdIndex}
+        ORDER BY ${sqlOrderByColumn} ${orderByDirection}
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
+      `;
 
       const params = [...predicateParams, songId, limit, offset];
 

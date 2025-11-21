@@ -120,7 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authApi.login(data);
       dispatch({ type: "AUTH_SUCCESS", payload: response.user });
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || "Login failed";
+      const errorMessage = error.response?.data?.error || "Login failed";
       dispatch({ type: "AUTH_ERROR", payload: errorMessage });
       throw error;
     }
@@ -132,7 +132,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authApi.signup(data);
       dispatch({ type: "AUTH_SUCCESS", payload: response.user });
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || "Signup failed";
+      const errorMessage = error.response?.data?.error || "Signup failed";
       dispatch({ type: "AUTH_ERROR", payload: errorMessage });
       throw error;
     }

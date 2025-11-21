@@ -1,4 +1,4 @@
-import { memo, useCallback, useState, useRef } from "react";
+import { memo, useCallback, useState, useRef, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import { commentApi } from "@api";
@@ -42,7 +42,7 @@ const ArtistDashboardCommentsPage: React.FC = () => {
     if (!commentToDelete) return;
 
     try {
-      await commentApi.deleteComment(commentToDelete.id);
+      await commentApi.delete(commentToDelete.id);
       setIsDeleteModalOpen(false);
       setCommentToDelete(null);
       if (refetchRef.current) {
@@ -67,9 +67,7 @@ const ArtistDashboardCommentsPage: React.FC = () => {
     if (commentsToBulkDelete.length === 0) return;
 
     try {
-      await commentApi.bulkDeleteComments(
-        commentsToBulkDelete.map((c) => c.id)
-      );
+      await commentApi.bulkDelete(commentsToBulkDelete.map((c) => c.id));
       setIsBulkDeleteModalOpen(false);
       setCommentsToBulkDelete([]);
       if (refetchRef.current) {
@@ -81,25 +79,31 @@ const ArtistDashboardCommentsPage: React.FC = () => {
     }
   }, [commentsToBulkDelete]);
 
-  const commentActions: DataTableAction<Comment>[] = [
-    {
-      id: "delete",
-      icon: LuTrash2,
-      label: "Delete",
-      onClick: handleDeleteClick,
-      variant: "danger",
-    },
-  ];
+  const commentActions = useMemo<DataTableAction<Comment>[]>(
+    () => [
+      {
+        id: "delete",
+        icon: LuTrash2,
+        label: "Delete",
+        onClick: handleDeleteClick,
+        variant: "danger",
+      },
+    ],
+    [handleDeleteClick]
+  );
 
-  const commentBulkActions: DataTableBulkAction<Comment>[] = [
-    {
-      id: "delete",
-      icon: LuTrash2,
-      label: "Delete",
-      onClick: handleBulkDeleteClick,
-      variant: "danger",
-    },
-  ];
+  const commentBulkActions = useMemo<DataTableBulkAction<Comment>[]>(
+    () => [
+      {
+        id: "delete",
+        icon: LuTrash2,
+        label: "Delete",
+        onClick: handleBulkDeleteClick,
+        variant: "danger",
+      },
+    ],
+    [handleBulkDeleteClick]
+  );
 
   return (
     <>

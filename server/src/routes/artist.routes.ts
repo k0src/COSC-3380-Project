@@ -3,7 +3,7 @@ import { ArtistRepository } from "@repositories";
 import { validateOrderBy } from "@validators";
 import { FollowService } from "@services";
 import { parseForm } from "@infra/form-parser";
-import { handlePgError } from "@util";
+import { handlePgError, parseAccessContext } from "@util";
 
 const router = express.Router();
 
@@ -157,14 +157,15 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
 
     let column = (orderByColumn as string) || "created_at";
     let direction = (orderByDirection as string) || "DESC";
-
     if (!validateOrderBy(column, direction, "song")) {
       console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
       column = "created_at";
       direction = "DESC";
     }
 
-    const songs = await ArtistRepository.getSongs(id, {
+    const accessContext = parseAccessContext(req.query);
+
+    const songs = await ArtistRepository.getSongs(id, accessContext, {
       includeAlbums: includeAlbums === "true",
       includeArtists: includeArtists === "true",
       onlySingles: onlySingles === "true",
@@ -215,7 +216,9 @@ router.get(
         direction = "DESC";
       }
 
-      const albums = await ArtistRepository.getAlbums(id, {
+      const accessContext = parseAccessContext(req.query);
+
+      const albums = await ArtistRepository.getAlbums(id, accessContext, {
         includeLikes: includeLikes === "true",
         includeRuntime: includeRuntime === "true",
         includeSongCount: includeSongCount === "true",
@@ -228,6 +231,60 @@ router.get(
       res.status(200).json(albums);
     } catch (error: any) {
       console.error("Error in GET /artists/:id/albums:", error);
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
+    }
+  }
+);
+
+// GET /api/artists/:id/artist-playlists
+router.get(
+  "/:id/artist-playlists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const {
+        includeUser,
+        includeLikes,
+        includeSongCount,
+        includeRuntime,
+        orderByColumn,
+        orderByDirection,
+        limit,
+        offset,
+      } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "playlist")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
+
+      const accessContext = parseAccessContext(req.query);
+
+      const artistPlaylists = await ArtistRepository.getArtistPlaylists(
+        id,
+        accessContext,
+        {
+          includeUser: includeUser === "true",
+          includeLikes: includeLikes === "true",
+          includeSongCount: includeSongCount === "true",
+          includeRuntime: includeRuntime === "true",
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+          offset: offset ? parseInt(offset as string, 10) : undefined,
+        }
+      );
+
+      res.status(200).json(artistPlaylists);
+    } catch (error: any) {
+      console.error("Error in GET /artists/:id/artist-playlists:", error);
       const errorMessage = error.message || "Internal server error";
       res.status(500).json({ error: errorMessage });
     }
@@ -483,6 +540,50 @@ router.get(
       console.error("Error in GET /artists/:id/monthly-listeners:", error);
       const errorMessage = error.message || "Internal server error";
       res.status(500).json({ error: errorMessage });
+    }
+  }
+);
+
+// GET /api/artists/:id/pin-album
+router.post(
+  "/:id/pin-album",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { albumId } = req.body;
+      if (!id || !albumId) {
+        res.status(400).json({ error: "Artist ID and Album ID are required" });
+        return;
+      }
+
+      await ArtistRepository.pinAlbumToArtistPage(id, albumId);
+      res.status(200).json({ message: "Album pinned successfully" });
+    } catch (error: any) {
+      console.error("Error in POST /artists/:id/pin-album:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
+// GET /api/artists/:id/unpin-album
+router.post(
+  "/:id/pin-album",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { albumId } = req.body;
+      if (!id || !albumId) {
+        res.status(400).json({ error: "Artist ID and Album ID are required" });
+        return;
+      }
+
+      await ArtistRepository.unPinAlbumFromArtistPage(id, albumId);
+      res.status(200).json({ message: "Album unpinned successfully" });
+    } catch (error: any) {
+      console.error("Error in POST /artists/:id/unpin-album:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
     }
   }
 );

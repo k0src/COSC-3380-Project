@@ -79,7 +79,7 @@ const PlaylistPage: React.FC = () => {
     if (!user || !isAuthenticated || !playlist) {
       return false;
     }
-    return user.id === playlist.created_by;
+    return user.id === playlist.owner_id;
   }, [user, isAuthenticated, playlist]);
 
   const handleEditPlaylist = useCallback(() => {

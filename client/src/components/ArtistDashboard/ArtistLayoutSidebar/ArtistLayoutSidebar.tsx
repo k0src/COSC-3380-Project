@@ -83,7 +83,7 @@ const ArtistLayoutSidebar: React.FC<ArtistLayoutSidebarProps> = ({
             }
           >
             <LuListMusic className={styles.sidebarIcon} />
-            <span className={styles.sidebarText}>Manage Uploads</span>
+            <span className={styles.sidebarText}>Manage Content</span>
           </NavLink>
           <NavLink
             to="/artist-dashboard/stats"

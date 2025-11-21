@@ -1,5 +1,16 @@
 import api from "./api";
-import type { Artist, ArtistSong, UUID, Album, User, Playlist } from "@types";
+import type {
+  Artist,
+  ArtistSong,
+  UUID,
+  Album,
+  User,
+  Playlist,
+  AccessContext,
+  SongOptions,
+  AlbumOptions,
+  PlaylistOptions,
+} from "@types";
 
 export const artistApi = {
   async getArtistById(
@@ -16,52 +27,52 @@ export const artistApi = {
 
   async getSongs(
     id: UUID,
-    options?: {
-      includeArtists?: boolean;
-      includeAlbums?: boolean;
-      onlySingles?: boolean;
-      includeLikes?: boolean;
-      includeComments?: boolean;
-      orderByColumn?:
-        | "title"
-        | "created_at"
-        | "streams"
-        | "release_date"
-        | "likes"
-        | "comments"
-        | "duration";
-      orderByDirection?: "ASC" | "DESC";
-      limit?: number;
-      offset?: number;
-    }
+    accessContext: AccessContext,
+    options?: SongOptions
   ) {
     const response = await api.get<ArtistSong[]>(`/artists/${id}/songs`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
     return response.data;
   },
 
   async getAlbums(
     id: UUID,
-    options?: {
-      includeLikes?: boolean;
-      includeRuntime?: boolean;
-      includeSongCount?: boolean;
-      orderByColumn?:
-        | "title"
-        | "created_at"
-        | "release_date"
-        | "likes"
-        | "runtime"
-        | "songCount";
-      orderByDirection?: "ASC" | "DESC";
-      limit?: number;
-      offset?: number;
-    }
+    accessContext: AccessContext,
+    options?: AlbumOptions
   ) {
     const response = await api.get<Album[]>(`/artists/${id}/albums`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
+    return response.data;
+  },
+
+  async getArtistPlaylists(
+    id: UUID,
+    accessContext: AccessContext,
+    options?: PlaylistOptions
+  ) {
+    const response = await api.get<Playlist[]>(
+      `/artists/${id}/artist-playlists`,
+      {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      }
+    );
     return response.data;
   },
 
@@ -218,6 +229,20 @@ export const artistApi = {
 
   async delete(artistId: UUID) {
     const response = await api.delete(`/artists/${artistId}`);
+    return response.data;
+  },
+
+  async pinAlbumToArtistPage(artistId: UUID, albumId: UUID) {
+    const response = await api.post(`/artists/${artistId}/pin-album`, {
+      albumId,
+    });
+    return response.data;
+  },
+
+  async unPinAlbumFromArtistPage(artistId: UUID, albumId: UUID) {
+    const response = await api.post(`/artists/${artistId}/unpin-album`, {
+      albumId,
+    });
     return response.data;
   },
 };

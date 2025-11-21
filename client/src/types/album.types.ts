@@ -31,6 +31,10 @@ export interface LibraryAlbum extends Album {
   played_at?: string;
 }
 
+export interface ArtistAlbum extends Album {
+  is_pinned?: boolean;
+}
+
 export type AlbumOrderByColumn =
   | "title"
   | "created_at"

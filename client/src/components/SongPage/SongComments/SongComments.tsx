@@ -32,7 +32,7 @@ const SongComments: React.FC<SongCommentsProps> = ({ songId }) => {
       if (!user) return;
       setIsSubmitting(true);
       try {
-        await commentApi.addComment(user.id, songId, commentText);
+        await commentApi.add(user.id, songId, commentText);
         refetch();
       } catch (error) {
         console.error("Adding comment failed:", error);

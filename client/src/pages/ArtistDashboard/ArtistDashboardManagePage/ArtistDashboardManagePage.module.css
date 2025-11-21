@@ -1,0 +1,54 @@
+.manageLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+  min-height: 100%;
+}
+
+.manageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xsd);
+}
+
+.manageTitle {
+  font-size: var(--font-size-2xl);
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.manageSubtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  margin: 0;
+}
+
+.manageSwitcherButton {
+  font-family: var(--font-main);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  border: none;
+  background: none;
+  color: var(--color-white);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  transition: all var(--transition-speed) ease-in-out;
+  cursor: pointer;
+}
+
+.manageSwitcherButton:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.manageSwitcherButtonActive {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.switcherContainer {
+  display: flex;
+  gap: var(--spacing-xl);
+  align-items: center;
+}

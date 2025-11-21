@@ -1,30 +1,23 @@
 import { Link } from "react-router-dom";
 import { LazyImg } from "@components";
 import type { Playlist, DataTableColumn } from "@types";
+import { formatNumber } from "@util";
+import styles from "./columns.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
-
-const formatNumber = (num: number): string => {
-  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-  return num.toString();
-};
 
 export const playlistColumns: DataTableColumn<Playlist>[] = [
   {
     key: "image_url",
     header: "Cover",
-    width: 80,
+    width: 110,
     align: "center",
     render: (value, row) => (
-      <div style={{ width: "4rem", height: "4rem" }}>
-        <LazyImg
-          src={value || musicPlaceholder}
-          blurHash={row.image_url_blurhash}
-          alt={row.title}
-          imgClassNames={[]}
-          size={64}
-        />
-      </div>
+      <LazyImg
+        src={value || musicPlaceholder}
+        blurHash={row.image_url_blurhash}
+        alt={row.title}
+        imgClassNames={[styles.image]}
+      />
     ),
   },
   {
@@ -39,7 +32,7 @@ export const playlistColumns: DataTableColumn<Playlist>[] = [
           color: "var(--color-white)",
           textDecoration: "none",
           fontWeight: 500,
-          transition: "color 0.2s ease",
+          transition: "color var(--transition-speed) ease",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.color = "var(--color-accent)";
@@ -80,7 +73,7 @@ export const playlistColumns: DataTableColumn<Playlist>[] = [
         style={{
           color: "var(--color-white-alt)",
           textDecoration: "none",
-          transition: "color 0.2s ease",
+          transition: "color var(--transition-speed) ease",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.color = "var(--color-accent)";
@@ -97,8 +90,7 @@ export const playlistColumns: DataTableColumn<Playlist>[] = [
     key: "visibility_status",
     header: "Status",
     sortable: true,
-    width: 100,
-    align: "center",
+    width: "flex",
     render: (value) => (
       <span
         style={{
@@ -106,13 +98,13 @@ export const playlistColumns: DataTableColumn<Playlist>[] = [
             value === "PUBLIC"
               ? "var(--color-green-ui)"
               : value === "PRIVATE"
-              ? "var(--color-text-gray)"
-              : "var(--color-yellow-ui)",
+              ? "var(--color-red-ui)"
+              : "var(--color-orange-ui)",
           fontWeight: 500,
-          textTransform: "capitalize",
+          textTransform: "uppercase",
         }}
       >
-        {value.toLowerCase()}
+        {value}
       </span>
     ),
   },
@@ -120,7 +112,7 @@ export const playlistColumns: DataTableColumn<Playlist>[] = [
     key: "song_count",
     header: "Songs",
     sortable: true,
-    width: 80,
+    width: "flex",
     align: "center",
     render: (value) => (
       <span style={{ color: "var(--color-white-alt)", fontWeight: 500 }}>
@@ -132,11 +124,11 @@ export const playlistColumns: DataTableColumn<Playlist>[] = [
     key: "likes",
     header: "Likes",
     sortable: true,
-    width: 80,
+    width: "flex",
     align: "center",
     render: (value) => (
       <span style={{ color: "var(--color-white-alt)", fontWeight: 500 }}>
-        {value ? formatNumber(value) : "0"}
+        {formatNumber(value ?? 0)}
       </span>
     ),
   },

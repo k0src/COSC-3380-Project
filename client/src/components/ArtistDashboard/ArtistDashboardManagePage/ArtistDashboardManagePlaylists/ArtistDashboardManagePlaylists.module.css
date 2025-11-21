@@ -1,0 +1,15 @@
+.noDataMessage {
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
+
+.noDataLink {
+  color: var(--color-accent) !important;
+  text-decoration: underline !important;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.noDataLink:hover {
+  text-decoration: none !important;
+}
