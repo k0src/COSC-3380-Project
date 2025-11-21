@@ -171,7 +171,7 @@ const LibraryPage: React.FC = () => {
 
       try {
         await playlistApi.update(playlist.id, {
-          visibility_status: playlist.visibility_status === 'public' ? 'private' : 'public',
+          visibility_status: playlist.visibility_status === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC',
         });
         playlistsRefetchRef.current?.();
         recentRefetchRef.current?.();
@@ -231,7 +231,7 @@ const LibraryPage: React.FC = () => {
         },
         {
           id: "toggle-playlist-privacy",
-          label: playlist.visibility_status === 'public' ? "Make Private" : "Make Public",
+          label: playlist.visibility_status === 'PUBLIC' ? "Make Private" : "Make Public",
           icon: LuLock,
           onClick: () => handleTogglePrivacy(playlist),
           show: entityType === "playlist" && isOwner,
