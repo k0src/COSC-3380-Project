@@ -111,16 +111,19 @@
   column-gap: var(--layout-gap-hor);
   row-gap: var(--layout-gap-ver);
   min-height: 100%;
+  min-width: 0;
 }
 
 .contentAreaBottomLeft {
   display: flex;
   flex-direction: column;
   gap: var(--layout-gap-ver);
+  min-width: 0;
 }
 
 .contentAreaBottomRight {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
+  min-width: 0;
 }

@@ -1,7 +1,6 @@
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { PuffLoader } from "react-spinners";
-import { BarChart } from "@mui/x-charts/BarChart";
 import { useAsyncData } from "@hooks";
 import { statsApi } from "@api";
 import type { UUID } from "@types";
@@ -23,7 +22,6 @@ const ArtistDashboardStreamsChart: React.FC<
     [artistId],
     {
       cacheKey: `artist_daily_streams_${artistId}`,
-      enabled: !!artistId,
     }
   );
 
@@ -46,6 +44,13 @@ const ArtistDashboardStreamsChart: React.FC<
 
     return { groupedData, labels };
   }, [data?.streams]);
+
+  const hasData = useMemo(
+    () =>
+      chartData.groupedData.length > 0 &&
+      chartData.groupedData.some((val) => val > 0),
+    [chartData.groupedData]
+  );
 
   if (loading) {
     return (
@@ -77,10 +82,6 @@ const ArtistDashboardStreamsChart: React.FC<
     );
   }
 
-  const hasData =
-    chartData.groupedData.length > 0 &&
-    chartData.groupedData.some((val) => val > 0);
-
   return (
     <div className={styles.sectionContainer}>
       <div className={styles.sectionHeader}>
@@ -91,66 +92,6 @@ const ArtistDashboardStreamsChart: React.FC<
       </div>
       {hasData ? (
         <div className={styles.chartContainer}>
-          {/* <BarChart
-            series={[
-              {
-                data: chartData.groupedData,
-                color: "var(--color-accent)",
-              },
-            ]}
-            xAxis={[
-              {
-                data: chartData.labels,
-                scaleType: "band",
-              },
-            ]}
-            height={300}
-            hideLegend={true}
-            borderRadius={4}
-            sx={{
-              "& .MuiChartsAxis-line": {
-                stroke: "var(--color-gray-button-border) !important",
-              },
-              "& .MuiChartsAxis-tick": {
-                stroke: "var(--color-gray-button-border) !important",
-              },
-              "& .MuiChartsAxis-tickLabel": {
-                fill: "var(--color-gray-button-border) !important",
-                fontSize: "var(--font-size-sm) !important",
-              },
-              "& .MuiChartsGrid-line": {
-                stroke: "var(--color-gray-button-border) !important",
-              },
-            }}
-            slotProps={{
-              tooltip: {
-                sx: {
-                  [`& .${chartsTooltipClasses.paper}`]: {
-                    backgroundColor: "var(--color-panel-gray) !important",
-                    border:
-                      "var(--border-size-md) solid var(--color-panel-border) !important",
-                    borderRadius: "var(--border-radius-md) !important",
-                    padding: "var(--spacing-sm) !important",
-                    boxShadow: "var(--shadow-md) !important",
-                    color: "var(--color-text-gray) !important",
-                    fontSize: "var(--font-size-sm) !important",
-                  },
-                  [`& .${chartsTooltipClasses.labelCell}`]: {
-                    color: "var(--color-white-alt) !important",
-                    fontSize: "var(--font-size-sm) !important",
-                  },
-                  [`& .${chartsTooltipClasses.valueCell}`]: {
-                    color: "var(--color-white-alt) !important",
-                    fontSize: "var(--font-size-sm) !important",
-                    fontWeight: "500 !important",
-                  },
-                  [`& .${chartsTooltipClasses.mark}`]: {
-                    borderRadius: "50% !important",
-                  },
-                },
-              },
-            }}
-          /> */}
           <LineChart
             xAxis={[
               {
@@ -191,7 +132,7 @@ const ArtistDashboardStreamsChart: React.FC<
               },
               "& .MuiChartsGrid-line": {
                 stroke: "var(--color-gray-button)",
-                strokeDasharray: "3 3",
+                strokeDasharray: "4 4",
                 strokeWidth: 1,
               },
               ".MuiChartsAxis-line": {
@@ -204,16 +145,15 @@ const ArtistDashboardStreamsChart: React.FC<
             grid={{ vertical: true }}
             hideLegend={true}
             margin={{ left: 0, right: 25, top: 15, bottom: 5 }}
-            // margin={{ left: 0, right: 25, top: 5, bottom: 10 }}
             slotProps={{
               tooltip: {
                 sx: {
                   [`& .${chartsTooltipClasses.paper}`]: {
-                    backgroundColor: "var(--color-gray-button) !important",
+                    backgroundColor: "var(--color-panel-gray-dark) !important",
                     border:
-                      "var(--border-size-sm) solid var(--color-gray-button-border) !important",
+                      "var(--border-size-sm) solid var(--color-panel-border) !important",
                     borderRadius: "var(--border-radius-md) !important",
-                    padding: "var(--spacing-sm) !important",
+                    padding: "var(--spacing-xs) !important",
                     boxShadow: "var(--shadow-sm) !important",
                     color: "var(--color-white-alt) !important",
                     fontSize: "var(--font-size-sm) !important",
@@ -223,12 +163,14 @@ const ArtistDashboardStreamsChart: React.FC<
                     fontSize: "var(--font-size-sm) !important",
                   },
                   [`& .${chartsTooltipClasses.valueCell}`]: {
-                    color: "var(--color-white-alt) !important",
-                    fontSize: "var(--font-size-sm) !important",
+                    color: "var(--color-text-gray) !important",
+                    fontSize: "var(--font-size-xs) !important",
                     fontWeight: "500 !important",
                   },
                   [`& .${chartsTooltipClasses.mark}`]: {
                     borderRadius: "50% !important",
+                    width: 10,
+                    height: 10,
                   },
                 },
               },

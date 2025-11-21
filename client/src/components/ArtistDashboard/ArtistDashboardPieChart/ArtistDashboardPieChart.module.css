@@ -1,0 +1,76 @@
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: var(--loader-height-md);
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  width: 100%;
+}
+
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: var(--loader-height-md);
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  width: 100%;
+}
+
+.errorText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}
+
+.pieChartContainer {
+  background-color: var(--color-panel-gray-dark);
+  border-radius: var(--border-radius-md);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  padding: var(--spacing-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+}
+
+.pieChartWrapper {
+  height: 38rem;
+}
+
+.listenersStats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.listenerStatItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.listenerStatColor {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.listenerStatLabel {
+  font-size: var(--font-size-md);
+  color: var(--color-white);
+  font-weight: 500;
+}
+
+.listenerStatValue {
+  font-size: var(--font-size-md);
+  color: var(--color-white);
+  font-weight: 600;
+  align-self: flex-end;
+  margin-left: auto;
+}

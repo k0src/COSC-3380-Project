@@ -145,4 +145,60 @@ router.get(
   }
 );
 
+// GET /api/stats/artists/:artistId/top-listeners
+router.get(
+  "/artists/:artistId/top-listeners",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { artistId } = req.params;
+      const { days, limit } = req.query;
+
+      if (!artistId) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const daysNum = days ? parseInt(days as string, 10) : 30;
+      const limitNum = limit ? parseInt(limit as string, 10) : 5;
+      const topListeners = await StatsService.getArtistTopListeners(
+        artistId,
+        daysNum,
+        limitNum
+      );
+      res.status(200).json(topListeners);
+    } catch (error: any) {
+      console.error(
+        "Error in GET /stats/artists/:artistId/top-listeners:",
+        error
+      );
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
+// GET /stats/artists/:artistId/recent-release
+router.get(
+  "/artists/:artistId/recent-release",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { artistId } = req.params;
+      if (!artistId) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const recentRelease = await StatsService.getArtistRecentRelease(artistId);
+      res.status(200).json(recentRelease);
+    } catch (error: any) {
+      console.error(
+        "Error in GET /stats/artists/:artistId/recent-release:",
+        error
+      );
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 export default router;

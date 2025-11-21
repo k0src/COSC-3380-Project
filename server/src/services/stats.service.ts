@@ -1,4 +1,4 @@
-import type { UUID, WeeklyPlays, Song } from "@types";
+import type { UUID, WeeklyPlays, Song, Playlist, TopListener } from "@types";
 import { query } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
 import dotenv from "dotenv";
@@ -235,7 +235,7 @@ export default class StatsService {
     artistId: UUID,
     days: number = 30,
     limit: number = 5
-  ): Promise<any[]> {
+  ): Promise<Playlist[]> {
     try {
       const result = await query(
         `WITH artist_songs AS (
@@ -286,6 +286,66 @@ export default class StatsService {
     }
   }
 
+  static async getArtistTopListeners(
+    artistId: UUID,
+    days: number = 30,
+    limit: number = 5
+  ): Promise<TopListener[]> {
+    try {
+      const result = await query(
+        `WITH listener_streams AS (
+          SELECT 
+            sh.user_id,
+            COUNT(*) AS streams,
+            sh.song_id
+          FROM song_history sh
+          JOIN song_artists sa ON sh.song_id = sa.song_id
+          WHERE sa.artist_id = $1
+            AND sh.played_at >= NOW() - INTERVAL '1 day' * $2
+          GROUP BY sh.user_id, sh.song_id
+        ),
+        listener_totals AS (
+          SELECT 
+            user_id,
+            SUM(streams) AS total_streams
+          FROM listener_streams
+          GROUP BY user_id
+        ),
+        top_songs AS (
+          SELECT DISTINCT ON (ls.user_id)
+            ls.user_id,
+            s.title AS top_song_title
+          FROM listener_streams ls
+          JOIN songs s ON ls.song_id = s.id
+          ORDER BY ls.user_id, ls.streams DESC
+        )
+        SELECT 
+          u.*,
+          lt.total_streams AS streams,
+          ts.top_song_title
+        FROM users u
+        JOIN listener_totals lt ON u.id = lt.user_id
+        JOIN top_songs ts ON u.id = ts.user_id
+        ORDER BY lt.total_streams DESC
+        LIMIT $3`,
+        [artistId, days, limit]
+      );
+
+      return result.map((listener) => {
+        if (listener.profile_picture_url) {
+          listener.profile_picture_url = getBlobUrl(
+            listener.profile_picture_url
+          );
+        }
+        listener.type = "user";
+        return listener as TopListener;
+      });
+    } catch (error) {
+      console.error("Error retrieving artist top listeners:", error);
+      throw error;
+    }
+  }
+
   static async getWeeklyPlays(songId: UUID): Promise<WeeklyPlays> {
     try {
       const result = await query(
@@ -312,6 +372,45 @@ export default class StatsService {
       return result[0].result;
     } catch (error) {
       console.error("Error retrieving weekly plays:", error);
+      throw error;
+    }
+  }
+
+  static async getArtistRecentRelease(artistId: UUID): Promise<Song | null> {
+    try {
+      const result = await query(
+        `SELECT
+          s.*,
+          COALESCE(COUNT(DISTINCT sl.user_id), 0) AS likes,
+          COALESCE(COUNT(DISTINCT c.id), 0) AS comments
+        FROM songs s
+        JOIN song_artists sa ON s.id = sa.song_id
+        LEFT JOIN song_likes sl ON s.id = sl.song_id
+        LEFT JOIN comments c ON s.id = c.song_id
+        WHERE sa.artist_id = $1
+        GROUP BY s.id
+        ORDER BY s.release_date DESC
+        LIMIT 1`,
+        [artistId]
+      );
+
+      if (result.length === 0) {
+        return null;
+      }
+
+      const song = result[0] as Song;
+
+      if (song.image_url) {
+        song.image_url = getBlobUrl(song.image_url);
+      }
+      if (song.audio_url) {
+        song.audio_url = getBlobUrl(song.audio_url);
+      }
+      song.type = "song";
+
+      return song;
+    } catch (error) {
+      console.error("Error retrieving artist recent release:", error);
       throw error;
     }
   }

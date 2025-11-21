@@ -1,5 +1,5 @@
 import api from "./api";
-import type { UUID } from "@types";
+import type { Comment, Playlist, Song, UUID, TopListener } from "@types";
 
 export const statsApi = {
   async getArtistQuickStats(artistId: UUID, days: number = 30) {
@@ -10,9 +10,12 @@ export const statsApi = {
   },
 
   async getArtistTopSong(artistId: UUID, days: number = 30) {
-    const response = await api.get(`/stats/artists/${artistId}/top-song`, {
-      params: { days },
-    });
+    const response = await api.get<Song>(
+      `/stats/artists/${artistId}/top-song`,
+      {
+        params: { days },
+      }
+    );
     return response.data;
   },
 
@@ -32,9 +35,12 @@ export const statsApi = {
     orderBy: string = "commented_at",
     orderDirection: "ASC" | "DESC" = "DESC"
   ) {
-    const response = await api.get(`/stats/artists/${artistId}/comments`, {
-      params: { limit, orderBy, orderDirection },
-    });
+    const response = await api.get<Comment[]>(
+      `/stats/artists/${artistId}/comments`,
+      {
+        params: { limit, orderBy, orderDirection },
+      }
+    );
     return response.data;
   },
 
@@ -44,9 +50,12 @@ export const statsApi = {
   ) {
     const { timeRange = "30d", limit = 5 } = options;
     const days = timeRange === "30d" ? 30 : 7;
-    const response = await api.get(`/stats/artists/${artistId}/top-songs`, {
-      params: { days, limit },
-    });
+    const response = await api.get<Song[]>(
+      `/stats/artists/${artistId}/top-songs`,
+      {
+        params: { days, limit },
+      }
+    );
     return response.data;
   },
 
@@ -56,9 +65,34 @@ export const statsApi = {
   ) {
     const { timeRange = "30d", limit = 5 } = options;
     const days = timeRange === "30d" ? 30 : 7;
-    const response = await api.get(`/stats/artists/${artistId}/top-playlists`, {
-      params: { days, limit },
-    });
+    const response = await api.get<Playlist[]>(
+      `/stats/artists/${artistId}/top-playlists`,
+      {
+        params: { days, limit },
+      }
+    );
+    return response.data;
+  },
+
+  async getArtistTopListeners(
+    artistId: UUID,
+    options: { timeRange?: string; limit?: number } = {}
+  ) {
+    const { timeRange = "30d", limit = 5 } = options;
+    const days = timeRange === "30d" ? 30 : 7;
+    const response = await api.get<TopListener[]>(
+      `/stats/artists/${artistId}/top-listeners`,
+      {
+        params: { days, limit },
+      }
+    );
+    return response.data;
+  },
+
+  async getArtistRecentRelease(artistId: UUID) {
+    const response = await api.get<Song>(
+      `/stats/artists/${artistId}/recent-release`
+    );
     return response.data;
   },
 };

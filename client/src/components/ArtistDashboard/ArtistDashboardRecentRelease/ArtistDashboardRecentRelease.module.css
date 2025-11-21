@@ -1,0 +1,141 @@
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: var(--loader-height-sm);
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  width: 100%;
+  flex: 1;
+}
+
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: var(--loader-height-sm);
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  width: 100%;
+  flex: 1;
+}
+
+.errorText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}
+
+.recentReleaseCard {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  padding: 1.8rem;
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  min-width: 0;
+  width: 100%;
+  flex: 1;
+}
+
+.recentReleaseImg {
+  width: 18rem;
+  height: 18rem;
+  border-radius: var(--border-radius-sm);
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.recentReleaseInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sd);
+  min-width: 0;
+  width: 100%;
+}
+
+.recentReleaseInfoTop {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.recentReleaseInfoTopLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xsd);
+  min-width: 0;
+  width: 100%;
+}
+
+.recentReleaseHeaderText {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--color-white-alt);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.recentReleaseTitle {
+  font-size: var(--font-size-2xl);
+  color: var(--color-white);
+  font-weight: 600;
+  transition: color var(--transition-speed) ease;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.recentReleaseTitle:hover {
+  color: var(--color-accent) !important;
+}
+
+.recentReleaseSubtitle {
+  font-size: var(--font-size-md);
+  color: var(--color-text-gray);
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.manageIcon {
+  font-size: var(--icon-size-md);
+  color: var(--color-text-gray) !important;
+  cursor: pointer;
+  transition: color var(--transition-speed) ease;
+}
+
+.manageIcon:hover {
+  color: var(--color-white) !important;
+}
+
+.recentReleaseStats {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xsd);
+}
+
+.recentReleaseStatItem {
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
+
+.statsBull {
+  font-size: var(--font-size-xsd);
+  color: var(--color-text-gray);
+}

@@ -12,11 +12,252 @@
   font-weight: 700;
 }
 
-.lineChart {
+.statsTop {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.recentReleaseCard {
+  position: relative;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  padding: 1.8rem;
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  min-width: 0;
+  width: 100%;
+  flex: 1;
+}
+
+.recentReleaseImg {
+  width: 18rem;
+  height: 18rem;
+  border-radius: var(--border-radius-sm);
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.recentReleaseInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sd);
+  min-width: 0;
+  width: 100%;
+}
+
+.recentReleaseInfoTop {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.recentReleaseInfoTopLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xsd);
+  min-width: 0;
+  width: 100%;
+}
+
+.recentReleaseHeaderText {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--color-white-alt);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.recentReleaseTitle {
+  font-size: var(--font-size-2xl);
+  color: var(--color-white);
+  font-weight: 600;
+  transition: color var(--transition-speed) ease;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.recentReleaseTitle:hover {
+  color: var(--color-accent) !important;
+}
+
+.recentReleaseSubtitle {
+  font-size: var(--font-size-md);
+  color: var(--color-text-gray);
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.manageIcon {
+  font-size: var(--icon-size-md);
+  color: var(--color-text-gray) !important;
+  cursor: pointer;
+  transition: color var(--transition-speed) ease;
+}
+
+.manageIcon:hover {
+  color: var(--color-white) !important;
+}
+
+.recentReleaseStats {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xsd);
+}
+
+.recentReleaseStatItem {
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}
+
+.statsBull {
+  font-size: var(--font-size-xsd);
+  color: var(--color-text-gray);
+}
+
+.barChartContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.barChartTop {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+}
+
+.barChartTitle {
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.barChartTitleText {
+  font-size: var(--font-size-xl);
+}
+
+.barChartIcon {
+  font-size: var(--icon-size-xl);
+}
+
+.barChartIconUp {
+  color: var(--color-green-ui);
+}
+
+.barChartIconDown {
+  color: var(--color-red-ui);
+}
+
+.dateRangeContainer {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.dateRangeButton {
+  font-family: var(--font-main);
+  background: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-white-alt);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dateRangeButton:hover {
+  border-color: var(--color-gray-button-border);
+  background-color: var(--color-panel-gray-hover);
+}
+
+.dateRangeButtonActive {
+  border-color: var(--color-gray-button-border);
+  background-color: var(--color-panel-gray-hover);
+}
+
+.barChart {
   background-color: var(--color-panel-gray);
   border-radius: var(--border-radius-md);
   border: var(--border-size-md) solid var(--color-panel-border);
-  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-md) 0;
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) 0;
   width: 100%;
-  height: 36rem;
+  height: 52rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.barChartNumbers {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  align-self: flex-end;
+  padding-right: var(--spacing-xl);
+  padding-top: var(--spacing-md);
+}
+
+.barChartNumber {
+  font-size: var(--font-size-md);
+  color: var(--color-white-alt);
+}
+
+.topItemsContainer {
+  display: grid;
+  grid-template-columns: 2fr 2fr 3fr;
+  gap: var(--spacing-md);
+  min-width: 0;
+}
+
+.sectionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.listenersContainer {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr;
+  gap: var(--spacing-md);
+  min-width: 0;
 }

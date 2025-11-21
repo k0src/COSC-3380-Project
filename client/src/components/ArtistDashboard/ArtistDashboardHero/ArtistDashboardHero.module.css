@@ -55,16 +55,6 @@
   gap: var(--spacing-sd);
 }
 
-.topSongSectionTitle {
-  font-size: var(--font-size-lg);
-  color: var(--color-white);
-  font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  width: 100%;
-}
-
 .topSongCard {
   position: relative;
   display: flex;
