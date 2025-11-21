@@ -77,9 +77,10 @@ app.use("/api/albums", Routes.albumRoutes);
 app.use("/api/artists", Routes.artistRoutes);
 app.use("/api/playlists", Routes.playlistRoutes);
 app.use("/api/data-reports", Routes.dataReportsRoutes);
+app.use("/api/reports", Routes.reportRoutes);
 app.use("/api/users", Routes.userRoutes);
 app.use("/api/proxy", Routes.proxyRoutes);
-app.use("/api/search", Routes.searchRoutes); 
+app.use("/api/search", Routes.searchRoutes);
 
 const clientDistPath = path.join(__dirname, "public");
 app.use(express.static(clientDistPath));

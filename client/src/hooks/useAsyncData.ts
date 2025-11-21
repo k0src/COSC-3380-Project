@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 const IS_DEV = process.env.NODE_ENV === "development";
 
@@ -119,6 +119,13 @@ export function useAsyncData<
 
   const requestIdRef = useRef(0);
   const prevDepsRef = useRef<any[]>(dependencies);
+  const asyncFnsRef = useRef(asyncFns);
+  const optionsRef = useRef(options);
+
+  useEffect(() => {
+    asyncFnsRef.current = asyncFns;
+    optionsRef.current = options;
+  });
 
   const {
     cacheKey,
@@ -128,14 +135,17 @@ export function useAsyncData<
     enabled = true,
   } = options;
 
-  const fetchData = async (bypassCache = false) => {
+  const fetchData = useCallback(async (bypassCache = false) => {
     const currentRequestId = ++requestIdRef.current;
+    const currentAsyncFns = asyncFnsRef.current;
+    const currentOptions = optionsRef.current;
+    const { cacheKey, ttl = 1000 * 60 * 5 } = currentOptions;
 
     try {
       setLoading(true);
       setError(null);
 
-      const fns = Object.entries(asyncFns);
+      const fns = Object.entries(currentAsyncFns);
       const results = await Promise.all(fns.map(([_, fn]) => fn()));
 
       if (currentRequestId !== requestIdRef.current) return;
@@ -158,11 +168,11 @@ export function useAsyncData<
         setLoading(false);
       }
     }
-  };
+  }, []);
 
-  const refetch = () => {
+  const refetch = useCallback(() => {
     fetchData(true); // bypass cache when manually refetching
-  };
+  }, [fetchData]);
 
   useEffect(() => {
     if (!enabled) {

@@ -35,7 +35,7 @@ type CreatePlaylistModalProps =
 interface CreatePlaylistForm {
   title: string;
   description: string;
-  isPublic: boolean;
+  visibility_status: 'public' | 'private';
   image?: File | null;
   removeImage?: boolean;
 }
@@ -60,7 +60,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
       return {
         title: playlist.title,
         description: playlist.description || "",
-        isPublic: playlist.is_public,
+        visibility_status: playlist.visibility_status,
         image: null,
         removeImage: false,
       };
@@ -68,7 +68,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
     return {
       title: `${username}'s Playlist`,
       description: "",
-      isPublic: true,
+      visibility_status: 'public',
       image: null,
       removeImage: false,
     };
@@ -87,7 +87,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
     const isFormDirty =
       playlistForm.title !== initialFormState.title ||
       playlistForm.description !== initialFormState.description ||
-      playlistForm.isPublic !== initialFormState.isPublic ||
+      playlistForm.visibility_status !== initialFormState.visibility_status ||
       playlistForm.image !== initialFormState.image ||
       playlistForm.removeImage === true;
     setIsDirty(isFormDirty);
@@ -131,7 +131,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
   );
 
   const handlePrivacyChange = (checked: boolean) => {
-    setPlaylistForm((prev) => ({ ...prev, isPublic: checked }));
+    setPlaylistForm((prev) => ({ ...prev, visibility_status: checked ? 'public' : 'private' }));
     if (error) {
       setError("");
     }
@@ -153,7 +153,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
         const playlistData: any = {
           title: playlistForm.title.trim(),
           description: playlistForm.description.trim(),
-          is_public: playlistForm.isPublic,
+          visibility_status: playlistForm.visibility_status,
         };
 
         if (mode === "create") {
@@ -269,8 +269,8 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
             />
             <SettingsToggle
               label="Playlist Privacy"
-              name="isPublic"
-              checked={playlistForm.isPublic}
+              name="visibility_status"
+              checked={playlistForm.visibility_status === 'public'}
               onChange={handlePrivacyChange}
               disabled={isCreating}
               values={{ on: "Public", off: "Private" }}

@@ -111,7 +111,7 @@ export default class AdminRepository {
         case "playlist":
           entityUpdateSql = `
             UPDATE playlists
-            SET is_public = false
+            SET visibility_status = 'private'
             WHERE id = $1;
           `;
           break;

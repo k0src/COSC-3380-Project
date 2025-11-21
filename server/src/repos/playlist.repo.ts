@@ -14,7 +14,7 @@ export default class PlaylistRepository {
    * @param playlist.title The title of the playlist.
    * @param playlist.description The description of the playlist.
    * @param playlist.created_by The ID of the user who created the playlist.
-   * @param playlist.is_public Whether the playlist is public (optional, defaults to true).
+   * @param playlist.visibility_status The visibility status of the playlist (optional, defaults to 'public').
    * @param playlist.image_url The image URL of the playlist (optional).
    * @param playlist.image_url_blurhash The blurhash of the playlist image (optional).
    * @returns The created playlist, or null if creation fails.
@@ -24,14 +24,14 @@ export default class PlaylistRepository {
     title,
     description,
     created_by,
-    is_public = true,
+    visibility_status = 'public',
     image_url,
     image_url_blurhash,
   }: {
     title: string;
     description: string;
     created_by: UUID;
-    is_public?: boolean;
+    visibility_status?: 'public' | 'private';
     image_url?: string;
     image_url_blurhash?: string;
   }): Promise<Playlist | null> {
@@ -42,14 +42,14 @@ export default class PlaylistRepository {
 
       const res = await withTransaction(async (client) => {
         const insert = await client.query(
-          `INSERT INTO playlists (title, description, created_by, is_public, image_url, image_url_blurhash)
+          `INSERT INTO playlists (title, description, created_by, visibility_status, image_url, image_url_blurhash)
           VALUES ($1, $2, $3, $4, $5, $6)
           RETURNING *`,
           [
             title,
             description,
             created_by,
-            is_public,
+            visibility_status,
             image_url,
             image_url_blurhash,
           ]
@@ -78,7 +78,7 @@ export default class PlaylistRepository {
    * @param playlist.title The new title of the playlist (optional).
    * @param playlist.description The new description of the playlist (optional).
    * @param playlist.created_by The new ID of the user who created the playlist (optional).
-   * @param playlist.is_public Whether the playlist is public (optional).
+   * @param playlist.visibility_status The new visibility status of the playlist (optional).
    * @param playlist.image_url The new image URL of the playlist (optional).
    * @param playlist.image_url_blurhash The new blurhash of the playlist image (optional).
    * @returns The updated playlist, or null if the update fails.
@@ -90,14 +90,14 @@ export default class PlaylistRepository {
       title,
       description,
       created_by,
-      is_public,
+      visibility_status,
       image_url,
       image_url_blurhash,
     }: {
       title?: string;
       description?: string;
       created_by?: UUID;
-      is_public?: boolean;
+      visibility_status?: 'public' | 'private';
       image_url?: string;
       image_url_blurhash?: string;
     }
@@ -125,9 +125,9 @@ export default class PlaylistRepository {
         fields.push(`created_by = $${values.length + 1}`);
         values.push(created_by);
       }
-      if (is_public !== undefined) {
-        fields.push(`is_public = $${values.length + 1}`);
-        values.push(is_public);
+      if (visibility_status !== undefined) {
+        fields.push(`visibility_status = $${values.length + 1}`);
+        values.push(visibility_status);
       }
       if (image_url !== undefined) {
         fields.push(`image_url = $${values.length + 1}`);

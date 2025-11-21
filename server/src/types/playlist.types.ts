@@ -7,7 +7,7 @@ export interface Playlist {
   created_by: UUID;
   created_at: string;
   updated_at: string;
-  is_public: boolean;
+  visibility_status: 'public' | 'private';
 
   song_count?: number;
   user?: User;

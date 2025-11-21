@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
 import { reportsApi } from "@api/reports.api";
+import { LuX } from "react-icons/lu";
 import styles from "./ReportModal.module.css";
 
 export type ReportEntityType = "SONG" | "ARTIST" | "ALBUM" | "PLAYLIST";
@@ -26,6 +27,17 @@ const ReportModal: React.FC<ReportModalProps> = ({
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -70,10 +82,15 @@ const ReportModal: React.FC<ReportModalProps> = ({
   };
 
   return (
-    <div className={styles.reportLayout} onClick={onClose}>
-      <div className={styles.reportContainer} onClick={(e) => e.stopPropagation()}>
-        <h2 className={styles.title}>Report Content</h2>
-        <p className={styles.subtitle}>Please tell us why you’re reporting this content.</p>
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Report Content</h2>
+          <button className={styles.closeButton} onClick={onClose}>
+            <LuX />
+          </button>
+        </div>
+        <p className={styles.subtitle}>Please tell us why you're reporting this content.</p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <label className={styles.label}>Select a reason</label>

@@ -82,7 +82,7 @@ export const playlistApi = {
     created_by: UUID;
     title: string;
     description?: string;
-    is_public: boolean;
+    visibility_status: 'public' | 'private';
     image_url?: File | null;
   }) {
     const formData = new FormData();
@@ -106,7 +106,7 @@ export const playlistApi = {
     data: {
       title?: string;
       description?: string;
-      is_public?: boolean;
+      visibility_status?: 'public' | 'private';
       image_url?: File | null;
     }
   ) {

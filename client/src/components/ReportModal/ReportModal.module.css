@@ -1,43 +1,67 @@
-.reportLayout {
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-overlay-bg);
+  backdrop-filter: var(--overlay-blur);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background-color: var(--color-black);
+  z-index: 1000;
+  animation: var(--animation-fade-in);
 }
 
-.reportContainer {
+.modal {
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  width: 90%;
+  max-width: 40rem;
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-modal);
+  animation: var(--animation-slide-in);
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 40rem;
-  background-color: var(--color-panel-gray);
-  border: 2px solid var(--color-panel-border);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-xl);
   gap: var(--spacing-lg);
 }
 
-.reportHeader {
+.header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--spacing-sm);
+  justify-content: space-between;
 }
 
 .title {
-  font-size: var(--font-size-xl);
+  font-size: 2rem;
   font-weight: 600;
+  color: var(--color-white);
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: 2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed) ease;
+}
+
+.closeButton:hover {
   color: var(--color-white);
 }
 
 .subtitle {
   font-size: var(--font-size-sm);
   color: var(--color-text-gray);
-  text-align: center;
 }
 
-.reportForm {
+.form {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
