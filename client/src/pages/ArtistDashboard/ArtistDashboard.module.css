@@ -19,17 +19,55 @@
   font-weight: 700;
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
 .adHeaderButton {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white-alt) !important;
   font-size: var(--font-size-sm);
-  color: var(--color-text-gray) !important;
-  transition: color var(--transition-speed) ease-in-out;
+  transition: all var(--transition-speed) ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.adHeaderButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 15s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .adHeaderButton:hover {
-  color: var(--color-white) !important;
+  border-color: var(--color-gray-button-border);
+  background-color: var(--color-panel-gray-hover);
+}
+
+.adHeaderButton:hover::before {
+  animation: shimmer 5s ease-in-out infinite;
 }
 
 .sectionHeader {
