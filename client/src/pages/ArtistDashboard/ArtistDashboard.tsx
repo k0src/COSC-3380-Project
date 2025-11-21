@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
 import type { Artist } from "@types";
-import { artistApi, commentApi, statsApi } from "@api";
+import { artistApi, commentApi } from "@api";
 import {
   PageLoader,
   ArtistDashboardHero,
@@ -37,7 +37,7 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
 
   const { data, loading } = useAsyncData(
     {
-      hasSongs: () => statsApi.checkArtistHasSongs(artistId!),
+      hasSongs: () => artistApi.checkArtistHasSongs(artistId!),
       hasArtistPlaylists: () => artistApi.checkArtistHasPlaylists(artistId!),
     },
     [artistId!],

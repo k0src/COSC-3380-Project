@@ -145,26 +145,4 @@ router.get(
   }
 );
 
-// GET /api/stats/artists/:artistId/has-songs
-router.get(
-  "/artists/:artistId/has-songs",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { artistId } = req.params;
-
-      if (!artistId) {
-        res.status(400).json({ error: "Artist ID is required" });
-        return;
-      }
-
-      const hasSongs = await StatsService.checkArtistHasSongs(artistId);
-      res.status(200).json({ hasSongs });
-    } catch (error: any) {
-      console.error("Error in GET /stats/artists/:artistId/has-songs:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
 export default router;

@@ -61,11 +61,4 @@ export const statsApi = {
     });
     return response.data;
   },
-
-  async checkArtistHasSongs(artistId: UUID) {
-    const response = await api.get<{ hasSongs: boolean }>(
-      `/stats/artists/${artistId}/has-songs`
-    );
-    return response.data;
-  },
 };

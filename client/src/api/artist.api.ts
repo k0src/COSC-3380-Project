@@ -252,4 +252,11 @@ export const artistApi = {
     );
     return response.data;
   },
+
+  async checkArtistHasSongs(artistId: UUID) {
+    const response = await api.get<{ hasSongs: boolean }>(
+      `/artists/${artistId}/has-songs`
+    );
+    return response.data;
+  },
 };

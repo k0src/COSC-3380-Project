@@ -609,4 +609,26 @@ router.get(
   }
 );
 
+// GET /api/artists/:id/has-songs
+router.get(
+  "/:id/has-songs",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const hasSongs = await ArtistRepository.checkArtistHasSongs(id);
+      res.status(200).json({ hasSongs });
+    } catch (error: any) {
+      console.error("Error in GET /artists/:id/has-songs:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 export default router;

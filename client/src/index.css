@@ -124,8 +124,10 @@ html {
   --spacing-5xl: 9.6rem;
 
   /* Layout Gaps */
-  --layout-gap-hor: 2.4rem;
-  --layout-gap-ver: 3.6rem;
+  /* --layout-gap-hor: 2.4rem;
+  --layout-gap-ver: 3.6rem; */
+  --layout-gap-hor: 2.8rem;
+  --layout-gap-ver: 2.8rem;
 
   --loader-height-sm: 15vh;
   --loader-height-md: 25vh;

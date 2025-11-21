@@ -7,6 +7,7 @@ import { statsApi } from "@api";
 import type { UUID } from "@types";
 import styles from "./ArtistDashboardStreamsChart.module.css";
 import { chartsTooltipClasses } from "@mui/x-charts";
+import { LineChart } from "@mui/x-charts/LineChart";
 
 export interface ArtistDashboardStreamsChartProps {
   artistId: UUID;
@@ -38,8 +39,9 @@ const ArtistDashboardStreamsChart: React.FC<
       const sum = group.reduce((acc, val) => acc + val, 0);
       groupedData.push(sum);
 
-      const dayNum = i + 1;
-      labels.push(`${Math.min(dayNum + 2, 30)}`);
+      const startDay = i + 1;
+      const endDay = Math.min(i + 3, 30);
+      labels.push(`${startDay} to ${endDay}`);
     }
 
     return { groupedData, labels };
@@ -89,7 +91,7 @@ const ArtistDashboardStreamsChart: React.FC<
       </div>
       {hasData ? (
         <div className={styles.chartContainer}>
-          <BarChart
+          {/* <BarChart
             series={[
               {
                 data: chartData.groupedData,
@@ -148,7 +150,110 @@ const ArtistDashboardStreamsChart: React.FC<
                 },
               },
             }}
-          />
+          /> */}
+          <LineChart
+            xAxis={[
+              {
+                data: chartData.labels,
+                scaleType: "point",
+                tickLabelStyle: {
+                  fill: "var(--color-text-gray)",
+                  fontSize: 12,
+                },
+                disableLine: true,
+                disableTicks: true,
+              },
+            ]}
+            yAxis={[
+              {
+                tickLabelStyle: {
+                  display: "none",
+                },
+                disableLine: true,
+                disableTicks: true,
+              },
+            ]}
+            series={[
+              {
+                data: chartData.groupedData,
+                area: true,
+                showMark: false,
+                color: "var(--color-accent)",
+                curve: "natural",
+              },
+            ]}
+            sx={{
+              ".MuiLineElement-root": {
+                strokeWidth: 2,
+              },
+              ".MuiAreaElement-root": {
+                fill: "url('#areaGradient')",
+              },
+              "& .MuiChartsGrid-line": {
+                stroke: "var(--color-gray-button)",
+                strokeDasharray: "3 3",
+                strokeWidth: 1,
+              },
+              ".MuiChartsAxis-line": {
+                stroke: "var(--color-gray-button)",
+              },
+              ".MuiChartsAxis-tick": {
+                stroke: "none",
+              },
+            }}
+            grid={{ vertical: true }}
+            hideLegend={true}
+            margin={{ left: 0, right: 25, top: 15, bottom: 5 }}
+            // margin={{ left: 0, right: 25, top: 5, bottom: 10 }}
+            slotProps={{
+              tooltip: {
+                sx: {
+                  [`& .${chartsTooltipClasses.paper}`]: {
+                    backgroundColor: "var(--color-gray-button) !important",
+                    border:
+                      "var(--border-size-sm) solid var(--color-gray-button-border) !important",
+                    borderRadius: "var(--border-radius-md) !important",
+                    padding: "var(--spacing-sm) !important",
+                    boxShadow: "var(--shadow-sm) !important",
+                    color: "var(--color-white-alt) !important",
+                    fontSize: "var(--font-size-sm) !important",
+                  },
+                  [`& .${chartsTooltipClasses.labelCell}`]: {
+                    color: "var(--color-white-alt) !important",
+                    fontSize: "var(--font-size-sm) !important",
+                  },
+                  [`& .${chartsTooltipClasses.valueCell}`]: {
+                    color: "var(--color-white-alt) !important",
+                    fontSize: "var(--font-size-sm) !important",
+                    fontWeight: "500 !important",
+                  },
+                  [`& .${chartsTooltipClasses.mark}`]: {
+                    borderRadius: "50% !important",
+                  },
+                },
+              },
+            }}
+          >
+            <defs>
+              <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor="var(--color-accent)"
+                  stopOpacity={0.5}
+                />
+                <stop
+                  offset="50%"
+                  stopColor="var(--color-accent)"
+                  stopOpacity={0.2}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--color-accent)"
+                  stopOpacity={0.0}
+                />
+              </linearGradient>
+            </defs>
+          </LineChart>
         </div>
       ) : (
         <div className={styles.noDataContainer}>

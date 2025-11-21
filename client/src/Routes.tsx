@@ -170,6 +170,16 @@ export default function AppRoutes() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/artist-dashboard/stats"
+              element={
+                <ProtectedRoute>
+                  <ArtistDashboardLayout>
+                    <Pages.ArtistDashboardStatsPage />
+                  </ArtistDashboardLayout>
+                </ProtectedRoute>
+              }
+            />
           </Route>
         </Routes>
       )}

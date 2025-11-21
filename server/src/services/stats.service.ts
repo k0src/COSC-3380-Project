@@ -286,27 +286,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Check if an artist has any songs
-   */
-  static async checkArtistHasSongs(artistId: UUID): Promise<boolean> {
-    try {
-      const result = await query(
-        `SELECT EXISTS(
-          SELECT 1
-          FROM song_artists
-          WHERE artist_id = $1
-        ) AS has_songs`,
-        [artistId]
-      );
-
-      return result[0]?.has_songs || false;
-    } catch (error) {
-      console.error("Error checking if artist has songs:", error);
-      throw error;
-    }
-  }
-
   static async getWeeklyPlays(songId: UUID): Promise<WeeklyPlays> {
     try {
       const result = await query(
