@@ -67,6 +67,11 @@ const MainLayoutSidebar: React.FC = () => {
               </Link>
             </>
           )}
+          {user && user.role === "ADMIN" && (
+            <Link to="/Admin" className={styles.sidebarLink}>
+              <LuUserPen className={styles.sidebarIcon} />
+            </Link>
+          )}
         </nav>
       </div>
       <div className={styles.sidebarBottom}>

@@ -96,9 +96,11 @@ const MainLayoutHeader: React.FC = () => {
                 onNotificationUpdate={refetchUnreadStatus}
               />
             </div>
+
             <Link to="/me/settings" className={styles.iconButton}>
               <LuSettings className={styles.actionIcon} />
             </Link>
+
             <Link to="/me" className={styles.iconButton} title={user?.username}>
               <LuCircleUser className={styles.actionIcon} />
             </Link>

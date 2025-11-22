@@ -84,7 +84,7 @@ const HomePage: React.FC = () => {
     asyncConfig,
     [isAuthenticated, user],
     {
-      cacheKey: "homepage_data", // <-- Renamed from "homepage_suggestions"
+      cacheKey: "homepage_data",
       hasBlobUrl: true,
     }
   );
@@ -102,7 +102,6 @@ const HomePage: React.FC = () => {
   // Map suggested songs to SongCard format
   const newSongs = useMemo(() => {
     if (!data?.suggestions) return [];
-
     return data.suggestions.map((song: SuggestedSong) => ({
       id: song.id,
       title: song.title,

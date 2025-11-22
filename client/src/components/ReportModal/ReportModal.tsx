@@ -154,7 +154,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
         onClose();
       }
     };
-
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);

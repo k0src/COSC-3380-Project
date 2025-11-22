@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import styles from "./LandingPage.module.css";
 import { LuSearch } from "react-icons/lu";
 import { SongCard, UploadPromptModal } from "@components";
@@ -78,10 +78,15 @@ const LandingPage: React.FC = () => {
       />
 
       <div className={styles.searchBarContainer}>
-        <div className={styles.searchBar}>
+        {/* <form className={styles.searchBar} onSubmit={handleSearchSubmit}> */}
           <LuSearch />
-          <input type="text" placeholder="SEARCH SONGS, ARTISTS, PLAYLISTS" />
-        </div>
+          <input
+            type="text"
+            placeholder="SEARCH SONGS, ARTISTS, PLAYLISTS"
+            // value={searchQuery}
+            // onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        {/* </form> */}
       </div>
 
       <main className={styles.mainContent}>

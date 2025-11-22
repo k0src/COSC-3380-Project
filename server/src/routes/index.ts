@@ -1,4 +1,5 @@
 export { default as albumRoutes } from "./album.routes.js";
+export { default as adminRoutes } from "./admin.routes.js";
 export { default as artistRoutes } from "./artist.routes.js";
 export { default as authRoutes } from "./auth.routes.js";
 export { default as playlistRoutes } from "./playlist.routes.js";
@@ -9,3 +10,4 @@ export { default as searchRoutes } from "./search.routes.js";
 export { default as reportRoutes } from "./report.routes.js";
 export { default as statsRoutes } from "./stats.routes.js";
 export { default as commentRoutes } from "./comment.routes.js";
+export { default as dataReportsRoutes } from "./dataReports.routes.js";

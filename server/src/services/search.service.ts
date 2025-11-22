@@ -1,4 +1,4 @@
-import type { Song, Album, User, Artist, Playlist } from "@types";
+import type { Song, Album, User, Artist, Playlist, SongArtist } from "@types";
 import { query } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
 import dotenv from "dotenv";
@@ -296,6 +296,18 @@ export default class SearchService {
               }
               if (song.audio_url) {
                 song.audio_url = getBlobUrl(song.audio_url);
+              }
+              // If song has embedded artists, convert profile_picture_url blob and set types
+              if (song.artists && song.artists.length > 0) {
+                song.artists = song.artists.map((artist: SongArtist) => {
+                  if (artist.user && artist.user.profile_picture_url) {
+                    artist.user.profile_picture_url = getBlobUrl(
+                      artist.user.profile_picture_url
+                    );
+                  }
+                  artist.type = "artist";
+                  return artist;
+                });
               }
               song.type = "song";
               return song;

@@ -75,7 +75,6 @@
   padding: 4px 0;
   /* Adds a smooth height change when expanding */
   transition: max-height 0.5s ease-in-out;
-
   /* Set a max-height roughly equal to one row of cards + padding.
     You MUST adjust this value to fit your card height! 
   */
@@ -139,6 +138,7 @@
   text-align: center;
   font-size: 14px;
 }
+ 
 
 /* Compact song card style for sidebar */
 .compactCard {
@@ -187,7 +187,7 @@
   flex-wrap: wrap; /* <--- This is the wrap-func you liked */
   overflow-x: hidden; /* No more horizontal scroll */
   scroll-snap-type: none; /* Turn off snapping */
-
+  
   /* Set a very large max-height to allow it to grow
     as much as needed. 
   */
