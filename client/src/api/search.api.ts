@@ -1,4 +1,11 @@
-import type { Song, Album, User, Artist, Playlist } from "@types";
+import type {
+  Song,
+  Album,
+  User,
+  Artist,
+  Playlist,
+  AccessContext,
+} from "@types";
 import api from "./api";
 
 export interface SearchResults {
@@ -11,11 +18,18 @@ export interface SearchResults {
 }
 
 export const searchApi = {
-  async search(query: string, options?: { ownerId?: string }) {
+  async search(
+    query: string,
+    accessContext: AccessContext,
+    options?: { ownerId?: string }
+  ) {
     const response = await api.get<SearchResults>(`/search`, {
       params: {
         q: query,
         ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
       },
     });
     return response.data;
@@ -23,6 +37,7 @@ export const searchApi = {
 
   async searchUsers(
     query: string,
+    accessContext: AccessContext,
     options?: {
       limit?: number;
       offset?: number;
@@ -32,6 +47,9 @@ export const searchApi = {
       params: {
         q: query,
         ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
       },
     });
     return response.data;
@@ -39,6 +57,7 @@ export const searchApi = {
 
   async searchSongs(
     query: string,
+    accessContext: AccessContext,
     options?: {
       ownerId?: string;
       limit?: number;
@@ -49,6 +68,9 @@ export const searchApi = {
       params: {
         q: query,
         ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
       },
     });
     return response.data;
@@ -56,6 +78,7 @@ export const searchApi = {
 
   async searchAlbums(
     query: string,
+    accessContext: AccessContext,
     options?: {
       ownerId?: string;
       limit?: number;
@@ -66,6 +89,9 @@ export const searchApi = {
       params: {
         q: query,
         ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
       },
     });
     return response.data;
@@ -73,6 +99,7 @@ export const searchApi = {
 
   async searchPlaylists(
     query: string,
+    accessContext: AccessContext,
     options?: {
       ownerId?: string;
       limit?: number;
@@ -83,6 +110,9 @@ export const searchApi = {
       params: {
         q: query,
         ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
       },
     });
     return response.data;
@@ -90,6 +120,7 @@ export const searchApi = {
 
   async searchArtists(
     query: string,
+    accessContext: AccessContext,
     options?: {
       limit?: number;
       offset?: number;
@@ -99,6 +130,9 @@ export const searchApi = {
       params: {
         q: query,
         ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
       },
     });
     return response.data;
