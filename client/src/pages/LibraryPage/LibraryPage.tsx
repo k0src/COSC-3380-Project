@@ -7,7 +7,7 @@ import type {
   ContextMenuEntity,
   ContextMenuEntityType,
 } from "@contexts";
-import type { LibraryPlaylist } from "@types";
+import type { LibraryPlaylist, AccessContext } from "@types";
 import {
   LibraryRecent,
   LibraryPlaylists,
@@ -278,6 +278,12 @@ const LibraryPage: React.FC = () => {
     return null;
   }
 
+  const accessContext: AccessContext = {
+    role: user.role === "ADMIN" ? "admin" : "user",
+    userId: user.id,
+    scope: "ownerList",
+  };
+
   return (
     <>
       <Helmet>
@@ -324,6 +330,7 @@ const LibraryPage: React.FC = () => {
         {activeTab === "recent" && (
           <LibraryRecent
             userId={user.id}
+            accessContext={accessContext}
             maxItems={20}
             searchFilter={searchText}
             onRefetchNeeded={recentRefetchRef}
@@ -332,15 +339,24 @@ const LibraryPage: React.FC = () => {
         {activeTab === "playlists" && (
           <LibraryPlaylists
             userId={user.id}
+            accessContext={accessContext}
             searchFilter={searchText}
             onRefetchNeeded={playlistsRefetchRef}
           />
         )}
         {activeTab === "songs" && (
-          <LibrarySongs userId={user.id} searchFilter={searchText} />
+          <LibrarySongs
+            userId={user.id}
+            accessContext={accessContext}
+            searchFilter={searchText}
+          />
         )}
         {activeTab === "albums" && (
-          <LibraryAlbums userId={user.id} searchFilter={searchText} />
+          <LibraryAlbums
+            userId={user.id}
+            accessContext={accessContext}
+            searchFilter={searchText}
+          />
         )}
         {activeTab === "artists" && (
           <LibraryArtists userId={user.id} searchFilter={searchText} />

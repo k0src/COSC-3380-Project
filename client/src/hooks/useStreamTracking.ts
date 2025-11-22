@@ -50,7 +50,6 @@ export const useStreamTracking = () => {
     if (state.progress >= MIN_PLAY_TIME) {
       const trackStream = async () => {
         try {
-          console.log("tracking stream for", currentSongId);
           await Promise.all([
             userApi.addToHistory(user.id, currentSongId, "song"),
             songApi.incrementSongStreams(currentSongId),

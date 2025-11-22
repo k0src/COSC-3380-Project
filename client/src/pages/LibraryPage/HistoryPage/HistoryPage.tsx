@@ -7,7 +7,7 @@ import type {
   ContextMenuEntity,
   ContextMenuEntityType,
 } from "@contexts";
-import type { LibraryPlaylist } from "@types";
+import type { LibraryPlaylist, AccessContext } from "@types";
 import {
   HistoryPlaylists,
   HistorySongs,
@@ -215,6 +215,12 @@ const HistoryPage: React.FC = () => {
     return null;
   }
 
+  const accessContext: AccessContext = {
+    role: user.role === "ADMIN" ? "admin" : "user",
+    userId: user.id,
+    scope: "ownerList",
+  };
+
   return (
     <>
       <Helmet>
@@ -255,13 +261,22 @@ const HistoryPage: React.FC = () => {
             userId={user.id}
             searchFilter={searchText}
             onRefetchNeeded={playlistsRefetchRef}
+            accessContext={accessContext}
           />
         )}
         {activeTab === "songs" && (
-          <HistorySongs userId={user.id} searchFilter={searchText} />
+          <HistorySongs
+            userId={user.id}
+            searchFilter={searchText}
+            accessContext={accessContext}
+          />
         )}
         {activeTab === "albums" && (
-          <HistoryAlbums userId={user.id} searchFilter={searchText} />
+          <HistoryAlbums
+            userId={user.id}
+            searchFilter={searchText}
+            accessContext={accessContext}
+          />
         )}
         {activeTab === "artists" && (
           <HistoryArtists userId={user.id} searchFilter={searchText} />

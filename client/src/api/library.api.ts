@@ -8,34 +8,59 @@ import type {
   LibrarySearchResults,
   Artist,
   RecentlyPlayedItemsArray,
+  AccessContext,
 } from "@types";
 
 export const libraryApi = {
-  async search(userId: UUID, q: string) {
+  async search(userId: UUID, accessContext: AccessContext, q: string) {
     const response = await api.get<LibrarySearchResults>(
       `/users/${userId}/library/search`,
       {
-        params: { q },
+        params: {
+          q,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
       }
     );
     return response.data;
   },
 
-  async getRecentlyPlayed(userId: UUID, maxItems: number) {
+  async getRecentlyPlayed(
+    userId: UUID,
+    accessContext: AccessContext,
+    maxItems: number
+  ) {
     const response = await api.get<RecentlyPlayedItems>(
       `/users/${userId}/library/recent`,
       {
-        params: { maxItems },
+        params: {
+          maxItems,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
       }
     );
     return response.data;
   },
 
-  async getRecentlyPlayedArray(userId: UUID, maxItems: number) {
+  async getRecentlyPlayedArray(
+    userId: UUID,
+    accessContext: AccessContext,
+    maxItems: number
+  ) {
     const response = await api.get<RecentlyPlayedItemsArray>(
       `/users/${userId}/library/recent`,
       {
-        params: { maxItems, array: true },
+        params: {
+          maxItems,
+          array: true,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
       }
     );
     return response.data;
@@ -43,12 +68,18 @@ export const libraryApi = {
 
   async getLibraryPlaylists(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { limit?: number; offset?: number; omitLikes?: boolean }
   ) {
     const response = await api.get<LibraryPlaylist[]>(
       `/users/${userId}/library/playlists`,
       {
-        params: options,
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
       }
     );
     return response.data;
@@ -56,20 +87,32 @@ export const libraryApi = {
 
   async getLibraryAlbums(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { limit?: number; offset?: number }
   ) {
     const response = await api.get<Album[]>(`/users/${userId}/library/albums`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
     return response.data;
   },
 
   async getLibrarySongs(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { limit?: number; offset?: number }
   ) {
     const response = await api.get<Song[]>(`/users/${userId}/library/songs`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
     return response.data;
   },
@@ -89,12 +132,18 @@ export const libraryApi = {
 
   async getSongHistory(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { timeRange?: string; limit?: number; offset?: number }
   ) {
     const response = await api.get<Song[]>(
       `/users/${userId}/library/history/songs`,
       {
-        params: options,
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
       }
     );
     return response.data;
@@ -102,12 +151,18 @@ export const libraryApi = {
 
   async getAlbumHistory(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { timeRange?: string; limit?: number; offset?: number }
   ) {
     const response = await api.get<Album[]>(
       `/users/${userId}/library/history/albums`,
       {
-        params: options,
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
       }
     );
     return response.data;
@@ -115,12 +170,18 @@ export const libraryApi = {
 
   async getPlaylistHistory(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { timeRange?: string; limit?: number; offset?: number }
   ) {
     const response = await api.get<LibraryPlaylist[]>(
       `/users/${userId}/library/history/playlists`,
       {
-        params: options,
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
       }
     );
     return response.data;

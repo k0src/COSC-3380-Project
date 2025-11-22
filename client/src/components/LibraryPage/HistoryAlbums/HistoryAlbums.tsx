@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
-import type { UUID } from "@types";
+import type { UUID, AccessContext } from "@types";
 import { EntityItemCard } from "@components";
 import { libraryApi } from "@api";
 import { formatDateString } from "@util";
@@ -11,13 +11,16 @@ import musicPlaceholder from "@assets/music-placeholder.webp";
 const HistoryAlbums: React.FC<{
   userId: UUID;
   searchFilter?: string;
-}> = ({ userId, searchFilter = "" }) => {
+  accessContext: AccessContext;
+}> = ({ userId, searchFilter = "", accessContext }) => {
   const { data, loading, error } = useAsyncData(
     {
       albums: () =>
-        libraryApi.getAlbumHistory(userId, { timeRange: "1 month" }),
+        libraryApi.getAlbumHistory(userId, accessContext, {
+          timeRange: "1 month",
+        }),
     },
-    [userId],
+    [userId, accessContext.userId],
     {
       cacheKey: `history_albums_${userId}`,
       hasBlobUrl: true,

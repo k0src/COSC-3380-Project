@@ -235,9 +235,12 @@ router.get(
         return;
       }
 
+      const accessContext = parseAccessContext(req.query);
+
       if (array === "true") {
         const recentHistory = await LibraryService.getRecentlyPlayedArray(
           id,
+          accessContext,
           maxItems ? parseInt(maxItems as string, 10) : 10
         );
         res.status(200).json(recentHistory);
@@ -246,6 +249,7 @@ router.get(
 
       const recentHistory = await LibraryService.getRecentlyPlayed(
         id,
+        accessContext,
         maxItems ? parseInt(maxItems as string, 10) : 10
       );
 
@@ -272,11 +276,17 @@ router.get(
         return;
       }
 
-      const playlists = await LibraryService.getLibraryPlaylists(id, {
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-        omitLikes: omitLikes === "true",
-      });
+      const accessContext = parseAccessContext(req.query);
+
+      const playlists = await LibraryService.getLibraryPlaylists(
+        id,
+        accessContext,
+        {
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+          offset: offset ? parseInt(offset as string, 10) : undefined,
+          omitLikes: omitLikes === "true",
+        }
+      );
 
       res.status(200).json(playlists);
     } catch (error: any) {
@@ -336,7 +346,9 @@ router.get(
         return;
       }
 
-      const songs = await LibraryService.getLibrarySongs(id, {
+      const accessContext = parseAccessContext(req.query);
+
+      const songs = await LibraryService.getLibrarySongs(id, accessContext, {
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
@@ -364,7 +376,9 @@ router.get(
         return;
       }
 
-      const albums = await LibraryService.getLibraryAlbums(id, {
+      const accessContext = parseAccessContext(req.query);
+
+      const albums = await LibraryService.getLibraryAlbums(id, accessContext, {
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
@@ -425,7 +439,8 @@ router.get(
         return;
       }
 
-      const searchResults = await LibraryService.search(id, q);
+      const accessContext = parseAccessContext(req.query);
+      const searchResults = await LibraryService.search(id, accessContext, q);
 
       res.status(200).json(searchResults);
     } catch (error: any) {
@@ -452,7 +467,9 @@ router.get(
         return;
       }
 
-      const songs = await LibraryService.getSongHistory(id, {
+      const accessContext = parseAccessContext(req.query);
+
+      const songs = await LibraryService.getSongHistory(id, accessContext, {
         timeRange: timeRange as string,
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
@@ -481,11 +498,17 @@ router.get(
         return;
       }
 
-      const playlists = await LibraryService.getPlaylistHistory(id, {
-        timeRange: timeRange as string,
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
+      const accessContext = parseAccessContext(req.query);
+
+      const playlists = await LibraryService.getPlaylistHistory(
+        id,
+        accessContext,
+        {
+          timeRange: timeRange as string,
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+          offset: offset ? parseInt(offset as string, 10) : undefined,
+        }
+      );
 
       res.status(200).json(playlists);
     } catch (error: any) {
@@ -513,7 +536,9 @@ router.get(
         return;
       }
 
-      const albums = await LibraryService.getAlbumHistory(id, {
+      const accessContext = parseAccessContext(req.query);
+
+      const albums = await LibraryService.getAlbumHistory(id, accessContext, {
         timeRange: timeRange as string,
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,

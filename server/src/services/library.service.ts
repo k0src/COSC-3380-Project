@@ -11,9 +11,11 @@ import type {
   LibrarySong,
   LibraryAlbum,
   LibraryArtist,
+  AccessContext,
 } from "@types";
 import { query, withTransaction } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
+import { getAccessPredicate } from "@util";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -21,8 +23,27 @@ dotenv.config();
 const API_URL = process.env.API_URL;
 
 export default class LibraryService {
-  static async search(userId: UUID, q: string): Promise<LibrarySearchResults> {
+  static async search(
+    userId: UUID,
+    accessContext: AccessContext,
+    q: string
+  ): Promise<LibrarySearchResults> {
     try {
+      const { sql: songPredicateSqlRaw, params: songPredicateParams } =
+        getAccessPredicate(accessContext, "s", 2);
+      const songPredicateSql =
+        (songPredicateSqlRaw && songPredicateSqlRaw.trim()) || "TRUE";
+
+      const { sql: albumPredicateSqlRaw, params: albumPredicateParams } =
+        getAccessPredicate(accessContext, "a", 2);
+      const albumPredicateSql =
+        (albumPredicateSqlRaw && albumPredicateSqlRaw.trim()) || "TRUE";
+
+      const { sql: playlistPredicateSqlRaw, params: playlistPredicateParams } =
+        getAccessPredicate(accessContext, "p", 2);
+      const playlistPredicateSql =
+        (playlistPredicateSqlRaw && playlistPredicateSqlRaw.trim()) || "TRUE";
+
       const songsSql = `
         SELECT s.*,
           (SELECT json_agg(row_to_json(album_with_artist))
@@ -47,7 +68,7 @@ export default class LibraryService {
           ) AS ar_with_role) AS artists
         FROM songs s
         JOIN song_likes sl ON sl.song_id = s.id
-        WHERE sl.user_id = $1 AND s.title ILIKE $2
+        WHERE sl.user_id = $1 AND s.title ILIKE $2 AND (${songPredicateSql})
         ORDER BY sl.liked_at DESC
         LIMIT 50
       `;
@@ -66,7 +87,7 @@ export default class LibraryService {
           WHERE als.album_id = a.id) as song_count
         FROM albums a
         JOIN album_likes al ON al.album_id = a.id
-        WHERE al.user_id = $1 AND a.title ILIKE $2
+        WHERE al.user_id = $1 AND a.title ILIKE $2 AND (${albumPredicateSql})
         ORDER BY al.liked_at DESC
         LIMIT 50
       `;
@@ -79,7 +100,7 @@ export default class LibraryService {
         FROM playlists p
         LEFT JOIN users u ON p.owner_id = u.id
         JOIN playlist_likes pl ON pl.playlist_id = p.id
-        WHERE pl.user_id = $1 AND p.title ILIKE $2
+        WHERE pl.user_id = $1 AND p.title ILIKE $2 AND (${playlistPredicateSql})
         ORDER BY pl.liked_at DESC
         LIMIT 50
       `;
@@ -99,9 +120,13 @@ export default class LibraryService {
 
       const [songsResult, albumsResult, playlistsResult, artistsResult] =
         await Promise.all([
-          query(songsSql, [userId, searchPattern]),
-          query(albumsSql, [userId, searchPattern]),
-          query(playlistsSql, [userId, searchPattern]),
+          query(songsSql, [userId, searchPattern, ...songPredicateParams]),
+          query(albumsSql, [userId, searchPattern, ...albumPredicateParams]),
+          query(playlistsSql, [
+            userId,
+            searchPattern,
+            ...playlistPredicateParams,
+          ]),
           query(artistsSql, [userId, searchPattern]),
         ]);
 
@@ -196,9 +221,29 @@ export default class LibraryService {
 
   static async getRecentlyPlayed(
     userId: UUID,
+    accessContext: AccessContext,
     maxItems: number = 10
   ): Promise<RecentlyPlayedItems> {
     try {
+      const { sql: songPredicateSqlRaw, params: songPredicateParams } =
+        getAccessPredicate(accessContext, "s", 1);
+      const songPredicateSql =
+        (songPredicateSqlRaw && songPredicateSqlRaw.trim()) || "TRUE";
+
+      const { sql: albumPredicateSqlRaw, params: albumPredicateParams } =
+        getAccessPredicate(accessContext, "a", 1);
+      const albumPredicateSql =
+        (albumPredicateSqlRaw && albumPredicateSqlRaw.trim()) || "TRUE";
+
+      const { sql: playlistPredicateSqlRaw, params: playlistPredicateParams } =
+        getAccessPredicate(accessContext, "p", 1);
+      const playlistPredicateSql =
+        (playlistPredicateSqlRaw && playlistPredicateSqlRaw.trim()) || "TRUE";
+
+      const songLimitIndex = songPredicateParams.length + 2;
+      const albumLimitIndex = albumPredicateParams.length + 2;
+      const playlistLimitIndex = playlistPredicateParams.length + 2;
+
       const songsSql = `
         SELECT DISTINCT ON (s.id) s.*,
           (SELECT json_agg(row_to_json(album_with_artist))
@@ -224,10 +269,10 @@ export default class LibraryService {
           MAX(sh.played_at) as played_at
         FROM songs s
         JOIN song_history sh ON sh.song_id = s.id
-        WHERE sh.user_id = $1
+        WHERE sh.user_id = $1 AND (${songPredicateSql})
         GROUP BY s.id
         ORDER BY s.id, played_at DESC
-        LIMIT $2
+        LIMIT $${songLimitIndex}
       `;
 
       const albumsSql = `
@@ -245,10 +290,10 @@ export default class LibraryService {
           MAX(ah.played_at) as played_at
         FROM albums a
         JOIN album_history ah ON ah.album_id = a.id
-        WHERE ah.user_id = $1
+        WHERE ah.user_id = $1 AND (${albumPredicateSql})
         GROUP BY a.id
         ORDER BY a.id, played_at DESC
-        LIMIT $2
+        LIMIT $${albumLimitIndex}
       `;
 
       const playlistsSql = `
@@ -267,10 +312,10 @@ export default class LibraryService {
         FROM playlists p
         LEFT JOIN users u ON p.owner_id = u.id
         JOIN playlist_history ph ON ph.playlist_id = p.id
-        WHERE ph.user_id = $1
+        WHERE ph.user_id = $1 AND (${playlistPredicateSql})
         GROUP BY p.id, u.id
         ORDER BY p.id, is_pinned DESC, played_at DESC, p.id
-        LIMIT $2
+        LIMIT $${playlistLimitIndex}
       `;
 
       const artistsSql = `
@@ -288,9 +333,9 @@ export default class LibraryService {
 
       const [songsResult, albumsResult, playlistsResult, artistsResult] =
         await Promise.all([
-          query(songsSql, [userId, maxItems]),
-          query(albumsSql, [userId, maxItems]),
-          query(playlistsSql, [userId, maxItems]),
+          query(songsSql, [userId, ...songPredicateParams, maxItems]),
+          query(albumsSql, [userId, ...albumPredicateParams, maxItems]),
+          query(playlistsSql, [userId, ...playlistPredicateParams, maxItems]),
           query(artistsSql, [userId, maxItems]),
         ]);
 
@@ -387,9 +432,25 @@ export default class LibraryService {
 
   static async getRecentlyPlayedArray(
     userId: UUID,
+    accessContext: AccessContext,
     maxItems: number = 10
   ): Promise<RecentlyPlayedItemsArray> {
     try {
+      const { sql: songPredicateSqlRaw, params: songPredicateParams } =
+        getAccessPredicate(accessContext, "s", 1);
+      const songPredicateSql =
+        (songPredicateSqlRaw && songPredicateSqlRaw.trim()) || "TRUE";
+
+      const { sql: albumPredicateSqlRaw, params: albumPredicateParams } =
+        getAccessPredicate(accessContext, "a", 1);
+      const albumPredicateSql =
+        (albumPredicateSqlRaw && albumPredicateSqlRaw.trim()) || "TRUE";
+
+      const { sql: playlistPredicateSqlRaw, params: playlistPredicateParams } =
+        getAccessPredicate(accessContext, "p", 1);
+      const playlistPredicateSql =
+        (playlistPredicateSqlRaw && playlistPredicateSqlRaw.trim()) || "TRUE";
+
       const songsSql = `
       SELECT DISTINCT ON (s.id) s.*,
         (SELECT json_agg(row_to_json(album_with_artist))
@@ -415,7 +476,7 @@ export default class LibraryService {
         MAX(sh.played_at) as played_at
       FROM songs s
       JOIN song_history sh ON sh.song_id = s.id
-      WHERE sh.user_id = $1
+      WHERE sh.user_id = $1 AND (${songPredicateSql})
       GROUP BY s.id
       ORDER BY s.id, played_at DESC
     `;
@@ -435,7 +496,7 @@ export default class LibraryService {
         MAX(ah.played_at) as played_at
       FROM albums a
       JOIN album_history ah ON ah.album_id = a.id
-      WHERE ah.user_id = $1
+      WHERE ah.user_id = $1 AND (${albumPredicateSql})
       GROUP BY a.id
       ORDER BY a.id, played_at DESC
     `;
@@ -456,7 +517,7 @@ export default class LibraryService {
       FROM playlists p
       LEFT JOIN users u ON p.owner_id = u.id
       JOIN playlist_history ph ON ph.playlist_id = p.id
-      WHERE ph.user_id = $1
+      WHERE ph.user_id = $1 AND (${playlistPredicateSql})
       GROUP BY p.id, u.id
       ORDER BY p.id, is_pinned DESC, played_at DESC, p.id
     `;
@@ -475,9 +536,9 @@ export default class LibraryService {
 
       const [songsResult, albumsResult, playlistsResult, artistsResult] =
         await Promise.all([
-          query(songsSql, [userId]),
-          query(albumsSql, [userId]),
-          query(playlistsSql, [userId]),
+          query(songsSql, [userId, ...songPredicateParams]),
+          query(albumsSql, [userId, ...albumPredicateParams]),
+          query(playlistsSql, [userId, ...playlistPredicateParams]),
           query(artistsSql, [userId]),
         ]);
 
@@ -582,11 +643,20 @@ export default class LibraryService {
 
   static async getLibrarySongs(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { limit?: number; offset?: number }
   ): Promise<Song[]> {
     try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "s", 1);
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
+
+      const limitIndex = predicateParams.length + 2;
+      const offsetIndex = predicateParams.length + 3;
 
       const sql = `
         SELECT s.*,
@@ -612,12 +682,17 @@ export default class LibraryService {
           ) AS ar_with_role) AS artists
         FROM songs s
         JOIN song_likes sl ON sl.song_id = s.id
-        WHERE sl.user_id = $1
+        WHERE sl.user_id = $1 AND (${predicateSql})
         ORDER BY sl.liked_at DESC
-        LIMIT $2 OFFSET $3
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
       `;
 
-      const songsResult = await query(sql, [userId, limit, offset]);
+      const songsResult = await query(sql, [
+        userId,
+        ...predicateParams,
+        limit,
+        offset,
+      ]);
 
       const songs: Song[] = (songsResult || []).map((song: Song) => {
         if (song.image_url) {
@@ -662,12 +737,21 @@ export default class LibraryService {
 
   static async getLibraryPlaylists(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { omitLikes?: boolean; limit?: number; offset?: number }
   ): Promise<Playlist[]> {
     try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "p", 1);
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
       const omitLikes = options?.omitLikes ?? false;
+
+      const limitIndex = predicateParams.length + 2;
+      const offsetIndex = predicateParams.length + 3;
 
       const sql = `
         SELECT p.*,
@@ -687,12 +771,17 @@ export default class LibraryService {
         LEFT JOIN playlist_likes pl ON pl.playlist_id = p.id AND pl.user_id = $1
         WHERE ${
           omitLikes ? "p.owner_id = $1" : "(pl.user_id = $1 OR p.owner_id = $1)"
-        }
+        } AND (${predicateSql})
         ORDER BY is_pinned DESC, sort_date DESC, p.id
-        LIMIT $2 OFFSET $3
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
       `;
 
-      const playlistsResult = await query(sql, [userId, limit, offset]);
+      const playlistsResult = await query(sql, [
+        userId,
+        ...predicateParams,
+        limit,
+        offset,
+      ]);
 
       const playlists: LibraryPlaylist[] = (playlistsResult || []).map(
         (playlist: LibraryPlaylist) => {
@@ -723,11 +812,20 @@ export default class LibraryService {
 
   static async getLibraryAlbums(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { limit?: number; offset?: number }
   ): Promise<Album[]> {
     try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "a", 1);
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
+
+      const limitIndex = predicateParams.length + 2;
+      const offsetIndex = predicateParams.length + 3;
 
       const sql = `
         SELECT a.*,
@@ -743,12 +841,17 @@ export default class LibraryService {
           WHERE als.album_id = a.id) as song_count
         FROM albums a
         JOIN album_likes al ON al.album_id = a.id
-        WHERE al.user_id = $1
+        WHERE al.user_id = $1 AND (${predicateSql})
         ORDER BY al.liked_at DESC
-        LIMIT $2 OFFSET $3
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
       `;
 
-      const albumsResult = await query(sql, [userId, limit, offset]);
+      const albumsResult = await query(sql, [
+        userId,
+        ...predicateParams,
+        limit,
+        offset,
+      ]);
 
       const albums: Album[] = (albumsResult || []).map((album: Album) => {
         if (album.image_url) {
@@ -813,12 +916,21 @@ export default class LibraryService {
 
   static async getSongHistory(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { timeRange?: string; limit?: number; offset?: number }
   ): Promise<Song[]> {
     try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "s", 1);
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
       const timeRange = options?.timeRange ?? "1 year";
+
+      const limitIndex = predicateParams.length + 2;
+      const offsetIndex = predicateParams.length + 3;
 
       const sql = `
         SELECT DISTINCT ON (s.id) s.*,
@@ -845,13 +957,18 @@ export default class LibraryService {
           MAX(sh.played_at) as played_at
         FROM songs s
         JOIN song_history sh ON sh.song_id = s.id
-        WHERE sh.user_id = $1 AND sh.played_at >= NOW() - INTERVAL '${timeRange}'
+        WHERE sh.user_id = $1 AND sh.played_at >= NOW() - INTERVAL '${timeRange}' AND (${predicateSql})
         GROUP BY s.id
         ORDER BY s.id, played_at DESC
-        LIMIT $2 OFFSET $3
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
       `;
 
-      const songsResult = await query(sql, [userId, limit, offset]);
+      const songsResult = await query(sql, [
+        userId,
+        ...predicateParams,
+        limit,
+        offset,
+      ]);
 
       const songs: Song[] = (songsResult || []).map((song: Song) => {
         if (song.image_url) {
@@ -896,12 +1013,21 @@ export default class LibraryService {
 
   static async getAlbumHistory(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { timeRange?: string; limit?: number; offset?: number }
   ): Promise<Album[]> {
     try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "a", 1);
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
       const timeRange = options?.timeRange ?? "1 year";
+
+      const limitIndex = predicateParams.length + 2;
+      const offsetIndex = predicateParams.length + 3;
 
       const sql = `
         SELECT DISTINCT ON (a.id) a.*,
@@ -918,13 +1044,18 @@ export default class LibraryService {
           MAX(ah.played_at) as played_at
         FROM albums a
         JOIN album_history ah ON ah.album_id = a.id
-        WHERE ah.user_id = $1 AND ah.played_at >= NOW() - INTERVAL '${timeRange}'
+        WHERE ah.user_id = $1 AND ah.played_at >= NOW() - INTERVAL '${timeRange}' AND (${predicateSql})
         GROUP BY a.id
         ORDER BY a.id, played_at DESC
-        LIMIT $2 OFFSET $3
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
       `;
 
-      const albumsResult = await query(sql, [userId, limit, offset]);
+      const albumsResult = await query(sql, [
+        userId,
+        ...predicateParams,
+        limit,
+        offset,
+      ]);
 
       const albums: Album[] = (albumsResult || []).map((album: Album) => {
         if (album.image_url) {
@@ -951,12 +1082,21 @@ export default class LibraryService {
 
   static async getPlaylistHistory(
     userId: UUID,
+    accessContext: AccessContext,
     options?: { timeRange?: string; limit?: number; offset?: number }
   ): Promise<Playlist[]> {
     try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "p", 1);
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
       const timeRange = options?.timeRange ?? "1 year";
+
+      const limitIndex = predicateParams.length + 2;
+      const offsetIndex = predicateParams.length + 3;
 
       const sql = `
         SELECT DISTINCT ON (p.id) p.*,
@@ -970,13 +1110,18 @@ export default class LibraryService {
         FROM playlists p
         LEFT JOIN users u ON p.owner_id = u.id
         JOIN playlist_history ph ON ph.playlist_id = p.id
-        WHERE ph.user_id = $1 AND ph.played_at >= NOW() - INTERVAL '${timeRange}'
+        WHERE ph.user_id = $1 AND ph.played_at >= NOW() - INTERVAL '${timeRange}' AND (${predicateSql})
         GROUP BY p.id, u.id
         ORDER BY p.id, played_at DESC
-        LIMIT $2 OFFSET $3
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
       `;
 
-      const playlistsResult = await query(sql, [userId, limit, offset]);
+      const playlistsResult = await query(sql, [
+        userId,
+        ...predicateParams,
+        limit,
+        offset,
+      ]);
 
       const playlists: Playlist[] = (playlistsResult || []).map(
         (playlist: Playlist) => {

@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
-import type { UUID } from "@types";
+import type { UUID, AccessContext } from "@types";
 import { EntityItemCard } from "@components";
 import { libraryApi } from "@api";
 import { formatDateString, getMainArtist } from "@util";
@@ -11,12 +11,13 @@ import musicPlaceholder from "@assets/music-placeholder.webp";
 const LibrarySongs: React.FC<{
   userId: UUID;
   searchFilter?: string;
-}> = ({ userId, searchFilter = "" }) => {
+  accessContext: AccessContext;
+}> = ({ userId, searchFilter = "", accessContext }) => {
   const { data, loading, error } = useAsyncData(
     {
-      songs: () => libraryApi.getLibrarySongs(userId),
+      songs: () => libraryApi.getLibrarySongs(userId, accessContext),
     },
-    [userId],
+    [userId, accessContext.userId],
     {
       cacheKey: `library_songs_${userId}`,
       hasBlobUrl: true,
