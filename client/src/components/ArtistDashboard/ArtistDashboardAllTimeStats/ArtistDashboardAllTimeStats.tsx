@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 import { useAsyncData } from "@hooks";
 import { statsApi } from "@api";
 import { formatNumber } from "@util";
-import type { UUID, ArtistAllTimeStats } from "@types";
+import type { UUID } from "@types";
 import styles from "./ArtistDashboardAllTimeStats.module.css";
 
 export interface ArtistDashboardAllTimeStatsProps {

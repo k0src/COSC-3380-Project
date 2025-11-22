@@ -37,7 +37,11 @@ const ArtistDashboardManageSongs: React.FC<ArtistDashboardManageSongsProps> = ({
 
   const fetchArtistSongs = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return artistApi.getSongs(artistId, accessContext, { limit, offset });
+      return artistApi.getSongs(artistId, accessContext, {
+        includeLikes: true,
+        limit,
+        offset,
+      });
     },
     [artistId, accessContext]
   );

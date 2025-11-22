@@ -44,6 +44,8 @@ const ArtistDashboardManagePlaylists: React.FC<
         limit,
         offset,
         includeUser: true,
+        includeLikes: true,
+        includeSongCount: true,
       });
     },
     [artistId, accessContext]
