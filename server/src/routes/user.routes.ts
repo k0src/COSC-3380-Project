@@ -25,8 +25,9 @@ router.get("/count", async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({ userCount });
   } catch (error: any) {
     console.error("Error in GET /users/count:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+    return;
     return;
   }
 });
@@ -47,8 +48,9 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(users);
   } catch (error: any) {
     console.error("Error in GET /users/:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+    return;
     return;
   }
 });
@@ -77,8 +79,9 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(user);
   } catch (error: any) {
     console.error("Error in GET /users/:id:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+    return;
     return;
   }
 });
@@ -115,8 +118,9 @@ router.delete(
       res.status(200).json({ message: "User deleted successfully" });
     } catch (error: any) {
       console.error("Error in DELETE /users/:id:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -190,8 +194,9 @@ router.get(
       res.status(200).json(playlists);
     } catch (error: any) {
       console.error("Error in GET /users/:id/playlists:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -231,8 +236,9 @@ router.get(
       res.status(200).json(recentHistory);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/recent:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -260,8 +266,9 @@ router.get(
       res.status(200).json(playlists);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/playlists:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -295,8 +302,9 @@ router.post(
       });
     } catch (error: any) {
       console.error("Error in POST /users/:id/library/playlists/pin:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -323,8 +331,9 @@ router.get(
       res.status(200).json(songs);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/songs:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -351,8 +360,9 @@ router.get(
       res.status(200).json(albums);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/albums:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -379,8 +389,9 @@ router.get(
       res.status(200).json(artists);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/artists:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -409,8 +420,9 @@ router.get(
       res.status(200).json(searchResults);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -440,8 +452,9 @@ router.get(
       res.status(200).json(songs);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/history/songs:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -472,8 +485,9 @@ router.get(
         "Error in GET /users/:id/library/history/playlists:",
         error
       );
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -501,8 +515,9 @@ router.get(
       res.status(200).json(albums);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/history/albums:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -530,8 +545,9 @@ router.get(
       res.status(200).json(artists);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/history/artists:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -553,8 +569,9 @@ router.put(
       res.status(200).json({ message: "History updated successfully" });
     } catch (error: any) {
       console.error("Error in PUT /users/:id/history:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -596,8 +613,9 @@ router.get(
       res.status(200).json(likedSongs);
     } catch (error: any) {
       console.error("Error in GET /users/:id/likes/songs:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -635,8 +653,9 @@ router.get(
       res.status(200).json(likedAlbums);
     } catch (error: any) {
       console.error("Error in GET /users/:id/likes/albums:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -674,8 +693,9 @@ router.get(
       res.status(200).json(likedPlaylists);
     } catch (error: any) {
       console.error("Error in GET /users/:id/likes/playlists:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -702,8 +722,9 @@ router.get(
       res.status(200).json(likedComments);
     } catch (error: any) {
       console.error("Error in GET /users/:id/likes/comments:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -735,8 +756,9 @@ router.post(
       res.status(200).json({ message: `${entityType} ${result} successfully` });
     } catch (error: any) {
       console.error("Error in POST /users/:id/likes:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -763,8 +785,9 @@ router.get(
       res.status(200).json({ isLiked });
     } catch (error: any) {
       console.error("Error in GET /users/:id/likes:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -787,8 +810,9 @@ router.get(
       res.status(200).json({ likedCount });
     } catch (error: any) {
       console.error("Error in GET /users/:id/likes/count:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -817,8 +841,9 @@ router.get(
       res.status(200).json(followers);
     } catch (error: any) {
       console.error("Error in GET /users/:id/followers:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -843,8 +868,9 @@ router.get(
       res.status(200).json(following);
     } catch (error: any) {
       console.error("Error in GET /users/:id/following:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -876,8 +902,9 @@ router.post(
       res.status(200).json({ message: `User ${result} sucessfully` });
     } catch (error: any) {
       console.error("Error in POST /users/:id/following:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -898,8 +925,9 @@ router.get(
       res.status(200).json({ followerCount });
     } catch (error: any) {
       console.error("Error in GET /users/:id/follower-count:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -920,8 +948,9 @@ router.get(
       res.status(200).json({ followingCount });
     } catch (error: any) {
       console.error("Error in GET /users/:id/following-count:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -946,8 +975,9 @@ router.get(
       res.status(200).json({ isFollowing });
     } catch (error: any) {
       console.error("Error in GET /users/:id/following/check:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -982,8 +1012,9 @@ router.get(
       res.status(200).json(settings);
     } catch (error: any) {
       console.error("Error in GET /users/:id/settings:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -1038,8 +1069,9 @@ router.put(
       res.status(200).json(updatedSettings);
     } catch (error: any) {
       console.error("Error in PUT /users/:id/settings:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -1069,8 +1101,9 @@ router.get(
       res.status(200).json(notifications);
     } catch (error: any) {
       console.error("Error in GET /users/:id/notifications:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -1091,8 +1124,9 @@ router.get(
       res.status(200).json({ hasUnread });
     } catch (error: any) {
       console.error("Error in GET /users/:id/notifications/check:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -1126,8 +1160,9 @@ router.put(
         "Error in PUT /users/:id/notifications/:notificationId/read:",
         error
       );
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -1158,8 +1193,9 @@ router.post(
       res.status(200).json({ message: "All notifications marked as read" });
     } catch (error: any) {
       console.error("Error in POST /users/:id/notifications/read-all:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -1193,8 +1229,9 @@ router.put(
         "Error in PUT /users/:id/notifications/:notificationId/archive:",
         error
       );
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }
@@ -1230,8 +1267,9 @@ router.post(
         "Error in POST /users/:id/notifications/archive-all:",
         error
       );
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
       return;
     }
   }

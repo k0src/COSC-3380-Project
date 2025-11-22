@@ -15,6 +15,10 @@ import {
 
 const router = Router();
 
+/* ========================================================================== */
+/*                              Type Definitions                              */
+/* ========================================================================== */
+
 interface SignupRequest {
   username: string;
   email: string;
@@ -40,6 +44,10 @@ interface AuthResponse {
   refreshToken: string;
   expiresIn: string;
 }
+
+/* ========================================================================== */
+/*                           Authentication Routes                            */
+/* ========================================================================== */
 
 router.post(
   "/signup",

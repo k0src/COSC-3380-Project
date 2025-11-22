@@ -1,7 +1,12 @@
 import express, { Request, Response } from "express";
 import { SearchService } from "@services";
+import { handlePgError } from "@util";
 
 const router = express.Router();
+
+/* ========================================================================== */
+/*                              Search Routes                                 */
+/* ========================================================================== */
 
 // GET /api/search?q=searchTerm
 router.get("/", async (req: Request, res: Response) => {
@@ -19,8 +24,8 @@ router.get("/", async (req: Request, res: Response) => {
     res.json(results);
   } catch (error: any) {
     console.error("Search failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });
@@ -42,8 +47,8 @@ router.get("/users", async (req: Request, res: Response) => {
     res.json(results);
   } catch (error: any) {
     console.error("Search users failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });
@@ -66,8 +71,8 @@ router.get("/songs", async (req: Request, res: Response) => {
     res.json(results);
   } catch (error: any) {
     console.error("Search songs failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });
@@ -89,8 +94,8 @@ router.get("/albums", async (req: Request, res: Response) => {
     res.json(results);
   } catch (error: any) {
     console.error("Search albums failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });
@@ -112,8 +117,8 @@ router.get("/artists", async (req: Request, res: Response) => {
     res.json(results);
   } catch (error: any) {
     console.error("Search artists failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });
@@ -136,8 +141,8 @@ router.get("/playlists", async (req: Request, res: Response) => {
     res.json(results);
   } catch (error: any) {
     console.error("Search playlists failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });

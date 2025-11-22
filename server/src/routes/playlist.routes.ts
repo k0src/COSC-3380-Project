@@ -5,8 +5,13 @@ import { parseForm } from "@infra/form-parser";
 import { LikeService } from "@services";
 import { handlePgError } from "@util/pgErrorHandler.util";
 import { validateOrderBy } from "@validators";
+import { authenticateToken } from "@middleware";
 
 const router = express.Router();
+
+/* ========================================================================== */
+/*                                Main Routes                                 */
+/* ========================================================================== */
 
 // GET /api/playlists
 router.get("/", async (req: Request, res: Response): Promise<void> => {
@@ -44,8 +49,9 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(playlists);
   } catch (error: any) {
     console.error("Error in GET /playlists/:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+    return;
   }
 });
 
@@ -78,79 +84,93 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(playlist);
   } catch (error: any) {
     console.error("Error in GET /playlists/:id:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+    return;
   }
 });
 
 // POST /api/playlists
-router.post("/", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const createData = await parseForm(req, "playlist");
-    const newPlaylist = await PlaylistRepository.create(createData);
-    if (!newPlaylist) {
-      res.status(400).json({ error: "Failed to create playlist" });
-      return;
+router.post(
+  "/",
+  authenticateToken,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const createData = await parseForm(req, "playlist");
+      const newPlaylist = await PlaylistRepository.create(createData);
+      if (!newPlaylist) {
+        res.status(400).json({ error: "Failed to create playlist" });
+        return;
+      }
+      res.status(200).json(newPlaylist);
+    } catch (error: any) {
+      console.error("Error in POST /playlists/:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
     }
-    res.status(200).json(newPlaylist);
-  } catch (error: any) {
-    console.error("Error in POST /playlists/:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
   }
-});
+);
 
 // PUT /api/playlists/:id
-router.put("/:id", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).json({ error: "Playlist ID is required" });
-      return;
+router.put(
+  "/:id",
+  authenticateToken,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Playlist ID is required" });
+        return;
+      }
+
+      const updateData = await parseForm(req, "playlist");
+      const updatedPlaylist = await PlaylistRepository.update(id, updateData);
+
+      if (!updatedPlaylist) {
+        res.status(404).json({ error: "Playlist not found" });
+        return;
+      }
+
+      res.status(200).json(updatedPlaylist);
+    } catch (error: any) {
+      console.error("Error in PUT /playlists/:id:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
     }
-
-    const updateData = await parseForm(req, "playlist");
-    const updatedPlaylist = await PlaylistRepository.update(id, updateData);
-
-    if (!updatedPlaylist) {
-      res.status(404).json({ error: "Playlist not found" });
-      return;
-    }
-
-    res.status(200).json(updatedPlaylist);
-  } catch (error: any) {
-    console.error("Error in PUT /playlists/:id:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
   }
-});
+);
 
 // DELETE /api/playlists/:id
-router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).json({ error: "Playlist ID is required" });
-      return;
-    }
+router.delete(
+  "/:id",
+  authenticateToken,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Playlist ID is required" });
+        return;
+      }
 
-    const deleted = await PlaylistRepository.delete(id);
-    if (!deleted) {
-      res.status(404).json({ error: "Playlist not found" });
-      return;
-    }
+      const deleted = await PlaylistRepository.delete(id);
+      if (!deleted) {
+        res.status(404).json({ error: "Playlist not found" });
+        return;
+      }
 
-    res.status(200).json({ message: "Playlist deleted successfully" });
-  } catch (error: any) {
-    console.error("Error in DELETE /playlists/:id:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
+      res.status(200).json({ message: "Playlist deleted successfully" });
+    } catch (error: any) {
+      console.error("Error in DELETE /playlists/:id:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
   }
-});
+);
 
 // POST /api/playlists/bulk-delete
 router.post(
   "/bulk-delete",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { playlistIds } = req.body;
@@ -178,6 +198,10 @@ router.post(
   }
 );
 
+/* ========================================================================== */
+/*                              Playlist Songs                                */
+/* ========================================================================== */
+
 // GET /api/playlists/:id/songs
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -203,39 +227,45 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(songs);
   } catch (error: any) {
     console.error("Error in GET /playlists/:id/songs:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+    return;
   }
 });
 
 // PUT /api/playlists/:id/songs
-router.put("/:id/songs", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const { songIds } = req.body;
+router.put(
+  "/:id/songs",
+  authenticateToken,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { songIds } = req.body;
 
-    if (!id) {
-      res.status(400).json({ error: "Playlist ID is required" });
-      return;
+      if (!id) {
+        res.status(400).json({ error: "Playlist ID is required" });
+        return;
+      }
+
+      if (!Array.isArray(songIds)) {
+        res.status(400).json({ error: "songIds must be an array" });
+        return;
+      }
+
+      await PlaylistRepository.addSongs(id, songIds);
+      res.status(200).json({ message: "Songs added to playlist successfully" });
+    } catch (error: any) {
+      console.error("Error in PUT /playlists/:id/songs:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
     }
-
-    if (!Array.isArray(songIds)) {
-      res.status(400).json({ error: "songIds must be an array" });
-      return;
-    }
-
-    await PlaylistRepository.addSongs(id, songIds);
-    res.status(200).json({ message: "Songs added to playlist successfully" });
-  } catch (error: any) {
-    console.error("Error in PUT /playlists/:id/songs:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
   }
-});
+);
 
 // PUT /api/playlists/:id/songs/remove
 router.put(
   "/:id/songs/remove",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -262,6 +292,10 @@ router.put(
     }
   }
 );
+
+/* ========================================================================== */
+/*                         Playlist Likes & Related                           */
+/* ========================================================================== */
 
 // GET /api/playlists/:id/cover-image
 router.get(
@@ -300,9 +334,8 @@ router.get(
       res.send(imageBuffer);
     } catch (error: any) {
       console.error("Error in GET /playlists/:id/cover-image:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
-      return;
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
     }
   }
 );
@@ -326,9 +359,8 @@ router.get(
       res.status(200).json(users);
     } catch (error: any) {
       console.error("Error in GET /api/playlists/:id/liked-by:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
-      return;
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
     }
   }
 );
@@ -365,16 +397,20 @@ router.get(
       res.status(200).json(playlists);
     } catch (error: any) {
       console.error("Error in GET /playlists/:id/related:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
-      return;
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
     }
   }
 );
 
+/* ========================================================================== */
+/*                            Playlist Operations                             */
+/* ========================================================================== */
+
 // POST /api/playlists/:id/remix
 router.post(
   "/:id/remix",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -394,9 +430,8 @@ router.post(
       res.status(200).json({ remixPlaylistId });
     } catch (error: any) {
       console.error("Error in POST /playlists/:id/remix:", error);
-      const errorMessage = error.message || "Internal server error";
-      res.status(500).json({ error: errorMessage });
-      return;
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
     }
   }
 );
