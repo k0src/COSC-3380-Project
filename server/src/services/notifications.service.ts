@@ -1,15 +1,7 @@
 import { query, withTransaction } from "@config/database";
 import type { UUID, Notification } from "@types";
 
-/**
- * Service for managing user notifications
- */
 export default class NotificationsService {
-  /**
-   * Gets notifications for a user.
-   * @param userId The ID of the user.
-   * @returns A list of notifications.
-   */
   static async getNotifications(
     userId: UUID,
     includeRead = false
@@ -30,11 +22,6 @@ export default class NotificationsService {
     }
   }
 
-  /**
-   * Marks a notification as read.
-   * @param userId The ID of the user.
-   * @param notificationId The ID of the notification.
-   */
   static async markAsRead(userId: UUID, notificationId: UUID) {
     try {
       await withTransaction(async (client) => {
@@ -51,10 +38,6 @@ export default class NotificationsService {
     }
   }
 
-  /**
-   * Marks all notifications as read for a user.
-   * @param userId The ID of the user.
-   */
   static async markAllAsRead(userId: UUID) {
     try {
       await withTransaction(async (client) => {
@@ -71,11 +54,6 @@ export default class NotificationsService {
     }
   }
 
-  /**
-   * Archives a notification for a user.
-   * @param userId The ID of the user.
-   * @param notificationId The ID of the notification.
-   */
   static async archive(userId: UUID, notificationId: UUID) {
     try {
       await withTransaction(async (client) => {
@@ -92,10 +70,6 @@ export default class NotificationsService {
     }
   }
 
-  /**
-   * Archives all notifications for a user.
-   * @param userId The ID of the user.
-   */
   static async archiveAll(userId: UUID) {
     try {
       await withTransaction(async (client) => {
@@ -112,11 +86,6 @@ export default class NotificationsService {
     }
   }
 
-  /**
-   * Checks if a user has unread notifications.
-   * @param userId The ID of the user.
-   * @returns True if there are unread notifications, false otherwise.
-   */
   static async hasUnreadNotifications(userId: UUID): Promise<boolean> {
     try {
       const result = await query(

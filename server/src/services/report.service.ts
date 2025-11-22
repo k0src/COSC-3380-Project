@@ -1,6 +1,5 @@
 import type { UUID, ReportType } from "@types";
 import { withTransaction } from "@config/database.js";
-// import { getBlobUrl } from "@config/blobStorage.js";
 
 /**
  * Service for managing and submitting user reports.

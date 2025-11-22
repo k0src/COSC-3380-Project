@@ -630,14 +630,21 @@ router.get(
         return;
       }
 
-      const likedSongs = await LikeService.getLikedByUser(id, "song", {
-        includeAlbums: includeAlbums === "true",
-        includeArtists: includeArtists === "true",
-        includeLikes: includeLikes === "true",
-        includeComments: includeComments === "true",
-        limit: limit ? parseInt(limit as string) : undefined,
-        offset: offset ? parseInt(offset as string) : undefined,
-      });
+      const accessContext = parseAccessContext(req.query);
+
+      const likedSongs = await LikeService.getLikedByUser(
+        id,
+        "song",
+        accessContext,
+        {
+          includeAlbums: includeAlbums === "true",
+          includeArtists: includeArtists === "true",
+          includeLikes: includeLikes === "true",
+          includeComments: includeComments === "true",
+          limit: limit ? parseInt(limit as string) : undefined,
+          offset: offset ? parseInt(offset as string) : undefined,
+        }
+      );
 
       res.status(200).json(likedSongs);
     } catch (error: any) {
@@ -669,14 +676,21 @@ router.get(
         return;
       }
 
-      const likedAlbums = await LikeService.getLikedByUser(id, "album", {
-        includeArtist: includeArtist === "true",
-        includeLikes: includeLikes === "true",
-        includeRuntime: includeRuntime === "true",
-        includeSongCount: includeSongCount === "true",
-        limit: limit ? parseInt(limit as string) : undefined,
-        offset: offset ? parseInt(offset as string) : undefined,
-      });
+      const accessContext = parseAccessContext(req.query);
+
+      const likedAlbums = await LikeService.getLikedByUser(
+        id,
+        "album",
+        accessContext,
+        {
+          includeArtist: includeArtist === "true",
+          includeLikes: includeLikes === "true",
+          includeRuntime: includeRuntime === "true",
+          includeSongCount: includeSongCount === "true",
+          limit: limit ? parseInt(limit as string) : undefined,
+          offset: offset ? parseInt(offset as string) : undefined,
+        }
+      );
 
       res.status(200).json(likedAlbums);
     } catch (error: any) {
@@ -708,14 +722,21 @@ router.get(
         return;
       }
 
-      const likedPlaylists = await LikeService.getLikedByUser(id, "playlist", {
-        includeUser: includeUser === "true",
-        includeLikes: includeLikes === "true",
-        includeSongCount: includeSongCount === "true",
-        includeRuntime: includeRuntime === "true",
-        limit: limit ? parseInt(limit as string) : undefined,
-        offset: offset ? parseInt(offset as string) : undefined,
-      });
+      const accessContext = parseAccessContext(req.query);
+
+      const likedPlaylists = await LikeService.getLikedByUser(
+        id,
+        "playlist",
+        accessContext,
+        {
+          includeUser: includeUser === "true",
+          includeLikes: includeLikes === "true",
+          includeSongCount: includeSongCount === "true",
+          includeRuntime: includeRuntime === "true",
+          limit: limit ? parseInt(limit as string) : undefined,
+          offset: offset ? parseInt(offset as string) : undefined,
+        }
+      );
 
       res.status(200).json(likedPlaylists);
     } catch (error: any) {
@@ -740,10 +761,17 @@ router.get(
         return;
       }
 
-      const likedComments = await LikeService.getLikedByUser(id, "comment", {
-        limit: limit ? parseInt(limit as string) : undefined,
-        offset: offset ? parseInt(offset as string) : undefined,
-      });
+      const accessContext = parseAccessContext(req.query);
+
+      const likedComments = await LikeService.getLikedByUser(
+        id,
+        "comment",
+        accessContext,
+        {
+          limit: limit ? parseInt(limit as string) : undefined,
+          offset: offset ? parseInt(offset as string) : undefined,
+        }
+      );
 
       res.status(200).json(likedComments);
     } catch (error: any) {

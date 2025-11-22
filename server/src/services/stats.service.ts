@@ -14,13 +14,7 @@ interface ArtistQuickStats {
   playlistAdds: number;
 }
 
-/**
- * Service for retrieving statistics for entities
- */
 export default class StatsService {
-  /**
-   * Get quick stats for an artist
-   */
   static async getArtistQuickStats(
     artistId: UUID,
     days: number = 30
@@ -84,9 +78,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get top performing song for an artist
-   */
   static async getArtistTopSong(
     artistId: UUID,
     days: number = 30
@@ -139,9 +130,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get daily streams for an artist over a time range
-   */
   static async getArtistDailyStreams(
     artistId: UUID,
     days: number = 30
@@ -181,9 +169,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get top performing songs for an artist
-   */
   static async getArtistTopSongs(
     artistId: UUID,
     days: number = 30,
@@ -228,9 +213,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get top playlists containing an artist's songs
-   */
   static async getArtistTopPlaylists(
     artistId: UUID,
     days: number = 30,
@@ -415,9 +397,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get all-time stats for an artist
-   */
   static async getArtistAllTimeStats(artistId: UUID) {
     try {
       const result = await query(
@@ -483,9 +462,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get streams bar chart data for an artist
-   */
   static async getArtistStreamsBarChartData(
     artistId: UUID,
     timeRange: string = "30d"
@@ -552,9 +528,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get listeners pie chart data for an artist
-   */
   static async getArtistListenersPieChartData(artistId: UUID) {
     try {
       const result = await query(
@@ -613,9 +586,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get follower chart data for an artist
-   */
   static async getArtistFollowersData(artistId: UUID) {
     try {
       const result = await query(

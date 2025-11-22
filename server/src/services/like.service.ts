@@ -1,6 +1,15 @@
-import type { UUID, Song, Album, Playlist, User, Comment } from "@types";
+import type {
+  UUID,
+  Song,
+  Album,
+  Playlist,
+  User,
+  Comment,
+  AccessContext,
+} from "@types";
 import { query } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
+import { getAccessPredicate } from "@util";
 
 type LikeableEntity = "song" | "album" | "playlist" | "comment";
 
@@ -25,18 +34,7 @@ const LIKE_TABLES: Record<LikeableEntity, string> = {
   comment: "comment_likes",
 };
 
-/**
- * Service for managing likes on songs, albums, playlists, and comments.
- */
 export default class LikeService {
-  /**
-   * Toggles a like for a given entity (song, album, playlist, comment) by a user.
-   * @param userId The ID of the user.
-   * @param entityId The ID of the entity to like/unlike.
-   * @param entity The type of entity (song, album, playlist, comment).
-   * @return A string indicating the action ("liked"/"unliked").
-   * @throws Error if the operation fails.
-   */
   static async toggleLike(
     userId: UUID,
     entityId: UUID,
@@ -59,13 +57,6 @@ export default class LikeService {
     }
   }
 
-  /**
-   * Get the number of likes for an entity.
-   * @param entityId The ID of the entity.
-   * @param entity The type of entity (song, album, playlist, comment).
-   * @return The number of likes.
-   * @throws Error if the operation fails.
-   */
   static async getLikeCount(
     entityId: UUID,
     entity: LikeableEntity
@@ -90,6 +81,7 @@ export default class LikeService {
   static async getLikedByUser<K extends keyof LikeableEntitiesMap>(
     userId: UUID,
     entity: K,
+    accessContext: AccessContext,
     options?: { limit?: number; offset?: number; [key: string]: any }
   ): Promise<LikeableEntitiesMap[K][]> {
     const likeTable = LIKE_TABLES[entity];
@@ -102,9 +94,22 @@ export default class LikeService {
 
     switch (entity) {
       case "song": {
+        const { sql: predicateSqlRaw, params: predicateParams } =
+          getAccessPredicate(accessContext, "s", 2);
+        const predicateSql =
+          (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
+        const baseParamCount = 1 + predicateParams.length;
+        const includeAlbumsIndex = baseParamCount + 1;
+        const includeArtistsIndex = baseParamCount + 2;
+        const includeLikesIndex = baseParamCount + 3;
+        const includeCommentsIndex = baseParamCount + 4;
+        const limitIndex = baseParamCount + 5;
+        const offsetIndex = baseParamCount + 6;
+
         sql = `
           SELECT s.*,
-            CASE WHEN $2 THEN
+            CASE WHEN $${includeAlbumsIndex} THEN
               (SELECT json_agg(row_to_json(album_with_artist))
               FROM (
                 SELECT a.*,
@@ -115,7 +120,7 @@ export default class LikeService {
                 WHERE als.song_id = s.id
               ) AS album_with_artist)
             ELSE NULL END AS albums,
-            CASE WHEN $3 THEN
+            CASE WHEN $${includeArtistsIndex} THEN
               (SELECT json_agg(row_to_json(ar_with_role))
               FROM (
                 SELECT
@@ -128,21 +133,22 @@ export default class LikeService {
                 WHERE sa.song_id = s.id
               ) AS ar_with_role)
             ELSE NULL END AS artists,
-            CASE WHEN $4 THEN
+            CASE WHEN $${includeLikesIndex} THEN
               (SELECT COUNT(*) FROM song_likes sl
               WHERE sl.song_id = s.id)
             ELSE NULL END AS likes,
-            CASE WHEN $5 THEN
+            CASE WHEN $${includeCommentsIndex} THEN
               (SELECT COUNT(*) FROM comments c
               WHERE c.song_id = s.id)
             ELSE NULL END AS comments
           FROM songs s
           JOIN ${likeTable} l ON s.id = l.song_id
-          WHERE l.user_id = $1
-          LIMIT $6 OFFSET $7
+          WHERE l.user_id = $1 AND (${predicateSql})
+          LIMIT $${limitIndex} OFFSET $${offsetIndex}
         `;
         params = [
           userId,
+          ...predicateParams,
           options?.includeAlbums ?? false,
           options?.includeArtists ?? false,
           options?.includeLikes ?? false,
@@ -154,9 +160,22 @@ export default class LikeService {
       }
 
       case "album": {
+        const { sql: predicateSqlRaw, params: predicateParams } =
+          getAccessPredicate(accessContext, "a", 2);
+        const predicateSql =
+          (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
+        const baseParamCount = 1 + predicateParams.length;
+        const includeArtistIndex = baseParamCount + 1;
+        const includeLikesIndex = baseParamCount + 2;
+        const includeRuntimeIndex = baseParamCount + 3;
+        const includeSongCountIndex = baseParamCount + 4;
+        const limitIndex = baseParamCount + 5;
+        const offsetIndex = baseParamCount + 6;
+
         sql = `
           SELECT a.*,
-          CASE WHEN $2 THEN 
+          CASE WHEN $${includeArtistIndex} THEN 
             (SELECT row_to_json(artist_with_user)
             FROM (
               SELECT ar.*,
@@ -166,23 +185,24 @@ export default class LikeService {
               WHERE ar.id = a.created_by
             ) AS artist_with_user)
           ELSE NULL END as artist,
-          CASE WHEN $3 THEN (SELECT COUNT(*) FROM album_likes al 
+          CASE WHEN $${includeLikesIndex} THEN (SELECT COUNT(*) FROM album_likes al 
             WHERE al.album_id = a.id) 
           ELSE NULL END as likes,
-          CASE WHEN $4 THEN (SELECT SUM(s.duration) FROM songs s 
+          CASE WHEN $${includeRuntimeIndex} THEN (SELECT SUM(s.duration) FROM songs s 
             JOIN album_songs als ON s.id = als.song_id 
             WHERE als.album_id = a.id) 
           ELSE NULL END as runtime,
-          CASE WHEN $5 THEN (SELECT COUNT(*) FROM album_songs als 
+          CASE WHEN $${includeSongCountIndex} THEN (SELECT COUNT(*) FROM album_songs als 
             WHERE als.album_id = a.id)
           ELSE NULL END as song_count
           FROM albums a
           JOIN ${likeTable} l ON a.id = l.album_id
-          WHERE l.user_id = $1
-          LIMIT $6 OFFSET $7
+          WHERE l.user_id = $1 AND (${predicateSql})
+          LIMIT $${limitIndex} OFFSET $${offsetIndex}
         `;
         params = [
           userId,
+          ...predicateParams,
           options?.includeArtist ?? false,
           options?.includeLikes ?? false,
           options?.includeRuntime ?? false,
@@ -194,28 +214,42 @@ export default class LikeService {
       }
 
       case "playlist": {
+        const { sql: predicateSqlRaw, params: predicateParams } =
+          getAccessPredicate(accessContext, "p", 2);
+        const predicateSql =
+          (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
+        const baseParamCount = 1 + predicateParams.length;
+        const includeUserIndex = baseParamCount + 1;
+        const includeLikesIndex = baseParamCount + 2;
+        const includeSongCountIndex = baseParamCount + 3;
+        const includeRuntimeIndex = baseParamCount + 4;
+        const limitIndex = baseParamCount + 5;
+        const offsetIndex = baseParamCount + 6;
+
         sql = `
           SELECT p.*,
-          CASE WHEN $2 THEN row_to_json(u.*)
+          CASE WHEN $${includeUserIndex} THEN row_to_json(u.*)
           ELSE NULL END as user,
-          CASE WHEN $3 THEN (SELECT COUNT(*) FROM playlist_likes pl
+          CASE WHEN $${includeLikesIndex} THEN (SELECT COUNT(*) FROM playlist_likes pl
             WHERE pl.playlist_id = p.id)
           ELSE NULL END as likes,
-          CASE WHEN $4 THEN (SELECT COUNT(*) FROM playlist_songs ps
+          CASE WHEN $${includeSongCountIndex} THEN (SELECT COUNT(*) FROM playlist_songs ps
             WHERE ps.playlist_id = p.id)
           ELSE NULL END as song_count,
-          CASE WHEN $5 THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
+          CASE WHEN $${includeRuntimeIndex} THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
             JOIN playlist_songs ps ON ps.song_id = s.id
             WHERE ps.playlist_id = p.id)
           ELSE NULL END as runtime
           FROM playlists p
           LEFT JOIN users u ON p.owner_id = u.id
           JOIN ${likeTable} l ON p.id = l.playlist_id
-          WHERE l.user_id = $1
-          LIMIT $6 OFFSET $7
+          WHERE l.user_id = $1 AND (${predicateSql})
+          LIMIT $${limitIndex} OFFSET $${offsetIndex}
         `;
         params = [
           userId,
+          ...predicateParams,
           options?.includeUser ?? false,
           options?.includeLikes ?? false,
           options?.includeSongCount ?? false,
@@ -227,12 +261,17 @@ export default class LikeService {
       }
 
       case "comment": {
+        // Comments don't have access control, but we keep the pattern consistent
+        const baseParamCount = 1;
+        const limitIndex = baseParamCount + 1;
+        const offsetIndex = baseParamCount + 2;
+
         sql = `
           SELECT c.*
           FROM comments c
           JOIN ${likeTable} l ON c.id = l.comment_id
           WHERE l.user_id = $1
-          LIMIT $2 OFFSET $3
+          LIMIT $${limitIndex} OFFSET $${offsetIndex}
         `;
         params = [userId, limit, offset];
         break;
@@ -326,13 +365,6 @@ export default class LikeService {
     return processedItems as LikeableEntitiesMap[K][];
   }
 
-  /**
-   * Get the count of entities liked by a user.
-   * @param userId The ID of the user.
-   * @param entity The type of entity (song, album, playlist, comment).
-   * @return The number of entities liked by the user.
-   * @throws Error if the operation fails.
-   */
   static async getLikedCount<K extends keyof LikeableEntitiesMap>(
     userId: UUID,
     entity: K
@@ -348,16 +380,6 @@ export default class LikeService {
     return parseInt(res[0]?.count ?? "0", 10);
   }
 
-  /**
-   * Get all users who liked an entity.
-   * @param entityId The ID of the entity.
-   * @param entity The type of entity (song, album, playlist, comment).
-   * @param options Optional parameters for pagination.
-   * @param options.limit The maximum number of users to return.
-   * @param options.offset The number of users to skip.
-   * @return An array of users who liked the entity.
-   * @throws Error if the operation fails.
-   */
   static async getUsersWhoLiked<K extends keyof LikeableEntitiesMap>(
     entityId: UUID,
     entity: K,
@@ -393,14 +415,6 @@ export default class LikeService {
     return processedUsers;
   }
 
-  /**
-   * Checks if a user has liked an entity.
-   * @param userId The ID of the user.
-   * @param entityId The ID of the entity.
-   * @param entity The type of entity (song, album, playlist, comment).
-   * @return Boolean indicating whether the user has liked the entity.
-   * @throws Error if the operation fails.
-   */
   static async hasUserLiked<K extends keyof LikeableEntitiesMap>(
     userId: UUID,
     entityId: UUID,

@@ -86,6 +86,7 @@ export const userApi = {
 
   async getLikedSongs(
     id: UUID,
+    accessContext: AccessContext,
     options?: {
       includeAlbums?: boolean;
       includeArtists?: boolean;
@@ -96,13 +97,19 @@ export const userApi = {
     }
   ) {
     const response = await api.get<Song[]>(`/users/${id}/likes/songs`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
     return response.data;
   },
 
   async getLikedAlbums(
     id: UUID,
+    accessContext: AccessContext,
     options?: {
       includeArtist?: boolean;
       includeLikes?: boolean;
@@ -113,13 +120,19 @@ export const userApi = {
     }
   ) {
     const response = await api.get<Album[]>(`/users/${id}/likes/albums`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
     return response.data;
   },
 
   async getLikedPlaylists(
     id: UUID,
+    accessContext: AccessContext,
     options?: {
       includeUser?: boolean;
       includeLikes?: boolean;
@@ -130,20 +143,31 @@ export const userApi = {
     }
   ) {
     const response = await api.get<Playlist[]>(`/users/${id}/likes/playlists`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
     return response.data;
   },
 
   async getLikedComments(
     id: UUID,
+    accessContext: AccessContext,
     options?: {
       limit?: number;
       offset?: number;
     }
   ) {
     const response = await api.get<Comment[]>(`/users/${id}/likes/comments`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
     return response.data;
   },
