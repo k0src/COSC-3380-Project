@@ -137,7 +137,7 @@ export default class CommentService {
         JOIN songs s ON c.song_id = s.id
         JOIN users u ON c.user_id = u.id
         LEFT JOIN comment_likes cl ON c.id = cl.comment_id
-        WHERE c.song_id = $1
+        WHERE c.song_id = $1 AND c.id NOT IN (SELECT comment_id FROM deleted_comments)
         GROUP BY c.id, s.title, u.id, u.username, u.profile_picture_url
         ORDER BY c.commented_at DESC
         LIMIT $2 OFFSET $3`;
@@ -190,7 +190,7 @@ export default class CommentService {
         SELECT c.*, u.username, u.id, u.profile_picture_url
         FROM comments c 
         JOIN users u ON c.user_id = u.id
-        WHERE c.user_id = $1
+        WHERE c.user_id = $1 AND c.id NOT IN (SELECT comment_id FROM deleted_comments)
         ORDER BY c.created_at DESC
         LIMIT $2 OFFSET $3
       `;
@@ -226,7 +226,8 @@ export default class CommentService {
         JOIN songs s ON c.song_id = s.id
         JOIN users u ON c.user_id = u.id
         LEFT JOIN comment_likes cl ON c.id = cl.comment_id
-        WHERE s.owner_id = (SELECT id FROM users WHERE artist_id = $1)
+        WHERE s.owner_id = (SELECT id FROM users WHERE artist_id = $1) 
+          AND c.id NOT IN (SELECT comment_id FROM deleted_comments)
         GROUP BY c.id, s.title, u.id, u.username, u.profile_picture_url
         ORDER BY c.commented_at DESC
         LIMIT $2 OFFSET $3
