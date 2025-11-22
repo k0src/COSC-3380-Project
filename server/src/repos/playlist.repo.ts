@@ -580,6 +580,11 @@ export default class PlaylistRepository {
          JOIN songs s ON ps.song_id = s.id
          WHERE ps.playlist_id = $1
          AND s.image_url IS NOT NULL
+         AND NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds
+            WHERE ds.song_id = s.id
+         )
+         GROUP BY s.image_url, ps.added_at
          ORDER BY ps.added_at
          LIMIT $2`,
         [playlistId, limit]

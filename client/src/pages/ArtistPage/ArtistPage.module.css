@@ -39,10 +39,13 @@
   max-width: 100%;
 }
 
-.sectionContainer {
+.noDataContainer {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  min-width: 0;
-  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.noDataText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
 }

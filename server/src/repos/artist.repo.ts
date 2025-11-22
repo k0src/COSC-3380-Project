@@ -844,7 +844,9 @@ export default class ArtistRepository {
         JOIN playlist_songs ps ON p.id = ps.playlist_id
         JOIN songs s ON ps.song_id = s.id
         JOIN song_artists sa ON s.id = sa.song_id
-        WHERE sa.artist_id = $1 AND (${predicateSql})
+        WHERE sa.artist_id = $1 
+          AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
+          AND (${predicateSql})
         ORDER BY p.id, ${sqlOrderByColumn} ${orderByDirection}
         LIMIT $${limitIndex} OFFSET $${offsetIndex}
       `;
@@ -985,6 +987,8 @@ export default class ArtistRepository {
         ) AS has_songs`,
         [artistId]
       );
+
+      console.log(result[0].has_songs);
 
       return result[0]?.has_songs || false;
     } catch (error) {
