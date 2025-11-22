@@ -105,41 +105,48 @@ export default class PlaylistRepository {
       ) {
         throw new Error("Playlist title cannot be empty");
       }
-
-      const fields: string[] = [];
-      const values: any[] = [];
-
-      if (title !== undefined) {
-        fields.push(`title = $${values.length + 1}`);
-        values.push(title);
-      }
-      if (description !== undefined) {
-        fields.push(`description = $${values.length + 1}`);
-        values.push(description);
-      }
-      if (owner_id !== undefined) {
-        fields.push(`owner_id = $${values.length + 1}`);
-        values.push(owner_id);
-      }
-      if (visibility_status !== undefined) {
-        fields.push(`visibility_status = $${values.length + 1}`);
-        values.push(visibility_status);
-      }
-      if (image_url !== undefined) {
-        fields.push(`image_url = $${values.length + 1}`);
-        values.push(image_url);
-      }
-      if (image_url_blurhash !== undefined) {
-        fields.push(`image_url_blurhash = $${values.length + 1}`);
-        values.push(image_url_blurhash);
-      }
-      if (fields.length === 0) {
-        throw new Error("No fields to update");
-      }
-
-      values.push(id);
-
       const res = await withTransaction(async (client) => {
+        const deletedCheck = await client.query(
+          `SELECT 1 FROM deleted_playlists WHERE playlist_id = $1`,
+          [id]
+        );
+        if (deletedCheck.rows.length > 0) {
+          throw new Error("Cannot update a deleted playlist.");
+        }
+
+        const fields: string[] = [];
+        const values: any[] = [];
+
+        if (title !== undefined) {
+          fields.push(`title = $${values.length + 1}`);
+          values.push(title);
+        }
+        if (description !== undefined) {
+          fields.push(`description = $${values.length + 1}`);
+          values.push(description);
+        }
+        if (owner_id !== undefined) {
+          fields.push(`owner_id = $${values.length + 1}`);
+          values.push(owner_id);
+        }
+        if (visibility_status !== undefined) {
+          fields.push(`visibility_status = $${values.length + 1}`);
+          values.push(visibility_status);
+        }
+        if (image_url !== undefined) {
+          fields.push(`image_url = $${values.length + 1}`);
+          values.push(image_url);
+        }
+        if (image_url_blurhash !== undefined) {
+          fields.push(`image_url_blurhash = $${values.length + 1}`);
+          values.push(image_url_blurhash);
+        }
+        if (fields.length === 0) {
+          throw new Error("No fields to update");
+        }
+
+        values.push(id);
+
         const sql = `UPDATE playlists SET ${fields.join(", ")} WHERE id = $${
           values.length
         } RETURNING *`;
@@ -548,7 +555,13 @@ export default class PlaylistRepository {
 
   static async count(): Promise<number> {
     try {
-      const res = await query("SELECT COUNT(*) FROM playlists");
+      const res = await query(
+        `SELECT COUNT(*) FROM playlists p
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_playlists dp
+          WHERE dp.playlist_id = p.id
+        )`
+      );
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting playlists:", error);

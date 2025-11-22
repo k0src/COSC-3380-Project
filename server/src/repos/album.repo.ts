@@ -109,44 +109,52 @@ export default class AlbumRepository {
         throw new Error("Song title cannot be empty");
       }
 
-      const fields: string[] = [];
-      const values: any[] = [];
-
-      if (title !== undefined) {
-        fields.push(`title = $${fields.length + 1}`);
-        values.push(title);
-      }
-      if (genre !== undefined) {
-        fields.push(`genre = $${fields.length + 1}`);
-        values.push(genre);
-      }
-      if (release_date !== undefined) {
-        fields.push(`release_date = $${fields.length + 1}`);
-        values.push(release_date);
-      }
-      if (image_url !== undefined) {
-        fields.push(`image_url = $${fields.length + 1}`);
-        values.push(image_url);
-      }
-      if (image_url_blurhash !== undefined) {
-        fields.push(`image_url_blurhash = $${fields.length + 1}`);
-        values.push(image_url_blurhash);
-      }
-      if (created_by !== undefined) {
-        fields.push(`created_by = $${fields.length + 1}`);
-        values.push(created_by);
-      }
-      if (visibility_status !== undefined) {
-        fields.push(`visibility_status = $${fields.length + 1}`);
-        values.push(visibility_status);
-      }
-      if (fields.length === 0) {
-        throw new Error("No fields to update");
-      }
-
-      values.push(id);
-
       const res = await withTransaction(async (client) => {
+        const deletedCheck = await client.query(
+          `SELECT 1 FROM deleted_albums WHERE album_id = $1`,
+          [id]
+        );
+        if (deletedCheck.rows.length > 0) {
+          throw new Error("Cannot update a deleted album.");
+        }
+
+        const fields: string[] = [];
+        const values: any[] = [];
+
+        if (title !== undefined) {
+          fields.push(`title = $${fields.length + 1}`);
+          values.push(title);
+        }
+        if (genre !== undefined) {
+          fields.push(`genre = $${fields.length + 1}`);
+          values.push(genre);
+        }
+        if (release_date !== undefined) {
+          fields.push(`release_date = $${fields.length + 1}`);
+          values.push(release_date);
+        }
+        if (image_url !== undefined) {
+          fields.push(`image_url = $${fields.length + 1}`);
+          values.push(image_url);
+        }
+        if (image_url_blurhash !== undefined) {
+          fields.push(`image_url_blurhash = $${fields.length + 1}`);
+          values.push(image_url_blurhash);
+        }
+        if (created_by !== undefined) {
+          fields.push(`created_by = $${fields.length + 1}`);
+          values.push(created_by);
+        }
+        if (visibility_status !== undefined) {
+          fields.push(`visibility_status = $${fields.length + 1}`);
+          values.push(visibility_status);
+        }
+        if (fields.length === 0) {
+          throw new Error("No fields to update");
+        }
+
+        values.push(id);
+
         const sql = `UPDATE albums SET ${fields.join(", ")} WHERE id = $${
           values.length
         } RETURNING *`;
@@ -521,7 +529,13 @@ export default class AlbumRepository {
 
   static async count(): Promise<number> {
     try {
-      const res = await query("SELECT COUNT(*) FROM albums");
+      const res = await query(
+        `SELECT COUNT(*) FROM albums a
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_albums da
+          WHERE da.album_id = a.id
+        )`
+      );
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting albums:", error);

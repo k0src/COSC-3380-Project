@@ -108,36 +108,44 @@ export default class ArtistRepository {
         throw new Error("Artist display name cannot be empty");
       }
 
-      const fields: string[] = [];
-      const values: any[] = [];
-
-      if (display_name !== undefined) {
-        fields.push(`display_name = $${values.length + 1}`);
-        values.push(display_name);
-      }
-      if (bio !== undefined) {
-        fields.push(`bio = $${values.length + 1}`);
-        values.push(bio);
-      }
-      if (location !== undefined) {
-        fields.push(`location = $${values.length + 1}`);
-        values.push(location);
-      }
-      if (banner_image_url !== undefined) {
-        fields.push(`banner_image_url = $${values.length + 1}`);
-        values.push(banner_image_url);
-      }
-      if (banner_image_url_blurhash !== undefined) {
-        fields.push(`banner_image_url_blurhash = $${values.length + 1}`);
-        values.push(banner_image_url_blurhash);
-      }
-      if (fields.length === 0) {
-        throw new Error("No fields to update");
-      }
-
-      values.push(id);
-
       const res = await withTransaction(async (client) => {
+        const deletedCheck = await client.query(
+          `SELECT 1 FROM deleted_artists WHERE artist_id = $1`,
+          [id]
+        );
+        if (deletedCheck.rows.length > 0) {
+          throw new Error("Cannot update a deleted artist.");
+        }
+
+        const fields: string[] = [];
+        const values: any[] = [];
+
+        if (display_name !== undefined) {
+          fields.push(`display_name = $${values.length + 1}`);
+          values.push(display_name);
+        }
+        if (bio !== undefined) {
+          fields.push(`bio = $${values.length + 1}`);
+          values.push(bio);
+        }
+        if (location !== undefined) {
+          fields.push(`location = $${values.length + 1}`);
+          values.push(location);
+        }
+        if (banner_image_url !== undefined) {
+          fields.push(`banner_image_url = $${values.length + 1}`);
+          values.push(banner_image_url);
+        }
+        if (banner_image_url_blurhash !== undefined) {
+          fields.push(`banner_image_url_blurhash = $${values.length + 1}`);
+          values.push(banner_image_url_blurhash);
+        }
+        if (fields.length === 0) {
+          throw new Error("No fields to update");
+        }
+
+        values.push(id);
+
         const sql = `UPDATE artists SET ${fields.join(", ")} WHERE id = $${
           values.length
         } RETURNING *`;
@@ -190,7 +198,9 @@ export default class ArtistRepository {
         SELECT ${selectFields.join(",\n")}
         FROM artists a
         ${options?.includeUser ? "LEFT JOIN users u ON a.user_id = u.id" : ""}
-        WHERE a.id = $1
+        WHERE a.id = $1 AND NOT EXISTS (
+          SELECT 1 FROM deleted_artists da WHERE da.artist_id = a.id
+        )
         LIMIT 1`;
 
       const params = [id];
@@ -246,6 +256,9 @@ export default class ArtistRepository {
         SELECT ${selectFields.join(",\n")}
         FROM artists a
         ${options?.includeUser ? "LEFT JOIN users u ON a.user_id = u.id" : ""}
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_artists da WHERE da.artist_id = a.id
+        )
         ORDER BY ${sqlOrderByColumn} ${orderByDirection}
         LIMIT $1 OFFSET $2
       `;
@@ -694,7 +707,10 @@ export default class ArtistRepository {
   static async getNumberOfSongs(artistId: UUID): Promise<number> {
     try {
       const res = await query(
-        `SELECT COUNT(*) FROM song_artists WHERE artist_id = $1`,
+        `SELECT COUNT(*) FROM song_artists 
+        WHERE artist_id = $1 AND NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = song_artists.song_id
+        )`,
         [artistId]
       );
       return parseInt(res[0]?.count ?? "0", 10);
@@ -708,7 +724,9 @@ export default class ArtistRepository {
     try {
       const res = await query(
         `SELECT COUNT(*) FROM albums a
-         WHERE a.created_by = $1`,
+        WHERE a.created_by = $1 AND NOT EXISTS (
+          SELECT 1 FROM deleted_albums da WHERE da.album_id = a.id
+        )`,
         [artistId]
       );
       return parseInt(res[0]?.count ?? "0", 10);
@@ -722,10 +740,13 @@ export default class ArtistRepository {
     try {
       const res = await query(
         `SELECT COUNT(*) FROM song_artists sa
-         WHERE sa.artist_id = $1
-         AND NOT EXISTS (
+        WHERE sa.artist_id = $1
+        AND NOT EXISTS (
           SELECT 1 FROM album_songs als WHERE als.song_id = sa.song_id
-         )`,
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = sa.song_id
+        )`,
         [artistId]
       );
       return parseInt(res[0]?.count ?? "0", 10);
@@ -739,9 +760,11 @@ export default class ArtistRepository {
     try {
       const res = await query(
         `SELECT COALESCE(SUM(s.streams), 0) AS total_streams
-         FROM songs s
-         JOIN song_artists sa ON s.id = sa.song_id
-         WHERE sa.artist_id = $1`,
+        FROM songs s
+        JOIN song_artists sa ON s.id = sa.song_id
+        WHERE sa.artist_id = $1 AND NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id
+        )`,
         [artistId]
       );
       return parseInt(res[0]?.total_streams ?? "0", 10);
@@ -937,7 +960,9 @@ export default class ArtistRepository {
       const res = await query(
         `SELECT EXISTS (
           SELECT 1 FROM artist_playlists ap
-          WHERE ap.artist_id = $1
+          WHERE ap.artist_id = $1 AND NOT EXISTS (
+            SELECT 1 FROM deleted_playlists dp WHERE dp.playlist_id = ap.playlist_id
+          )
         ) AS has_playlists`,
         [artistId]
       );
@@ -954,7 +979,9 @@ export default class ArtistRepository {
         `SELECT EXISTS(
           SELECT 1
           FROM song_artists
-          WHERE artist_id = $1
+          WHERE artist_id = $1 AND NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = song_artists.song_id
+          )
         ) AS has_songs`,
         [artistId]
       );

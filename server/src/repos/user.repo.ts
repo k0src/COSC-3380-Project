@@ -110,6 +110,14 @@ export default class UserRepository {
       }
 
       const result = await withTransaction(async (client) => {
+        const deletedCheck = await client.query(
+          `SELECT 1 FROM deleted_users WHERE user_id = $1`,
+          [id]
+        );
+        if (deletedCheck.rows.length > 0) {
+          throw new Error("Cannot update a deleted user.");
+        }
+
         const fields: string[] = [];
         const values: any[] = [];
 
@@ -459,7 +467,12 @@ export default class UserRepository {
 
   static async count(): Promise<number> {
     try {
-      const res = await query("SELECT COUNT(*) FROM users");
+      const res = await query(
+        `SELECT COUNT(*) FROM users
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_users du WHERE du.user_id = users.id
+        )`
+      );
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting users:", error);

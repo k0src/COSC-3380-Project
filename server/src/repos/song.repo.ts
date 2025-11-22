@@ -173,56 +173,64 @@ export default class SongRepository {
         throw new Error("Song title cannot be empty");
       }
 
-      const fields: string[] = [];
-      const values: any[] = [];
-
-      if (title !== undefined) {
-        fields.push(`title = $${values.length + 1}`);
-        values.push(title);
-      }
-      if (duration !== undefined) {
-        fields.push(`duration = $${values.length + 1}`);
-        values.push(duration);
-      }
-      if (genre !== undefined) {
-        fields.push(`genre = $${values.length + 1}`);
-        values.push(genre);
-      }
-      if (release_date !== undefined) {
-        fields.push(`release_date = $${values.length + 1}`);
-        values.push(release_date);
-      }
-      if (image_url !== undefined) {
-        fields.push(`image_url = $${values.length + 1}`);
-        values.push(image_url);
-      }
-      if (image_url_blurhash !== undefined) {
-        fields.push(`image_url_blurhash = $${values.length + 1}`);
-        values.push(image_url_blurhash);
-      }
-      if (audio_url !== undefined) {
-        fields.push(`audio_url = $${values.length + 1}`);
-        values.push(audio_url);
-      }
-      if (waveform_data !== undefined) {
-        fields.push(`waveform_data = $${values.length + 1}`);
-        values.push(JSON.stringify(waveform_data));
-      }
-      if (visibility_status !== undefined) {
-        fields.push(`visibility_status = $${values.length + 1}`);
-        values.push(visibility_status);
-      }
-      if (
-        fields.length === 0 &&
-        artists === undefined &&
-        album_id === undefined
-      ) {
-        throw new Error("No fields to update");
-      }
-
-      values.push(id);
-
       const res = await withTransaction(async (client) => {
+        const deletedCheck = await client.query(
+          `SELECT 1 FROM deleted_songs WHERE song_id = $1`,
+          [id]
+        );
+        if (deletedCheck.rows.length > 0) {
+          throw new Error("Cannot update a deleted song.");
+        }
+
+        const fields: string[] = [];
+        const values: any[] = [];
+
+        if (title !== undefined) {
+          fields.push(`title = $${values.length + 1}`);
+          values.push(title);
+        }
+        if (duration !== undefined) {
+          fields.push(`duration = $${values.length + 1}`);
+          values.push(duration);
+        }
+        if (genre !== undefined) {
+          fields.push(`genre = $${values.length + 1}`);
+          values.push(genre);
+        }
+        if (release_date !== undefined) {
+          fields.push(`release_date = $${values.length + 1}`);
+          values.push(release_date);
+        }
+        if (image_url !== undefined) {
+          fields.push(`image_url = $${values.length + 1}`);
+          values.push(image_url);
+        }
+        if (image_url_blurhash !== undefined) {
+          fields.push(`image_url_blurhash = $${values.length + 1}`);
+          values.push(image_url_blurhash);
+        }
+        if (audio_url !== undefined) {
+          fields.push(`audio_url = $${values.length + 1}`);
+          values.push(audio_url);
+        }
+        if (waveform_data !== undefined) {
+          fields.push(`waveform_data = $${values.length + 1}`);
+          values.push(JSON.stringify(waveform_data));
+        }
+        if (visibility_status !== undefined) {
+          fields.push(`visibility_status = $${values.length + 1}`);
+          values.push(visibility_status);
+        }
+        if (
+          fields.length === 0 &&
+          artists === undefined &&
+          album_id === undefined
+        ) {
+          throw new Error("No fields to update");
+        }
+
+        values.push(id);
+
         let updateRes;
 
         if (fields.length > 0) {
@@ -597,7 +605,12 @@ export default class SongRepository {
 
   static async count(): Promise<number> {
     try {
-      const res = await query("SELECT COUNT(*) FROM songs");
+      const res = await query(
+        `SELECT COUNT(*) FROM songs s
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id
+        )`
+      );
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting songs:", error);
@@ -863,9 +876,13 @@ export default class SongRepository {
 
   static async getCoverImage(songId: UUID): Promise<string | null> {
     try {
-      const res = await query(`SELECT image_url FROM songs WHERE id = $1`, [
-        songId,
-      ]);
+      const res = await query(
+        `SELECT image_url FROM songs WHERE id = $1
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = songs.id
+        )`,
+        [songId]
+      );
       if (!res || res.length === 0) return null;
       const imageUrl = res[0].image_url;
       return imageUrl ? getBlobUrl(imageUrl) : null;
