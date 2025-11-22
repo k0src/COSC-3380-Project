@@ -877,8 +877,9 @@ export default class SongRepository {
   static async getCoverImage(songId: UUID): Promise<string | null> {
     try {
       const res = await query(
-        `SELECT image_url FROM songs WHERE id = $1
-        WHERE NOT EXISTS (
+        `SELECT image_url FROM songs
+        WHERE id = $1
+        AND NOT EXISTS (
           SELECT 1 FROM deleted_songs ds WHERE ds.song_id = songs.id
         )`,
         [songId]

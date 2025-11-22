@@ -34,6 +34,13 @@ const LIKE_TABLES: Record<LikeableEntity, string> = {
   comment: "comment_likes",
 };
 
+const DELETED_MAP: Record<LikeableEntity, string> = {
+  song: "deleted_songs",
+  album: "deleted_albums",
+  playlist: "deleted_playlists",
+  comment: "deleted_comments",
+};
+
 export default class LikeService {
   static async toggleLike(
     userId: UUID,
@@ -68,7 +75,11 @@ export default class LikeService {
       }
 
       const res = await query(
-        `SELECT COUNT(*) FROM ${table} WHERE ${entity}_id = $1`,
+        `SELECT COUNT(*) FROM ${table} WHERE ${entity}_id = $1
+        AND NOT EXISTS (
+          SELECT 1 FROM ${DELETED_MAP[entity]} de
+          WHERE de.${entity}_id = $1
+        )`,
         [entityId]
       );
       return parseInt(res[0]?.count ?? "0", 10);
@@ -261,7 +272,6 @@ export default class LikeService {
       }
 
       case "comment": {
-        // Comments don't have access control, but we keep the pattern consistent
         const baseParamCount = 1;
         const limitIndex = baseParamCount + 1;
         const offsetIndex = baseParamCount + 2;
@@ -373,7 +383,11 @@ export default class LikeService {
 
     const res = await query(
       `SELECT COUNT(*) FROM ${likeTable}
-      WHERE user_id = $1`,
+      WHERE user_id = $1
+      AND NOT EXISTS (
+        SELECT 1 FROM ${DELETED_MAP[entity]} de
+        WHERE de.${entity}_id = ${likeTable}.${entity}_id
+      )`,
       [userId]
     );
 
@@ -395,6 +409,13 @@ export default class LikeService {
       SELECT u.* FROM users u
       JOIN ${likeTable} l ON u.id = l.user_id
       WHERE l.${entity}_id = $1
+      AND NOT EXISTS (
+        SELECT 1 FROM deleted_users du WHERE du.user_id = u.id
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM ${DELETED_MAP[entity]} de
+        WHERE de.${entity}_id = l.${entity}_id
+      )
       LIMIT $2 OFFSET $3
     `;
 
@@ -428,7 +449,11 @@ export default class LikeService {
 
       const res = await query(
         `SELECT 1 FROM ${table}
-        WHERE user_id = $1 AND ${entity}_id = $2`,
+        WHERE user_id = $1 AND ${entity}_id = $2
+        AND NOT EXISTS (
+          SELECT 1 FROM ${DELETED_MAP[entity]} de
+          WHERE de.${entity}_id = $2
+        )`,
         [userId, entityId]
       );
       return res.length > 0;
