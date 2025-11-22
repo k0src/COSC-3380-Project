@@ -1,4 +1,4 @@
-import type { User, UUID } from "./index.js";
+import type { OrderByDirection, User, UUID } from "@types";
 
 export interface Artist {
   id: UUID;
@@ -22,4 +22,18 @@ export interface SongArtist extends Artist {
 
 export interface LibraryArtist extends Artist {
   played_at?: string;
+}
+
+export type ArtistOrderByColumn =
+  | "display_name"
+  | "created_at"
+  | "verified"
+  | "streams";
+
+export interface ArtistOptions {
+  includeUser?: boolean;
+  orderByColumn?: ArtistOrderByColumn;
+  orderByDirection?: OrderByDirection;
+  limit?: number;
+  offset?: number;
 }

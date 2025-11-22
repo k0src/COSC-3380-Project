@@ -19,6 +19,33 @@
   align-items: center;
 }
 
+.libraryActionsRight {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.clearHistoryButton {
+  font-family: var(--font-main);
+  background: var(--color-red-ui-bg);
+  color: var(--color-red-ui);
+  border: var(--border-size-sm) solid var(--color-red-ui-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.clearHistoryButton:hover:not(:disabled) {
+  background: var(--color-red-ui-bg-hover);
+  border-color: var(--color-red-ui);
+}
+
 .switcherContainer {
   display: flex;
   gap: var(--spacing-xl);

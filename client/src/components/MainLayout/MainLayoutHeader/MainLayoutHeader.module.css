@@ -31,7 +31,7 @@
 }
 
 .navbarLinkActive {
-  color: var(--color-accent) !important;
+  color: var(--color-white) !important;
 }
 
 .navIcon {
@@ -77,6 +77,20 @@
 }
 
 .iconButton:hover {
+  color: var(--color-white) !important;
+}
+
+.iconButtonActive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-md);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--border-radius-md);
+  transition: color var(--transition-speed) ease-in-out;
+  text-decoration: none;
   color: var(--color-white) !important;
 }
 

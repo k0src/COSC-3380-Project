@@ -2,7 +2,8 @@ import { memo, useState, useEffect, useRef, useCallback } from "react";
 import styles from "./SearchableList.module.css";
 import classNames from "classnames";
 import { searchApi } from "@api";
-import type { Song, Album, Artist, Playlist } from "@types";
+import { useAuth } from "@contexts";
+import type { Song, Album, Artist, Playlist, AccessContext } from "@types";
 import { LuCheck, LuX } from "react-icons/lu";
 
 export type EntityType = "song" | "album" | "artist" | "playlist";
@@ -59,6 +60,13 @@ const SearchableList = <T extends EntityType>({
   );
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const { user } = useAuth();
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
 
   useEffect(() => {
     if (value.length > 0) {
@@ -115,16 +123,22 @@ const SearchableList = <T extends EntityType>({
         let data;
         switch (entityType) {
           case "song":
-            data = await searchApi.searchSongs(query, { ownerId });
+            data = await searchApi.searchSongs(query, accessContext, {
+              ownerId,
+            });
             break;
           case "album":
-            data = await searchApi.searchAlbums(query, { ownerId });
+            data = await searchApi.searchAlbums(query, accessContext, {
+              ownerId,
+            });
             break;
           case "artist":
-            data = await searchApi.searchArtists(query);
+            data = await searchApi.searchArtists(query, accessContext);
             break;
           case "playlist":
-            data = await searchApi.searchPlaylists(query, { ownerId });
+            data = await searchApi.searchPlaylists(query, accessContext, {
+              ownerId,
+            });
             break;
         }
         setResults(data as EntityMap[T][]);
@@ -135,7 +149,7 @@ const SearchableList = <T extends EntityType>({
         setIsLoading(false);
       }
     },
-    [entityType, ownerId]
+    [entityType, ownerId, accessContext.userId]
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

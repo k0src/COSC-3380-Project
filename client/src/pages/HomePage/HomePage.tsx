@@ -69,7 +69,16 @@ const HomePage: React.FC = () => {
       recentSongs: async () => {
         if (!isAuthenticated || !user) return [];
         try {
-          const songs = await libraryApi.getSongHistory(user.id, { limit: 10 });
+          const userAccessContext: AccessContext = {
+            role: user.role === "ADMIN" ? "admin" : "user",
+            userId: user.id,
+            scope: "ownerList",
+          };
+          const songs = await libraryApi.getSongHistory(
+            user.id,
+            userAccessContext,
+            { limit: 10 }
+          );
           console.log("Fetched recent songs:", songs);
           return songs;
         } catch (err) {

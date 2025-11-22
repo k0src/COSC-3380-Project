@@ -1,7 +1,8 @@
 import { memo, useMemo, useCallback } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
-import type { UUID, Song, Album, Playlist } from "@types";
+import type { UUID, Song, Album, Playlist, AccessContext } from "@types";
 import { useAsyncData } from "@hooks";
+import { useAuth } from "@contexts";
 import { formatDateString, getMainArtist } from "@util";
 import { userApi } from "@api";
 import { EntityItemCard } from "@components";
@@ -9,18 +10,27 @@ import styles from "./UserInfoLiked.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 
 const UserInfoLiked: React.FC<{ userId: UUID }> = ({ userId }) => {
+  const { user } = useAuth();
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
+
   const { data, loading, error } = useAsyncData(
     {
-      likedSongs: () => userApi.getLikedSongs(userId, { includeArtists: true }),
+      likedSongs: () =>
+        userApi.getLikedSongs(userId, accessContext, { includeArtists: true }),
       likedAlbums: () =>
-        userApi.getLikedAlbums(userId, { includeArtist: true }),
+        userApi.getLikedAlbums(userId, accessContext, { includeArtist: true }),
       likedPlaylists: () =>
-        userApi.getLikedPlaylists(userId, {
+        userApi.getLikedPlaylists(userId, accessContext, {
           includeUser: true,
           includeSongCount: true,
         }),
     },
-    [userId],
+    [userId, accessContext.userId],
     {
       cacheKey: `user_liked_${userId}`,
       hasBlobUrl: true,

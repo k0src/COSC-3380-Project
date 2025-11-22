@@ -1,6 +1,6 @@
 import { memo, useMemo, useEffect } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
-import type { UUID } from "@types";
+import type { UUID, AccessContext } from "@types";
 import { EntityItemCard } from "@components";
 import { libraryApi } from "@api";
 import { useAsyncData } from "@hooks";
@@ -12,13 +12,16 @@ const HistoryPlaylists: React.FC<{
   userId: UUID;
   searchFilter?: string;
   onRefetchNeeded?: React.RefObject<(() => void) | null>;
-}> = ({ userId, searchFilter = "", onRefetchNeeded }) => {
+  accessContext: AccessContext;
+}> = ({ userId, searchFilter = "", onRefetchNeeded, accessContext }) => {
   const { data, loading, error, refetch } = useAsyncData(
     {
       playlists: () =>
-        libraryApi.getPlaylistHistory(userId, { timeRange: "1 month" }),
+        libraryApi.getPlaylistHistory(userId, accessContext, {
+          timeRange: "1 month",
+        }),
     },
-    [userId],
+    [userId, accessContext.userId],
     {
       cacheKey: `history_playlists_${userId}`,
       hasBlobUrl: true,

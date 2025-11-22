@@ -1,6 +1,6 @@
 import { memo, useMemo, useEffect, useRef, useCallback } from "react";
 import { LuX } from "react-icons/lu";
-import type { UUID } from "@types";
+import type { UUID, AccessContext } from "@types";
 import { libraryApi, playlistApi } from "@api";
 import { useAsyncData } from "@hooks";
 import { useAuth } from "@contexts";
@@ -27,10 +27,18 @@ const PlaylistAddMenu: React.FC<PlaylistAddMenuProps> = ({
   const { user } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "ownerList",
+  };
+
   const { data, loading, error } = useAsyncData(
     {
       playlists: () =>
-        libraryApi.getLibraryPlaylists(user?.id || "", { omitLikes: true }),
+        libraryApi.getLibraryPlaylists(user?.id || "", accessContext, {
+          omitLikes: true,
+        }),
     },
     [user?.id],
     {

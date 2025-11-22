@@ -1,6 +1,7 @@
 import { memo, useMemo } from "react";
 import { PuffLoader } from "react-spinners";
-import type { UUID, Playlist } from "@types";
+import { useAuth } from "@contexts";
+import type { UUID, Playlist, AccessContext } from "@types";
 import { useAsyncData } from "@hooks";
 import { artistApi } from "@api";
 import { EntityItem } from "@components";
@@ -16,10 +17,21 @@ const ArtistFeaturedOnPlaylists: React.FC<ArtistFeaturedOnPlaylistsProps> = ({
   artistId,
   artistName,
 }) => {
+  const { user } = useAuth();
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
+
   const { data, loading, error } = useAsyncData(
     {
       playlists: () =>
-        artistApi.getPlaylists(artistId, { includeUser: true, limit: 10 }),
+        artistApi.getPlaylists(artistId, accessContext, {
+          includeUser: true,
+          limit: 10,
+        }),
     },
     [artistId],
     {

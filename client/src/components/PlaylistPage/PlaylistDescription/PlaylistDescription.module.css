@@ -27,7 +27,7 @@
   -webkit-line-clamp: 6;
   line-clamp: 6;
   min-width: 0;
-  line-height: var(--line-height-tight);
+  line-height: var(--line-height-normal);
 }
 
 .descriptionBottom {

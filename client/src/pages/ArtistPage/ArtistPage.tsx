@@ -30,6 +30,12 @@ const ArtistPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
+    scope: "single",
+  };
+
+  const globalCtx: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
     scope: "globalList",
   };
 
@@ -46,8 +52,10 @@ const ArtistPage: React.FC = () => {
 
   const { data, loading, error, refetch } = useAsyncData(
     {
-      artist: () => artistApi.getArtistById(id, { includeUser: true }),
+      artist: () =>
+        artistApi.getArtistById(id, accessContext, { includeUser: true }),
       pinned: () => artistApi.getPinnedAlbum(id, accessContext),
+      hasSongsData: () => artistApi.checkArtistHasSongs(id),
     },
     [id],
     {
@@ -58,6 +66,7 @@ const ArtistPage: React.FC = () => {
 
   const artist = data?.artist;
   const pinnedAlbum = data?.pinned;
+  const hasSongs = data?.hasSongsData?.hasSongs ?? false;
 
   const isOwner = useMemo(() => {
     if (!user || !isAuthenticated || !artist) {
@@ -68,7 +77,7 @@ const ArtistPage: React.FC = () => {
 
   const fetchPopularSongs = useCallback(
     () =>
-      artistApi.getSongs(id, accessContext, {
+      artistApi.getSongs(id, globalCtx, {
         includeAlbums: true,
         includeArtists: true,
         orderByColumn: "streams",
@@ -79,13 +88,13 @@ const ArtistPage: React.FC = () => {
   );
 
   const fetchAlbums = useCallback(
-    () => artistApi.getAlbums(id, accessContext, { limit: 10 }),
+    () => artistApi.getAlbums(id, globalCtx, { limit: 10 }),
     [id]
   );
 
   const fetchSingles = useCallback(
     () =>
-      artistApi.getSongs(id, accessContext, {
+      artistApi.getSongs(id, globalCtx, {
         includeArtists: true,
         onlySingles: true,
         limit: 10,
@@ -146,48 +155,56 @@ const ArtistPage: React.FC = () => {
         />
         <div className={styles.artistLayoutBottom}>
           <div className={styles.artistLayoutBottomTop}>
-            <div className={styles.artistLayoutBottomLeft}>
-              {pinnedAlbum && (
-                <div className={styles.sectionContainer}>
-                  <span className={styles.sectionTitle}>Artist's Pick</span>
-                  <TopResultCard
-                    type="album"
-                    entity={pinnedAlbum}
-                    linkTo={`/albums/${pinnedAlbum.id}`}
-                    title={pinnedAlbum.title}
-                    subtitle={formatDateString(pinnedAlbum.release_date)}
-                    imageUrl={pinnedAlbum.image_url}
-                    blurHash={pinnedAlbum.image_url_blurhash}
-                    author={artist.display_name}
-                  />
-                </div>
-              )}
-              <SongsList
-                title="Popular"
-                fetchData={fetchPopularSongs}
-                cacheKey={`popular_songs_${id}`}
-                dependencies={[id]}
-                viewMoreLink={`/artists/${id}/discography`}
-              />
-              <SlidingCardList
-                title="Albums"
-                artistName={artist.display_name}
-                artistId={artist.id}
-                fetchData={fetchAlbums}
-                type="album"
-                itemsPerView={6}
-                cacheKey={`artist_${id}_albums`}
-                dependencies={[id]}
-              />
-              <SlidingCardList
-                title="Singles"
-                fetchData={fetchSingles}
-                type="song"
-                itemsPerView={6}
-                cacheKey={`artist_${id}_singles`}
-                dependencies={[id]}
-              />
-            </div>
+            {hasSongs ? (
+              <div className={styles.artistLayoutBottomLeft}>
+                {pinnedAlbum && (
+                  <div className={styles.sectionContainer}>
+                    <span className={styles.sectionTitle}>Artist's Pick</span>
+                    <TopResultCard
+                      type="album"
+                      entity={pinnedAlbum}
+                      linkTo={`/albums/${pinnedAlbum.id}`}
+                      title={pinnedAlbum.title}
+                      subtitle={formatDateString(pinnedAlbum.release_date)}
+                      imageUrl={pinnedAlbum.image_url}
+                      blurHash={pinnedAlbum.image_url_blurhash}
+                      author={artist.display_name}
+                    />
+                  </div>
+                )}
+                <SongsList
+                  title="Popular"
+                  fetchData={fetchPopularSongs}
+                  cacheKey={`popular_songs_${id}`}
+                  dependencies={[id]}
+                  viewMoreLink={`/artists/${id}/discography`}
+                />
+                <SlidingCardList
+                  title="Albums"
+                  artistName={artist.display_name}
+                  artistId={artist.id}
+                  fetchData={fetchAlbums}
+                  type="album"
+                  itemsPerView={6}
+                  cacheKey={`artist_${id}_albums`}
+                  dependencies={[id]}
+                />
+                <SlidingCardList
+                  title="Singles"
+                  fetchData={fetchSingles}
+                  type="song"
+                  itemsPerView={6}
+                  cacheKey={`artist_${id}_singles`}
+                  dependencies={[id]}
+                />
+              </div>
+            ) : (
+              <div className={styles.noDataContainer}>
+                <span className={styles.noDataText}>
+                  This artist has not uploaded any songs yet.
+                </span>
+              </div>
+            )}
             <div className={styles.artistLayoutBottomRight}>
               {artist.user?.id && (
                 <>
@@ -212,10 +229,7 @@ const ArtistPage: React.FC = () => {
                   />
                 </>
               )}
-              <ArtistPlaylists
-                artistId={artist.id}
-                accessContext={accessContext}
-              />
+              <ArtistPlaylists artistId={artist.id} />
               <ArtistFeaturedOnPlaylists
                 artistId={artist.id}
                 artistName={artist.display_name}

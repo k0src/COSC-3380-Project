@@ -7,7 +7,7 @@ import type {
   ContextMenuEntity,
   ContextMenuEntityType,
 } from "@contexts";
-import type { LibraryPlaylist } from "@types";
+import type { LibraryPlaylist, AccessContext } from "@types";
 import {
   HistoryPlaylists,
   HistorySongs,
@@ -16,7 +16,8 @@ import {
   ConfirmationModal,
   CreatePlaylistModal,
 } from "@components";
-import { playlistApi } from "@api";
+import { libraryApi, playlistApi } from "@api";
+import { useStreamTracking } from "@hooks";
 import styles from "./HistoryPage.module.css";
 import classNames from "classnames";
 import {
@@ -29,6 +30,7 @@ import {
   LuX,
   LuPencil,
   LuTrash,
+  LuBrush,
 } from "react-icons/lu";
 
 type TabType = "playlists" | "songs" | "albums" | "artists";
@@ -60,6 +62,7 @@ const HistoryPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const { setCustomActionsProvider } = useContextMenu();
+  const { clearLocalHistory } = useStreamTracking();
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
   const [playlistModalMode, setPlaylistModalMode] = useState<"create" | "edit">(
     "edit"
@@ -70,6 +73,8 @@ const HistoryPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [playlistToDelete, setPlaylistToDelete] =
     useState<LibraryPlaylist | null>(null);
+
+  const [isClearHistoryModalOpen, setIsClearHistoryModalOpen] = useState(false);
 
   const playlistsRefetchRef = useRef<(() => void) | null>(null);
 
@@ -122,6 +127,20 @@ const HistoryPage: React.FC = () => {
     setPlaylistToEdit(playlist);
     setPlaylistModalMode("edit");
     setIsPlaylistModalOpen(true);
+  }, []);
+
+  const handleConfirmClearHistory = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      await libraryApi.clearHistory(user.id);
+      clearLocalHistory();
+    } catch (error) {
+      console.error("Error clearing history:", error);
+    }
+  }, [user?.id, clearLocalHistory]);
+
+  const handleClearHistory = useCallback(() => {
+    setIsClearHistoryModalOpen(true);
   }, []);
 
   const handleDeletePlaylist = useCallback(
@@ -215,6 +234,12 @@ const HistoryPage: React.FC = () => {
     return null;
   }
 
+  const accessContext: AccessContext = {
+    role: user.role === "ADMIN" ? "admin" : "user",
+    userId: user.id,
+    scope: "ownerList",
+  };
+
   return (
     <>
       <Helmet>
@@ -236,17 +261,25 @@ const HistoryPage: React.FC = () => {
             ))}
           </div>
 
-          <div className={styles.searchContainer}>
-            <LuSearch className={styles.searchIcon} />
-            <input
-              type="text"
-              placeholder="Search..."
-              className={styles.searchInput}
-              aria-label="Search"
-              value={searchText}
-              onChange={(e) => handleFilterChange(e)}
-            />
-            <LuX className={styles.searchClear} onClick={handleClearFilter} />
+          <div className={styles.libraryActionsRight}>
+            <div className={styles.searchContainer}>
+              <LuSearch className={styles.searchIcon} />
+              <input
+                type="text"
+                placeholder="Search..."
+                className={styles.searchInput}
+                aria-label="Search"
+                value={searchText}
+                onChange={(e) => handleFilterChange(e)}
+              />
+              <LuX className={styles.searchClear} onClick={handleClearFilter} />
+            </div>
+            <button
+              className={styles.clearHistoryButton}
+              onClick={handleClearHistory}
+            >
+              <LuBrush /> Clear History
+            </button>
           </div>
         </div>
 
@@ -255,13 +288,22 @@ const HistoryPage: React.FC = () => {
             userId={user.id}
             searchFilter={searchText}
             onRefetchNeeded={playlistsRefetchRef}
+            accessContext={accessContext}
           />
         )}
         {activeTab === "songs" && (
-          <HistorySongs userId={user.id} searchFilter={searchText} />
+          <HistorySongs
+            userId={user.id}
+            searchFilter={searchText}
+            accessContext={accessContext}
+          />
         )}
         {activeTab === "albums" && (
-          <HistoryAlbums userId={user.id} searchFilter={searchText} />
+          <HistoryAlbums
+            userId={user.id}
+            searchFilter={searchText}
+            accessContext={accessContext}
+          />
         )}
         {activeTab === "artists" && (
           <HistoryArtists userId={user.id} searchFilter={searchText} />
@@ -307,6 +349,17 @@ const HistoryPage: React.FC = () => {
         message={`Are you sure you want to delete "${playlistToDelete?.title}"? This action cannot be undone.`}
         confirmButtonText="Delete Playlist"
         isDangerous={true}
+      />
+
+      <ConfirmationModal
+        isOpen={isClearHistoryModalOpen}
+        onClose={() => {
+          setIsClearHistoryModalOpen(false);
+        }}
+        onConfirm={handleConfirmClearHistory}
+        title="Clear History"
+        message="Are you sure you want to clear your history? This action cannot be undone."
+        confirmButtonText="Clear History"
       />
     </>
   );

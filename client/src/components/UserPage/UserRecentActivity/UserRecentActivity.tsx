@@ -9,6 +9,7 @@ import type {
   LibrarySong,
   LibraryAlbum,
   LibraryArtist,
+  AccessContext,
 } from "@types";
 import { EntityItemCard } from "@components";
 import { libraryApi } from "@api";
@@ -26,7 +27,8 @@ const UserRecentActivity: React.FC<{
   userId: UUID;
   maxItems: number;
   itemsPerView?: number;
-}> = ({ userId, maxItems, itemsPerView = 5 }) => {
+  accessContext: AccessContext;
+}> = ({ userId, maxItems, itemsPerView = 5, accessContext }) => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
 
@@ -34,9 +36,10 @@ const UserRecentActivity: React.FC<{
 
   const { data, loading, error } = useAsyncData(
     {
-      recentActivity: () => libraryApi.getRecentlyPlayedArray(userId, maxItems),
+      recentActivity: () =>
+        libraryApi.getRecentlyPlayedArray(userId, accessContext, maxItems),
     },
-    [userId, maxItems],
+    [userId, maxItems, accessContext.userId],
     {
       cacheKey: `user_recent_activity_${userId}_${maxItems}`,
       hasBlobUrl: true,

@@ -1,5 +1,5 @@
 import { memo, useState, useRef, useCallback, useEffect } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
 import { notificationsApi } from "@api";
@@ -16,6 +16,7 @@ import {
 
 const MainLayoutHeader: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
+  const location = useLocation();
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
   const notificationButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -96,14 +97,28 @@ const MainLayoutHeader: React.FC = () => {
                 onNotificationUpdate={refetchUnreadStatus}
               />
             </div>
-
-            <Link to="/me/settings" className={styles.iconButton}>
+            <NavLink
+              to="/me/settings"
+              className={({ isActive }) =>
+                isActive ? styles.iconButtonActive : styles.iconButton
+              }
+              title="Settings"
+            >
               <LuSettings className={styles.actionIcon} />
-            </Link>
-
-            <Link to="/me" className={styles.iconButton} title={user?.username}>
+            </NavLink>
+            <NavLink
+              to="/me"
+              className={() => {
+                const isOnOwnProfile =
+                  user?.id && location.pathname === `/users/${user.id}`;
+                return isOnOwnProfile
+                  ? styles.iconButtonActive
+                  : styles.iconButton;
+              }}
+              title={user?.username}
+            >
               <LuCircleUser className={styles.actionIcon} />
-            </Link>
+            </NavLink>
           </>
         ) : (
           <>

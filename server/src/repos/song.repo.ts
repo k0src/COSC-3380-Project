@@ -7,6 +7,7 @@ import {
   SongOptions,
   AccessContext,
   AlbumOptions,
+  ArtistOptions,
 } from "@types";
 import { getAccessPredicate } from "@util";
 import { query, withTransaction } from "@config/database";
@@ -172,56 +173,64 @@ export default class SongRepository {
         throw new Error("Song title cannot be empty");
       }
 
-      const fields: string[] = [];
-      const values: any[] = [];
-
-      if (title !== undefined) {
-        fields.push(`title = $${values.length + 1}`);
-        values.push(title);
-      }
-      if (duration !== undefined) {
-        fields.push(`duration = $${values.length + 1}`);
-        values.push(duration);
-      }
-      if (genre !== undefined) {
-        fields.push(`genre = $${values.length + 1}`);
-        values.push(genre);
-      }
-      if (release_date !== undefined) {
-        fields.push(`release_date = $${values.length + 1}`);
-        values.push(release_date);
-      }
-      if (image_url !== undefined) {
-        fields.push(`image_url = $${values.length + 1}`);
-        values.push(image_url);
-      }
-      if (image_url_blurhash !== undefined) {
-        fields.push(`image_url_blurhash = $${values.length + 1}`);
-        values.push(image_url_blurhash);
-      }
-      if (audio_url !== undefined) {
-        fields.push(`audio_url = $${values.length + 1}`);
-        values.push(audio_url);
-      }
-      if (waveform_data !== undefined) {
-        fields.push(`waveform_data = $${values.length + 1}`);
-        values.push(JSON.stringify(waveform_data));
-      }
-      if (visibility_status !== undefined) {
-        fields.push(`visibility_status = $${values.length + 1}`);
-        values.push(visibility_status);
-      }
-      if (
-        fields.length === 0 &&
-        artists === undefined &&
-        album_id === undefined
-      ) {
-        throw new Error("No fields to update");
-      }
-
-      values.push(id);
-
       const res = await withTransaction(async (client) => {
+        const deletedCheck = await client.query(
+          `SELECT 1 FROM deleted_songs WHERE song_id = $1`,
+          [id]
+        );
+        if (deletedCheck.rows.length > 0) {
+          throw new Error("Cannot update a deleted song.");
+        }
+
+        const fields: string[] = [];
+        const values: any[] = [];
+
+        if (title !== undefined) {
+          fields.push(`title = $${values.length + 1}`);
+          values.push(title);
+        }
+        if (duration !== undefined) {
+          fields.push(`duration = $${values.length + 1}`);
+          values.push(duration);
+        }
+        if (genre !== undefined) {
+          fields.push(`genre = $${values.length + 1}`);
+          values.push(genre);
+        }
+        if (release_date !== undefined) {
+          fields.push(`release_date = $${values.length + 1}`);
+          values.push(release_date);
+        }
+        if (image_url !== undefined) {
+          fields.push(`image_url = $${values.length + 1}`);
+          values.push(image_url);
+        }
+        if (image_url_blurhash !== undefined) {
+          fields.push(`image_url_blurhash = $${values.length + 1}`);
+          values.push(image_url_blurhash);
+        }
+        if (audio_url !== undefined) {
+          fields.push(`audio_url = $${values.length + 1}`);
+          values.push(audio_url);
+        }
+        if (waveform_data !== undefined) {
+          fields.push(`waveform_data = $${values.length + 1}`);
+          values.push(JSON.stringify(waveform_data));
+        }
+        if (visibility_status !== undefined) {
+          fields.push(`visibility_status = $${values.length + 1}`);
+          values.push(visibility_status);
+        }
+        if (
+          fields.length === 0 &&
+          artists === undefined &&
+          album_id === undefined
+        ) {
+          throw new Error("No fields to update");
+        }
+
+        values.push(id);
+
         let updateRes;
 
         if (fields.length > 0) {
@@ -294,17 +303,15 @@ export default class SongRepository {
     }
   }
 
-  static async delete(id: UUID): Promise<Song | null> {
+  static async delete(id: UUID) {
     try {
-      const res = await withTransaction(async (client) => {
-        const del = await client.query(
-          `DELETE FROM songs WHERE id = $1 RETURNING *`,
+      await withTransaction(async (client) => {
+        await client.query(
+          `INSERT INTO deleted_songs
+          (song_id, deleted_at) VALUES ($1, NOW())`,
           [id]
         );
-        return del.rows[0] ?? null;
       });
-
-      return res;
     } catch (error) {
       console.error("Error deleting song:", error);
       throw error;
@@ -314,7 +321,12 @@ export default class SongRepository {
   static async bulkDelete(songIds: UUID[]) {
     try {
       await withTransaction(async (client) => {
-        await client.query(`DELETE FROM songs WHERE id = ANY($1)`, [songIds]);
+        await client.query(
+          `INSERT INTO deleted_songs
+          (song_id, deleted_at)
+          SELECT id, NOW() FROM songs WHERE id = ANY($1)`,
+          [songIds]
+        );
       });
     } catch (error) {
       console.error("Error bulk deleting songs:", error);
@@ -593,7 +605,12 @@ export default class SongRepository {
 
   static async count(): Promise<number> {
     try {
-      const res = await query("SELECT COUNT(*) FROM songs");
+      const res = await query(
+        `SELECT COUNT(*) FROM songs s
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id
+        )`
+      );
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting songs:", error);
@@ -707,74 +724,63 @@ export default class SongRepository {
     }
   }
 
-  //! add accessContext
   static async getArtists(
     songId: UUID,
-    options?: {
-      includeUser?: boolean;
-      orderByColumn?: "name" | "created_at" | "verified" | "streams";
-      orderByDirection?: "ASC" | "DESC";
-      limit?: number;
-      offset?: number;
-    }
+    accessContext: AccessContext,
+    options?: ArtistOptions
   ): Promise<SongArtist[]> {
     try {
-      const limit = options?.limit || 50;
-      const offset = options?.offset || 0;
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
       const orderByColumn = options?.orderByColumn ?? "created_at";
       const orderByDirection = options?.orderByDirection ?? "DESC";
 
       const orderByMap: Record<string, string> = {
-        name: "a.display_name",
+        display_name: "a.display_name",
         created_at: "a.created_at",
         verified: "a.verified",
-        streams: "streams",
       };
 
-      const sqlOrderByColumn = orderByMap[orderByColumn];
+      const sqlOrderByColumn = orderByMap[orderByColumn] ?? "a.created_at";
+
+      const selectFields: string[] = ["a.*", "sa.role"];
+
+      if (options?.includeUser) {
+        selectFields.push("row_to_json(u.*) as user");
+      }
 
       const sql = `
-        SELECT a.*,
-          CASE WHEN $1 THEN row_to_json(u.*)
-          ELSE NULL END as user,
-          COALESCE(SUM(s.streams), 0) as streams
-          FROM artists a
-        LEFT JOIN users u ON a.user_id = u.id
-        LEFT JOIN song_artists sa ON a.id = sa.artist_id
-        LEFT JOIN songs s ON sa.song_id = s.id
-        WHERE sa.song_id = $2
-        GROUP BY a.id, u.id
+        SELECT ${selectFields.join(",\n")}
+        FROM artists a
+        JOIN song_artists sa ON a.id = sa.artist_id
+        ${options?.includeUser ? "LEFT JOIN users u ON a.user_id = u.id" : ""}
+        WHERE sa.song_id = $1
         ORDER BY ${sqlOrderByColumn} ${orderByDirection}
-        LIMIT $3 OFFSET $4
+        LIMIT $2 OFFSET $3
       `;
 
-      const params = [options?.includeUser ?? false, songId, limit, offset];
+      const params = [songId, limit, offset];
 
       const artists = await query(sql, params);
       if (!artists || artists.length === 0) {
         return [];
       }
 
-      const processedArtists = await Promise.all(
-        artists.map(async (artist) => {
-          if (artist.user && artist.user.profile_picture_url) {
-            artist.user.profile_picture_url = getBlobUrl(
-              artist.user.profile_picture_url
-            );
-          }
-          artist.type = "artist";
-          return artist;
-        })
-      );
-
-      return processedArtists;
+      return artists.map((artist: SongArtist) => {
+        if (artist.user && artist.user.profile_picture_url) {
+          artist.user.profile_picture_url = getBlobUrl(
+            artist.user.profile_picture_url
+          );
+        }
+        artist.type = "artist";
+        return artist;
+      });
     } catch (error) {
       console.error("Error fetching artists for song:", error);
       throw error;
     }
   }
 
-  // already gets only public songs. can add accessContext later if needed
   static async getSuggestedSongs(
     songId: UUID,
     options?: {
@@ -870,9 +876,14 @@ export default class SongRepository {
 
   static async getCoverImage(songId: UUID): Promise<string | null> {
     try {
-      const res = await query(`SELECT image_url FROM songs WHERE id = $1`, [
-        songId,
-      ]);
+      const res = await query(
+        `SELECT image_url FROM songs
+        WHERE id = $1
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = songs.id
+        )`,
+        [songId]
+      );
       if (!res || res.length === 0) return null;
       const imageUrl = res[0].image_url;
       return imageUrl ? getBlobUrl(imageUrl) : null;

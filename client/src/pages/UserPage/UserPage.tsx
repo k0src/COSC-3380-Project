@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import { userApi } from "@api";
-import type { UUID } from "@types";
+import type { UUID, AccessContext } from "@types";
 import { useAsyncData, useErrorCheck } from "@hooks";
 import {
   ErrorPage,
@@ -85,6 +85,12 @@ const UserPage: React.FC = () => {
   const userIsArtist = pageUser.role === "ARTIST";
   const userIsAdmin = pageUser.role === "ADMIN";
 
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
+
   return (
     <>
       <Helmet>
@@ -101,7 +107,11 @@ const UserPage: React.FC = () => {
         />
         <div className={styles.userLayoutBottom}>
           <div className={styles.userLayoutLeft}>
-            <UserRecentActivity userId={id} maxItems={20} />
+            <UserRecentActivity
+              userId={id}
+              maxItems={20}
+              accessContext={accessContext}
+            />
             {userIsArtist && pageUser.artist_id && (
               <UserRecentReleases artistId={pageUser.artist_id} maxItems={8} />
             )}

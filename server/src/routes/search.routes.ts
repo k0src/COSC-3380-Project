@@ -1,7 +1,12 @@
 import express, { Request, Response } from "express";
 import { SearchService } from "@services";
+import { handlePgError, parseAccessContext } from "@util";
 
 const router = express.Router();
+
+/* ========================================================================== */
+/*                              Search Routes                                 */
+/* ========================================================================== */
 
 // GET /api/search?q=searchTerm
 router.get("/", async (req: Request, res: Response) => {
@@ -13,14 +18,15 @@ router.get("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const results = await SearchService.search(query as string, {
+    const accessContext = parseAccessContext(req.query);
+    const results = await SearchService.search(query as string, accessContext, {
       ownerId: ownerId as string | undefined,
     });
     res.json(results);
   } catch (error: any) {
     console.error("Search failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });
@@ -35,15 +41,20 @@ router.get("/users", async (req: Request, res: Response) => {
   }
 
   try {
-    const results = await SearchService.searchUsers(query as string, {
-      limit: limit ? parseInt(limit as string, 10) : undefined,
-      offset: offset ? parseInt(offset as string, 10) : undefined,
-    });
+    const accessContext = parseAccessContext(req.query);
+    const results = await SearchService.searchUsers(
+      query as string,
+      accessContext,
+      {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      }
+    );
     res.json(results);
   } catch (error: any) {
     console.error("Search users failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });
@@ -58,16 +69,21 @@ router.get("/songs", async (req: Request, res: Response) => {
   }
 
   try {
-    const results = await SearchService.searchSongs(query as string, {
-      ownerId: ownerId as string | undefined,
-      limit: limit ? parseInt(limit as string, 10) : undefined,
-      offset: offset ? parseInt(offset as string, 10) : undefined,
-    });
+    const accessContext = parseAccessContext(req.query);
+    const results = await SearchService.searchSongs(
+      query as string,
+      accessContext,
+      {
+        ownerId: ownerId as string | undefined,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      }
+    );
     res.json(results);
   } catch (error: any) {
     console.error("Search songs failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });
@@ -81,16 +97,21 @@ router.get("/albums", async (req: Request, res: Response) => {
   }
 
   try {
-    const results = await SearchService.searchAlbums(query as string, {
-      ownerId: ownerId as string | undefined,
-      limit: limit ? parseInt(limit as string, 10) : undefined,
-      offset: offset ? parseInt(offset as string, 10) : undefined,
-    });
+    const accessContext = parseAccessContext(req.query);
+    const results = await SearchService.searchAlbums(
+      query as string,
+      accessContext,
+      {
+        ownerId: ownerId as string | undefined,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      }
+    );
     res.json(results);
   } catch (error: any) {
     console.error("Search albums failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });
@@ -105,15 +126,20 @@ router.get("/artists", async (req: Request, res: Response) => {
   }
 
   try {
-    const results = await SearchService.searchArtists(query as string, {
-      limit: limit ? parseInt(limit as string, 10) : undefined,
-      offset: offset ? parseInt(offset as string, 10) : undefined,
-    });
+    const accessContext = parseAccessContext(req.query);
+    const results = await SearchService.searchArtists(
+      query as string,
+      accessContext,
+      {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      }
+    );
     res.json(results);
   } catch (error: any) {
     console.error("Search artists failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });
@@ -128,16 +154,21 @@ router.get("/playlists", async (req: Request, res: Response) => {
   }
 
   try {
-    const results = await SearchService.searchPlaylists(query as string, {
-      ownerId: ownerId as string | undefined,
-      limit: limit ? parseInt(limit as string, 10) : undefined,
-      offset: offset ? parseInt(offset as string, 10) : undefined,
-    });
+    const accessContext = parseAccessContext(req.query);
+    const results = await SearchService.searchPlaylists(
+      query as string,
+      accessContext,
+      {
+        ownerId: ownerId as string | undefined,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      }
+    );
     res.json(results);
   } catch (error: any) {
     console.error("Search playlists failed:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });

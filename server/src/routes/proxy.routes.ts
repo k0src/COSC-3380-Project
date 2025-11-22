@@ -1,7 +1,12 @@
 import { Router } from "express";
 import { getBlobUrl } from "@config/blobStorage.js";
+import { handlePgError } from "@util";
 
 const router = Router();
+
+/* ========================================================================== */
+/*                              Proxy Routes                                  */
+/* ========================================================================== */
 
 router.get("/audio/:filename", async (req, res) => {
   try {
@@ -31,8 +36,8 @@ router.get("/audio/:filename", async (req, res) => {
     return;
   } catch (error: any) {
     console.error("Error proxying audio file:", error);
-    const errorMessage = error.message || "Internal server error";
-    res.status(500).json({ error: errorMessage });
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
     return;
   }
 });

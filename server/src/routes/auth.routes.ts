@@ -7,13 +7,13 @@ import {
   verifyRefreshToken,
   getTokenExpiration,
 } from "@config/jwt";
-import { requireAuth } from "@middleware";
-import {
-  authRateLimit,
-  loginRateLimit,
-} from "../middleware/rateLimiting.middleware.js";
+import { requireAuth, authRateLimit, loginRateLimit } from "@middleware";
 
 const router = Router();
+
+/* ========================================================================== */
+/*                              Type Definitions                              */
+/* ========================================================================== */
 
 interface SignupRequest {
   username: string;
@@ -40,6 +40,10 @@ interface AuthResponse {
   refreshToken: string;
   expiresIn: string;
 }
+
+/* ========================================================================== */
+/*                           Authentication Routes                            */
+/* ========================================================================== */
 
 router.post(
   "/signup",

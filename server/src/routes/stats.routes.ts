@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { StatsService, CommentService } from "@services";
+import { StatsService } from "@services";
 import { handlePgError } from "@util";
 
 const router = express.Router();

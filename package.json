@@ -11,7 +11,10 @@
     "build:client": "cd client && npm run build",
     "install:all": "npm install && cd client && npm install --legacy-peer-deps && cd ../server && npm install",
     "clean": "rm -rf client/dist server/dist client/node_modules server/node_modules node_modules",
-    "clean-all": "rm -rf client/dist server/dist"
+    "clean-all": "rm -rf client/dist server/dist",
+    "typecheck:server": "cd server && npx tsc --noEmit",
+    "typecheck:client": "cd client && npx tsc --noEmit",
+    "typecheck": "npm run typecheck:server && npm run typecheck:client"
   },
   "author": "",
   "license": "MIT",

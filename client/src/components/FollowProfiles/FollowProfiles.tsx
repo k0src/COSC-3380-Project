@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 import { PuffLoader } from "react-spinners";
 import { Link } from "react-router-dom";
 import { LuPlus } from "react-icons/lu";
-import { artistApi } from "@api";
+import { userApi } from "@api";
 import { useAsyncData } from "@hooks";
 import type { UUID } from "@types";
 import { LazyImg } from "@components";
@@ -27,7 +27,7 @@ const FollowProfiles: React.FC<FollowProfilesProps> = ({
   const { data, loading, error } = useAsyncData(
     {
       profiles: () =>
-        (following ? artistApi.getFollowing : artistApi.getFollowers)(userId, {
+        (following ? userApi.getFollowing : userApi.getFollowers)(userId, {
           limit: profileLimit + 1,
         }),
     },

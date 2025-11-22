@@ -1,11 +1,6 @@
 import { query } from "@config/database.js";
 
 export default class TokenBlacklistManager {
-  /**
-   * Adds a token JTI to the blacklist
-   * @param jti The JWT ID to blacklist
-   * @param expiresAt When the token expires
-   */
   static async addToBlacklist(jti: string, expiresAt: Date): Promise<void> {
     try {
       await query(
@@ -18,11 +13,6 @@ export default class TokenBlacklistManager {
     }
   }
 
-  /**
-   * Checks if a token JTI is blacklisted
-   * @param jti The JWT ID to check
-   * @returns True if blacklisted
-   */
   static async isBlacklisted(jti: string): Promise<boolean> {
     try {
       const result = await query(
@@ -36,10 +26,6 @@ export default class TokenBlacklistManager {
     }
   }
 
-  /**
-   * Removes expired tokens from the blacklist
-   * @returns Number of removed tokens
-   */
   static async cleanupExpired(): Promise<number> {
     try {
       const result = await query(
@@ -55,10 +41,6 @@ export default class TokenBlacklistManager {
     }
   }
 
-  /**
-   * Adds multiple token JTIs to the blacklist
-   * @param jtis Array of JWT IDs to blacklist
-   */
   static async addMultipleToBlacklist(
     jtis: string[],
     expiresAt: Date

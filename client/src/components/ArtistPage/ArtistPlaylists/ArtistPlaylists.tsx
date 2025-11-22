@@ -2,6 +2,7 @@ import { memo, useMemo } from "react";
 import { PuffLoader } from "react-spinners";
 import type { UUID, Playlist, AccessContext } from "@types";
 import { useAsyncData } from "@hooks";
+import { useAuth } from "@contexts";
 import { artistApi } from "@api";
 import { pluralize } from "@util";
 import { EntityItem } from "@components";
@@ -10,13 +11,17 @@ import musicPlaceholder from "@assets/music-placeholder.webp";
 
 export interface ArtistPlaylistsProps {
   artistId: UUID;
-  accessContext: AccessContext;
 }
 
-const ArtistPlaylists: React.FC<ArtistPlaylistsProps> = ({
-  artistId,
-  accessContext,
-}) => {
+const ArtistPlaylists: React.FC<ArtistPlaylistsProps> = ({ artistId }) => {
+  const { user } = useAuth();
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
+
   const { data, loading, error } = useAsyncData(
     {
       playlists: () =>

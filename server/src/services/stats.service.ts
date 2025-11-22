@@ -14,13 +14,7 @@ interface ArtistQuickStats {
   playlistAdds: number;
 }
 
-/**
- * Service for retrieving statistics for entities
- */
 export default class StatsService {
-  /**
-   * Get quick stats for an artist
-   */
   static async getArtistQuickStats(
     artistId: UUID,
     days: number = 30
@@ -84,9 +78,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get top performing song for an artist
-   */
   static async getArtistTopSong(
     artistId: UUID,
     days: number = 30
@@ -112,6 +103,9 @@ export default class StatsService {
         JOIN song_plays sp ON s.id = sp.id
         LEFT JOIN song_likes sl ON s.id = sl.song_id
         LEFT JOIN comments c ON s.id = c.song_id
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id
+        ) 
         GROUP BY s.id, sp.recent_plays
         ORDER BY sp.recent_plays DESC, s.streams DESC
         LIMIT 1`,
@@ -139,9 +133,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get daily streams for an artist over a time range
-   */
   static async getArtistDailyStreams(
     artistId: UUID,
     days: number = 30
@@ -181,9 +172,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get top performing songs for an artist
-   */
   static async getArtistTopSongs(
     artistId: UUID,
     days: number = 30,
@@ -206,7 +194,9 @@ export default class StatsService {
           s.*
         FROM songs s
         JOIN song_plays sp ON s.id = sp.id
-        WHERE sp.recent_plays > 0
+        WHERE sp.recent_plays > 0 AND NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id
+        )
         ORDER BY sp.recent_plays DESC, s.streams DESC
         LIMIT $3`,
         [artistId, days, limit]
@@ -228,9 +218,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get top playlists containing an artist's songs
-   */
   static async getArtistTopPlaylists(
     artistId: UUID,
     days: number = 30,
@@ -259,12 +246,16 @@ export default class StatsService {
           p.*,
           COALESCE(pp.total_plays, 0) AS total_streams,
           COUNT(DISTINCT pl.user_id) AS likes,
-          COUNT(DISTINCT ps.song_id) AS song_count
+          COUNT(DISTINCT ps.song_id) FILTER (WHERE NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id
+          )) AS song_count
         FROM playlists p
         JOIN playlist_plays pp ON p.id = pp.id
         LEFT JOIN playlist_likes pl ON p.id = pl.playlist_id
         LEFT JOIN playlist_songs ps ON p.id = ps.playlist_id
-        WHERE pp.total_plays > 0
+        WHERE pp.total_plays > 0 AND NOT EXISTS (
+          SELECT 1 FROM deleted_playlists dp WHERE dp.playlist_id = p.id
+        )
         GROUP BY p.id, pp.total_plays
         ORDER BY pp.total_plays DESC
         LIMIT $3`,
@@ -326,6 +317,9 @@ export default class StatsService {
         FROM users u
         JOIN listener_totals lt ON u.id = lt.user_id
         JOIN top_songs ts ON u.id = ts.user_id
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_users du WHERE du.user_id = u.id
+        )
         ORDER BY lt.total_streams DESC
         LIMIT $3`,
         [artistId, days, limit]
@@ -387,7 +381,9 @@ export default class StatsService {
         JOIN song_artists sa ON s.id = sa.song_id
         LEFT JOIN song_likes sl ON s.id = sl.song_id
         LEFT JOIN comments c ON s.id = c.song_id
-        WHERE sa.artist_id = $1
+        WHERE sa.artist_id = $1 AND NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id
+        )
         GROUP BY s.id
         ORDER BY s.release_date DESC
         LIMIT 1`,
@@ -415,9 +411,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get all-time stats for an artist
-   */
   static async getArtistAllTimeStats(artistId: UUID) {
     try {
       const result = await query(
@@ -425,12 +418,17 @@ export default class StatsService {
           SELECT s.id
           FROM songs s
           JOIN song_artists sa ON s.id = sa.song_id
-          WHERE sa.artist_id = $1
+          WHERE sa.artist_id = $1 AND NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id
+          )
         ),
         streams_total AS (
           SELECT COALESCE(SUM(s.streams), 0) AS total_streams
           FROM artist_songs asongs
           JOIN songs s ON asongs.id = s.id
+          WHERE NOT EXISTS (  
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id
+          )
         ),
         likes_total AS (
           SELECT COALESCE(COUNT(DISTINCT sl.user_id), 0) AS total_likes
@@ -441,15 +439,24 @@ export default class StatsService {
           SELECT COALESCE(COUNT(DISTINCT c.id), 0) AS total_comments
           FROM artist_songs asongs
           LEFT JOIN comments c ON asongs.id = c.song_id
+          WHERE NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = c.song_id
+          )
         ),
         listeners_total AS (
           SELECT COALESCE(COUNT(DISTINCT sh.user_id), 0) AS total_listeners
           FROM artist_songs asongs
           LEFT JOIN song_history sh ON asongs.id = sh.song_id
+          WHERE NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = sh.song_id
+          )
         ),
         songs_count AS (
           SELECT COUNT(DISTINCT id) AS total_songs
           FROM artist_songs
+          WHERE NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = id
+          )
         )
         SELECT 
           (SELECT total_streams FROM streams_total) AS streams,
@@ -483,9 +490,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get streams bar chart data for an artist
-   */
   static async getArtistStreamsBarChartData(
     artistId: UUID,
     timeRange: string = "30d"
@@ -503,31 +507,37 @@ export default class StatsService {
       const result = await query(
         `WITH date_series AS (
           SELECT generate_series(
-            CURRENT_DATE - $2::integer,
-            CURRENT_DATE - 1,
-            '1 day'::interval
+        CURRENT_DATE - $2::integer,
+        CURRENT_DATE - 1,
+        '1 day'::interval
           )::date AS day
         ),
         daily_streams AS (
           SELECT 
-            DATE(sh.played_at) AS day,
-            COUNT(*) AS streams
+        DATE(sh.played_at) AS day,
+        COUNT(*) AS streams
           FROM song_history sh
           JOIN song_artists sa ON sh.song_id = sa.song_id
           WHERE sa.artist_id = $1
-            AND sh.played_at >= CURRENT_DATE - $2::integer
-            AND sh.played_at < CURRENT_DATE
+        AND sh.played_at >= CURRENT_DATE - $2::integer
+        AND sh.played_at < CURRENT_DATE
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = sh.song_id
+        )
           GROUP BY DATE(sh.played_at)
         ),
         daily_likes AS (
           SELECT 
-            DATE(sl.liked_at) AS day,
-            COUNT(*) AS likes
+        DATE(sl.liked_at) AS day,
+        COUNT(*) AS likes
           FROM song_likes sl
           JOIN song_artists sa ON sl.song_id = sa.song_id
           WHERE sa.artist_id = $1
-            AND sl.liked_at >= CURRENT_DATE - $2::integer
-            AND sl.liked_at < CURRENT_DATE
+        AND sl.liked_at >= CURRENT_DATE - $2::integer
+        AND sl.liked_at < CURRENT_DATE
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = sl.song_id
+        )
           GROUP BY DATE(sl.liked_at)
         )
         SELECT 
@@ -552,9 +562,6 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get listeners pie chart data for an artist
-   */
   static async getArtistListenersPieChartData(artistId: UUID) {
     try {
       const result = await query(
@@ -566,11 +573,14 @@ export default class StatsService {
         ),
         listener_counts AS (
           SELECT 
-            sh.user_id,
-            COUNT(*) AS play_count
+        sh.user_id,
+        COUNT(*) AS play_count
           FROM song_history sh
           JOIN artist_songs asongs ON sh.song_id = asongs.id
           WHERE sh.played_at >= NOW() - INTERVAL '30 days'
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_songs ds WHERE ds.song_id = sh.song_id
+        )
           GROUP BY sh.user_id
         )
         SELECT 
@@ -613,31 +623,31 @@ export default class StatsService {
     }
   }
 
-  /**
-   * Get follower chart data for an artist
-   */
   static async getArtistFollowersData(artistId: UUID) {
     try {
       const result = await query(
         `WITH RECURSIVE month_series AS (
           SELECT 
-            DATE_TRUNC('month', CURRENT_DATE - INTERVAL '11 months')::date AS month_start,
-            0 AS month_num
+        DATE_TRUNC('month', CURRENT_DATE - INTERVAL '11 months')::date AS month_start,
+        0 AS month_num
           UNION ALL
           SELECT 
-            (month_start + INTERVAL '1 month')::date,
-            month_num + 1
+        (month_start + INTERVAL '1 month')::date,
+        month_num + 1
           FROM month_series
           WHERE month_num < 11
         ),
         monthly_followers AS (
           SELECT 
-            ms.month_start,
-            COUNT(DISTINCT uf.follower_id) AS follower_count
+        ms.month_start,
+        COUNT(DISTINCT uf.follower_id) AS follower_count
           FROM month_series ms
           LEFT JOIN users u ON u.artist_id = $1
           LEFT JOIN user_followers uf ON uf.following_id = u.id
-            AND uf.followed_at < (ms.month_start + INTERVAL '1 month')::date
+        AND uf.followed_at < (ms.month_start + INTERVAL '1 month')::date
+          WHERE NOT EXISTS (
+        SELECT 1 FROM deleted_users du WHERE du.user_id = u.id
+          )
           GROUP BY ms.month_start
           ORDER BY ms.month_start ASC
         )

@@ -105,41 +105,48 @@ export default class PlaylistRepository {
       ) {
         throw new Error("Playlist title cannot be empty");
       }
-
-      const fields: string[] = [];
-      const values: any[] = [];
-
-      if (title !== undefined) {
-        fields.push(`title = $${values.length + 1}`);
-        values.push(title);
-      }
-      if (description !== undefined) {
-        fields.push(`description = $${values.length + 1}`);
-        values.push(description);
-      }
-      if (owner_id !== undefined) {
-        fields.push(`owner_id = $${values.length + 1}`);
-        values.push(owner_id);
-      }
-      if (visibility_status !== undefined) {
-        fields.push(`visibility_status = $${values.length + 1}`);
-        values.push(visibility_status);
-      }
-      if (image_url !== undefined) {
-        fields.push(`image_url = $${values.length + 1}`);
-        values.push(image_url);
-      }
-      if (image_url_blurhash !== undefined) {
-        fields.push(`image_url_blurhash = $${values.length + 1}`);
-        values.push(image_url_blurhash);
-      }
-      if (fields.length === 0) {
-        throw new Error("No fields to update");
-      }
-
-      values.push(id);
-
       const res = await withTransaction(async (client) => {
+        const deletedCheck = await client.query(
+          `SELECT 1 FROM deleted_playlists WHERE playlist_id = $1`,
+          [id]
+        );
+        if (deletedCheck.rows.length > 0) {
+          throw new Error("Cannot update a deleted playlist.");
+        }
+
+        const fields: string[] = [];
+        const values: any[] = [];
+
+        if (title !== undefined) {
+          fields.push(`title = $${values.length + 1}`);
+          values.push(title);
+        }
+        if (description !== undefined) {
+          fields.push(`description = $${values.length + 1}`);
+          values.push(description);
+        }
+        if (owner_id !== undefined) {
+          fields.push(`owner_id = $${values.length + 1}`);
+          values.push(owner_id);
+        }
+        if (visibility_status !== undefined) {
+          fields.push(`visibility_status = $${values.length + 1}`);
+          values.push(visibility_status);
+        }
+        if (image_url !== undefined) {
+          fields.push(`image_url = $${values.length + 1}`);
+          values.push(image_url);
+        }
+        if (image_url_blurhash !== undefined) {
+          fields.push(`image_url_blurhash = $${values.length + 1}`);
+          values.push(image_url_blurhash);
+        }
+        if (fields.length === 0) {
+          throw new Error("No fields to update");
+        }
+
+        values.push(id);
+
         const sql = `UPDATE playlists SET ${fields.join(", ")} WHERE id = $${
           values.length
         } RETURNING *`;
@@ -161,23 +168,16 @@ export default class PlaylistRepository {
     }
   }
 
-  /**
-   * Deletes a playlist.
-   * @param id The ID of the playlist to delete.
-   * @returns The deleted playlist, or null if the deletion fails.
-   * @throws Error if the operation fails.
-   */
-  static async delete(id: UUID): Promise<Playlist | null> {
+  static async delete(id: UUID) {
     try {
-      const res = await withTransaction(async (client) => {
-        const del = await client.query(
-          `DELETE FROM playlists WHERE id = $1 RETURNING *`,
+      await withTransaction(async (client) => {
+        await client.query(
+          `INSERT INTO deleted_playlists
+          (playlist_id, deleted_at)
+          VALUES ($1, NOW())`,
           [id]
         );
-        return del.rows[0] ?? null;
       });
-
-      return res;
     } catch (error) {
       console.error("Error deleting playlist:", error);
       throw error;
@@ -187,9 +187,12 @@ export default class PlaylistRepository {
   static async bulkDelete(playlistIds: UUID[]) {
     try {
       await withTransaction(async (client) => {
-        await client.query(`DELETE FROM playlists WHERE id = ANY($1)`, [
-          playlistIds,
-        ]);
+        await client.query(
+          `INSERT INTO deleted_playlists
+          (playlist_id, deleted_at)
+          SELECT id, NOW() FROM playlists WHERE id = ANY($1)`,
+          [playlistIds]
+        );
       });
     } catch (error) {
       console.error("Error bulk deleting playlists:", error);
@@ -224,21 +227,33 @@ export default class PlaylistRepository {
 
       if (options?.includeSongCount) {
         selectFields.push(`
-        (SELECT COUNT(*) FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS song_count
+        (SELECT COUNT(*) 
+         FROM playlist_songs ps 
+         WHERE ps.playlist_id = p.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
+        ) AS song_count
       `);
       }
 
       if (options?.includeRuntime) {
         selectFields.push(`
-        (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
-          JOIN playlist_songs ps ON ps.song_id = s.id
-          WHERE ps.playlist_id = p.id) AS runtime
+        (SELECT COALESCE(SUM(s.duration), 0) 
+         FROM songs s
+         JOIN playlist_songs ps ON ps.song_id = s.id
+         WHERE ps.playlist_id = p.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
+        ) AS runtime
       `);
       }
 
       selectFields.push(`
-      EXISTS (SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS has_song
-    `);
+        EXISTS (
+          SELECT 1 
+          FROM playlist_songs ps 
+          WHERE ps.playlist_id = p.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
+        ) AS has_song
+      `);
 
       const sql = `
         SELECT ${selectFields.join(",\n")}
@@ -326,7 +341,11 @@ export default class PlaylistRepository {
 
       if (options?.includeSongCount) {
         selectFields.push(`
-        (SELECT COUNT(*) FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS song_count
+        (SELECT COUNT(*) 
+         FROM playlist_songs ps 
+         WHERE ps.playlist_id = p.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
+        ) AS song_count
       `);
       }
 
@@ -336,13 +355,17 @@ export default class PlaylistRepository {
          FROM songs s
          JOIN playlist_songs ps ON ps.song_id = s.id
          WHERE ps.playlist_id = p.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
         ) AS runtime
       `);
       }
 
       selectFields.push(`
         EXISTS (
-          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+          SELECT 1 
+          FROM playlist_songs ps 
+          WHERE ps.playlist_id = p.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
         ) AS has_song
       `);
 
@@ -552,7 +575,13 @@ export default class PlaylistRepository {
 
   static async count(): Promise<number> {
     try {
-      const res = await query("SELECT COUNT(*) FROM playlists");
+      const res = await query(
+        `SELECT COUNT(*) FROM playlists p
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_playlists dp
+          WHERE dp.playlist_id = p.id
+        )`
+      );
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting playlists:", error);
@@ -571,6 +600,11 @@ export default class PlaylistRepository {
          JOIN songs s ON ps.song_id = s.id
          WHERE ps.playlist_id = $1
          AND s.image_url IS NOT NULL
+         AND NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds
+            WHERE ds.song_id = s.id
+         )
+         GROUP BY s.image_url, ps.added_at
          ORDER BY ps.added_at
          LIMIT $2`,
         [playlistId, limit]
@@ -586,6 +620,7 @@ export default class PlaylistRepository {
       throw error;
     }
   }
+
   static async getRelatedPlaylists(
     playlistId: UUID,
     options?: PlaylistOptions

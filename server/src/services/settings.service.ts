@@ -1,15 +1,7 @@
 import { query, withTransaction } from "@config/database";
 import type { UUID, UserSettings } from "@types";
 
-/**
- * Service for managing user settings
- */
 export default class UserSettingsService {
-  /**
-   * Gets the settings for a user.
-   * @param userId The ID of the user.
-   * @returns The user's settings or null if not found.
-   */
   static async getSettings(userId: UUID): Promise<UserSettings | null> {
     try {
       const result = await query(
@@ -24,12 +16,6 @@ export default class UserSettingsService {
     }
   }
 
-  /**
-   * Updates the settings for a user.
-   * @param userId The ID of the user.
-   * @param settings The settings to update.
-   * @returns The updated user settings or null if not found.
-   */
   static async updateSettings(
     userId: UUID,
     {

@@ -1,10 +1,6 @@
 import type { UUID, ReportType } from "@types";
 import { withTransaction } from "@config/database.js";
-// import { getBlobUrl } from "@config/blobStorage.js";
 
-/**
- * Service for managing and submitting user reports.
- */
 export default class ReportService {
   static async reportSong(reportData: {
     reporter_id: UUID;

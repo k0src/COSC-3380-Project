@@ -38,7 +38,7 @@ const ArtistDiscography: React.FC = () => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "globalList",
+    scope: "single",
   };
 
   if (!id) {
@@ -53,7 +53,8 @@ const ArtistDiscography: React.FC = () => {
   //! ADD LIMITS AND PAGINATION
   const { data, loading, error } = useAsyncData(
     {
-      artist: () => artistApi.getArtistById(id, { includeUser: true }),
+      artist: () =>
+        artistApi.getArtistById(id, accessContext, { includeUser: true }),
       albums: () => artistApi.getAlbums(id, accessContext),
       singles: () =>
         artistApi.getSongs(id, accessContext, {
