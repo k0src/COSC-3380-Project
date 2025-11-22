@@ -89,10 +89,11 @@ export default class SearchService {
           similarity(u.username, $1) as sim
         FROM users u
         WHERE (u.username ILIKE $2 OR similarity(u.username, $1) > 0.2)
+          AND NOT EXISTS (SELECT 1 FROM deleted_users du WHERE du.user_id = u.id)
         ORDER BY
           CASE WHEN u.username ILIKE $3 THEN 1
-            WHEN u.username ILIKE $2 THEN 2
-            ELSE 3 END,
+        WHEN u.username ILIKE $2 THEN 2
+        ELSE 3 END,
           similarity(u.username, $1) DESC
         LIMIT $4
         OFFSET $5`;
@@ -137,23 +138,25 @@ export default class SearchService {
         SELECT s.*,
           (SELECT json_agg(row_to_json(album_with_artist))
           FROM (
-            SELECT a.*,
-              row_to_json(ar) AS artist
-            FROM albums a
-            JOIN album_songs als ON als.album_id = a.id
-            LEFT JOIN artists ar ON ar.id = a.created_by
-            WHERE als.song_id = s.id
+        SELECT a.*,
+          row_to_json(ar) AS artist
+        FROM albums a
+        JOIN album_songs als ON als.album_id = a.id
+        LEFT JOIN artists ar ON ar.id = a.created_by
+        WHERE als.song_id = s.id
+          AND NOT EXISTS (SELECT 1 FROM deleted_albums da WHERE da.album_id = a.id)
           ) AS album_with_artist) AS albums,
           (SELECT json_agg(row_to_json(ar_with_role))
           FROM (
-            SELECT
-              ar.*,
-              sa.role,
-              row_to_json(u) AS user
-            FROM artists ar
-            JOIN users u ON u.artist_id = ar.id
-            JOIN song_artists sa ON sa.artist_id = ar.id
-            WHERE sa.song_id = s.id
+        SELECT
+          ar.*,
+          sa.role,
+          row_to_json(u) AS user
+        FROM artists ar
+        JOIN users u ON u.artist_id = ar.id
+        JOIN song_artists sa ON sa.artist_id = ar.id
+        WHERE sa.song_id = s.id
+          AND NOT EXISTS (SELECT 1 FROM deleted_artists dar WHERE dar.artist_id = ar.id)
           ) AS ar_with_role) AS artists,
           similarity(s.title, $1) as sim
         FROM songs s
@@ -245,14 +248,17 @@ export default class SearchService {
         SELECT a.*,
           (SELECT row_to_json(artist_with_user)
           FROM (
-            SELECT ar.*,
-              row_to_json(u) AS user
-            FROM artists ar
-            LEFT JOIN users u ON ar.user_id = u.id
-            WHERE ar.id = a.created_by
+        SELECT ar.*,
+          row_to_json(u) AS user
+        FROM artists ar
+        LEFT JOIN users u ON ar.user_id = u.id
+        WHERE ar.id = a.created_by
+          AND NOT EXISTS (SELECT 1 FROM deleted_artists dar WHERE dar.artist_id = ar.id)
           ) AS artist_with_user) as artist,
           (SELECT COUNT(*) FROM album_songs als 
-          WHERE als.album_id = a.id) as song_count,
+        WHERE als.album_id = a.id
+          AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als.song_id)
+          ) as song_count,
           similarity(a.title, $1) as sim
         FROM albums a
         WHERE (a.title ILIKE $2 OR similarity(a.title, $1) > 0.2) AND (${predicateSql})`;
@@ -324,11 +330,18 @@ export default class SearchService {
         SELECT p.*,
           row_to_json(u.*) as user,
           (SELECT COUNT(*) FROM playlist_songs ps
-          WHERE ps.playlist_id = p.id) as song_count,
+        WHERE ps.playlist_id = p.id
+          AND NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id
+          )
+          ) as song_count,
           similarity(p.title, $1) as sim,
-          EXISTS (SELECT 1 FROM playlist_songs 
-                  ps WHERE ps.playlist_id = p.id) 
-                  AS has_song
+          EXISTS (
+        SELECT 1 FROM playlist_songs ps
+        WHERE ps.playlist_id = p.id
+          AND NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
+          ) AS has_song
         FROM playlists p
         LEFT JOIN users u ON p.owner_id = u.id
         WHERE (p.title ILIKE $2 OR similarity(p.title, $1) > 0.2) AND (${predicateSql})`;
@@ -406,21 +419,23 @@ export default class SearchService {
           ar.banner_image_url,
           ar.banner_image_url_blurhash,
           json_build_object(
-            'id', u.id,
-            'username', u.username,
-            'email', u.email,
-            'role', u.role,
-            'profile_picture_url', u.profile_picture_url,
-            'created_at', u.created_at
+        'id', u.id,
+        'username', u.username,
+        'email', u.email,
+        'role', u.role,
+        'profile_picture_url', u.profile_picture_url,
+        'created_at', u.created_at
           ) as user,
           similarity(ar.display_name, $1) as sim
         FROM artists ar
         JOIN users u ON ar.user_id = u.id
         WHERE (ar.display_name ILIKE $2 OR similarity(ar.display_name, $1) > 0.2)
+          AND NOT EXISTS (SELECT 1 FROM deleted_artists da WHERE da.artist_id = ar.id)
+          AND NOT EXISTS (SELECT 1 FROM deleted_users du WHERE du.user_id = u.id)
         ORDER BY
           CASE WHEN ar.display_name ILIKE $3 THEN 1
-            WHEN ar.display_name ILIKE $2 THEN 2
-            ELSE 3 END,
+        WHEN ar.display_name ILIKE $2 THEN 2
+        ELSE 3 END,
           similarity(ar.display_name, $1) DESC
         LIMIT $4
         OFFSET $5`;
