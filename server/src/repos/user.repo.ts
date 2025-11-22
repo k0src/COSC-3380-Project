@@ -235,7 +235,9 @@ export default class UserRepository {
           WHERE uf.follower_id = u.id)
         ELSE NULL END AS following_count
         FROM users u
-        WHERE u.id = $3
+        WHERE u.id = $3 AND NOT EXISTS (
+          SELECT 1 FROM deleted_users du WHERE du.user_id = u.id
+        )
       `;
 
       const params = [
@@ -280,6 +282,9 @@ export default class UserRepository {
           WHERE uf.follower_id = u.id)
         ELSE NULL END AS following_count
         FROM users u
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_users du WHERE du.user_id = u.id
+        )
         ORDER BY u.created_at DESC
         LIMIT $3 OFFSET $4
       `;
@@ -314,9 +319,14 @@ export default class UserRepository {
 
   static async getByUsername(username: string): Promise<User | null> {
     try {
-      const res = await query(`SELECT * FROM users WHERE username = $1`, [
-        username,
-      ]);
+      const res = await query(
+        `SELECT * FROM users WHERE username = $1
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_users du 
+          WHERE du.user_id = users.id
+        )`,
+        [username]
+      );
       if (!res || res.length === 0) {
         return null;
       }
@@ -336,7 +346,14 @@ export default class UserRepository {
 
   static async getByEmail(email: string): Promise<User | null> {
     try {
-      const res = await query(`SELECT * FROM users WHERE email = $1`, [email]);
+      const res = await query(
+        `SELECT * FROM users WHERE email = $1
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_users du
+          WHERE du.user_id = users.id
+        )`,
+        [email]
+      );
       if (!res || res.length === 0) {
         return null;
       }
@@ -456,7 +473,13 @@ export default class UserRepository {
   ): Promise<User | null> {
     try {
       const result = await query(
-        `SELECT * FROM users WHERE email = $1 AND authenticated_with = 'CoogMusic'`,
+        `SELECT * FROM users 
+        WHERE email = $1 
+        AND authenticated_with = 'CoogMusic'
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_users du
+          WHERE du.user_id = users.id
+        )`,
         [email]
       );
 
@@ -487,7 +510,12 @@ export default class UserRepository {
 
   static async getUserCount(): Promise<number> {
     try {
-      const res = await query("SELECT COUNT(*) FROM users");
+      const res = await query(
+        `SELECT COUNT(*) FROM users
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_users du WHERE du.user_id = users.id
+        )`
+      );
       return parseInt(res[0]?.count ?? "0", 10);
     } catch (error) {
       console.error("Error counting users:", error);
