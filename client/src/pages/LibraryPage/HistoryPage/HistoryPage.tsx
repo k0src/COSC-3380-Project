@@ -17,6 +17,7 @@ import {
   CreatePlaylistModal,
 } from "@components";
 import { libraryApi, playlistApi } from "@api";
+import { useStreamTracking } from "@hooks";
 import styles from "./HistoryPage.module.css";
 import classNames from "classnames";
 import {
@@ -61,6 +62,7 @@ const HistoryPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const { setCustomActionsProvider } = useContextMenu();
+  const { clearLocalHistory } = useStreamTracking();
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
   const [playlistModalMode, setPlaylistModalMode] = useState<"create" | "edit">(
     "edit"
@@ -131,10 +133,11 @@ const HistoryPage: React.FC = () => {
     if (!user?.id) return;
     try {
       await libraryApi.clearHistory(user.id);
+      clearLocalHistory();
     } catch (error) {
       console.error("Error clearing history:", error);
     }
-  }, [user?.id]);
+  }, [user?.id, clearLocalHistory]);
 
   const handleClearHistory = useCallback(() => {
     setIsClearHistoryModalOpen(true);

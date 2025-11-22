@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo } from "react";
 import { useAudioQueue } from "@contexts";
+import { useStreamTracking } from "@hooks";
 import type { Playlist } from "@types";
 import { LuCirclePlay, LuCirclePause } from "react-icons/lu";
 import styles from "./PlaylistPlayButton.module.css";
@@ -13,6 +14,7 @@ const PlaylistPlayButton: React.FC<PlaylistPlayButtonProps> = ({
   playlist,
 }) => {
   const { state, actions } = useAudioQueue();
+  const { trackPlaylistHistory } = useStreamTracking();
   const { queue, currentIndex, isPlaying } = state;
 
   const currentQueueItem = useMemo(() => {
@@ -31,7 +33,7 @@ const PlaylistPlayButton: React.FC<PlaylistPlayButtonProps> = ({
     );
   }, [playlist.id, currentQueueItem]);
 
-  const handlePlayPause = useCallback(() => {
+  const handlePlayPause = useCallback(async () => {
     if (!playlist) return;
 
     if (isPlaylistPlaying) {
@@ -41,9 +43,10 @@ const PlaylistPlayButton: React.FC<PlaylistPlayButtonProps> = ({
         actions.resume();
       }
     } else {
+      await trackPlaylistHistory(playlist.id);
       actions.play(playlist);
     }
-  }, [playlist, isPlaylistPlaying, isPlaying, actions]);
+  }, [playlist, isPlaylistPlaying, isPlaying, actions, trackPlaylistHistory]);
 
   return (
     <button

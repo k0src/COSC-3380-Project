@@ -11,11 +11,17 @@ export const useStreamTracking = () => {
   const { state } = useAudioQueue();
 
   const [trackedSongs, setTrackedSongs] = useState<Set<string>>(new Set());
+  const [trackedPlaylists, setTrackedPlaylists] = useState<Set<string>>(
+    new Set()
+  );
 
-  const hasStreamedRecently = (songId: string): boolean => {
+  const hasStreamedRecently = (
+    entityId: string,
+    entityType: "song" | "playlist" = "song"
+  ): boolean => {
     if (!user) return false;
 
-    const streamKey = `streamed_${user.id}_${songId}`;
+    const streamKey = `streamed_${user.id}_${entityType}_${entityId}`;
     const streamData = localStorage.getItem(streamKey);
 
     if (streamData) {
@@ -42,7 +48,7 @@ export const useStreamTracking = () => {
 
     if (!user || !currentSongId || !state.isPlaying) return;
     if (trackedSongs.has(currentSongId)) return;
-    if (hasStreamedRecently(currentSongId)) {
+    if (hasStreamedRecently(currentSongId, "song")) {
       setTrackedSongs((prev) => new Set(prev).add(currentSongId));
       return;
     }
@@ -55,7 +61,7 @@ export const useStreamTracking = () => {
             songApi.incrementSongStreams(currentSongId),
           ]);
 
-          const streamKey = `streamed_${user.id}_${currentSongId}`;
+          const streamKey = `streamed_${user.id}_song_${currentSongId}`;
           localStorage.setItem(
             streamKey,
             JSON.stringify({ timestamp: Date.now() })
@@ -76,4 +82,48 @@ export const useStreamTracking = () => {
     user,
     trackedSongs,
   ]);
+
+  const trackPlaylistHistory = async (playlistId: string) => {
+    if (!user) return;
+
+    if (trackedPlaylists.has(playlistId)) return;
+    if (hasStreamedRecently(playlistId, "playlist")) {
+      setTrackedPlaylists((prev) => new Set(prev).add(playlistId));
+      return;
+    }
+
+    try {
+      await userApi.addToHistory(user.id, playlistId, "playlist");
+      const streamKey = `streamed_${user.id}_playlist_${playlistId}`;
+      localStorage.setItem(
+        streamKey,
+        JSON.stringify({ timestamp: Date.now() })
+      );
+      setTrackedPlaylists((prev) => new Set(prev).add(playlistId));
+    } catch (error) {
+      console.error("Error tracking playlist history:", error);
+    }
+  };
+
+  const clearLocalHistory = () => {
+    if (!user) return;
+
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(`streamed_${user.id}_`)) {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+
+    setTrackedSongs(new Set());
+    setTrackedPlaylists(new Set());
+  };
+
+  return {
+    trackPlaylistHistory,
+    clearLocalHistory,
+  };
 };
