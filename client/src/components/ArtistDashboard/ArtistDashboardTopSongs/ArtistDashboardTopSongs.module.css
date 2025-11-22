@@ -4,8 +4,8 @@
   background: var(--color-panel-gray);
   border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-md);
-  max-width: 40rem;
   min-width: 0;
+  width: 100%;
 }
 
 .topSongsTitle {

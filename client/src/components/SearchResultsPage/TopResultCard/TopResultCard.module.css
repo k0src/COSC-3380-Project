@@ -3,8 +3,9 @@
   display: flex;
   gap: var(--spacing-md);
   align-items: center;
-  padding: var(--spacing-lg);
-  background: var(--container-gradient-bg);
+  padding: var(--spacing-md);
+  background: var(--color-panel-gray);
+  border: var(--border-size-sm) solid var(--color-panel-border);
   border-radius: var(--border-radius-sm);
   min-width: 0;
   width: 100%;

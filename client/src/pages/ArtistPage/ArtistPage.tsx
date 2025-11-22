@@ -11,14 +11,17 @@ import {
   ArtistBanner,
   RelatedArtists,
   ArtistActions,
-  ArtistPlaylists,
+  ArtistFeaturedOnPlaylists,
   ArtistAbout,
   SlidingCardList,
   SongsList,
   FollowProfiles,
   EditArtistModal,
+  TopResultCard,
+  ArtistPlaylists,
 } from "@components";
 import styles from "./ArtistPage.module.css";
+import { formatDateString } from "@util";
 
 const ArtistPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
@@ -44,6 +47,7 @@ const ArtistPage: React.FC = () => {
   const { data, loading, error, refetch } = useAsyncData(
     {
       artist: () => artistApi.getArtistById(id, { includeUser: true }),
+      pinned: () => artistApi.getPinnedAlbum(id, accessContext),
     },
     [id],
     {
@@ -53,6 +57,7 @@ const ArtistPage: React.FC = () => {
   );
 
   const artist = data?.artist;
+  const pinnedAlbum = data?.pinned;
 
   const isOwner = useMemo(() => {
     if (!user || !isAuthenticated || !artist) {
@@ -142,6 +147,21 @@ const ArtistPage: React.FC = () => {
         <div className={styles.artistLayoutBottom}>
           <div className={styles.artistLayoutBottomTop}>
             <div className={styles.artistLayoutBottomLeft}>
+              {pinnedAlbum && (
+                <div className={styles.sectionContainer}>
+                  <span className={styles.sectionTitle}>Artist's Pick</span>
+                  <TopResultCard
+                    type="album"
+                    entity={pinnedAlbum}
+                    linkTo={`/albums/${pinnedAlbum.id}`}
+                    title={pinnedAlbum.title}
+                    subtitle={formatDateString(pinnedAlbum.release_date)}
+                    imageUrl={pinnedAlbum.image_url}
+                    blurHash={pinnedAlbum.image_url_blurhash}
+                    author={artist.display_name}
+                  />
+                </div>
+              )}
               <SongsList
                 title="Popular"
                 fetchData={fetchPopularSongs}
@@ -193,6 +213,10 @@ const ArtistPage: React.FC = () => {
                 </>
               )}
               <ArtistPlaylists
+                artistId={artist.id}
+                accessContext={accessContext}
+              />
+              <ArtistFeaturedOnPlaylists
                 artistId={artist.id}
                 artistName={artist.display_name}
               />

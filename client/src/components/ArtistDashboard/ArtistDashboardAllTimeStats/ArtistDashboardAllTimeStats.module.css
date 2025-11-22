@@ -1,0 +1,91 @@
+.allTimeStats {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-xl);
+  flex: 1;
+}
+
+.allTimeTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.allTimeTitle {
+  font-size: var(--font-size-xl);
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.allTimeSubtitle {
+  font-size: var(--font-size-md);
+  color: var(--color-text-gray);
+}
+
+.allTimeBottom {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: space-between;
+}
+
+.allTimeStatItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.allTimeNumber {
+  font-size: var(--font-size-2xl);
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+.allTimeLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}
+
+.waveform {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+  align-items: flex-end;
+  height: 2.2rem;
+}
+
+.waveformBar {
+  background: var(--color-text-gray);
+  width: 0.6rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.verticalRule {
+  width: var(--border-size-sm);
+  background: var(--color-panel-border);
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loadingText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}
+
+.errorContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.errorText {
+  font-size: var(--font-size-sm);
+  color: var(--color-red-ui);
+}

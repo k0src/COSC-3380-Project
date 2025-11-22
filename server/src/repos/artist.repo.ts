@@ -1015,4 +1015,92 @@ export default class ArtistRepository {
       throw error;
     }
   }
+
+  static async getPinnedAlbum(
+    artistId: UUID,
+    accessContext: AccessContext,
+    options?: AlbumOptions
+  ): Promise<ArtistAlbum | null> {
+    try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "a");
+
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
+      const selectFields: string[] = ["a.*"];
+
+      if (options?.includeArtist) {
+        selectFields.push(`
+        (
+          SELECT row_to_json(artist_with_user)
+          FROM (
+            SELECT ar.*, row_to_json(u) AS user
+            FROM artists ar
+            LEFT JOIN users u ON ar.user_id = u.id
+            WHERE ar.id = a.created_by
+          ) AS artist_with_user
+        ) AS artist 
+      `);
+      }
+
+      if (options?.includeLikes) {
+        selectFields.push(` 
+        (SELECT COUNT(*) FROM album_likes al WHERE al.album_id = a.id) AS likes
+      `);
+      }
+
+      if (options?.includeRuntime) {
+        selectFields.push(`
+        (SELECT SUM(s2.duration)  
+          FROM songs s2
+          JOIN album_songs als_rt ON als_rt.song_id = s2.id
+          WHERE als_rt.album_id = a.id
+        ) AS runtime
+      `);
+      }
+
+      if (options?.includeSongCount) {
+        selectFields.push(`
+        (SELECT COUNT(*) FROM album_songs als_cnt WHERE als_cnt.album_id = a.id) AS song_count  
+      `);
+      }
+
+      const idIndex = predicateParams.length + 1;
+
+      const sql = `
+        SELECT ${selectFields.join(",\n")}
+        FROM albums a
+        JOIN artist_page_pinned_albums apa ON apa.album_id = a.id
+        WHERE (${predicateSql}) AND apa.artist_id = $${idIndex}
+        LIMIT 1
+      `;
+
+      const params = [...predicateParams, artistId];
+
+      const res = await query(sql, params);
+      if (!res || res.length === 0) return null;
+
+      const album: ArtistAlbum = res[0];
+
+      if (album.image_url) {
+        album.image_url = getBlobUrl(album.image_url);
+      }
+
+      if (album.artist) {
+        if (album.artist.user?.profile_picture_url) {
+          album.artist.user.profile_picture_url = getBlobUrl(
+            album.artist.user.profile_picture_url
+          );
+        }
+        album.artist.type = "artist";
+      }
+
+      album.type = "album";
+      return album;
+    } catch (error) {
+      console.error("Error fetching pinned album for artist:", error);
+      throw error;
+    }
+  }
 }

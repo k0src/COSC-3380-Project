@@ -28,3 +28,21 @@
   flex-direction: column;
   gap: var(--spacing-lg);
 }
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.sectionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}

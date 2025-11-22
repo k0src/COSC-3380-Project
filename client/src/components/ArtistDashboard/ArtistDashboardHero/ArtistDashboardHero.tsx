@@ -1,11 +1,12 @@
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { PuffLoader } from "react-spinners";
-import type { UUID } from "@types";
+import type { UUID, Song } from "@types";
 import { useAsyncData } from "@hooks";
 import { statsApi } from "@api";
 import { HorizontalRule, LazyImg } from "@components";
 import styles from "./ArtistDashboardHero.module.css";
+import { formatDateString } from "@util";
 import { LuChartColumnIncreasing, LuSettings2 } from "react-icons/lu";
 
 interface ArtistQuickStats {
@@ -14,26 +15,6 @@ interface ArtistQuickStats {
   newFollowers: number;
   playlistAdds: number;
 }
-
-interface ArtistTopSong {
-  id: UUID;
-  title: string;
-  release_date: string;
-  image_url?: string;
-  image_url_blurhash?: string;
-  streams: number;
-  likes: number;
-  comments: number;
-}
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
 
 interface HeroLeftProps {
   artistImageUrl: string;
@@ -76,7 +57,7 @@ const HeroLeft: React.FC<HeroLeftProps> = memo(
 );
 
 interface HeroRightProps {
-  topSong?: ArtistTopSong;
+  topSong?: Song;
   artistImageUrl: string;
   artistImageUrlBlurhash?: string;
 }
@@ -105,7 +86,7 @@ const HeroRight: React.FC<HeroRightProps> = memo(
                   {topSong.title}
                 </Link>
                 <span className={styles.topSongSubtitle}>
-                  {formatDate(topSong.release_date)}
+                  {formatDateString(topSong.release_date)}
                 </span>
               </div>
               <Link to="/artist-dashboard/manage" className={styles.manageIcon}>
@@ -115,15 +96,15 @@ const HeroRight: React.FC<HeroRightProps> = memo(
             <HorizontalRule />
             <div className={styles.topSongStats}>
               <span className={styles.topSongStatItem}>
-                <strong>{topSong.streams || 0}</strong> streams
+                <strong>{topSong.streams ?? 0}</strong> streams
               </span>
               <span className={styles.statsBull}>&bull;</span>
               <span className={styles.topSongStatItem}>
-                <strong>{topSong.likes || 0}</strong> likes
+                <strong>{topSong.likes ?? 0}</strong> likes
               </span>
               <span className={styles.statsBull}>&bull;</span>
               <span className={styles.topSongStatItem}>
-                <strong>{topSong.comments || 0}</strong> comments
+                <strong>{topSong.comments ?? 0}</strong> comments
               </span>
             </div>
           </div>

@@ -45,6 +45,7 @@ export { default as EditSongModal } from "./SongPage/EditSongModal/EditSongModal
 export { default as ArtistBanner } from "./ArtistPage/ArtistBanner/ArtistBanner.js";
 export { default as RelatedArtists } from "./ArtistPage/RelatedArtists/RelatedArtists.js";
 export { default as ArtistActions } from "./ArtistPage/ArtistActions/ArtistActions.js";
+export { default as ArtistFeaturedOnPlaylists } from "./ArtistPage/ArtistFeaturedOnPlaylists/ArtistFeaturedOnPlaylists.js";
 export { default as ArtistPlaylists } from "./ArtistPage/ArtistPlaylists/ArtistPlaylists.js";
 export { default as ArtistAbout } from "./ArtistPage/ArtistAbout/ArtistAbout.js";
 export { default as LazyBannerImg } from "./ArtistPage/LazyBannerImg/LazyBannerImg.js";
@@ -121,10 +122,17 @@ export { default as ArtistEntityCard } from "./ArtistDashboard/ArtistEntityCard/
 export { default as ArtistDashboardChecklist } from "./ArtistDashboard/ArtistDashboardChecklist/ArtistDashboardChecklist.js";
 export { default as ArtistDashboardTopSongs } from "./ArtistDashboard/ArtistDashboardTopSongs/ArtistDashboardTopSongs.js";
 export { default as ArtistDashboardTopPlaylists } from "./ArtistDashboard/ArtistDashboardTopPlaylists/ArtistDashboardTopPlaylists.js";
+export { default as ArtistDashboardTopListeners } from "./ArtistDashboard/ArtistDashboardTopListeners/ArtistDashboardTopListeners.js";
 export { default as CreateAlbumModal } from "./ArtistDashboard/CreateAlbumModal/CreateAlbumModal.js";
 export { default as ArtistDashboardManageSongs } from "./ArtistDashboard/ArtistDashboardManagePage/ArtistDashboardManageSongs.js";
 export { default as ArtistDashboardManageAlbums } from "./ArtistDashboard/ArtistDashboardManagePage/ArtistDashboardManageAlbums.js";
 export { default as ArtistDashboardManagePlaylists } from "./ArtistDashboard/ArtistDashboardManagePage/ArtistDashboardManagePlaylists/ArtistDashboardManagePlaylists.js";
+export { default as ArtistDashboardAllTimeStats } from "./ArtistDashboard/ArtistDashboardAllTimeStats/ArtistDashboardAllTimeStats.js";
+export { default as ArtistDashboardRecentRelease } from "./ArtistDashboard/ArtistDashboardRecentRelease/ArtistDashboardRecentRelease.js";
+export { default as ArtistDashboardBarChart } from "./ArtistDashboard/ArtistDashboardBarChart/ArtistDashboardBarChart.js";
+export { default as ArtistDashboardTopSongsBarChart } from "./ArtistDashboard/ArtistDashboardTopSongsBarChart/ArtistDashboardTopSongsBarChart.js";
+export { default as ArtistDashboardPieChart } from "./ArtistDashboard/ArtistDashboardPieChart/ArtistDashboardPieChart.js";
+export { default as ArtistDashboardFollowerChart } from "./ArtistDashboard/ArtistDashboardFollowerChart/ArtistDashboardFollowerChart.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

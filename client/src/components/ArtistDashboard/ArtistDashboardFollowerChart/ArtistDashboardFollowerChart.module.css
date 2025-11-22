@@ -1,0 +1,32 @@
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: var(--loader-height-md);
+  background-color: var(--color-panel-gray-dark);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  width: 100%;
+}
+
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: var(--loader-height-md);
+  background-color: var(--color-panel-gray-dark);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  width: 100%;
+}
+
+.followerChartContainer {
+  background-color: var(--color-panel-gray-dark);
+  border-radius: var(--border-radius-md);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) 0;
+  max-width: 100%;
+  height: 32rem;
+}
