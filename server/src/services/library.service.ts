@@ -84,7 +84,8 @@ export default class LibraryService {
             WHERE ar.id = a.created_by
           ) AS artist_with_user) as artist,
           (SELECT COUNT(*) FROM album_songs als 
-          WHERE als.album_id = a.id) as song_count
+          WHERE als.album_id = a.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als.song_id)) as song_count
         FROM albums a
         JOIN album_likes al ON al.album_id = a.id
         WHERE al.user_id = $1 AND a.title ILIKE $2 AND (${albumPredicateSql})
@@ -96,7 +97,8 @@ export default class LibraryService {
         SELECT p.*,
           row_to_json(u.*) as user,
           (SELECT COUNT(*) FROM playlist_songs ps
-          WHERE ps.playlist_id = p.id) as song_count
+          WHERE ps.playlist_id = p.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)) as song_count
         FROM playlists p
         LEFT JOIN users u ON p.owner_id = u.id
         JOIN playlist_likes pl ON pl.playlist_id = p.id
@@ -290,7 +292,8 @@ export default class LibraryService {
             WHERE ar.id = a.created_by
           ) AS artist_with_user) as artist,
           (SELECT COUNT(*) FROM album_songs als 
-          WHERE als.album_id = a.id) as song_count,
+          WHERE als.album_id = a.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als.song_id)) as song_count,
           MAX(ah.played_at) as played_at
         FROM albums a
         JOIN album_history ah ON ah.album_id = a.id
@@ -499,7 +502,8 @@ export default class LibraryService {
             WHERE ar.id = a.created_by
           ) AS artist_with_user) as artist,
           (SELECT COUNT(*) FROM album_songs als 
-          WHERE als.album_id = a.id) as song_count,
+          WHERE als.album_id = a.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als.song_id)) as song_count,
           MAX(ah.played_at) as played_at
         FROM albums a
         JOIN album_history ah ON ah.album_id = a.id
@@ -848,7 +852,8 @@ export default class LibraryService {
             WHERE ar.id = a.created_by
           ) AS artist_with_user) as artist,
           (SELECT COUNT(*) FROM album_songs als 
-          WHERE als.album_id = a.id) as song_count
+          WHERE als.album_id = a.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als.song_id)) as song_count
         FROM albums a
         JOIN album_likes al ON al.album_id = a.id
         WHERE al.user_id = $1 AND (${predicateSql})
@@ -1054,7 +1059,8 @@ export default class LibraryService {
             WHERE ar.id = a.created_by
           ) AS artist_with_user) as artist,
           (SELECT COUNT(*) FROM album_songs als 
-          WHERE als.album_id = a.id) as song_count,
+          WHERE als.album_id = a.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als.song_id)) as song_count,
           MAX(ah.played_at) as played_at
         FROM albums a
         JOIN album_history ah ON ah.album_id = a.id

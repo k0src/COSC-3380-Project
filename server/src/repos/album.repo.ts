@@ -247,13 +247,18 @@ export default class AlbumRepository {
          FROM songs s2
          JOIN album_songs als_runtime ON als_runtime.song_id = s2.id
          WHERE als_runtime.album_id = a.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s2.id)
         ) AS runtime
       `);
       }
 
       if (options?.includeSongCount) {
         selectFields.push(`
-        (SELECT COUNT(*) FROM album_songs als_count WHERE als_count.album_id = a.id) AS song_count
+        (SELECT COUNT(*) 
+         FROM album_songs als_count 
+         WHERE als_count.album_id = a.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als_count.song_id)
+        ) AS song_count
       `);
       }
 
@@ -262,6 +267,7 @@ export default class AlbumRepository {
         (SELECT json_agg(als.song_id)
          FROM album_songs als
          WHERE als.album_id = a.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als.song_id)
         ) AS song_ids
       `);
       }
@@ -362,13 +368,18 @@ export default class AlbumRepository {
          FROM songs s2
          JOIN album_songs als_rt ON als_rt.song_id = s2.id
          WHERE als_rt.album_id = a.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s2.id)
         ) AS runtime
       `);
       }
 
       if (options?.includeSongCount) {
         selectFields.push(`
-        (SELECT COUNT(*) FROM album_songs als_cnt WHERE als_cnt.album_id = a.id) AS song_count
+        (SELECT COUNT(*) 
+         FROM album_songs als_cnt 
+         WHERE als_cnt.album_id = a.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als_cnt.song_id)
+        ) AS song_count
       `);
       }
 
@@ -377,6 +388,7 @@ export default class AlbumRepository {
         (SELECT json_agg(als.song_id)
          FROM album_songs als
          WHERE als.album_id = a.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als.song_id)
         ) AS song_ids
       `);
       }

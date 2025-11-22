@@ -483,13 +483,18 @@ export default class ArtistRepository {
          FROM songs s2
          JOIN album_songs als_rt ON als_rt.song_id = s2.id
          WHERE als_rt.album_id = a.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s2.id)
         ) AS runtime
       `);
       }
 
       if (options?.includeSongCount) {
         selectFields.push(`
-        (SELECT COUNT(*) FROM album_songs als_cnt WHERE als_cnt.album_id = a.id) AS song_count
+        (SELECT COUNT(*) 
+         FROM album_songs als_cnt 
+         WHERE als_cnt.album_id = a.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als_cnt.song_id)
+        ) AS song_count
       `);
       }
 
@@ -596,7 +601,11 @@ export default class ArtistRepository {
 
       if (options?.includeSongCount) {
         selectFields.push(`
-        (SELECT COUNT(*) FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS song_count
+        (SELECT COUNT(*) 
+         FROM playlist_songs ps 
+         WHERE ps.playlist_id = p.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
+        ) AS song_count
       `);
       }
 
@@ -606,13 +615,17 @@ export default class ArtistRepository {
          FROM songs s
          JOIN playlist_songs ps ON ps.song_id = s.id
          WHERE ps.playlist_id = p.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
         ) AS runtime
       `);
       }
 
       selectFields.push(`
         EXISTS (
-          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+          SELECT 1 
+          FROM playlist_songs ps 
+          WHERE ps.playlist_id = p.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
         ) AS has_song
       `);
 
@@ -814,7 +827,11 @@ export default class ArtistRepository {
 
       if (options?.includeSongCount) {
         selectFields.push(`
-        (SELECT COUNT(*) FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS song_count
+        (SELECT COUNT(*) 
+         FROM playlist_songs ps 
+         WHERE ps.playlist_id = p.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
+        ) AS song_count
       `);
       }
 
@@ -824,13 +841,17 @@ export default class ArtistRepository {
          FROM songs s
          JOIN playlist_songs ps ON ps.song_id = s.id
          WHERE ps.playlist_id = p.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
         ) AS runtime
       `);
       }
 
       selectFields.push(`
         EXISTS (
-          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+          SELECT 1 
+          FROM playlist_songs ps 
+          WHERE ps.playlist_id = p.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
         ) AS has_song
       `);
 
@@ -1037,13 +1058,18 @@ export default class ArtistRepository {
           FROM songs s2
           JOIN album_songs als_rt ON als_rt.song_id = s2.id
           WHERE als_rt.album_id = a.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s2.id)
         ) AS runtime
       `);
       }
 
       if (options?.includeSongCount) {
         selectFields.push(`
-        (SELECT COUNT(*) FROM album_songs als_cnt WHERE als_cnt.album_id = a.id) AS song_count  
+        (SELECT COUNT(*) 
+         FROM album_songs als_cnt 
+         WHERE als_cnt.album_id = a.id
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als_cnt.song_id)
+        ) AS song_count  
       `);
       }
 

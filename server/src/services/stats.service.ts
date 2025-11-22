@@ -246,7 +246,9 @@ export default class StatsService {
           p.*,
           COALESCE(pp.total_plays, 0) AS total_streams,
           COUNT(DISTINCT pl.user_id) AS likes,
-          COUNT(DISTINCT ps.song_id) AS song_count
+          COUNT(DISTINCT ps.song_id) FILTER (WHERE NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id
+          )) AS song_count
         FROM playlists p
         JOIN playlist_plays pp ON p.id = pp.id
         LEFT JOIN playlist_likes pl ON p.id = pl.playlist_id

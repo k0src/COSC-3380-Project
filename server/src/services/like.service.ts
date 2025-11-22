@@ -201,10 +201,12 @@ export default class LikeService {
           ELSE NULL END as likes,
           CASE WHEN $${includeRuntimeIndex} THEN (SELECT SUM(s.duration) FROM songs s 
             JOIN album_songs als ON s.id = als.song_id 
-            WHERE als.album_id = a.id) 
+            WHERE als.album_id = a.id
+              AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)) 
           ELSE NULL END as runtime,
           CASE WHEN $${includeSongCountIndex} THEN (SELECT COUNT(*) FROM album_songs als 
-            WHERE als.album_id = a.id)
+            WHERE als.album_id = a.id
+              AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als.song_id))
           ELSE NULL END as song_count
           FROM albums a
           JOIN ${likeTable} l ON a.id = l.album_id
@@ -246,11 +248,13 @@ export default class LikeService {
             WHERE pl.playlist_id = p.id)
           ELSE NULL END as likes,
           CASE WHEN $${includeSongCountIndex} THEN (SELECT COUNT(*) FROM playlist_songs ps
-            WHERE ps.playlist_id = p.id)
+            WHERE ps.playlist_id = p.id
+              AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id))
           ELSE NULL END as song_count,
           CASE WHEN $${includeRuntimeIndex} THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
             JOIN playlist_songs ps ON ps.song_id = s.id
-            WHERE ps.playlist_id = p.id)
+            WHERE ps.playlist_id = p.id
+              AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id))
           ELSE NULL END as runtime
           FROM playlists p
           LEFT JOIN users u ON p.owner_id = u.id
