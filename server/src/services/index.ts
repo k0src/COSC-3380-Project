@@ -9,3 +9,4 @@ export { default as LibraryService } from "./library.service.js";
 export { default as UserSettingsService } from "./settings.service.js";
 export { default as NotificationsService } from "./notifications.service.js";
 export { default as ReportService } from "./report.service.js";
+export { default as AdminService } from "./admin.service.js";

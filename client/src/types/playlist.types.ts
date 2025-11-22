@@ -46,3 +46,7 @@ export interface PlaylistOptions {
   limit?: number;
   offset?: number;
 }
+
+export interface FeaturedPlaylist extends Playlist {
+  featured_at: string;
+}

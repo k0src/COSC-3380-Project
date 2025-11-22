@@ -12,6 +12,9 @@ export interface Artist {
   banner_image_url_blurhash?: string;
 
   user?: User;
+  streams?: number;
+  likes?: number;
+  followers?: number;
 
   type: "artist";
 }

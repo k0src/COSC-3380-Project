@@ -1,200 +1,39 @@
-/* Reset and variables */
-:root {
-  /* --sidebar-width: 80px; */
-  --topbar-height: 64px;
-  --player-height: 90px;
-  --content-padding: 32px;
-  --background-dark: #0d0d0d;
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-}
-
-/* Main content area */
-.contentArea {
-  top: var(--topbar-height);
-  left: var(--sidebar-width);
-  right: 0;
-  bottom: var(--player-height);
-  overflow-y: auto;
-  background: var(--background-dark);
-  color: var(--text-primary);
-}
-
-/* Content wrapper with padding */
-.contentWrapper {
-  padding: var(--content-padding);
+.homeLayout {
   display: flex;
   flex-direction: column;
-  gap: 48px;
-  margin: 0 auto;
+  gap: var(--layout-gap-ver);
+  min-height: 100%;
+  position: relative;
 }
 
-/* Section styling */
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* Section header row */
-.sectionHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-right: 8px;
-}
-
-.sectionTitle {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-}
-
-.viewMore {
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.2s ease;
-}
-
-.viewMore:hover {
-  color: var(--text-primary);
-}
-
-/* Horizontal scrollable container */
-.cardsContainer {
-  display: flex;
-  gap: 24px;
-  /* overflow-x: hidden; */
-  /* Hide scrollbar but keep functionality */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  overflow-x: auto;
-  overflow-y: hidden;
-  flex-wrap: nowrap;
-  padding: 4px 0;
-  /* Adds a smooth height change when expanding */
-  transition: max-height 0.5s ease-in-out;
-
-  /* Set a max-height roughly equal to one row of cards + padding.
-    You MUST adjust this value to fit your card height! 
-  */
-  max-height: 300px; /* <--- ADJUST THIS VALUE */
-
-  /* Optional: Add snap scrolling from our last chat */
-  scroll-snap-type: x mandatory;
-}
-
-.cardsContainer::-webkit-scrollbar {
-  display: none;
-}
-
-.topGrid {
+.homeTopSection {
   display: grid;
-  grid-template-columns: 65% 35%;
-  gap: 40px;
-  margin-bottom: 48px;
-  width: 100%;
-}
-
-/* Featured section adjustments */
-.featuredSection {
-  height: 100%;
-  min-height: 400px;
-  padding: 40px;
-  background: linear-gradient(90deg, #ff3b30 0%, #ff6a4a 100%);
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* Recently played column */
-.recentlyPlayedColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  height: 100%;
-}
-
-/* Vertical scrollable list for recently played */
-.verticalCardsList {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  overflow-y: auto;
-  /* Limit visible items to ~5 and make the list scrollable.
-     Calculation note: each .compactCard is approximately 72px tall
-     (48px image + 12px vertical padding top + 12px bottom). With
-     4 gaps of 16px between 5 items the total is ~424px. Adjust if
-     your card sizing changes. */
-  max-height: 424px; /* show ~5 items */
-  padding-right: 16px;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-.emptyRecent {
-  padding: 24px;
-  color: var(--text-secondary);
-  text-align: center;
-  font-size: 14px;
-}
-
-/* Compact song card style for sidebar */
-.compactCard {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: background-color 0.2s ease;
-}
-
-.compactCard:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.compactCard img {
-  width: 48px;
-  height: 48px;
-  border-radius: 4px;
-  object-fit: cover;
-}
-
-.compactCard .songInfo {
-  flex: 1;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
   min-width: 0;
 }
 
-.compactCard .songTitle {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0;
+.homeRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  min-width: 0;
+}
+
+.sectionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.compactCard .artistName {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin: 4px 0 0;
-}
-
-/* --- THE EXPANDED STATE --- */
-.cardsContainer.expanded {
-  flex-wrap: wrap; /* <--- This is the wrap-func you liked */
-  overflow-x: hidden; /* No more horizontal scroll */
-  scroll-snap-type: none; /* Turn off snapping */
-
-  /* Set a very large max-height to allow it to grow
-    as much as needed. 
-  */
-  max-height: 1000vh; /* 1000vh is 'good enough for everyone' */
-}
-
-.cardsContainer.expanded .songCard {
-  scroll-snap-align: none;
-  flex-shrink: 1; /* Let the card shrink if needed in the grid */
+  max-width: 100%;
 }

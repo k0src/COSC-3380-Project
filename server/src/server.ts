@@ -81,6 +81,7 @@ app.use("/api/search", Routes.searchRoutes);
 app.use("/api/report", Routes.reportRoutes);
 app.use("/api/stats", Routes.statsRoutes);
 app.use("/api/comments", Routes.commentRoutes);
+app.use("/api/admin", Routes.adminRoutes);
 
 const clientDistPath = path.join(__dirname, "public");
 app.use(express.static(clientDistPath));

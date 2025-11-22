@@ -473,43 +473,61 @@ export default class SongRepository {
 
       if (options?.includeAlbums) {
         selectFields.push(`
-        (
-          SELECT json_agg(row_to_json(album_with_artist))
-          FROM (
-            SELECT a.*, row_to_json(ar) AS artist
-            FROM albums a
-            JOIN album_songs als ON als.album_id = a.id
-            LEFT JOIN artists ar ON ar.id = a.created_by
-            WHERE als.song_id = s.id
-          ) AS album_with_artist
-        ) AS albums
-      `);
+          (SELECT json_agg(row_to_json(album_with_artist))
+            FROM (
+              SELECT a.*, row_to_json(ar) AS artist
+              FROM albums a
+              JOIN album_songs als ON als.album_id = a.id
+              LEFT JOIN artists ar ON ar.id = a.created_by
+              WHERE als.song_id = s.id
+                AND NOT EXISTS (
+                  SELECT 1 FROM deleted_albums da WHERE da.album_id = a.id
+                )
+                AND NOT EXISTS (
+                  SELECT 1 FROM deleted_artists dar WHERE dar.artist_id = ar.id
+                )
+            ) AS album_with_artist
+          ) AS albums
+        `);
       }
 
       if (options?.includeArtists) {
         selectFields.push(`
-        (
-          SELECT json_agg(row_to_json(ar_with_role))
-          FROM (
-            SELECT ar.*, sa.role, row_to_json(u) AS user
-            FROM artists ar
-            JOIN users u ON u.artist_id = ar.id
-            JOIN song_artists sa ON sa.artist_id = ar.id
-            WHERE sa.song_id = s.id
-          ) AS ar_with_role
-        ) AS artists
-      `);
+          (SELECT json_agg(row_to_json(ar_with_role))
+            FROM (
+              SELECT ar.*, sa.role, row_to_json(u) AS user
+              FROM artists ar
+              JOIN users u ON u.artist_id = ar.id
+              JOIN song_artists sa ON sa.artist_id = ar.id
+              WHERE sa.song_id = s.id
+                AND NOT EXISTS (
+                  SELECT 1 FROM deleted_artists da WHERE da.artist_id = ar.id
+                )
+                AND NOT EXISTS (
+                  SELECT 1 FROM deleted_users du WHERE du.user_id = u.id
+                )
+            ) AS ar_with_role
+          ) AS artists
+        `);
       }
 
       if (options?.includeLikes) {
         selectFields.push(
-          `(SELECT COUNT(*) FROM song_likes sl WHERE sl.song_id = s.id) AS likes`
+          `(SELECT COUNT(*) FROM song_likes sl 
+            WHERE sl.song_id = s.id AND NOT EXISTS (
+              SELECT 1 FROM deleted_users du WHERE du.user_id = sl.user_id
+            )
+          ) AS likes`
         );
       }
 
       if (options?.includeComments) {
         selectFields.push(
-          `(SELECT COUNT(*) FROM comments c WHERE c.song_id = s.id) AS comments`
+          `(SELECT COUNT(*) FROM comments c 
+            WHERE c.song_id = s.id AND NOT EXISTS (
+              SELECT 1 FROM deleted_comments dc WHERE dc.comment_id = c.id
+            )
+          ) AS comments`
         );
       }
 

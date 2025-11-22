@@ -32,63 +32,62 @@
 
 .relatedArtistsList {
   display: flex;
-  gap: var(--spacing-lg);
-  justify-content: space-between;
+  gap: var(--spacing-xl);
   min-width: 0;
   transition: transform var(--transition-speed) ease;
   width: 100%;
   overflow-x: hidden;
 }
 
-@media (max-width: 1700px) {
+@media (max-width: 1760px) {
   .relatedArtistsList .relatedArtistItem:last-child {
     display: none;
   }
 }
 
-@media (max-width: 1550px) {
+@media (max-width: 1610px) {
   .relatedArtistsList .relatedArtistItem:nth-last-child(-n + 2) {
     display: none;
   }
 }
 
-@media (max-width: 1390px) {
+@media (max-width: 1450px) {
   .relatedArtistsList .relatedArtistItem:nth-last-child(-n + 3) {
     display: none;
   }
 }
 
-@media (max-width: 1230px) {
+@media (max-width: 1290px) {
   .relatedArtistsList .relatedArtistItem:nth-last-child(-n + 4) {
     display: none;
   }
 }
 
-@media (max-width: 1072px) {
+@media (max-width: 1132px) {
   .relatedArtistsList .relatedArtistItem:nth-last-child(-n + 5) {
     display: none;
   }
 }
 
-@media (max-width: 915px) {
+@media (max-width: 975px) {
   .relatedArtistsList .relatedArtistItem:nth-last-child(-n + 6) {
     display: none;
   }
 }
 
-@media (max-width: 670px) {
+@media (max-width: 730px) {
   .relatedArtistsList .relatedArtistItem:nth-last-child(-n + 7) {
     display: none;
   }
 }
 
-@media (max-width: 512px) {
+@media (max-width: 572px) {
   .relatedArtistsList .relatedArtistItem:nth-last-child(-n + 8) {
     display: none;
   }
 }
 
-@media (max-width: 355px) {
+@media (max-width: 415px) {
   .relatedArtistsList .relatedArtistItem:nth-last-child(-n + 9) {
     display: none;
   }

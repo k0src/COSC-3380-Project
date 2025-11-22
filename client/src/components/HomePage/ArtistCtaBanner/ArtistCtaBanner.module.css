@@ -1,0 +1,65 @@
+.ctaBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xl);
+  flex: 1;
+  padding: var(--spacing-xl);
+  background: var(--container-gradient-bg);
+  box-shadow: var(--shadow-sd);
+  border-radius: var(--border-radius-md);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  overflow: hidden;
+}
+
+.ctaBannerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-ld);
+}
+
+.ctaBannerTextContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.ctaBannerTitle {
+  font-size: var(--font-size-2xl);
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.ctaBannerSubtitle {
+  font-size: var(--font-size-md);
+  color: var(--color-white-alt);
+  line-height: var(--line-height-normal);
+}
+
+.ctaBannerButton {
+  font-family: var(--font-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  background: var(--color-accent);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: var(--color-accent-200);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  padding: var(--spacing-md) var(--spacing-lg);
+  transition: all var(--transition-speed) ease-in-out;
+  width: fit-content;
+}
+
+.ctaBannerButton:hover {
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
+}
+
+.waveformImage {
+  width: 100%;
+  max-height: 20rem;
+  display: block;
+}

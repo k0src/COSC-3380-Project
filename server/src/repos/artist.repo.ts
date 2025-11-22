@@ -1110,4 +1110,44 @@ export default class ArtistRepository {
       throw error;
     }
   }
+
+  static async getArtistRecommendations(
+    userId: UUID,
+    options?: {
+      includeUser?: boolean;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Artist[]> {
+    try {
+      const includeUser = options?.includeUser ?? false;
+      const limit = options?.limit ?? 20;
+      const offset = options?.offset ?? 0;
+
+      const recommendations = await query(
+        "SELECT * FROM get_artist_recommendations($1, $2, $3, $4)",
+        [userId, includeUser, limit, offset]
+      );
+
+      if (!recommendations || recommendations.length === 0) return [];
+
+      return recommendations.map((artist: Artist) => {
+        if (artist.user) {
+          if (artist.user.profile_picture_url) {
+            artist.user.profile_picture_url = getBlobUrl(
+              artist.user.profile_picture_url
+            );
+          }
+        }
+        if (artist.banner_image_url) {
+          artist.banner_image_url = getBlobUrl(artist.banner_image_url);
+        }
+        artist.type = "artist";
+        return artist;
+      });
+    } catch (error) {
+      console.error("Error fetching artist recommendations:", error);
+      throw error;
+    }
+  }
 }

@@ -88,4 +88,65 @@ export default class HistoryService {
       console.error("Error adding related entities to history:", error);
     }
   }
+
+  static async checkUserHasHistory(userId: UUID): Promise<boolean> {
+    try {
+      const result = await query(
+        `SELECT EXISTS (
+          SELECT 1 FROM song_history
+          WHERE user_id = $1
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_songs 
+              WHERE deleted_songs.song_id = song_history.song_id
+            )
+          UNION
+          SELECT 1 FROM album_history
+          WHERE user_id = $1
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_albums 
+              WHERE deleted_albums.album_id = album_history.album_id
+            )
+          UNION
+          SELECT 1 FROM playlist_history
+          WHERE user_id = $1
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_playlists 
+              WHERE deleted_playlists.playlist_id = playlist_history.playlist_id
+            )
+          UNION
+          SELECT 1 FROM artist_history
+          WHERE user_id = $1
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_artists 
+              WHERE deleted_artists.artist_id = artist_history.artist_id
+            )
+        ) AS has_history`,
+        [userId]
+      );
+      return result[0]?.has_history || false;
+    } catch (error) {
+      console.error("Error checking user history:", error);
+      throw error;
+    }
+  }
+
+  static async checkUserHasSongHistory(userId: UUID): Promise<boolean> {
+    try {
+      const result = await query(
+        `SELECT EXISTS (
+          SELECT 1 FROM song_history
+          WHERE user_id = $1
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_songs
+              WHERE deleted_songs.song_id = song_history.song_id
+            )
+        ) AS has_song_history`,
+        [userId]
+      );
+      return result[0]?.has_song_history || false;
+    } catch (error) {
+      console.error("Error checking user song history:", error);
+      throw error;
+    }
+  }
 }

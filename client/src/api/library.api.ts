@@ -211,4 +211,18 @@ export const libraryApi = {
     const response = await api.delete(`/users/${userId}/library/history/clear`);
     return response.data;
   },
+
+  async checkUserHasHistory(userId: UUID) {
+    const response = await api.get<{ hasHistory: boolean }>(
+      `/users/${userId}/library/history/has-history`
+    );
+    return response.data.hasHistory;
+  },
+
+  async checkUserHasSongHistory(userId: UUID) {
+    const response = await api.get<{ hasSongHistory: boolean }>(
+      `/users/${userId}/library/history/has-song-history`
+    );
+    return response.data.hasSongHistory;
+  },
 };

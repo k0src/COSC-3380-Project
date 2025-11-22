@@ -227,11 +227,11 @@ export default class PlaylistRepository {
 
       if (options?.includeSongCount) {
         selectFields.push(`
-        (SELECT COUNT(*) 
-         FROM playlist_songs ps 
+        (SELECT COUNT(*) FROM playlist_songs ps
+         JOIN songs s ON ps.song_id = s.id
          WHERE ps.playlist_id = p.id
-           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
-        ) AS song_count
+           AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
+        ) as song_count
       `);
       }
 
@@ -247,12 +247,12 @@ export default class PlaylistRepository {
       }
 
       selectFields.push(`
-        EXISTS (
-          SELECT 1 
-          FROM playlist_songs ps 
+        (SELECT EXISTS (
+          SELECT 1 FROM playlist_songs ps
+          JOIN songs s ON ps.song_id = s.id
           WHERE ps.playlist_id = p.id
-            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
-        ) AS has_song
+          AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
+        )) AS has_song
       `);
 
       const sql = `

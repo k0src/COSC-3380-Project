@@ -243,4 +243,21 @@ export const artistApi = {
     );
     return response.data;
   },
+
+  async getArtistRecommendations(userId: UUID, options?: ArtistOptions) {
+    try {
+      const response = await api.get<Artist[]>(
+        `/artists/recommendations/${userId}`,
+        {
+          params: options,
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
 };

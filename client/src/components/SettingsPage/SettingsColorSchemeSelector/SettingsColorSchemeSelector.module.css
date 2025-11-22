@@ -30,12 +30,12 @@
 
 .colorSchemeButton:hover:not(.colorSchemeButtonDisabled) .colorSchemeImage {
   outline: var(--border-size-md) solid var(--color-white);
-  outline-offset: 4px;
+  outline-offset: 0.4rem;
 }
 
 .colorSchemeButtonActive .colorSchemeImage {
   outline: var(--border-size-md) solid var(--color-white);
-  outline-offset: 4px;
+  outline-offset: 0.4rem;
 }
 
 .colorSchemeButtonActive .colorSchemeLabel {

@@ -771,14 +771,20 @@ export default class LibraryService {
         SELECT p.*,
           row_to_json(u.*) as user,
           (SELECT COUNT(*) FROM playlist_songs ps
-          WHERE ps.playlist_id = p.id) as song_count,
+          JOIN songs s ON ps.song_id = s.id
+          WHERE ps.playlist_id = p.id
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
+          ) as song_count,
           EXISTS(
             SELECT 1 FROM user_playlist_pins upp
             WHERE upp.user_id = $1 AND upp.playlist_id = p.id
           ) as is_pinned,
           COALESCE(pl.liked_at, p.created_at) as sort_date,
           (SELECT EXISTS (
-            SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+            SELECT 1 FROM playlist_songs ps
+            JOIN songs s ON ps.song_id = s.id
+            WHERE ps.playlist_id = p.id
+          AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
           )) AS has_song
         FROM playlists p
         LEFT JOIN users u ON p.owner_id = u.id

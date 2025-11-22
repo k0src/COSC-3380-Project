@@ -13,6 +13,10 @@ export interface Artist {
 
   user?: User;
 
+  streams?: number;
+  likes?: number;
+  followers?: number;
+
   type: "artist";
 }
 
