@@ -10,6 +10,7 @@ import {
   Playlist,
   PlaylistOrderByColumn,
   ArtistAlbum,
+  ArtistOptions,
 } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getAccessPredicate } from "@util";
@@ -158,12 +159,6 @@ export default class ArtistRepository {
     }
   }
 
-  /**
-   * Deletes a artist.
-   * @param id - The ID of the artist to delete.
-   * @returns The deleted artist, or null if the deletion fails.
-   * @throws Error if the operation fails.
-   */
   static async delete(id: UUID): Promise<Artist | null> {
     try {
       const res = await withTransaction(async (client) => {
@@ -181,30 +176,26 @@ export default class ArtistRepository {
     }
   }
 
-  /**
-   * Fetches a single artist by ID.
-   * @param id - The ID of the artist to fetch.
-   * @param options - Options to include related data.
-   * @param options.includeUser - Option to include the user who created the artist.
-   * @returns The artist with the specified ID, or null if not found.
-   * @throws Error if the operation fails.
-   */
   static async getOne(
     id: UUID,
-    options?: {
-      includeUser?: boolean;
-    }
+    accessContext: AccessContext,
+    options?: ArtistOptions
   ): Promise<Artist | null> {
     try {
-      const sql = `
-        SELECT a.*,
-        CASE WHEN $1 THEN row_to_json(u.*) 
-        ELSE NULL END as user
-        FROM artists a
-        LEFT JOIN users u ON a.user_id = u.id
-        WHERE a.id = $2`;
+      const selectFields: string[] = ["a.*"];
 
-      const params = [options?.includeUser ?? false, id];
+      if (options?.includeUser) {
+        selectFields.push("row_to_json(u.*) as user");
+      }
+
+      const sql = `
+        SELECT ${selectFields.join(",\n")}
+        FROM artists a
+        ${options?.includeUser ? "LEFT JOIN users u ON a.user_id = u.id" : ""}
+        WHERE a.id = $1
+        LIMIT 1`;
+
+      const params = [id];
 
       const res = await query(sql, params);
       if (!res || res.length === 0) {
@@ -229,25 +220,10 @@ export default class ArtistRepository {
     }
   }
 
-  /**
-   * Fetches multiple artists.
-   * @param options Options for pagination and including related data.
-   * @param options.includeUser Option to include the user who created each artist.
-   * @param options.orderBy Object specifying the column and direction to order by.
-   * @param options.orderBy.column The column to order by.
-   * @param options.orderBy.direction The direction to order by (ASC or DESC).
-   * @param options.limit Maximum number of artists to return.
-   * @param options.offset Number of artists to skip.
-   * @returns A list of artists.
-   * @throws Error if the operation fails.
-   */
-  static async getMany(options?: {
-    includeUser?: boolean;
-    orderByColumn?: "name" | "created_at" | "verified" | "streams";
-    orderByDirection?: "ASC" | "DESC";
-    limit?: number;
-    offset?: number;
-  }): Promise<Artist[]> {
+  static async getMany(
+    accessContext: AccessContext,
+    options?: ArtistOptions
+  ): Promise<Artist[]> {
     try {
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
@@ -255,48 +231,46 @@ export default class ArtistRepository {
       const orderByDirection = options?.orderByDirection ?? "DESC";
 
       const orderByMap: Record<string, string> = {
-        name: "a.display_name",
+        display_name: "a.display_name",
         created_at: "a.created_at",
         verified: "a.verified",
-        streams: "streams",
       };
 
-      const sqlOrderByColumn = orderByMap[orderByColumn];
+      const sqlOrderByColumn = orderByMap[orderByColumn] ?? "a.created_at";
+
+      const selectFields: string[] = ["a.*"];
+
+      if (options?.includeUser) {
+        selectFields.push("row_to_json(u.*) as user");
+      }
 
       const sql = `
-        SELECT a.*,
-          CASE WHEN $1 THEN row_to_json(u.*)
-          ELSE NULL END as user,
-          COALESCE(SUM(s.streams), 0) as streams
+        SELECT ${selectFields.join(",\n")}
         FROM artists a
-        LEFT JOIN users u ON a.user_id = u.id
-        LEFT JOIN song_artists sa ON a.id = sa.artist_id
-        LEFT JOIN songs s ON sa.song_id = s.id
-        GROUP BY a.id, u.id
+        ${options?.includeUser ? "LEFT JOIN users u ON a.user_id = u.id" : ""}
         ORDER BY ${sqlOrderByColumn} ${orderByDirection}
-        LIMIT $2 OFFSET $3
+        LIMIT $1 OFFSET $2
       `;
 
-      const params = [options?.includeUser ?? false, limit, offset];
+      const params = [limit, offset];
 
       const artists = await query(sql, params);
       if (!artists || artists.length === 0) {
         return [];
       }
 
-      const processedArtists = await Promise.all(
-        artists.map(async (artist) => {
-          if (artist.user && artist.user.profile_picture_url) {
-            artist.user.profile_picture_url = getBlobUrl(
-              artist.user.profile_picture_url
-            );
-          }
-          artist.type = "artist";
-          return artist;
-        })
-      );
-
-      return processedArtists;
+      return artists.map((artist: Artist) => {
+        if (artist.user && artist.user.profile_picture_url) {
+          artist.user.profile_picture_url = getBlobUrl(
+            artist.user.profile_picture_url
+          );
+        }
+        if (artist.banner_image_url) {
+          artist.banner_image_url = getBlobUrl(artist.banner_image_url);
+        }
+        artist.type = "artist";
+        return artist;
+      });
     } catch (error) {
       console.error("Error fetching artists:", error);
       throw error;
@@ -673,11 +647,6 @@ export default class ArtistRepository {
     }
   }
 
-  /**
-   * Counts the total number of artists.
-   * @return The total number of artists.
-   * @throws Error if the operation fails.
-   */
   static async count(): Promise<number> {
     try {
       const res = await query("SELECT COUNT(*) FROM artists");
@@ -688,23 +657,10 @@ export default class ArtistRepository {
     }
   }
 
-  /**
-   * Fetches related artists for a given artist.
-   * @param artistId The ID of the artist.
-   * @param options Options for pagination and including related data.
-   * @param options.includeUser Option to include the user who created each artist.
-   * @param options.limit Maximum number of related artists to return.
-   * @param options.offset Number of related artists to skip.
-   * @return A list of related artists.
-   * @throws Error if the operation fails.
-   */
   static async getRelatedArtists(
     artistId: UUID,
-    options?: {
-      includeUser?: boolean;
-      limit?: number;
-      offset?: number;
-    }
+    accessContext: AccessContext,
+    options?: ArtistOptions
   ): Promise<Artist[]> {
     try {
       const limit = options?.limit ?? 20;
@@ -719,31 +675,24 @@ export default class ArtistRepository {
         return [];
       }
 
-      const processedArtists = await Promise.all(
-        artists.map(async (artist) => {
-          if (artist.user && artist.user.profile_picture_url) {
-            artist.user.profile_picture_url = getBlobUrl(
-              artist.user.profile_picture_url
-            );
-          }
-          artist.type = "artist";
-          return artist;
-        })
-      );
-
-      return processedArtists;
+      return artists.map((artist: Artist) => {
+        if (artist.user && artist.user.profile_picture_url) {
+          artist.user.profile_picture_url = getBlobUrl(
+            artist.user.profile_picture_url
+          );
+        }
+        if (artist.banner_image_url) {
+          artist.banner_image_url = getBlobUrl(artist.banner_image_url);
+        }
+        artist.type = "artist";
+        return artist;
+      });
     } catch (error) {
       console.error("Error fetching related artists:", error);
       throw error;
     }
   }
 
-  /**
-   * Counts the number of songs for a given artist.
-   * @param artistId The ID of the artist.
-   * @return The number of songs for the artist.
-   * @throws Error if the operation fails.
-   */
   static async getNumberOfSongs(artistId: UUID): Promise<number> {
     try {
       const res = await query(
@@ -757,12 +706,6 @@ export default class ArtistRepository {
     }
   }
 
-  /**
-   * Counts the number of albums for a given artist.
-   * @param artistId The ID of the artist.
-   * @return The number of albums for the artist.
-   * @throws Error if the operation fails.
-   */
   static async getNumberOfAlbums(artistId: UUID): Promise<number> {
     try {
       const res = await query(
@@ -777,12 +720,6 @@ export default class ArtistRepository {
     }
   }
 
-  /**
-   * Counts the number of singles for a given artist.
-   * @param artistId The ID of the artist.
-   * @return The number of singles for the artist.
-   * @throws Error if the operation fails.
-   */
   static async getNumberOfSingles(artistId: UUID): Promise<number> {
     try {
       const res = await query(
@@ -800,12 +737,6 @@ export default class ArtistRepository {
     }
   }
 
-  /**
-   * Calculates the total number of streams for all songs by a given artist.
-   * @param artistId The ID of the artist.
-   * @return The total number of streams for the artist's songs.
-   * @throws Error if the operation fails.
-   */
   static async getTotalStreams(artistId: UUID): Promise<number> {
     try {
       const res = await query(
@@ -823,77 +754,110 @@ export default class ArtistRepository {
   }
 
   //! include cover image - expensive so make it optional
-  /**
-   * Fetches playlists that feature songs by the given artist.
-   * @param artistId The ID of the artist.
-   * @param options Options for pagination and including related data.
-   * @param options.includeUser Option to include the user who created each playlist.
-   * @param options.limit Maximum number of playlists to return.
-   * @param options.offset Number of playlists to skip.
-   * @return A list of playlists featuring the artist's songs.
-   * @throws Error if the operation fails.
-   */
   static async getPlaylists(
     artistId: UUID,
-    options?: {
-      includeUser?: boolean;
-      limit?: number;
-      offset?: number;
-    }
-  ): Promise<any[]> {
+    accessContext: AccessContext,
+    options?: PlaylistOptions
+  ): Promise<Playlist[]> {
     try {
-      const playlists = await query(
-        `SELECT DISTINCT ON (p.id) p.*,
-        CASE WHEN $1 THEN row_to_json(u.*) 
-        ELSE NULL END as user,
-        (SELECT EXISTS (
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "p", 1);
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
+
+      const orderByColumn = options?.orderByColumn ?? "created_at";
+      const orderByDirection = options?.orderByDirection ?? "DESC";
+
+      const orderByMap: Record<string, string> = {
+        name: "p.name",
+        created_at: "p.created_at",
+        updated_at: "p.updated_at",
+      };
+
+      const sqlOrderByColumn = orderByMap[orderByColumn] ?? "p.created_at";
+
+      const selectFields: string[] = ["p.*"];
+
+      if (options?.includeUser) {
+        selectFields.push("row_to_json(u.*) as user");
+      }
+
+      if (options?.includeLikes) {
+        selectFields.push(`
+        (SELECT COUNT(*) FROM playlist_likes pl WHERE pl.playlist_id = p.id) AS likes
+      `);
+      }
+
+      if (options?.includeSongCount) {
+        selectFields.push(`
+        (SELECT COUNT(*) FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS song_count
+      `);
+      }
+
+      if (options?.includeRuntime) {
+        selectFields.push(`
+        (SELECT COALESCE(SUM(s.duration), 0)
+         FROM songs s
+         JOIN playlist_songs ps ON ps.song_id = s.id
+         WHERE ps.playlist_id = p.id
+        ) AS runtime
+      `);
+      }
+
+      selectFields.push(`
+        EXISTS (
           SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
-        )) AS has_song
+        ) AS has_song
+      `);
+
+      const limitIndex = predicateParams.length + 2;
+      const offsetIndex = predicateParams.length + 3;
+
+      const sql = `
+        SELECT DISTINCT ON (p.id) ${selectFields.join(",\n")}
         FROM playlists p
+        ${options?.includeUser ? "LEFT JOIN users u ON p.owner_id = u.id" : ""}
         JOIN playlist_songs ps ON p.id = ps.playlist_id
         JOIN songs s ON ps.song_id = s.id
         JOIN song_artists sa ON s.id = sa.song_id
-        LEFT JOIN users u ON p.owner_id = u.id
-        WHERE sa.artist_id = $2
-         ORDER BY p.id`,
-        [options?.includeUser ?? false, artistId]
-      );
+        WHERE sa.artist_id = $1 AND (${predicateSql})
+        ORDER BY p.id, ${sqlOrderByColumn} ${orderByDirection}
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
+      `;
+
+      const params = [artistId, ...predicateParams, limit, offset];
+
+      const playlists = await query(sql, params);
       if (!playlists || playlists.length === 0) {
         return [];
       }
 
-      const processedPlaylists = await Promise.all(
-        playlists.map(async (playlist) => {
-          if (playlist.user && playlist.user.profile_picture_url) {
-            playlist.user.profile_picture_url = getBlobUrl(
-              playlist.user.profile_picture_url
-            );
-          }
+      return playlists.map((playlist: Playlist) => {
+        if (playlist.user?.profile_picture_url) {
+          playlist.user.profile_picture_url = getBlobUrl(
+            playlist.user.profile_picture_url
+          );
+        }
 
-          if (playlist.image_url) {
-            playlist.image_url = getBlobUrl(playlist.image_url);
-          } else if ((playlist as any).has_song) {
-            playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
-          }
-          delete (playlist as any).has_song;
-          playlist.type = "playlist";
-          return playlist;
-        })
-      );
+        if (playlist.image_url) {
+          playlist.image_url = getBlobUrl(playlist.image_url);
+        } else if ((playlist as any).has_song) {
+          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+        }
 
-      return processedPlaylists;
+        delete (playlist as any).has_song;
+        playlist.type = "playlist";
+        return playlist;
+      });
     } catch (error) {
       console.error("Error fetching playlists for artist:", error);
       throw error;
     }
   }
 
-  /**
-   * Fetches the number of unique monthly listeners for a given artist.
-   * @param artistId The ID of the artist.
-   * @return The number of unique monthly listeners.
-   * @throws Error if the operation fails.
-   */
   static async getMonthlyListeners(artistId: UUID): Promise<number> {
     try {
       const res = await query(
@@ -911,12 +875,6 @@ export default class ArtistRepository {
     }
   }
 
-  /**
-   * Verifies an artist.
-   * @param artistId The ID of the artist to verify.
-   * @returns True if the artist was successfully verified.
-   * @throws Error if the operation fails.
-   */
   static async verifyArtist(artistId: UUID): Promise<boolean> {
     try {
       const res = await query(
@@ -933,12 +891,6 @@ export default class ArtistRepository {
     }
   }
 
-  /**
-   * Unverifies an artist.
-   * @param artistId The ID of the artist to unverify.
-   * @returns True if the artist was successfully unverified.
-   * @throws Error if the operation fails.
-   */
   static async unverifyArtist(artistId: UUID): Promise<boolean> {
     try {
       const res = await query(

@@ -1,4 +1,4 @@
-import type { UUID } from "./index.js";
+import type { UUID, OrderByDirection } from "./index.js";
 
 export type UserRole = "USER" | "ARTIST" | "ADMIN";
 export type UserStatus = "ACTIVE" | "DEACTIVATED" | "SUSPENDED";
@@ -36,4 +36,15 @@ export interface UserSettings {
   songs_discoverable: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export type UserOrderByColumn = "username" | "role" | "created_at";
+
+export interface UserOptions {
+  includeFollowerCount?: boolean;
+  includeFollowingCount?: boolean;
+  orderByColumn?: UserOrderByColumn;
+  orderByDirection?: OrderByDirection;
+  limit?: number;
+  offset?: number;
 }

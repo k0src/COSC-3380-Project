@@ -1,6 +1,7 @@
-import { User, Playlist, UUID } from "@types";
+import { User, Playlist, UUID, AccessContext, PlaylistOptions } from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
+import { getAccessPredicate } from "@util";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 
@@ -9,16 +10,6 @@ dotenv.config();
 const API_URL = process.env.API_URL;
 
 export default class UserRepository {
-  /**
-   * Creates a new user.
-   * @param userData.username The username of the user.
-   * @param userData.email The email of the user.
-   * @param userData.password The password of the user.
-   * @param userData.authenticated_with The authentication method used.
-   * @param userData.profile_picture_url The profile picture URL of the user (optional).
-   * @returns The created user, or null if creation fails.
-   * @throws Error if the operation fails.
-   */
   static async create({
     username,
     email,
@@ -34,7 +25,6 @@ export default class UserRepository {
   }): Promise<User | null> {
     try {
       const result = withTransaction(async (client) => {
-        // Create user
         const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || "12", 10);
         const password_hash = await bcrypt.hash(password, saltRounds);
 
@@ -57,7 +47,6 @@ export default class UserRepository {
 
         const res = await client.query(insertSql, insertParams);
 
-        // Insert empty user_settings tuple
         if (res && res.rows.length > 0) {
           const user: User = res.rows[0];
           await client.query(
@@ -76,23 +65,6 @@ export default class UserRepository {
     }
   }
 
-  /**
-   * Updates a user.
-   * @param id The ID of the user to update.
-   * @param userData.username The new username of the user (optional).
-   * @param userData.email The new email of the user (optional).
-   * @param userData.new_password The new password of the user (optional).
-   * @param userData.current_password The current password of the user (optional).
-   * @param userData.authenticated_with The new authentication method used (optional).
-   * @param userData.role The new role of the user (optional).
-   * @param userData.profile_picture_url The new profile picture URL of the user (optional).
-   * @param userData.pfp_blurhash The new profile picture blurhash of the user (optional).
-   * @param userData.artist_id The new artist ID of the user (optional).
-   * @param userData.status The new status of the user (optional).
-   * @param userData.is_private Whether the user's profile is private (optional).
-   * @returns The updated user, or null if the update fails.
-   * @throws Error if the operation fails.
-   */
   static async update(
     id: UUID,
     {
@@ -231,12 +203,6 @@ export default class UserRepository {
     }
   }
 
-  /**
-   * Deletes a user.
-   * @param id - The ID of the user to delete.
-   * @returns The deleted user, or null if the deletion fails.
-   * @throws Error if the operation fails.
-   */
   static async delete(id: UUID): Promise<User | null> {
     try {
       const res = await withTransaction(async (client) => {
@@ -254,15 +220,6 @@ export default class UserRepository {
     }
   }
 
-  /**
-   * Gets a single user by ID.
-   * @param id - The ID of the user to get.
-   * @param options - Options for including related data.
-   * @param options.includeFollowerCount - Option to include the follower count.
-   * @param options.includeFollowingCount - Option to include the following count.
-   * @returns The user, or null if not found.
-   * @throws Error if the operation fails.
-   */
   static async getOne(
     id: UUID,
     options?: {
@@ -306,16 +263,6 @@ export default class UserRepository {
     }
   }
 
-  /**
-   * Gets multiple users.
-   * @param options - Options for pagination and including related data.
-   * @param options.includeFollowerCount - Option to include the follower count.
-   * @param options.includeFollowingCount - Option to include the following count.
-   * @param options.limit - Maximum number of users to return.
-   * @param options.offset - Number of users to skip.
-   * @returns A list of users.
-   * @throws Error if the operation fails.
-   */
   static async getMany(options?: {
     includeFollowerCount?: boolean;
     includeFollowingCount?: boolean;
@@ -367,12 +314,6 @@ export default class UserRepository {
     }
   }
 
-  /**
-   * Gets a user by their username.
-   * @param username - The username of the user to fetch.
-   * @returns The user, or null if not found.
-   * @throws Error if the operation fails.
-   */
   static async getByUsername(username: string): Promise<User | null> {
     try {
       const res = await query(`SELECT * FROM users WHERE username = $1`, [
@@ -395,12 +336,6 @@ export default class UserRepository {
     }
   }
 
-  /**
-   * Gets a user by their email.
-   * @param email - The email of the user to fetch.
-   * @return The user, or null if not found.
-   * @throws Error if the operation fails.
-   */
   static async getByEmail(email: string): Promise<User | null> {
     try {
       const res = await query(`SELECT * FROM users WHERE email = $1`, [email]);
@@ -421,61 +356,67 @@ export default class UserRepository {
     }
   }
 
-  /**
-   * Gets the playlists created by a user.
-   * @param userId The ID of the user.
-   * @param options Options for pagination.
-   * @param options.includeLikes Option to include the like count for each playlist.
-   * @param options.includeSongCount Option to include the total number of songs on each playlist.
-   * @param options.limit Maximum number of playlists to return.
-   * @param options.offset Number of playlists to skip.
-   * @param options.includeRuntime Option to include the total runtime of the playlist.
-   * @return A list of playlists created by the user.
-   * @throws Error if the operation fails.
-   */
   static async getPlaylists(
     userId: UUID,
-    options?: {
-      includeLikes?: boolean;
-      includeSongCount?: boolean;
-      includeRuntime?: boolean;
-      limit?: number;
-      offset?: number;
-    }
+    accessContext: AccessContext,
+    options?: PlaylistOptions
   ): Promise<Playlist[]> {
     try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "p", 1);
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
       const limit = options?.limit ?? 50;
       const offset = options?.offset ?? 0;
+      const orderByColumn = options?.orderByColumn ?? "created_at";
+      const orderByDirection = options?.orderByDirection ?? "DESC";
+
+      const orderByMap: Record<string, string> = {
+        name: "p.name",
+        created_at: "p.created_at",
+        updated_at: "p.updated_at",
+      };
+
+      const sqlOrderByColumn = orderByMap[orderByColumn] ?? "p.created_at";
+
+      const selectFields: string[] = [
+        "p.*",
+        "EXISTS(SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id) as has_song",
+      ];
+
+      if (options?.includeLikes) {
+        selectFields.push(
+          "(SELECT COUNT(*) FROM playlist_likes pl WHERE pl.playlist_id = p.id) AS likes"
+        );
+      }
+
+      if (options?.includeSongCount) {
+        selectFields.push(
+          "(SELECT COUNT(*) FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS song_count"
+        );
+      }
+
+      if (options?.includeRuntime) {
+        selectFields.push(
+          `(SELECT COALESCE(SUM(s.duration), 0) FROM songs s
+            JOIN playlist_songs ps ON ps.song_id = s.id
+            WHERE ps.playlist_id = p.id) AS runtime`
+        );
+      }
+
+      const limitIndex = predicateParams.length + 2;
+      const offsetIndex = predicateParams.length + 3;
 
       const sql = `
-        SELECT p.*,
-          CASE WHEN $1 THEN (SELECT COUNT(*) FROM playlist_likes pl
-            WHERE pl.playlist_id = p.id)
-          ELSE NULL END as likes,
-          CASE WHEN $2 THEN (SELECT COUNT(*) FROM playlist_songs ps
-            WHERE ps.playlist_id = p.id)
-          ELSE NULL END as song_count,
-          CASE WHEN $3 THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
-            JOIN playlist_songs ps ON ps.song_id = s.id
-            WHERE ps.playlist_id = p.id)
-          ELSE NULL END as runtime,
-          (SELECT EXISTS (
-            SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
-          )) AS has_song
+        SELECT ${selectFields.join(",\n")}
         FROM playlists p
-        WHERE p.owner_id = $4
-        ORDER BY p.created_at DESC
-        LIMIT $5 OFFSET $6
+        WHERE p.owner_id = $1 AND (${predicateSql})
+        ORDER BY ${sqlOrderByColumn} ${orderByDirection}
+        LIMIT $${limitIndex} OFFSET $${offsetIndex}
       `;
 
-      const params = [
-        options?.includeLikes ?? false,
-        options?.includeSongCount ?? false,
-        options?.includeRuntime ?? false,
-        userId,
-        limit,
-        offset,
-      ];
+      const params = [userId, ...predicateParams, limit, offset];
 
       const playlists = await query(sql, params);
       if (!playlists || playlists.length === 0) {
@@ -501,11 +442,6 @@ export default class UserRepository {
     }
   }
 
-  /**
-   * Counts the total number of users.
-   * @return The total number of users.
-   * @throws Error if the operation fails.
-   */
   static async count(): Promise<number> {
     try {
       const res = await query("SELECT COUNT(*) FROM users");

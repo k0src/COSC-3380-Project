@@ -9,7 +9,8 @@ import {
   NotificationsService,
 } from "@services";
 import { parseForm } from "@infra/form-parser";
-import { handlePgError } from "@util/pgErrorHandler.util";
+import { parseAccessContext, handlePgError } from "@util";
+import { validateOrderBy } from "@validators";
 import { authenticateToken } from "@middleware";
 
 const router = express.Router();
@@ -27,7 +28,6 @@ router.get("/count", async (req: Request, res: Response): Promise<void> => {
     console.error("Error in GET /users/count:", error);
     const { message, statusCode } = handlePgError(error);
     res.status(statusCode).json({ error: message });
-    return;
     return;
   }
 });
@@ -50,7 +50,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     console.error("Error in GET /users/:", error);
     const { message, statusCode } = handlePgError(error);
     res.status(statusCode).json({ error: message });
-    return;
     return;
   }
 });
@@ -81,7 +80,6 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     console.error("Error in GET /users/:id:", error);
     const { message, statusCode } = handlePgError(error);
     res.status(statusCode).json({ error: message });
-    return;
     return;
   }
 });
@@ -120,7 +118,6 @@ router.delete(
       console.error("Error in DELETE /users/:id:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -175,18 +172,38 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { includeLikes, includeSongCount, includeRuntime, limit, offset } =
-        req.query;
+      const {
+        includeLikes,
+        includeSongCount,
+        includeRuntime,
+        orderByColumn,
+        orderByDirection,
+        limit,
+        offset,
+      } = req.query;
 
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
-      const playlists = await UserRepository.getPlaylists(id, {
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+
+      if (!validateOrderBy(column, direction, "playlist")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
+
+      const accessContext = parseAccessContext(req.query);
+
+      const playlists = await UserRepository.getPlaylists(id, accessContext, {
         includeLikes: includeLikes === "true",
         includeSongCount: includeSongCount === "true",
         includeRuntime: includeRuntime === "true",
+        orderByColumn: column as any,
+        orderByDirection: direction as any,
         limit: limit ? parseInt(limit as string) : undefined,
         offset: offset ? parseInt(offset as string) : undefined,
       });
@@ -196,7 +213,6 @@ router.get(
       console.error("Error in GET /users/:id/playlists:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -239,7 +255,6 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -268,7 +283,6 @@ router.get(
       console.error("Error in GET /users/:id/library/playlists:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -305,7 +319,6 @@ router.post(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -333,7 +346,6 @@ router.get(
       console.error("Error in GET /users/:id/library/songs:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -363,7 +375,6 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -391,7 +402,6 @@ router.get(
       console.error("Error in GET /users/:id/library/artists:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -423,7 +433,6 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -454,7 +463,6 @@ router.get(
       console.error("Error in GET /users/:id/library/history/songs:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -488,7 +496,6 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -517,7 +524,6 @@ router.get(
       console.error("Error in GET /users/:id/library/history/albums:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -548,7 +554,6 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -571,7 +576,6 @@ router.put(
       console.error("Error in PUT /users/:id/history:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -616,7 +620,6 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -655,7 +658,6 @@ router.get(
       console.error("Error in GET /users/:id/likes/albums:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -696,7 +698,6 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -724,7 +725,6 @@ router.get(
       console.error("Error in GET /users/:id/likes/comments:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -759,7 +759,6 @@ router.post(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -788,7 +787,6 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -812,7 +810,6 @@ router.get(
       console.error("Error in GET /users/:id/likes/count:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -844,7 +841,6 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -870,7 +866,6 @@ router.get(
       console.error("Error in GET /users/:id/following:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -905,7 +900,6 @@ router.post(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -928,7 +922,6 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -950,7 +943,6 @@ router.get(
       console.error("Error in GET /users/:id/following-count:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -977,7 +969,6 @@ router.get(
       console.error("Error in GET /users/:id/following/check:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -1014,7 +1005,6 @@ router.get(
       console.error("Error in GET /users/:id/settings:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -1072,7 +1062,6 @@ router.put(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -1104,7 +1093,6 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -1126,7 +1114,6 @@ router.get(
       console.error("Error in GET /users/:id/notifications/check:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -1163,7 +1150,6 @@ router.put(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;
-      return;
     }
   }
 );
@@ -1195,7 +1181,6 @@ router.post(
       console.error("Error in POST /users/:id/notifications/read-all:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -1231,7 +1216,6 @@ router.put(
       );
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }
@@ -1269,7 +1253,6 @@ router.post(
       );
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
-      return;
       return;
     }
   }

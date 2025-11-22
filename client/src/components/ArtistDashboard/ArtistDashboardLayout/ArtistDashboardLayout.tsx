@@ -2,6 +2,7 @@ import { memo, useMemo, Children, isValidElement, cloneElement } from "react";
 import { useAuth } from "@contexts";
 import { useAsyncData, useErrorCheck } from "@hooks";
 import { artistApi } from "@api";
+import type { AccessContext } from "@types";
 import {
   ArtistLayoutSidebar,
   MainLayoutHeader,
@@ -21,9 +22,18 @@ const ArtistDashboardLayout: React.FC<ArtistDashboardLayoutProps> = ({
   const { isAuthenticated, user } = useAuth();
   const artistId = user?.artist_id;
 
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "single",
+  };
+
   const { data, loading, error } = useAsyncData(
     {
-      artist: () => artistApi.getArtistById(artistId!, { includeUser: true }),
+      artist: () =>
+        artistApi.getArtistById(artistId!, accessContext, {
+          includeUser: true,
+        }),
     },
     [artistId!],
     {

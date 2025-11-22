@@ -5,7 +5,7 @@ import { useAuth } from "@contexts";
 import { useAudioQueue } from "@contexts";
 import { useAsyncData, useFollowStatus } from "@hooks";
 import { formatNumber } from "@util";
-import { artistApi } from "@api";
+import { artistApi, userApi } from "@api";
 import { ShareModal, ReportModal } from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import styles from "./ArtistActions.module.css";
@@ -80,8 +80,8 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
 
   const asyncConfig = useMemo(
     () => ({
-      followingCount: () => artistApi.getFollowingCount(userId),
-      followerCount: () => artistApi.getFollowerCount(userId),
+      followingCount: () => userApi.getFollowingCount(userId),
+      followerCount: () => userApi.getFollowerCount(userId),
       numberOfSongs: () => artistApi.getNumberOfSongs(artistId),
       totalStreams: () => artistApi.getTotalStreams(artistId),
     }),

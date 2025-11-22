@@ -30,6 +30,12 @@ const ArtistPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
+    scope: "single",
+  };
+
+  const globalCtx: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
     scope: "globalList",
   };
 
@@ -46,7 +52,8 @@ const ArtistPage: React.FC = () => {
 
   const { data, loading, error, refetch } = useAsyncData(
     {
-      artist: () => artistApi.getArtistById(id, { includeUser: true }),
+      artist: () =>
+        artistApi.getArtistById(id, accessContext, { includeUser: true }),
       pinned: () => artistApi.getPinnedAlbum(id, accessContext),
     },
     [id],
@@ -68,7 +75,7 @@ const ArtistPage: React.FC = () => {
 
   const fetchPopularSongs = useCallback(
     () =>
-      artistApi.getSongs(id, accessContext, {
+      artistApi.getSongs(id, globalCtx, {
         includeAlbums: true,
         includeArtists: true,
         orderByColumn: "streams",
@@ -79,13 +86,13 @@ const ArtistPage: React.FC = () => {
   );
 
   const fetchAlbums = useCallback(
-    () => artistApi.getAlbums(id, accessContext, { limit: 10 }),
+    () => artistApi.getAlbums(id, globalCtx, { limit: 10 }),
     [id]
   );
 
   const fetchSingles = useCallback(
     () =>
-      artistApi.getSongs(id, accessContext, {
+      artistApi.getSongs(id, globalCtx, {
         includeArtists: true,
         onlySingles: true,
         limit: 10,
@@ -212,10 +219,7 @@ const ArtistPage: React.FC = () => {
                   />
                 </>
               )}
-              <ArtistPlaylists
-                artistId={artist.id}
-                accessContext={accessContext}
-              />
+              <ArtistPlaylists artistId={artist.id} />
               <ArtistFeaturedOnPlaylists
                 artistId={artist.id}
                 artistName={artist.display_name}

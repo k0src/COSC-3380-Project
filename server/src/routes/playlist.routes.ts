@@ -1,9 +1,12 @@
 import express, { Request, Response } from "express";
 import { PlaylistRepository } from "@repositories";
-import { generatePlaylistImage, parseAccessContext } from "@util";
+import {
+  generatePlaylistImage,
+  parseAccessContext,
+  handlePgError,
+} from "@util";
 import { parseForm } from "@infra/form-parser";
 import { LikeService } from "@services";
-import { handlePgError } from "@util/pgErrorHandler.util";
 import { validateOrderBy } from "@validators";
 import { authenticateToken } from "@middleware";
 

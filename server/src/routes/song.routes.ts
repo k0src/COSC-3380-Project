@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { SongRepository as SongRepo } from "@repositories";
+import { SongRepository } from "@repositories";
 import {
   handlePgError,
   getCoverGradient,
@@ -20,7 +20,7 @@ const router = express.Router();
 // GET /api/songs/count
 router.get("/count", async (req: Request, res: Response): Promise<void> => {
   try {
-    const count = await SongRepo.count();
+    const count = await SongRepository.count();
     res.status(200).json({ count });
   } catch (error: any) {
     console.error("Error in GET /api/songs/count:", error);
@@ -54,7 +54,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 
     const accessContext = parseAccessContext(req.query);
 
-    const songs = await SongRepo.getMany(accessContext, {
+    const songs = await SongRepository.getMany(accessContext, {
       includeAlbums: includeAlbums === "true",
       includeArtists: includeArtists === "true",
       includeLikes: includeLikes === "true",
@@ -85,7 +85,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     }
 
     const accessContext = parseAccessContext(req.query);
-    const song = await SongRepo.getOne(id, accessContext, {
+    const song = await SongRepository.getOne(id, accessContext, {
       includeAlbums: req.query.includeAlbums === "true",
       includeArtists: req.query.includeArtists === "true",
       includeLikes: req.query.includeLikes === "true",
@@ -155,7 +155,7 @@ router.post(
         delete songData._audioBuffer;
       }
 
-      const newSong = await SongRepo.create(songData);
+      const newSong = await SongRepository.create(songData);
 
       if (!newSong) {
         res.status(400).json({ error: "Failed to create song" });
@@ -213,7 +213,7 @@ router.put(
         }
       }
 
-      const updatedSong = await SongRepo.update(id, songData);
+      const updatedSong = await SongRepository.update(id, songData);
 
       if (!updatedSong) {
         res.status(404).json({ error: "Song not found" });
@@ -241,7 +241,7 @@ router.delete(
         return;
       }
 
-      const deleted = await SongRepo.delete(id);
+      const deleted = await SongRepository.delete(id);
       if (!deleted) {
         res.status(404).json({ error: "Song not found" });
         return;
@@ -269,7 +269,7 @@ router.post(
         return;
       }
 
-      await SongRepo.bulkDelete(songIds);
+      await SongRepository.bulkDelete(songIds);
       res.status(200).json({
         message: `${songIds.length} song${
           songIds.length === 1 ? "" : "s"
@@ -307,7 +307,7 @@ router.get(
         return;
       }
 
-      const suggestions = await SongRepo.getSuggestedSongs(id, {
+      const suggestions = await SongRepository.getSuggestedSongs(id, {
         userId: userId as string | undefined,
         includeAlbums: includeAlbums === "true",
         includeArtists: includeArtists === "true",
@@ -357,7 +357,7 @@ router.get(
 
       const accessContext = parseAccessContext(req.query);
 
-      const albums = await SongRepo.getAlbums(id, accessContext, {
+      const albums = await SongRepository.getAlbums(id, accessContext, {
         includeArtist: includeArtist === "true",
         includeLikes: includeLikes === "true",
         includeRuntime: includeRuntime === "true",
@@ -400,7 +400,9 @@ router.get(
         direction = "DESC";
       }
 
-      const artists = await SongRepo.getArtists(id, {
+      const accessContext = parseAccessContext(req.query);
+
+      const artists = await SongRepository.getArtists(id, accessContext, {
         includeUser: includeUser === "true",
         orderByColumn: column as any,
         orderByDirection: direction as any,
@@ -439,7 +441,7 @@ router.put(
         return;
       }
 
-      const success = await SongRepo.addArtist(id, artist_id, role);
+      const success = await SongRepository.addArtist(id, artist_id, role);
       if (!success) {
         res.status(404).json({ error: "Song or Artist not found" });
         return;
@@ -472,7 +474,7 @@ router.delete(
         return;
       }
 
-      const success = await SongRepo.removeArtist(id, artist_id);
+      const success = await SongRepository.removeArtist(id, artist_id);
       if (!success) {
         res.status(404).json({ error: "Song or Artist not found" });
         return;
@@ -570,7 +572,7 @@ router.get(
         return;
       }
 
-      const imageUrl = await SongRepo.getCoverImage(id);
+      const imageUrl = await SongRepository.getCoverImage(id);
       if (!imageUrl) {
         res.status(200).json({
           color1: { r: 8, g: 8, b: 8 },
@@ -599,7 +601,7 @@ router.put(
         res.status(400).json({ error: "Song ID is required!" });
         return;
       }
-      const success = await SongRepo.incrementStreams(id);
+      const success = await SongRepository.incrementStreams(id);
       if (!success) {
         res.status(404).json({ error: "Song not found" });
         return;

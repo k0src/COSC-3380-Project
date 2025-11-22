@@ -4,7 +4,7 @@ import { useAudioQueue } from "@contexts/AudioQueueContext";
 import { songApi, userApi } from "@api";
 
 const STREAM_TTL = 24 * 60 * 60 * 1000; // 24 hours
-const MIN_PLAY_TIME = 30; // 30 seconds
+const MIN_PLAY_TIME = 10; // 10 seconds
 
 export const useStreamTracking = () => {
   const { user } = useAuth();
@@ -50,6 +50,7 @@ export const useStreamTracking = () => {
     if (state.progress >= MIN_PLAY_TIME) {
       const trackStream = async () => {
         try {
+          console.log("tracking stream for", currentSongId);
           await Promise.all([
             userApi.addToHistory(user.id, currentSongId, "song"),
             songApi.incrementSongStreams(currentSongId),

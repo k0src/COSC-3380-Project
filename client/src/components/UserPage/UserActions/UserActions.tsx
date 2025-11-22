@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
 import { useAsyncData, useFollowStatus } from "@hooks";
 import { formatNumber, formatRelativeDate } from "@util";
-import { artistApi } from "@api";
+import { userApi } from "@api";
 import { ReportModal } from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import styles from "./UserActions.module.css";
@@ -80,8 +80,8 @@ const UserActions: React.FC<UserActionsProps> = ({
 
   const asyncConfig = useMemo(
     () => ({
-      followingCount: () => artistApi.getFollowingCount(userId),
-      followerCount: () => artistApi.getFollowerCount(userId),
+      followingCount: () => userApi.getFollowingCount(userId),
+      followerCount: () => userApi.getFollowerCount(userId),
     }),
     [artistId, userId, userIsArtist]
   );

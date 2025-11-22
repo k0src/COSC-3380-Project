@@ -1,7 +1,8 @@
 import { memo, useMemo } from "react";
 import { PuffLoader } from "react-spinners";
-import type { UUID } from "@types";
+import type { UUID, AccessContext } from "@types";
 import { useAsyncData } from "@hooks";
+import { useAuth } from "@contexts";
 import type { Playlist } from "@types";
 import { playlistApi, userApi } from "@api";
 import { EntityItem } from "@components";
@@ -29,6 +30,14 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
   playlistId,
   mode,
 }) => {
+  const { user } = useAuth();
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
+
   const getApiFn = () => {
     switch (mode) {
       case "related":
@@ -39,7 +48,10 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
           });
       case "user":
         return () =>
-          userApi.getPlaylists(userId, { includeSongCount: true, limit: 10 });
+          userApi.getPlaylists(userId, accessContext, {
+            includeSongCount: true,
+            limit: 10,
+          });
       default:
         throw new Error(`Invalid mode: ${mode}`);
     }
@@ -49,7 +61,7 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
     {
       playlists: getApiFn(),
     },
-    [userId, playlistId, mode],
+    [userId, playlistId, mode, user?.id],
     {
       cacheKey:
         mode === "related"

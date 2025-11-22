@@ -20,16 +20,7 @@ dotenv.config();
 
 const API_URL = process.env.API_URL;
 
-/**
- * Service for managing user libraries and history.
- */
 export default class LibraryService {
-  /**
-   * Searches the user's library for songs, albums, playlists, and artists matching the query.
-   * @param userId The ID of the user.
-   * @param q The search query string.
-   * @returns An object containing arrays of matching songs, albums, playlists, and artists.
-   */
   static async search(userId: UUID, q: string): Promise<LibrarySearchResults> {
     try {
       const songsSql = `
@@ -203,13 +194,6 @@ export default class LibraryService {
     }
   }
 
-  /**
-   * Retrieves the recently played items for a user.
-   * @param userId The ID of the user.
-   * @param maxItems The maximum number of items to retrieve.
-   * @returns A RecentlyPlayedItems object containing recently played songs, albums, playlists, and artists.
-   * @throws An error if the operation fails.
-   */
   static async getRecentlyPlayed(
     userId: UUID,
     maxItems: number = 10
@@ -596,14 +580,6 @@ export default class LibraryService {
     }
   }
 
-  /**
-   * Retrieves liked songs for a user.
-   * @param userId The ID of the user.
-   * @param options.limit The maximum number of songs to retrieve.
-   * @param options.offset The number of songs to skip.
-   * @returns An array of liked songs.
-   * @throws An error if the operation fails.
-   */
   static async getLibrarySongs(
     userId: UUID,
     options?: { limit?: number; offset?: number }
@@ -684,15 +660,6 @@ export default class LibraryService {
     }
   }
 
-  /**
-   * Retrieves liked playlists and user-created playlists for a user.
-   * @param userId The ID of the user.
-   * @param options.omitLikes Option to only include user-created playlists.
-   * @param options.limit The maximum number of playlists to retrieve.
-   * @param options.offset The number of playlists to skip.
-   * @returns An array of playlists (liked and/or created by user).
-   * @throws An error if the operation fails.
-   */
   static async getLibraryPlaylists(
     userId: UUID,
     options?: { omitLikes?: boolean; limit?: number; offset?: number }
@@ -754,14 +721,6 @@ export default class LibraryService {
     }
   }
 
-  /**
-   * Retrieves liked albums for a user.
-   * @param userId The ID of the user.
-   * @param options.limit The maximum number of albums to retrieve.
-   * @param options.offset The number of albums to skip.
-   * @returns An array of liked albums.
-   * @throws An error if the operation fails.
-   */
   static async getLibraryAlbums(
     userId: UUID,
     options?: { limit?: number; offset?: number }
@@ -814,13 +773,6 @@ export default class LibraryService {
     }
   }
 
-  /**
-   * Retrieves followed artists for a user.
-   * @param userId The ID of the user.
-   * @param options Pagination options.
-   * @returns An array of followed artists.
-   * @throws An error if the operation fails.
-   */
   static async getLibraryArtists(
     userId: UUID,
     options?: { limit?: number; offset?: number }
@@ -859,15 +811,6 @@ export default class LibraryService {
     }
   }
 
-  /**
-   * Retrieves song history for a user within a time range.
-   * @param userId The ID of the user.
-   * @param options.timeRange The time range for history (e.g., '1 month', '6 months', '1 year').
-   * @param options.limit The maximum number of songs to retrieve.
-   * @param options.offset The number of songs to skip.
-   * @returns An array of songs from history.
-   * @throws An error if the operation fails.
-   */
   static async getSongHistory(
     userId: UUID,
     options?: { timeRange?: string; limit?: number; offset?: number }
@@ -951,15 +894,6 @@ export default class LibraryService {
     }
   }
 
-  /**
-   * Retrieves album history for a user within a time range.
-   * @param userId The ID of the user.
-   * @param options.timeRange The time range for history (e.g., '1 month', '6 months', '1 year').
-   * @param options.limit The maximum number of albums to retrieve.
-   * @param options.offset The number of albums to skip.
-   * @returns An array of albums from history.
-   * @throws An error if the operation fails.
-   */
   static async getAlbumHistory(
     userId: UUID,
     options?: { timeRange?: string; limit?: number; offset?: number }
@@ -1015,15 +949,6 @@ export default class LibraryService {
     }
   }
 
-  /**
-   * Retrieves playlist history for a user within a time range.
-   * @param userId The ID of the user.
-   * @param options.timeRange The time range for history (e.g., '1 month', '6 months', '1 year').
-   * @param options.limit The maximum number of playlists to retrieve.
-   * @param options.offset The number of playlists to skip.
-   * @returns An array of playlists from history.
-   * @throws An error if the operation fails.
-   */
   static async getPlaylistHistory(
     userId: UUID,
     options?: { timeRange?: string; limit?: number; offset?: number }
@@ -1078,15 +1003,6 @@ export default class LibraryService {
     }
   }
 
-  /**
-   * Retrieves artist history for a user within a time range.
-   * @param userId The ID of the user.
-   * @param options.timeRange The time range for history (e.g., '1 month', '6 months', '1 year').
-   * @param options.limit The maximum number of artists to retrieve.
-   * @param options.offset The number of artists to skip.
-   * @returns An array of artists from history.
-   * @throws An error if the operation fails.
-   */
   static async getArtistHistory(
     userId: UUID,
     options?: { timeRange?: string; limit?: number; offset?: number }
@@ -1128,13 +1044,6 @@ export default class LibraryService {
     }
   }
 
-  /**
-   * Toggles the pinned status of a playlist for a user.
-   * @param userId The ID of the user.
-   * @param playlistId The ID of the playlist.
-   * @returns A boolean indicating the new pinned status (true if pinned, false if unpinned).
-   * @throws An error if the operation fails.
-   */
   static async togglePinPlaylist(
     userId: UUID,
     playlistId: UUID

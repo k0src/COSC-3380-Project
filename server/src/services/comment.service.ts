@@ -3,18 +3,7 @@ import { query, withTransaction } from "../config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
 import { PoolClient } from "pg";
 
-/**
- * Service for managing song comments.
- */
 export default class CommentService {
-  /**
-   * Adds a new comment to a song.
-   * @param userId The ID of the user making the comment.
-   * @param songId The ID of the song being commented on.
-   * @param commentText The text of the comment.
-   * @returns The ID of the newly created comment.
-   * @throws Error if the operation fails.
-   */
   static async addComment(userId: UUID, songId: UUID, commentText: string) {
     try {
       return await withTransaction(async (client) => {
@@ -42,13 +31,6 @@ export default class CommentService {
     }
   }
 
-  /**
-   * Parses mentions in the comment text and inserts them into the database.
-   * @param client The database client.
-   * @param commentId The ID of the comment.
-   * @param commentText The text of the comment.
-   * @throws Error if the operation fails.
-   */
   private static async parseAndInsertMentions(
     client: PoolClient,
     commentId: UUID,
@@ -95,11 +77,6 @@ export default class CommentService {
     await client.query(insertMentionsSql, params);
   }
 
-  /**
-   * Deletes a comment by its ID.
-   * @param commentId The ID of the comment to delete.
-   * @throws Error if the operation fails.
-   */
   static async deleteComment(commentId: UUID) {
     try {
       await query("DELETE FROM comments WHERE id = $1", [commentId]);
@@ -109,11 +86,6 @@ export default class CommentService {
     }
   }
 
-  /**
-   * Deletes multiple comments by their IDs.
-   * @param commentIds Array of comment IDs to delete.
-   * @throws Error if the operation fails.
-   */
   static async bulkDeleteComments(commentIds: UUID[]) {
     try {
       await query("DELETE FROM comments WHERE id = ANY($1)", [commentIds]);
@@ -123,11 +95,6 @@ export default class CommentService {
     }
   }
 
-  /**
-   * Clears all comments for a specific song.
-   * @param songId The ID of the song whose comments are to be cleared.
-   * @throws Error if the operation fails.
-   */
   static async clearComments(songId: UUID) {
     try {
       await query("DELETE FROM comments WHERE song_id = $1", [songId]);
@@ -137,15 +104,6 @@ export default class CommentService {
     }
   }
 
-  /**
-   * Fetches all comments for a specific song, including user details.
-   * @param songId The ID of the song whose comments are to be fetched.
-   * @param options Optional pagination options.
-   * @param options.limit Maximum number of comments to return.
-   * @param options.offset Number of comments to skip.
-   * @returns An array of comments with user details.
-   * @throws Error if the operation fails.
-   */
   static async getCommentsBySongId(
     songId: UUID,
     options?: {
@@ -212,15 +170,6 @@ export default class CommentService {
     }
   }
 
-  /**
-   * Fetches all comments made by a specific user, including user details.
-   * @param userId The ID of the user whose comments are to be fetched.
-   * @param options Optional pagination options.
-   * @param options.limit Maximum number of comments to return.
-   * @param options.offset Number of comments to skip.
-   * @returns An array of comments with user details.
-   * @throws Error if the operation fails.
-   */
   static async getCommentsByUserId(
     userId: UUID,
     options?: { limit?: number; offset?: number }
@@ -244,15 +193,6 @@ export default class CommentService {
     }
   }
 
-  /**
-   * Fetches all comments on an artist's songs
-   * @param artistId The ID of the artist
-   * @param options Optional pagination options
-   * @param options.limit Maximum number of comments to return
-   * @param options.offset Number of comments to skip
-   * @returns An array of comments with song title, username, and likes
-   * @throws Error if the operation fails.
-   */
   static async getCommentsByArtistId(
     artistId: UUID,
     options?: {

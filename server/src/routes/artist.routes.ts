@@ -26,7 +26,9 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
       direction = "DESC";
     }
 
-    const artists = await ArtistRepository.getMany({
+    const accessContext = parseAccessContext(req.query);
+
+    const artists = await ArtistRepository.getMany(accessContext, {
       includeUser: includeUser === "true",
       orderByColumn: column as any,
       orderByDirection: direction as any,
@@ -39,7 +41,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     console.error("Error in GET /artists/:", error);
     const { message, statusCode } = handlePgError(error);
     res.status(statusCode).json({ error: message });
-    return;
   }
 });
 
@@ -54,7 +55,9 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const artist = await ArtistRepository.getOne(id, {
+    const accessContext = parseAccessContext(req.query);
+
+    const artist = await ArtistRepository.getOne(id, accessContext, {
       includeUser: includeUser === "true",
     });
 
@@ -68,7 +71,6 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     console.error("Error in GET /artists/:id:", error);
     const { message, statusCode } = handlePgError(error);
     res.status(statusCode).json({ error: message });
-    return;
   }
 });
 
@@ -399,7 +401,9 @@ router.get(
         return;
       }
 
-      const playlists = await ArtistRepository.getPlaylists(id, {
+      const accessContext = parseAccessContext(req.query);
+
+      const playlists = await ArtistRepository.getPlaylists(id, accessContext, {
         includeUser: includeUser === "true",
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
@@ -539,11 +543,17 @@ router.get(
         return;
       }
 
-      const relatedArtists = await ArtistRepository.getRelatedArtists(id, {
-        includeUser: includeUser === "true",
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(limit as string, 10) : undefined,
-      });
+      const accessContext = parseAccessContext(req.query);
+
+      const relatedArtists = await ArtistRepository.getRelatedArtists(
+        id,
+        accessContext,
+        {
+          includeUser: includeUser === "true",
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+          offset: offset ? parseInt(offset as string, 10) : undefined,
+        }
+      );
 
       res.status(200).json(relatedArtists);
     } catch (error: any) {

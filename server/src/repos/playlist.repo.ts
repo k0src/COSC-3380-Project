@@ -161,12 +161,6 @@ export default class PlaylistRepository {
     }
   }
 
-  /**
-   * Deletes a playlist.
-   * @param id The ID of the playlist to delete.
-   * @returns The deleted playlist, or null if the deletion fails.
-   * @throws Error if the operation fails.
-   */
   static async delete(id: UUID): Promise<Playlist | null> {
     try {
       const res = await withTransaction(async (client) => {
@@ -237,8 +231,8 @@ export default class PlaylistRepository {
       }
 
       selectFields.push(`
-      EXISTS (SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS has_song
-    `);
+        EXISTS (SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id) AS has_song
+      `);
 
       const sql = `
         SELECT ${selectFields.join(",\n")}
@@ -586,6 +580,7 @@ export default class PlaylistRepository {
       throw error;
     }
   }
+
   static async getRelatedPlaylists(
     playlistId: UUID,
     options?: PlaylistOptions

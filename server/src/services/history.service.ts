@@ -17,18 +17,7 @@ const HISTORY_TABLES: Record<HistoryEntity, string> = {
   artist: "artist_history",
 };
 
-/**
- * Service for managing user song, album, playlist, and artist history.
- */
 export default class HistoryService {
-  /**
-   * Fetches the history of a user for an entity.
-   * @param userId - The ID of the user.
-   * @param entity - The type of entity (song, album, playlist, artist).
-   * @param options - Optional parameters for pagination.
-   * @return An array of entities from the user's history.
-   * @throws Error if the operation fails.
-   */
   static async getHistory<K extends keyof HistoryEntityMap>(
     userId: UUID,
     entity: K,
@@ -57,11 +46,6 @@ export default class HistoryService {
     }
   }
 
-  /**
-   * Clears the history for a user.
-   * @param userId - The ID of the user.
-   * @throws Error if the operation fails.
-   */
   static async clearHistory(userId: UUID): Promise<void> {
     try {
       await query("DELETE FROM song_history WHERE user_id = $1", [userId]);
@@ -74,13 +58,6 @@ export default class HistoryService {
     }
   }
 
-  /**
-   * Adds an entity to the user's history.
-   * @param userId - The ID of the user.
-   * @param entityId - The ID of the entity to add to history.
-   * @param entity - The type of entity (song, album, playlist, artist).
-   * @throws Error if the operation fails. or if the entity type is invalid.
-   */
   static async addToHistory<K extends keyof HistoryEntityMap>(
     userId: UUID,
     entityId: UUID,

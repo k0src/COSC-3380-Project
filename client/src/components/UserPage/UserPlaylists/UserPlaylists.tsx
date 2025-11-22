@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { PuffLoader } from "react-spinners";
-import type { UUID } from "@types";
+import type { UUID, AccessContext } from "@types";
+import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
 import { userApi } from "@api";
 import { pluralize } from "@util";
@@ -14,12 +15,23 @@ export interface UserPlaylistsProps {
 }
 
 const UserPlaylists: React.FC<UserPlaylistsProps> = ({ userId, username }) => {
+  const { user } = useAuth();
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "globalList",
+  };
+
   const { data, loading, error } = useAsyncData(
     {
       playlists: () =>
-        userApi.getPlaylists(userId, { includeSongCount: true, limit: 10 }),
+        userApi.getPlaylists(userId, accessContext, {
+          includeSongCount: true,
+          limit: 10,
+        }),
     },
-    [userId],
+    [userId, user?.id],
     {
       cacheKey: `artist_playlists_${userId}`,
       hasBlobUrl: true,

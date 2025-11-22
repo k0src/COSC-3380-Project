@@ -7,6 +7,7 @@ import {
   SongOptions,
   AccessContext,
   AlbumOptions,
+  ArtistOptions,
 } from "@types";
 import { getAccessPredicate } from "@util";
 import { query, withTransaction } from "@config/database";
@@ -707,74 +708,63 @@ export default class SongRepository {
     }
   }
 
-  //! add accessContext
   static async getArtists(
     songId: UUID,
-    options?: {
-      includeUser?: boolean;
-      orderByColumn?: "name" | "created_at" | "verified" | "streams";
-      orderByDirection?: "ASC" | "DESC";
-      limit?: number;
-      offset?: number;
-    }
+    accessContext: AccessContext,
+    options?: ArtistOptions
   ): Promise<SongArtist[]> {
     try {
-      const limit = options?.limit || 50;
-      const offset = options?.offset || 0;
+      const limit = options?.limit ?? 50;
+      const offset = options?.offset ?? 0;
       const orderByColumn = options?.orderByColumn ?? "created_at";
       const orderByDirection = options?.orderByDirection ?? "DESC";
 
       const orderByMap: Record<string, string> = {
-        name: "a.display_name",
+        display_name: "a.display_name",
         created_at: "a.created_at",
         verified: "a.verified",
-        streams: "streams",
       };
 
-      const sqlOrderByColumn = orderByMap[orderByColumn];
+      const sqlOrderByColumn = orderByMap[orderByColumn] ?? "a.created_at";
+
+      const selectFields: string[] = ["a.*", "sa.role"];
+
+      if (options?.includeUser) {
+        selectFields.push("row_to_json(u.*) as user");
+      }
 
       const sql = `
-        SELECT a.*,
-          CASE WHEN $1 THEN row_to_json(u.*)
-          ELSE NULL END as user,
-          COALESCE(SUM(s.streams), 0) as streams
-          FROM artists a
-        LEFT JOIN users u ON a.user_id = u.id
-        LEFT JOIN song_artists sa ON a.id = sa.artist_id
-        LEFT JOIN songs s ON sa.song_id = s.id
-        WHERE sa.song_id = $2
-        GROUP BY a.id, u.id
+        SELECT ${selectFields.join(",\n")}
+        FROM artists a
+        JOIN song_artists sa ON a.id = sa.artist_id
+        ${options?.includeUser ? "LEFT JOIN users u ON a.user_id = u.id" : ""}
+        WHERE sa.song_id = $1
         ORDER BY ${sqlOrderByColumn} ${orderByDirection}
-        LIMIT $3 OFFSET $4
+        LIMIT $2 OFFSET $3
       `;
 
-      const params = [options?.includeUser ?? false, songId, limit, offset];
+      const params = [songId, limit, offset];
 
       const artists = await query(sql, params);
       if (!artists || artists.length === 0) {
         return [];
       }
 
-      const processedArtists = await Promise.all(
-        artists.map(async (artist) => {
-          if (artist.user && artist.user.profile_picture_url) {
-            artist.user.profile_picture_url = getBlobUrl(
-              artist.user.profile_picture_url
-            );
-          }
-          artist.type = "artist";
-          return artist;
-        })
-      );
-
-      return processedArtists;
+      return artists.map((artist: SongArtist) => {
+        if (artist.user && artist.user.profile_picture_url) {
+          artist.user.profile_picture_url = getBlobUrl(
+            artist.user.profile_picture_url
+          );
+        }
+        artist.type = "artist";
+        return artist;
+      });
     } catch (error) {
       console.error("Error fetching artists for song:", error);
       throw error;
     }
   }
 
-  // already gets only public songs. can add accessContext later if needed
   static async getSuggestedSongs(
     songId: UUID,
     options?: {

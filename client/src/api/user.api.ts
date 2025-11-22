@@ -8,6 +8,8 @@ import type {
   Comment,
   User,
   UserSettings,
+  AccessContext,
+  PlaylistOptions,
 } from "@types";
 
 export const userApi = {
@@ -61,16 +63,16 @@ export const userApi = {
 
   async getPlaylists(
     id: UUID,
-    options?: {
-      includeLikes?: boolean;
-      includeSongCount?: boolean;
-      includeRuntime?: boolean;
-      limit?: number;
-      offset?: number;
-    }
+    accessContext: AccessContext,
+    options?: PlaylistOptions
   ) {
     const response = await api.get<Playlist[]>(`/users/${id}/playlists`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
     return response.data;
   },
@@ -146,13 +148,29 @@ export const userApi = {
     return response.data;
   },
 
-  async getFollowers(id: UUID) {
-    const response = await api.get<User[]>(`/users/${id}/followers`);
+  async getFollowers(
+    id: UUID,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    const response = await api.get<User[]>(`/users/${id}/followers`, {
+      params: options,
+    });
     return response.data;
   },
 
-  async getFollowing(id: UUID) {
-    const response = await api.get<User[]>(`/users/${id}/following`);
+  async getFollowing(
+    id: UUID,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    const response = await api.get<User[]>(`/users/${id}/following`, {
+      params: options,
+    });
     return response.data;
   },
 

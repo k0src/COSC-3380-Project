@@ -4,23 +4,27 @@ import type {
   ArtistSong,
   UUID,
   Album,
-  User,
   Playlist,
   AccessContext,
   SongOptions,
   AlbumOptions,
   PlaylistOptions,
+  ArtistOptions,
 } from "@types";
 
 export const artistApi = {
   async getArtistById(
     id: UUID,
-    options?: {
-      includeUser?: boolean;
-    }
+    accessContext: AccessContext,
+    options?: ArtistOptions
   ) {
     const response = await api.get<Artist>(`/artists/${id}`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
     return response.data;
   },
@@ -94,14 +98,16 @@ export const artistApi = {
 
   async getRelatedArtists(
     id: UUID,
-    options?: {
-      includeUser?: boolean;
-      limit?: number;
-      offset?: number;
-    }
+    accessContext: AccessContext,
+    options?: ArtistOptions
   ) {
     const response = await api.get<Artist[]>(`/artists/${id}/related`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
     return response.data;
   },
@@ -134,56 +140,18 @@ export const artistApi = {
     return response.data.streams;
   },
 
-  async getFollowers(
-    id: UUID,
-    options?: {
-      limit?: number;
-      offset?: number;
-    }
-  ) {
-    const response = await api.get<User[]>(`/artists/${id}/followers`, {
-      params: options,
-    });
-    return response.data;
-  },
-
-  async getFollowing(
-    id: UUID,
-    options?: {
-      limit?: number;
-      offset?: number;
-    }
-  ) {
-    const response = await api.get<User[]>(`/artists/${id}/following`, {
-      params: options,
-    });
-    return response.data;
-  },
-
-  async getFollowerCount(id: UUID) {
-    const response = await api.get<{ followerCount: number }>(
-      `/artists/${id}/followers/count`
-    );
-    return response.data.followerCount;
-  },
-
-  async getFollowingCount(id: UUID) {
-    const response = await api.get<{ followingCount: number }>(
-      `/artists/${id}/following/count`
-    );
-    return response.data.followingCount;
-  },
-
   async getPlaylists(
     id: UUID,
-    options?: {
-      includeUser?: boolean;
-      limit?: number;
-      offset?: number;
-    }
+    accessContext: AccessContext,
+    options?: PlaylistOptions
   ) {
     const response = await api.get<Playlist[]>(`/artists/${id}/playlists`, {
-      params: options,
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
     });
     return response.data;
   },
