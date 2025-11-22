@@ -112,6 +112,10 @@ export default class LibraryService {
         LEFT JOIN users u ON a.user_id = u.id
         JOIN user_followers uf ON uf.following_id = a.user_id
         WHERE uf.follower_id = $1 AND a.display_name ILIKE $2
+          AND NOT EXISTS (
+            SELECT 1 FROM deleted_artists da 
+            WHERE da.artist_id = a.id
+          )
         ORDER BY uf.followed_at DESC
         LIMIT 50
       `;
@@ -325,7 +329,10 @@ export default class LibraryService {
         FROM artists a
         LEFT JOIN users u ON a.user_id = u.id
         JOIN artist_history arh ON arh.artist_id = a.id
-        WHERE arh.user_id = $1
+        WHERE arh.user_id = $1 AND NOT EXISTS (
+          SELECT 1 FROM deleted_artists da
+          WHERE da.artist_id = a.id
+        )
         GROUP BY a.id, u.id
         ORDER BY a.id, played_at DESC
         LIMIT $2
@@ -452,87 +459,90 @@ export default class LibraryService {
         (playlistPredicateSqlRaw && playlistPredicateSqlRaw.trim()) || "TRUE";
 
       const songsSql = `
-      SELECT DISTINCT ON (s.id) s.*,
-        (SELECT json_agg(row_to_json(album_with_artist))
-        FROM (
-          SELECT a.*,
-            row_to_json(ar) AS artist
-          FROM albums a
-          JOIN album_songs als ON als.album_id = a.id
-          LEFT JOIN artists ar ON ar.id = a.created_by
-          WHERE als.song_id = s.id
-        ) AS album_with_artist) AS albums,
-        (SELECT json_agg(row_to_json(ar_with_role))
-        FROM (
-          SELECT
-            ar.*,
-            sa.role,
-            row_to_json(u) AS user
-          FROM artists ar
-          JOIN users u ON u.artist_id = ar.id
-          JOIN song_artists sa ON sa.artist_id = ar.id
-          WHERE sa.song_id = s.id
-        ) AS ar_with_role) AS artists,
-        MAX(sh.played_at) as played_at
-      FROM songs s
-      JOIN song_history sh ON sh.song_id = s.id
-      WHERE sh.user_id = $1 AND (${songPredicateSql})
-      GROUP BY s.id
-      ORDER BY s.id, played_at DESC
-    `;
+        SELECT DISTINCT ON (s.id) s.*,
+          (SELECT json_agg(row_to_json(album_with_artist))
+          FROM (
+            SELECT a.*,
+              row_to_json(ar) AS artist
+            FROM albums a
+            JOIN album_songs als ON als.album_id = a.id
+            LEFT JOIN artists ar ON ar.id = a.created_by
+            WHERE als.song_id = s.id
+          ) AS album_with_artist) AS albums,
+          (SELECT json_agg(row_to_json(ar_with_role))
+          FROM (
+            SELECT
+              ar.*,
+              sa.role,
+              row_to_json(u) AS user
+            FROM artists ar
+            JOIN users u ON u.artist_id = ar.id
+            JOIN song_artists sa ON sa.artist_id = ar.id
+            WHERE sa.song_id = s.id
+          ) AS ar_with_role) AS artists,
+          MAX(sh.played_at) as played_at
+        FROM songs s
+        JOIN song_history sh ON sh.song_id = s.id
+        WHERE sh.user_id = $1 AND (${songPredicateSql})
+        GROUP BY s.id
+        ORDER BY s.id, played_at DESC
+      `;
 
       const albumsSql = `
-      SELECT DISTINCT ON (a.id) a.*,
-        (SELECT row_to_json(artist_with_user)
-        FROM (
-          SELECT ar.*,
-            row_to_json(u) AS user
-          FROM artists ar
-          LEFT JOIN users u ON ar.user_id = u.id
-          WHERE ar.id = a.created_by
-        ) AS artist_with_user) as artist,
-        (SELECT COUNT(*) FROM album_songs als 
-        WHERE als.album_id = a.id) as song_count,
-        MAX(ah.played_at) as played_at
-      FROM albums a
-      JOIN album_history ah ON ah.album_id = a.id
-      WHERE ah.user_id = $1 AND (${albumPredicateSql})
-      GROUP BY a.id
-      ORDER BY a.id, played_at DESC
-    `;
+        SELECT DISTINCT ON (a.id) a.*,
+          (SELECT row_to_json(artist_with_user)
+          FROM (
+            SELECT ar.*,
+              row_to_json(u) AS user
+            FROM artists ar
+            LEFT JOIN users u ON ar.user_id = u.id
+            WHERE ar.id = a.created_by
+          ) AS artist_with_user) as artist,
+          (SELECT COUNT(*) FROM album_songs als 
+          WHERE als.album_id = a.id) as song_count,
+          MAX(ah.played_at) as played_at
+        FROM albums a
+        JOIN album_history ah ON ah.album_id = a.id
+        WHERE ah.user_id = $1 AND (${albumPredicateSql})
+        GROUP BY a.id
+        ORDER BY a.id, played_at DESC
+      `;
 
       const playlistsSql = `
-      SELECT DISTINCT ON (p.id) p.*,
-        row_to_json(u.*) as user,
-        (SELECT COUNT(*) FROM playlist_songs ps
-        WHERE ps.playlist_id = p.id) as song_count,
-        EXISTS(
-          SELECT 1 FROM user_playlist_pins upp
-          WHERE upp.user_id = $1 AND upp.playlist_id = p.id
-        ) as is_pinned,
-        MAX(ph.played_at) as played_at,
-        (SELECT EXISTS (
-          SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
-        )) AS has_song
-      FROM playlists p
-      LEFT JOIN users u ON p.owner_id = u.id
-      JOIN playlist_history ph ON ph.playlist_id = p.id
-      WHERE ph.user_id = $1 AND (${playlistPredicateSql})
-      GROUP BY p.id, u.id
-      ORDER BY p.id, is_pinned DESC, played_at DESC, p.id
-    `;
+        SELECT DISTINCT ON (p.id) p.*,
+          row_to_json(u.*) as user,
+          (SELECT COUNT(*) FROM playlist_songs ps
+          WHERE ps.playlist_id = p.id) as song_count,
+          EXISTS(
+            SELECT 1 FROM user_playlist_pins upp
+            WHERE upp.user_id = $1 AND upp.playlist_id = p.id
+          ) as is_pinned,
+          MAX(ph.played_at) as played_at,
+          (SELECT EXISTS (
+            SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id
+          )) AS has_song
+        FROM playlists p
+        LEFT JOIN users u ON p.owner_id = u.id
+        JOIN playlist_history ph ON ph.playlist_id = p.id
+        WHERE ph.user_id = $1 AND (${playlistPredicateSql})
+        GROUP BY p.id, u.id
+        ORDER BY p.id, is_pinned DESC, played_at DESC, p.id
+      `;
 
       const artistsSql = `
-      SELECT DISTINCT ON (a.id) a.*,
-        row_to_json(u.*) as user,
-        MAX(arh.played_at) as played_at
-      FROM artists a
-      LEFT JOIN users u ON a.user_id = u.id
-      JOIN artist_history arh ON arh.artist_id = a.id
-      WHERE arh.user_id = $1
-      GROUP BY a.id, u.id
-      ORDER BY a.id, played_at DESC
-    `;
+        SELECT DISTINCT ON (a.id) a.*,
+          row_to_json(u.*) as user,
+          MAX(arh.played_at) as played_at
+        FROM artists a
+        LEFT JOIN users u ON a.user_id = u.id
+        JOIN artist_history arh ON arh.artist_id = a.id
+        WHERE arh.user_id = $1 AND NOT EXISTS (
+          SELECT 1 FROM deleted_artists da
+          WHERE da.artist_id = a.id
+        )
+        GROUP BY a.id, u.id
+        ORDER BY a.id, played_at DESC
+      `;
 
       const [songsResult, albumsResult, playlistsResult, artistsResult] =
         await Promise.all([
@@ -891,6 +901,10 @@ export default class LibraryService {
         LEFT JOIN users u ON a.user_id = u.id
         JOIN user_followers uf ON uf.following_id = a.user_id
         WHERE uf.follower_id = $1
+          AND NOT EXISTS (
+            SELECT 1 FROM deleted_artists da 
+            WHERE da.artist_id = a.id
+          )
         ORDER BY uf.followed_at DESC
         LIMIT $2 OFFSET $3
       `;
@@ -1165,6 +1179,10 @@ export default class LibraryService {
         LEFT JOIN users u ON a.user_id = u.id
         JOIN artist_history arh ON arh.artist_id = a.id
         WHERE arh.user_id = $1 AND arh.played_at >= NOW() - INTERVAL '${timeRange}'
+          AND NOT EXISTS (
+            SELECT 1 FROM deleted_artists da 
+            WHERE da.artist_id = a.id
+          )
         GROUP BY a.id, u.id
         ORDER BY a.id, played_at DESC
         LIMIT $2 OFFSET $3
