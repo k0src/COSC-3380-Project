@@ -41,6 +41,7 @@ export { default as EditSongModal } from "./SongPage/EditSongModal/EditSongModal
 export { default as ArtistBanner } from "./ArtistPage/ArtistBanner/ArtistBanner.js";
 export { default as RelatedArtists } from "./ArtistPage/RelatedArtists/RelatedArtists.js";
 export { default as ArtistActions } from "./ArtistPage/ArtistActions/ArtistActions.js";
+export { default as ArtistFeaturedOnPlaylists } from "./ArtistPage/ArtistFeaturedOnPlaylists/ArtistFeaturedOnPlaylists.js";
 export { default as ArtistPlaylists } from "./ArtistPage/ArtistPlaylists/ArtistPlaylists.js";
 export { default as ArtistAbout } from "./ArtistPage/ArtistAbout/ArtistAbout.js";
 export { default as LazyBannerImg } from "./ArtistPage/LazyBannerImg/LazyBannerImg.js";

@@ -1,29 +1,25 @@
 import { memo, useMemo } from "react";
 import { PuffLoader } from "react-spinners";
-import type { UUID, Playlist, AccessContext } from "@types";
+import type { UUID, Playlist } from "@types";
 import { useAsyncData } from "@hooks";
 import { artistApi } from "@api";
-import { pluralize } from "@util";
 import { EntityItem } from "@components";
-import styles from "./ArtistPlaylists.module.css";
+import styles from "./ArtistFeaturedOnPlaylists.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 
-export interface ArtistPlaylistsProps {
+export interface ArtistFeaturedOnPlaylistsProps {
   artistId: UUID;
-  accessContext: AccessContext;
+  artistName: string;
 }
 
-const ArtistPlaylists: React.FC<ArtistPlaylistsProps> = ({
+const ArtistFeaturedOnPlaylists: React.FC<ArtistFeaturedOnPlaylistsProps> = ({
   artistId,
-  accessContext,
+  artistName,
 }) => {
   const { data, loading, error } = useAsyncData(
     {
       playlists: () =>
-        artistApi.getArtistPlaylists(artistId, accessContext, {
-          includeUser: true,
-          limit: 10,
-        }),
+        artistApi.getPlaylists(artistId, { includeUser: true, limit: 10 }),
     },
     [artistId],
     {
@@ -64,7 +60,7 @@ const ArtistPlaylists: React.FC<ArtistPlaylistsProps> = ({
   return (
     <div className={styles.playlistsContainer}>
       <span className={styles.sectionTitle}>
-        Official Artist {pluralize(playlists.length ?? 0, "Playlist")}
+        Playlists Featuring {artistName}
       </span>
       <div className={styles.playlistsList}>
         {playlists.map((playlist) => (
@@ -85,4 +81,4 @@ const ArtistPlaylists: React.FC<ArtistPlaylistsProps> = ({
   );
 };
 
-export default memo(ArtistPlaylists);
+export default memo(ArtistFeaturedOnPlaylists);

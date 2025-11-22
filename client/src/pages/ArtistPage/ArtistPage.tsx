@@ -11,13 +11,14 @@ import {
   ArtistBanner,
   RelatedArtists,
   ArtistActions,
-  ArtistPlaylists,
+  ArtistFeaturedOnPlaylists,
   ArtistAbout,
   SlidingCardList,
   SongsList,
   FollowProfiles,
   EditArtistModal,
   TopResultCard,
+  ArtistPlaylists,
 } from "@components";
 import styles from "./ArtistPage.module.css";
 import { formatDateString } from "@util";
@@ -212,6 +213,10 @@ const ArtistPage: React.FC = () => {
                 </>
               )}
               <ArtistPlaylists
+                artistId={artist.id}
+                accessContext={accessContext}
+              />
+              <ArtistFeaturedOnPlaylists
                 artistId={artist.id}
                 artistName={artist.display_name}
               />

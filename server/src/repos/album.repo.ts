@@ -258,11 +258,11 @@ export default class AlbumRepository {
       const idIndex = predicateParams.length + 1;
 
       const sql = `
-      SELECT ${selectFields.join(",\n")}
-      FROM albums a
-      WHERE (${predicateSql}) AND a.id = $${idIndex}
-      LIMIT 1
-    `;
+        SELECT ${selectFields.join(",\n")}
+        FROM albums a
+        WHERE (${predicateSql}) AND a.id = $${idIndex}
+        LIMIT 1
+      `;
 
       const params = [...predicateParams, id];
 
