@@ -51,6 +51,14 @@
   color: var(--color-white) !important;
 }
 
+.sidebarLinkActive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-md);
+  color: var(--color-white) !important;
+}
+
 .sidebarIcon {
   font-size: var(--icon-size-md);
 }

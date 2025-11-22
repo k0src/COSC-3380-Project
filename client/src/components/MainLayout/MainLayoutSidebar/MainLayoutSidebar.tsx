@@ -1,5 +1,5 @@
 import { memo, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
 import { isWeb } from "@util";
 import styles from "./MainLayoutSidebar.module.css";
@@ -42,18 +42,39 @@ const MainLayoutSidebar: React.FC = () => {
           <Logo className={styles.logoImage} />
         </div>
         <nav className={styles.sidebarNav}>
-          <Link to="/library" className={styles.sidebarLink}>
+          <NavLink
+            to="/library"
+            end
+            className={({ isActive }) =>
+              isActive ? styles.sidebarLinkActive : styles.sidebarLink
+            }
+          >
             <LuLibrary className={styles.sidebarIcon} />
-          </Link>
-          <Link to="/library/playlists" className={styles.sidebarLink}>
+          </NavLink>
+          <NavLink
+            to="/library/playlists"
+            className={({ isActive }) =>
+              isActive ? styles.sidebarLinkActive : styles.sidebarLink
+            }
+          >
             <LuListMusic className={styles.sidebarIcon} />
-          </Link>
-          <Link to="/library/songs" className={styles.sidebarLink}>
+          </NavLink>
+          <NavLink
+            to="/library/songs"
+            className={({ isActive }) =>
+              isActive ? styles.sidebarLinkActive : styles.sidebarLink
+            }
+          >
             <LuDisc3 className={styles.sidebarIcon} />
-          </Link>
-          <Link to="/history" className={styles.sidebarLink}>
+          </NavLink>
+          <NavLink
+            to="/history"
+            className={({ isActive }) =>
+              isActive ? styles.sidebarLinkActive : styles.sidebarLink
+            }
+          >
             <LuHistory className={styles.sidebarIcon} />
-          </Link>
+          </NavLink>
           {user && user.role === "ARTIST" && (
             <>
               <Link
