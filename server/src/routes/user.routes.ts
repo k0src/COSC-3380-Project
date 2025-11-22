@@ -600,6 +600,28 @@ router.put(
   }
 );
 
+// DELETE /api/users/:id/library/history/clear
+router.delete(
+  "/:id/library/history/clear",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    try {
+      await HistoryService.clearHistory(id);
+      res.status(200).json({ message: "History cleared successfully" });
+    } catch (error: any) {
+      console.error("Error in DELETE /users/:id/library/history/clear:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
 /* ========================================================================== */
 /*                            User Likes & Comments                           */
 /* ========================================================================== */

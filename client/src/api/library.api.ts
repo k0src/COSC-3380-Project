@@ -206,4 +206,9 @@ export const libraryApi = {
     });
     return response.data;
   },
+
+  async clearHistory(userId: UUID) {
+    const response = await api.delete(`/users/${userId}/library/history/clear`);
+    return response.data;
+  },
 };
