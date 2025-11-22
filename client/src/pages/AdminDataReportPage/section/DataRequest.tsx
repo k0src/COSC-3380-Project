@@ -151,15 +151,16 @@ const DataRequestForm: React.FC<Props> = ({ onSubmit }) => {
   };
 
   if (loading) {
-    return <div>Loading report ...</div>;
+    return <div className={styles.loading}>Loading report types...</div>;
   }
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.row}>
-        <label>
-          Report Type:
+        <label htmlFor="report-type-select">
+          Report Type
           <select
+            id="report-type-select"
             value={reportType}
             onChange={(e) =>
               handleReportTypeChange(e.target.value as ReportType)
@@ -175,35 +176,26 @@ const DataRequestForm: React.FC<Props> = ({ onSubmit }) => {
           </select>
         </label>
 
-        <label>
-          From:
+        <label htmlFor="date-from">
+          From
           <input
+            id="date-from"
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
           />
         </label>
 
-        <label>
-          To:
+        <label htmlFor="date-to">
+          To
           <input
+            id="date-to"
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
             max={new Date().toISOString().split("T")[0]}
           />
         </label>
-
-        {/* Dynamic parameters based on report type */}
-        {reportType && reportTypes[reportType]?.parameters && (
-          <div className={styles.parametersSection}>
-            {renderDynamicParameters(
-              reportTypes[reportType].parameters,
-              parameters,
-              handleParameterChange
-            )}
-          </div>
-        )}
 
         <button
           type="submit"
@@ -213,6 +205,17 @@ const DataRequestForm: React.FC<Props> = ({ onSubmit }) => {
           Generate Report
         </button>
       </div>
+
+      {/* Dynamic parameters based on report type */}
+      {reportType && reportTypes[reportType]?.parameters && (
+        <div className={styles.parametersContainer}>
+          {renderDynamicParameters(
+            reportTypes[reportType].parameters,
+            parameters,
+            handleParameterChange
+          )}
+        </div>
+      )}
     </form>
   );
 
@@ -251,14 +254,16 @@ const DataRequestForm: React.FC<Props> = ({ onSubmit }) => {
           }
 
           return (
-            <label key={name}>
-              {label} {required && <span style={{ color: "red" }}>*</span>}:
+            <label key={name} htmlFor={`param-${name}`} className={styles.parameterLabel}>
+              {label} {required && <span className={styles.requiredIndicator}></span>}
               <select
+                id={`param-${name}`}
                 value={params[name] || defaultValue || ""}
                 onChange={(e) => onChange(name, e.target.value)}
                 required={required}
+                className={styles.parameterSelect}
               >
-                {!required && <option value="">Select </option>}
+                {!required && <option value="">Select {label}</option>}
                 {selectOptions?.map((option: any) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -270,20 +275,13 @@ const DataRequestForm: React.FC<Props> = ({ onSubmit }) => {
 
         case "multiselect":
           return (
-            <div key={name}>
-              <label>
-                {label} {required && <span style={{ color: "red" }}>*</span>}:
+            <div key={name} className={styles.parameterGroup}>
+              <label className={styles.parameterLabel}>
+                {label} {required && <span className={styles.requiredIndicator}></span>}
               </label>
-              <div style={{ marginLeft: "10px", marginTop: "5px" }}>
+              <div className={styles.checkboxGroup}>
                 {options?.map((option: any) => (
-                  <label
-                    key={option.value}
-                    style={{
-                      display: "block",
-                      marginBottom: "5px",
-                      fontSize: "14px",
-                    }}
-                  >
+                  <label key={option.value} className={styles.checkboxLabel}>
                     <input
                       type="checkbox"
                       checked={(params[name] || []).includes(option.value)}
@@ -291,65 +289,67 @@ const DataRequestForm: React.FC<Props> = ({ onSubmit }) => {
                         const currentValues = params[name] || [];
                         let newValues;
                         if (e.target.checked) {
-                          // Add the value if checked
                           newValues = [...currentValues, option.value];
                         } else {
-                          // Remove the value if unchecked
                           newValues = currentValues.filter(
                             (val: string) => val !== option.value
                           );
                         }
                         onChange(name, newValues);
                       }}
-                      style={{ marginRight: "8px" }}
+                      className={styles.checkbox}
                     />
                     {option.label}
                   </label>
                 ))}
-                <small style={{ color: "#6c6c6cff", fontStyle: "italic" }}>
-                  Select multiple options by checking the boxes. Leave all
-                  unchecked for "All Types".
-                </small>
               </div>
+              <small className={styles.parameterHint}>
+                Select multiple options by checking the boxes. Leave all unchecked for "All Types".
+              </small>
             </div>
           );
 
         case "number":
           return (
-            <label key={name}>
-              {label} {required && <span style={{ color: "red" }}>*</span>}:
+            <label key={name} htmlFor={`param-${name}`} className={styles.parameterLabel}>
+              {label} {required && <span className={styles.requiredIndicator}>*</span>}
               <input
+                id={`param-${name}`}
                 type="number"
                 value={params[name] || defaultValue || ""}
                 onChange={(e) => onChange(name, parseInt(e.target.value) || 0)}
                 min={min}
                 max={max}
                 required={required}
+                className={styles.parameterInput}
               />
             </label>
           );
 
         case "text":
           return (
-            <label key={name}>
-              {label} {required && <span style={{ color: "red" }}>*</span>}:
+            <label key={name} htmlFor={`param-${name}`} className={styles.parameterLabel}>
+              {label} {required && <span className={styles.requiredIndicator}>*</span>}
               <input
+                id={`param-${name}`}
                 type="text"
                 value={params[name] || defaultValue || ""}
                 onChange={(e) => onChange(name, e.target.value)}
                 placeholder={placeholder}
                 required={required}
+                className={styles.parameterInput}
               />
             </label>
           );
 
         case "checkbox":
           return (
-            <label key={name}>
+            <label key={name} className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={params[name] ?? defaultValue ?? false}
                 onChange={(e) => onChange(name, e.target.checked)}
+                className={styles.checkbox}
               />
               {label}
             </label>

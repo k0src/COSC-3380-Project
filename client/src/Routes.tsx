@@ -1,6 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 import * as Pages from "./pages";
-<<<<<<< HEAD
 import {
   AppLayout,
   MainLayout,
@@ -8,21 +7,16 @@ import {
   ProtectedRoute,
   ArtistDashboardLayout,
 } from "@components";
-=======
-import { AppLayout, MainLayout, MeWrapper, PageLoader } from "@components";
->>>>>>> master_alt
 import { useAuth } from "@contexts";
 
 export default function AppRoutes() {
   const { isAuthenticated, isLoading } = useAuth();
   return (
     <>
-      {isLoading ? (
-        <PageLoader />
-      ) : (
-        <Routes>
-          <Route path="/login" element={<Pages.LoginPage />} />
-          <Route path="/signup" element={<Pages.SignupPage />} />
+      {!isLoading && (
+      <Routes>
+        <Route path="/login" element={<Pages.LoginPage />} />
+        <Route path="/signup" element={<Pages.SignupPage />} />
 
           <Route element={<AppLayout />}>
             {!isAuthenticated ? (

@@ -34,16 +34,31 @@ const ReportDropdown: React.FC<ReportDropdownProps> = ({ selectedReport, onSelec
   };
 
   return (
-    <div className={styles.reportDropdownContainer} ref={dropdownRef}>
+    <div 
+      className={styles.reportDropdownContainer} 
+      ref={dropdownRef}
+      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}
+    >
+      <label htmlFor="report-select" style={{ marginRight: 'var(--spacing-md)', fontSize: 'var(--font-size-sm)', fontWeight: 500, color: 'var(--color-text-gray-light)' }}>
+        Filter by Type:
+      </label>
       <button
+        id="report-select"
         className={styles.dropdownButton}
         onClick={() => setIsOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
       >
-        {selectedReport.charAt(0).toUpperCase() + selectedReport.slice(1)} Reports ▾
+        {selectedReport.charAt(0).toUpperCase() + selectedReport.slice(1)} Reports
+        <span style={{ marginLeft: '0.4rem', opacity: isOpen ? '0.8' : '1', transition: 'transform 0.2s ease', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', display: 'inline-block' }}>▾</span>
       </button>
 
       {isOpen && (
-        <div className={styles.dropdownMenu}>
+        <div 
+          className={styles.dropdownMenu}
+          role="listbox"
+          style={{ position: 'absolute', top: 'calc(100% + 0.4rem)', left: 0 }}
+        >
           {(['user', 'song', 'album', 'playlist', 'artist'] as ReportType[]).map((type) => (
             <div
               key={type}
@@ -51,6 +66,8 @@ const ReportDropdown: React.FC<ReportDropdownProps> = ({ selectedReport, onSelec
                 selectedReport === type ? styles.activeDropdownItem : ''
               }`}
               onClick={() => handleSelect(type)}
+              role="option"
+              aria-selected={selectedReport === type}
             >
               {type.charAt(0).toUpperCase() + type.slice(1)} Reports
             </div>

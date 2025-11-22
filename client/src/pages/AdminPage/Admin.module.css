@@ -10,92 +10,131 @@
   background-color: var(--color-black);
   min-height: 100vh;
   padding: var(--spacing-xl);
+  overflow-y: auto;
 }
 
 /* Dashboard Styles */
 .dashboard {
   max-width: 120rem;
   margin: 0 auto;
-  padding: var(--spacing-2xl) 0;
+  padding: var(--spacing-3xl) 0;
+}
+
+.dashboardHeader {
+  margin-bottom: var(--spacing-4xl);
 }
 
 .dashboardTitle {
-  font-size: 4.8rem;
-  font-weight: 700;
+  font-size: 3.2rem;
+  font-weight: 800;
   color: var(--color-white);
-  margin: 0 0 var(--spacing-md) 0;
+  margin: 0 0 var(--spacing-sm) 0;
   font-family: 'Inter', sans-serif;
-  text-align: center;
+  letter-spacing: -0.02em;
 }
 
 .dashboardSubtitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   color: var(--color-text-gray-light);
-  margin: 0 0 var(--spacing-5xl) 0;
+  margin: 0;
   font-family: 'Inter', sans-serif;
-  text-align: center;
+  font-weight: 500;
 }
 
 /* Dashboard Cards */
 .dashboardCards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(35rem, 1fr));
-  gap: var(--spacing-xl);
-  max-width: 100rem;
-  margin: 0 auto;
+  grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+  gap: var(--spacing-2xl);
+  width: 100%;
 }
 
 .dashboardCard {
-  background-color: var(--color-panel-gray);
-  border: 1px solid var(--color-panel-border);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-2xl);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 24rem;
+  overflow: hidden;
+}
+
+.dashboardCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(213, 49, 49, 0.05) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.dashboardCard:hover {
+  border-color: rgba(213, 49, 49, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(213, 49, 49, 0.15);
+}
+
+.dashboardCard:hover::before {
+  opacity: 1;
+}
+
+.dashboardCard:hover .cardArrow {
+  transform: translateX(4px);
+  color: var(--color-red);
+}
+
+.cardContent {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  min-height: 25rem;
+  flex: 1;
   justify-content: center;
-}
-
-.dashboardCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(213, 49, 49, 0.2);
+  z-index: 1;
 }
 
 .cardIcon {
-  font-size: 6rem;
+  font-size: 5.6rem;
   margin-bottom: var(--spacing-lg);
   display: block;
+  line-height: 1;
 }
 
 .cardTitle {
-  font-size: var(--font-size-xl);
-  font-weight: 600;
+  font-size: 1.4rem;
+  font-weight: 700;
   color: var(--color-white);
-  margin: 0 0 var(--spacing-md) 0;
+  margin: 0 0 var(--spacing-sm) 0;
   font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
 }
 
 .cardDescription {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   color: var(--color-text-gray-light);
-  margin: 0 0 var(--spacing-lg) 0;
+  margin: 0;
   font-family: 'Inter', sans-serif;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-weight: 500;
 }
 
 .cardArrow {
-  font-size: var(--font-size-xl);
-  color: var(--color-red);
-  font-weight: bold;
+  font-size: 1.8rem;
+  color: rgba(213, 49, 49, 0.6);
+  font-weight: 700;
   position: absolute;
   bottom: var(--spacing-lg);
   right: var(--spacing-lg);
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
+  z-index: 2;
 }
 
 /* Back Button */

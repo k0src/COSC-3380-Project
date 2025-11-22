@@ -8,6 +8,7 @@ export { default as SearchService } from "./search.service.js";
 export { default as LibraryService } from "./library.service.js";
 export { default as UserSettingsService } from "./settings.service.js";
 export { default as NotificationsService } from "./notifications.service.js";
+export { default as ReportService } from "./report.service.js";
 export { default as AdminReportService } from "./adminReports.service.js";
 export { default as UserBehaviorReportsService } from "./userBehaviorReports.service.js";
 export { default as ContentStreamingReportsService } from "./contentStreamingReports.service.js";
