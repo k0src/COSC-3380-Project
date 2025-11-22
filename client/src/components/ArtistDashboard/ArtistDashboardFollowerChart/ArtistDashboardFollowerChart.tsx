@@ -1,5 +1,4 @@
 import { memo, useMemo } from "react";
-import { Link } from "react-router-dom";
 import { PuffLoader } from "react-spinners";
 import { useAsyncData } from "@hooks";
 import { statsApi } from "@api";
@@ -17,7 +16,7 @@ const ArtistDashboardFollowerChart: React.FC<
 > = ({ artistId }) => {
   const { data, loading, error } = useAsyncData(
     {
-      // followers: () => statsApi.getArtistFollowersData(artistId, "1yr"),
+      followers: () => statsApi.getArtistFollowersData(artistId),
     },
     [artistId],
     {
@@ -26,34 +25,15 @@ const ArtistDashboardFollowerChart: React.FC<
   );
 
   const chartData = useMemo(() => {
-    /*
-    return {
-    const followersData: FollowerData[] = data?.followers || [];
-    const dates = followersData.map((entry) =>
-      new Date(entry.date).toLocaleString("default", { month: "short" })
-    );
-    const followers = followersData.map((entry) => entry.followerCount);
-    return { dates, followers };
-   */
-    return {
-      dates: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
-      followers: [100, 120, 150, 130, 170, 200, 220, 210, 230, 250, 270, 300],
+    const followersData: FollowerData = data?.followers || {
+      dates: [],
+      followers: [],
     };
-    // }, [data?.followers]);
-  }, []);
+    return {
+      dates: followersData.dates,
+      followers: followersData.followers,
+    };
+  }, [data?.followers]);
 
   const hasData = useMemo(
     () =>
@@ -75,6 +55,14 @@ const ArtistDashboardFollowerChart: React.FC<
         <span className={styles.errorText}>
           Error loading chart data. Please try again later.
         </span>
+      </div>
+    );
+  }
+
+  if (!hasData) {
+    return (
+      <div className={styles.errorContainer}>
+        <span className={styles.errorText}>No follower data available.</span>
       </div>
     );
   }

@@ -22,6 +22,7 @@ export interface StreamsBarChartData {
   month: string;
   streams: number;
   likes: number;
+  [key: string]: string | number;
 }
 
 export interface ArtistTopSongsChartData {

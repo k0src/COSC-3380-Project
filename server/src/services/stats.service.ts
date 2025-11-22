@@ -414,4 +414,247 @@ export default class StatsService {
       throw error;
     }
   }
+
+  /**
+   * Get all-time stats for an artist
+   */
+  static async getArtistAllTimeStats(artistId: UUID) {
+    try {
+      const result = await query(
+        `WITH artist_songs AS (
+          SELECT s.id
+          FROM songs s
+          JOIN song_artists sa ON s.id = sa.song_id
+          WHERE sa.artist_id = $1
+        ),
+        streams_total AS (
+          SELECT COALESCE(SUM(s.streams), 0) AS total_streams
+          FROM artist_songs asongs
+          JOIN songs s ON asongs.id = s.id
+        ),
+        likes_total AS (
+          SELECT COALESCE(COUNT(DISTINCT sl.user_id), 0) AS total_likes
+          FROM artist_songs asongs
+          LEFT JOIN song_likes sl ON asongs.id = sl.song_id
+        ),
+        comments_total AS (
+          SELECT COALESCE(COUNT(DISTINCT c.id), 0) AS total_comments
+          FROM artist_songs asongs
+          LEFT JOIN comments c ON asongs.id = c.song_id
+        ),
+        listeners_total AS (
+          SELECT COALESCE(COUNT(DISTINCT sh.user_id), 0) AS total_listeners
+          FROM artist_songs asongs
+          LEFT JOIN song_history sh ON asongs.id = sh.song_id
+        ),
+        songs_count AS (
+          SELECT COUNT(DISTINCT id) AS total_songs
+          FROM artist_songs
+        )
+        SELECT 
+          (SELECT total_streams FROM streams_total) AS streams,
+          (SELECT total_likes FROM likes_total) AS likes,
+          (SELECT total_comments FROM comments_total) AS comments,
+          (SELECT total_listeners FROM listeners_total) AS unique_listeners,
+          (SELECT total_songs FROM songs_count) AS total_songs`,
+        [artistId]
+      );
+
+      if (result.length === 0) {
+        return {
+          streams: 0,
+          likes: 0,
+          comments: 0,
+          unique_listeners: 0,
+          total_songs: 0,
+        };
+      }
+
+      return {
+        streams: parseInt(result[0].streams) || 0,
+        likes: parseInt(result[0].likes) || 0,
+        comments: parseInt(result[0].comments) || 0,
+        unique_listeners: parseInt(result[0].unique_listeners) || 0,
+        total_songs: parseInt(result[0].total_songs) || 0,
+      };
+    } catch (error) {
+      console.error("Error retrieving artist all-time stats:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get streams bar chart data for an artist
+   */
+  static async getArtistStreamsBarChartData(
+    artistId: UUID,
+    timeRange: string = "30d"
+  ) {
+    try {
+      const days =
+        timeRange === "7d"
+          ? 7
+          : timeRange === "90d"
+          ? 90
+          : timeRange === "1y"
+          ? 365
+          : 30;
+
+      const result = await query(
+        `WITH date_series AS (
+          SELECT generate_series(
+            CURRENT_DATE - $2::integer,
+            CURRENT_DATE - 1,
+            '1 day'::interval
+          )::date AS day
+        ),
+        daily_streams AS (
+          SELECT 
+            DATE(sh.played_at) AS day,
+            COUNT(*) AS streams
+          FROM song_history sh
+          JOIN song_artists sa ON sh.song_id = sa.song_id
+          WHERE sa.artist_id = $1
+            AND sh.played_at >= CURRENT_DATE - $2::integer
+            AND sh.played_at < CURRENT_DATE
+          GROUP BY DATE(sh.played_at)
+        ),
+        daily_likes AS (
+          SELECT 
+            DATE(sl.liked_at) AS day,
+            COUNT(*) AS likes
+          FROM song_likes sl
+          JOIN song_artists sa ON sl.song_id = sa.song_id
+          WHERE sa.artist_id = $1
+            AND sl.liked_at >= CURRENT_DATE - $2::integer
+            AND sl.liked_at < CURRENT_DATE
+          GROUP BY DATE(sl.liked_at)
+        )
+        SELECT 
+          TO_CHAR(d.day, 'Month') AS month,
+          COALESCE(ds.streams, 0) AS streams,
+          COALESCE(dl.likes, 0) AS likes
+        FROM date_series d
+        LEFT JOIN daily_streams ds ON d.day = ds.day
+        LEFT JOIN daily_likes dl ON d.day = dl.day
+        ORDER BY d.day ASC`,
+        [artistId, days]
+      );
+
+      return result.map((row) => ({
+        month: row.month.trim(),
+        streams: parseInt(row.streams) || 0,
+        likes: parseInt(row.likes) || 0,
+      }));
+    } catch (error) {
+      console.error("Error retrieving artist streams bar chart data:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get listeners pie chart data for an artist
+   */
+  static async getArtistListenersPieChartData(artistId: UUID) {
+    try {
+      const result = await query(
+        `WITH artist_songs AS (
+          SELECT s.id
+          FROM songs s
+          JOIN song_artists sa ON s.id = sa.song_id
+          WHERE sa.artist_id = $1
+        ),
+        listener_counts AS (
+          SELECT 
+            sh.user_id,
+            COUNT(*) AS play_count
+          FROM song_history sh
+          JOIN artist_songs asongs ON sh.song_id = asongs.id
+          WHERE sh.played_at >= NOW() - INTERVAL '30 days'
+          GROUP BY sh.user_id
+        )
+        SELECT 
+          COUNT(CASE WHEN play_count > 1 THEN 1 END) AS active_listeners,
+          COUNT(CASE WHEN play_count = 1 THEN 1 END) AS first_time_listeners
+        FROM listener_counts`,
+        [artistId]
+      );
+
+      if (result.length === 0) {
+        return [
+          {
+            label: "Active Listener",
+            value: 0,
+            color: "var(--color-accent)",
+          },
+          {
+            label: "First-Time Listener",
+            value: 0,
+            color: "var(--color-accent-400)",
+          },
+        ];
+      }
+
+      return [
+        {
+          label: "Active Listener",
+          value: parseInt(result[0].active_listeners) || 0,
+          color: "var(--color-accent)",
+        },
+        {
+          label: "First-Time Listener",
+          value: parseInt(result[0].first_time_listeners) || 0,
+          color: "var(--color-accent-400)",
+        },
+      ];
+    } catch (error) {
+      console.error("Error retrieving artist listeners pie chart data:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get follower chart data for an artist
+   */
+  static async getArtistFollowersData(artistId: UUID) {
+    try {
+      const result = await query(
+        `WITH RECURSIVE month_series AS (
+          SELECT 
+            DATE_TRUNC('month', CURRENT_DATE - INTERVAL '11 months')::date AS month_start,
+            0 AS month_num
+          UNION ALL
+          SELECT 
+            (month_start + INTERVAL '1 month')::date,
+            month_num + 1
+          FROM month_series
+          WHERE month_num < 11
+        ),
+        monthly_followers AS (
+          SELECT 
+            ms.month_start,
+            COUNT(DISTINCT uf.follower_id) AS follower_count
+          FROM month_series ms
+          LEFT JOIN users u ON u.artist_id = $1
+          LEFT JOIN user_followers uf ON uf.following_id = u.id
+            AND uf.followed_at < (ms.month_start + INTERVAL '1 month')::date
+          GROUP BY ms.month_start
+          ORDER BY ms.month_start ASC
+        )
+        SELECT 
+          TO_CHAR(month_start, 'Mon') AS date,
+          follower_count AS followers
+        FROM monthly_followers`,
+        [artistId]
+      );
+
+      return {
+        dates: result.map((row) => row.date),
+        followers: result.map((row) => parseInt(row.followers) || 0),
+      };
+    } catch (error) {
+      console.error("Error retrieving artist followers data:", error);
+      throw error;
+    }
+  }
 }

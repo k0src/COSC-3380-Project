@@ -55,7 +55,7 @@ const ArtistDashboardPieChart: React.FC<ArtistDashboardPieChartProps> = ({
 }) => {
   const { data, loading, error } = useAsyncData(
     {
-      // pieChartData: () => statsApi.getArtistListenersPieChartData(artistId),
+      pieChartData: () => statsApi.getArtistListenersPieChartData(artistId),
     },
     [artistId],
     {
@@ -63,16 +63,7 @@ const ArtistDashboardPieChart: React.FC<ArtistDashboardPieChartProps> = ({
     }
   );
 
-  // const pieChartData: ListenersPieChartData[] = data?.pieChartData || [];
-
-  const pieData = [
-    { label: "Active Listener", value: 1934, color: "var(--color-accent)" },
-    {
-      label: "First-Time Listener",
-      value: 432,
-      color: "var(--color-accent-400)",
-    },
-  ];
+  const pieData: ListenersPieChartData[] = data?.pieChartData || [];
 
   if (loading) {
     return (
@@ -156,7 +147,12 @@ const ArtistDashboardPieChart: React.FC<ArtistDashboardPieChartProps> = ({
             },
           }}
         >
-          <PieCenterLabel primaryText="2,366" secondaryText="Total Listeners" />
+          <PieCenterLabel
+            primaryText={formatNumber(
+              pieData.reduce((sum, item) => sum + item.value, 0)
+            )}
+            secondaryText="Total Listeners"
+          />
         </PieChart>
       </div>
       <div className={styles.listenersStats}>

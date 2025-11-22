@@ -14,7 +14,7 @@ const ArtistDashboardAllTimeStats: React.FC<
 > = ({ artistId }) => {
   const { data, loading, error } = useAsyncData(
     {
-      // stats: () => statsApi.getAllTimeStats(artistId),
+      stats: () => statsApi.getArtistAllTimeStats(artistId),
     },
     [artistId],
     {
@@ -22,15 +22,7 @@ const ArtistDashboardAllTimeStats: React.FC<
     }
   );
 
-  // const stats = data?.stats;
-
-  const stats = {
-    streams: 124,
-    likes: 66,
-    comments: 16,
-    unique_listeners: 78,
-    total_songs: 132,
-  };
+  const stats = data?.stats;
 
   const bars = useMemo(() => {
     const barCount = 50;
@@ -65,6 +57,10 @@ const ArtistDashboardAllTimeStats: React.FC<
           <span className={styles.errorText}>
             Error loading stats. Please try again later.
           </span>
+        </div>
+      ) : !hasData ? (
+        <div className={styles.errorContainer}>
+          <span className={styles.errorText}>No data available.</span>
         </div>
       ) : (
         <div className={styles.allTimeBottom}>

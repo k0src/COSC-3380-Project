@@ -25,30 +25,37 @@ const ArtistDashboardBarChart: React.FC<ArtistDashboardBarChartProps> = ({
 
   const { data, loading, error } = useAsyncData(
     {
-      // barChartData: () => statsApi.getArtistStreamsBarChartData(artistId, timeRange: "30d"),
+      barChartData: () =>
+        statsApi.getArtistStreamsBarChartData(artistId, activeDateRange),
     },
-    [artistId],
+    [artistId, activeDateRange],
     {
-      cacheKey: `artist_streams_bar_chart_${artistId}`,
+      cacheKey: `artist_streams_bar_chart_${artistId}_${activeDateRange}`,
     }
   );
 
-  // const chartData: StreamsBarChartData[] = data?.barChartData || [];
+  const chartData: StreamsBarChartData[] = data?.barChartData || [];
 
-  const chartData = [
-    { month: "January", streams: 186, likes: 80 },
-    { month: "February", streams: 305, likes: 200 },
-    { month: "March", streams: 237, likes: 120 },
-    { month: "April", streams: 73, likes: 190 },
-    { month: "May", streams: 209, likes: 130 },
-    { month: "June", streams: 244, likes: 123 },
-    { month: "July", streams: 199, likes: 62 },
-    { month: "August", streams: 201, likes: 100 },
-    { month: "September", streams: 299, likes: 198 },
-    { month: "October", streams: 178, likes: 90 },
-    { month: "November", streams: 239, likes: 150 },
-    { month: "December", streams: 300, likes: 210 },
-  ];
+  const totalStreams = chartData.reduce((sum, item) => sum + item.streams, 0);
+  const totalLikes = chartData.reduce((sum, item) => sum + item.likes, 0);
+
+  const midpoint = Math.floor(chartData.length / 2);
+  const firstHalfStreams = chartData
+    .slice(0, midpoint)
+    .reduce((sum, item) => sum + item.streams, 0);
+  const secondHalfStreams = chartData
+    .slice(midpoint)
+    .reduce((sum, item) => sum + item.streams, 0);
+  const isTrendingUp = secondHalfStreams > firstHalfStreams;
+
+  const dateRangeLabel =
+    activeDateRange === "7d"
+      ? "7 days"
+      : activeDateRange === "90d"
+      ? "90 days"
+      : activeDateRange === "1y"
+      ? "year"
+      : "30 days";
 
   if (loading) {
     return (
@@ -73,14 +80,20 @@ const ArtistDashboardBarChart: React.FC<ArtistDashboardBarChartProps> = ({
       <div className={styles.barChartTop}>
         <div className={styles.barChartTitle}>
           <span className={styles.barChartTitleText}>
-            {formatNumber(38941)} streams in the last 30 days
+            {formatNumber(totalStreams)} streams in the last {dateRangeLabel}
           </span>
-          <LuTrendingUp
-            className={classNames(styles.barChartIcon, {
-              [styles.barChartIconUp]: true, // if trending up
-              [styles.barChartIconDown]: false, // if trending down
-            })}
-          />
+          {isTrendingUp ? (
+            <LuTrendingUp
+              className={classNames(styles.barChartIcon, styles.barChartIconUp)}
+            />
+          ) : (
+            <LuTrendingDown
+              className={classNames(
+                styles.barChartIcon,
+                styles.barChartIconDown
+              )}
+            />
+          )}
         </div>
         <div className={styles.dateRangeContainer}>
           <button
@@ -120,10 +133,10 @@ const ArtistDashboardBarChart: React.FC<ArtistDashboardBarChartProps> = ({
       <div className={styles.barChart}>
         <div className={styles.barChartNumbers}>
           <span className={styles.barChartNumber}>
-            {formatNumber(1023)} streams
+            {formatNumber(totalStreams)} streams
           </span>
           <span className={styles.barChartNumber}>
-            {formatNumber(124)} likes
+            {formatNumber(totalLikes)} likes
           </span>
         </div>
         <BarChart

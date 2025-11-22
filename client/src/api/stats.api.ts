@@ -95,4 +95,34 @@ export const statsApi = {
     );
     return response.data;
   },
+
+  async getArtistAllTimeStats(artistId: UUID) {
+    const response = await api.get(`/stats/artists/${artistId}/all-time`);
+    return response.data;
+  },
+
+  async getArtistStreamsBarChartData(
+    artistId: UUID,
+    timeRange: string = "30d"
+  ) {
+    const response = await api.get(
+      `/stats/artists/${artistId}/streams-bar-chart`,
+      {
+        params: { timeRange },
+      }
+    );
+    return response.data;
+  },
+
+  async getArtistListenersPieChartData(artistId: UUID) {
+    const response = await api.get(
+      `/stats/artists/${artistId}/listeners-pie-chart`
+    );
+    return response.data;
+  },
+
+  async getArtistFollowersData(artistId: UUID) {
+    const response = await api.get(`/stats/artists/${artistId}/followers-data`);
+    return response.data;
+  },
 };

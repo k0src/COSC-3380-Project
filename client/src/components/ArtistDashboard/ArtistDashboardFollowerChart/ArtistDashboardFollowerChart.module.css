@@ -4,7 +4,7 @@
   justify-content: center;
   z-index: 9999;
   min-height: var(--loader-height-md);
-  background: var(--color-panel-gray);
+  background-color: var(--color-panel-gray-dark);
   border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-md);
   width: 100%;
@@ -16,7 +16,7 @@
   justify-content: center;
   z-index: 9999;
   min-height: var(--loader-height-md);
-  background: var(--color-panel-gray);
+  background-color: var(--color-panel-gray-dark);
   border: var(--border-size-md) solid var(--color-panel-border);
   border-radius: var(--border-radius-md);
   width: 100%;
