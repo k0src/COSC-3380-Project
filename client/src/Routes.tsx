@@ -120,67 +120,67 @@ export default function AppRoutes() {
                 </MainLayout>
               }
             />
-            <Route
-              path="/artist-dashboard"
-              element={
-                <ProtectedRoute>
-                  <ArtistDashboardLayout>
-                    <Pages.ArtistDashboard />
-                  </ArtistDashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/artist-dashboard/overview"
-              element={
-                <ProtectedRoute>
-                  <ArtistDashboardLayout>
-                    <Pages.ArtistDashboard />
-                  </ArtistDashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/artist-dashboard/comments"
-              element={
-                <ProtectedRoute>
-                  <ArtistDashboardLayout>
-                    <Pages.ArtistDashboardCommentsPage />
-                  </ArtistDashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/artist-dashboard/manage/:tab?"
-              element={
-                <ProtectedRoute>
-                  <ArtistDashboardLayout>
-                    <Pages.ArtistDashboardManagePage />
-                  </ArtistDashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/artist-dashboard/add"
-              element={
-                <ProtectedRoute>
-                  <ArtistDashboardLayout>
-                    <Pages.ArtistDashboardAddPage />
-                  </ArtistDashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/artist-dashboard/stats"
-              element={
-                <ProtectedRoute>
-                  <ArtistDashboardLayout>
-                    <Pages.ArtistDashboardStatsPage />
-                  </ArtistDashboardLayout>
-                </ProtectedRoute>
-              }
-            />
           </Route>
+          <Route
+            path="/artist-dashboard"
+            element={
+              <ProtectedRoute>
+                <ArtistDashboardLayout>
+                  <Pages.ArtistDashboard />
+                </ArtistDashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/artist-dashboard/overview"
+            element={
+              <ProtectedRoute>
+                <ArtistDashboardLayout>
+                  <Pages.ArtistDashboard />
+                </ArtistDashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/artist-dashboard/comments"
+            element={
+              <ProtectedRoute>
+                <ArtistDashboardLayout>
+                  <Pages.ArtistDashboardCommentsPage />
+                </ArtistDashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/artist-dashboard/manage/:tab?"
+            element={
+              <ProtectedRoute>
+                <ArtistDashboardLayout>
+                  <Pages.ArtistDashboardManagePage />
+                </ArtistDashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/artist-dashboard/add"
+            element={
+              <ProtectedRoute>
+                <ArtistDashboardLayout>
+                  <Pages.ArtistDashboardAddPage />
+                </ArtistDashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/artist-dashboard/stats"
+            element={
+              <ProtectedRoute>
+                <ArtistDashboardLayout>
+                  <Pages.ArtistDashboardStatsPage />
+                </ArtistDashboardLayout>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       )}
     </>
