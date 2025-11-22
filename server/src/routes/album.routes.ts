@@ -161,12 +161,7 @@ router.delete(
         return;
       }
 
-      const deleted = await AlbumRepository.delete(id);
-      if (!deleted) {
-        res.status(404).json({ error: "Album not found" });
-        return;
-      }
-
+      await AlbumRepository.delete(id);
       res.status(200).json({ message: "Album deleted successfully" });
     } catch (error: any) {
       console.error("Error in DELETE /api/albums/:id:", error);

@@ -161,17 +161,16 @@ export default class PlaylistRepository {
     }
   }
 
-  static async delete(id: UUID): Promise<Playlist | null> {
+  static async delete(id: UUID) {
     try {
-      const res = await withTransaction(async (client) => {
-        const del = await client.query(
-          `DELETE FROM playlists WHERE id = $1 RETURNING *`,
+      await withTransaction(async (client) => {
+        await client.query(
+          `INSERT INTO deleted_playlists
+          (playlist_id, deleted_at)
+          VALUES ($1, NOW())`,
           [id]
         );
-        return del.rows[0] ?? null;
       });
-
-      return res;
     } catch (error) {
       console.error("Error deleting playlist:", error);
       throw error;
@@ -181,9 +180,12 @@ export default class PlaylistRepository {
   static async bulkDelete(playlistIds: UUID[]) {
     try {
       await withTransaction(async (client) => {
-        await client.query(`DELETE FROM playlists WHERE id = ANY($1)`, [
-          playlistIds,
-        ]);
+        await client.query(
+          `INSERT INTO deleted_playlists
+          (playlist_id, deleted_at)
+          SELECT id, NOW() FROM playlists WHERE id = ANY($1)`,
+          [playlistIds]
+        );
       });
     } catch (error) {
       console.error("Error bulk deleting playlists:", error);

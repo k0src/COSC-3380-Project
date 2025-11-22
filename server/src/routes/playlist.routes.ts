@@ -155,12 +155,7 @@ router.delete(
         return;
       }
 
-      const deleted = await PlaylistRepository.delete(id);
-      if (!deleted) {
-        res.status(404).json({ error: "Playlist not found" });
-        return;
-      }
-
+      await PlaylistRepository.delete(id);
       res.status(200).json({ message: "Playlist deleted successfully" });
     } catch (error: any) {
       console.error("Error in DELETE /playlists/:id:", error);

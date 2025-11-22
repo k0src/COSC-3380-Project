@@ -106,13 +106,7 @@ router.delete(
         return;
       }
 
-      const deletedUser = await UserRepository.delete(id);
-
-      if (!deletedUser) {
-        res.status(404).json({ error: "User not found" });
-        return;
-      }
-
+      await UserRepository.delete(id);
       res.status(200).json({ message: "User deleted successfully" });
     } catch (error: any) {
       console.error("Error in DELETE /users/:id:", error);

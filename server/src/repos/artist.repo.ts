@@ -159,17 +159,15 @@ export default class ArtistRepository {
     }
   }
 
-  static async delete(id: UUID): Promise<Artist | null> {
+  static async delete(id: UUID) {
     try {
-      const res = await withTransaction(async (client) => {
-        const del = await client.query(
-          "DELETE FROM artists WHERE id = $1 RETURNING *",
+      await withTransaction(async (client) => {
+        await client.query(
+          `INSERT INTO deleted_artists
+          (artist_id, deleted_at) VALUES ($1, NOW())`,
           [id]
         );
-        return del.rows[0] ?? null;
       });
-
-      return res;
     } catch (error) {
       console.error("Error deleting artist:", error);
       throw error;

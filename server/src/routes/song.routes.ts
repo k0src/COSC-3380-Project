@@ -241,12 +241,7 @@ router.delete(
         return;
       }
 
-      const deleted = await SongRepository.delete(id);
-      if (!deleted) {
-        res.status(404).json({ error: "Song not found" });
-        return;
-      }
-
+      await SongRepository.delete(id);
       res.status(200).json({ message: "Song deleted successfully" });
     } catch (error: any) {
       console.error("Error in DELETE /api/songs/:id:", error);

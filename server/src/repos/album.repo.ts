@@ -168,17 +168,15 @@ export default class AlbumRepository {
     }
   }
 
-  static async delete(id: UUID): Promise<Album | null> {
+  static async delete(id: UUID) {
     try {
-      const res = await withTransaction(async (client) => {
-        const del = await client.query(
-          "DELETE FROM albums WHERE id = $1 RETURNING *",
+      await withTransaction(async (client) => {
+        await client.query(
+          `INSERT INTO deleted_albums 
+          (album_id, deleted_at) VALUES ($1, NOW())`,
           [id]
         );
-        return del.rows[0] ?? null;
       });
-
-      return res;
     } catch (error) {
       console.error("Error deleting album:", error);
       throw error;
@@ -188,7 +186,12 @@ export default class AlbumRepository {
   static async bulkDelete(albumIds: UUID[]) {
     try {
       await withTransaction(async (client) => {
-        await client.query(`DELETE FROM albums WHERE id = ANY($1)`, [albumIds]);
+        await client.query(
+          `INSERT INTO deleted_albums
+          (album_id, deleted_at)
+          SELECT id, NOW() FROM albums WHERE id = ANY($1)`,
+          [albumIds]
+        );
       });
     } catch (error) {
       console.error("Error bulk deleting albums:", error);

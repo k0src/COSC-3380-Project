@@ -295,17 +295,15 @@ export default class SongRepository {
     }
   }
 
-  static async delete(id: UUID): Promise<Song | null> {
+  static async delete(id: UUID) {
     try {
-      const res = await withTransaction(async (client) => {
-        const del = await client.query(
-          `DELETE FROM songs WHERE id = $1 RETURNING *`,
+      await withTransaction(async (client) => {
+        await client.query(
+          `INSERT INTO deleted_songs
+          (song_id, deleted_at) VALUES ($1, NOW())`,
           [id]
         );
-        return del.rows[0] ?? null;
       });
-
-      return res;
     } catch (error) {
       console.error("Error deleting song:", error);
       throw error;
@@ -315,7 +313,12 @@ export default class SongRepository {
   static async bulkDelete(songIds: UUID[]) {
     try {
       await withTransaction(async (client) => {
-        await client.query(`DELETE FROM songs WHERE id = ANY($1)`, [songIds]);
+        await client.query(
+          `INSERT INTO deleted_songs
+          (song_id, deleted_at)
+          SELECT id, NOW() FROM songs WHERE id = ANY($1)`,
+          [songIds]
+        );
       });
     } catch (error) {
       console.error("Error bulk deleting songs:", error);

@@ -79,7 +79,12 @@ export default class CommentService {
 
   static async deleteComment(commentId: UUID) {
     try {
-      await query("DELETE FROM comments WHERE id = $1", [commentId]);
+      await query(
+        `INSERT INTO deleted_comments
+        (comment_id, deleted_at)
+        VALUES ($1, NOW())`,
+        [commentId]
+      );
     } catch (error) {
       console.error("Error deleting comment:", error);
       throw error;
@@ -88,7 +93,12 @@ export default class CommentService {
 
   static async bulkDeleteComments(commentIds: UUID[]) {
     try {
-      await query("DELETE FROM comments WHERE id = ANY($1)", [commentIds]);
+      await query(
+        `INSERT INTO deleted_comments
+        (comment_id, deleted_at)
+        SELECT id, NOW() FROM comments WHERE id = ANY($1)`,
+        [commentIds]
+      );
     } catch (error) {
       console.error("Error bulk deleting comments:", error);
       throw error;

@@ -203,17 +203,15 @@ export default class UserRepository {
     }
   }
 
-  static async delete(id: UUID): Promise<User | null> {
+  static async delete(id: UUID) {
     try {
-      const res = await withTransaction(async (client) => {
-        const del = await client.query(
-          `DELETE FROM users WHERE id = $1 RETURNING *`,
+      await withTransaction(async (client) => {
+        await client.query(
+          `INSERT INTO deleted_users
+          (user_id, deleted_at) VALUES ($1, NOW())`,
           [id]
         );
-        return del.rows[0] ?? null;
       });
-
-      return res;
     } catch (error) {
       console.error("Error deleting user:", error);
       throw error;

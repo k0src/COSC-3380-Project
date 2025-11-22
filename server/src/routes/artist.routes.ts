@@ -138,12 +138,7 @@ router.delete(
         return;
       }
 
-      const deleted = await ArtistRepository.delete(id);
-      if (!deleted) {
-        res.status(404).json({ error: "Artist not found" });
-        return;
-      }
-
+      await ArtistRepository.delete(id);
       res.status(200).json({ message: "Artist deleted successfully" });
     } catch (error: any) {
       console.error("Error in DELETE /api/artists/:id:", error);
