@@ -28,7 +28,12 @@ export default class FollowService {
       const sql = `
         SELECT u.* FROM users u
         JOIN user_followers uf ON u.id = uf.follower_id
-        WHERE uf.following_id = $1
+        WHERE uf.following_id = $1 
+        AND u.status = 'ACTIVE'
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_users du
+          WHERE du.user_id = u.id
+        )
         LIMIT $2 OFFSET $3
       `;
 
@@ -60,6 +65,11 @@ export default class FollowService {
         SELECT u.* FROM users u
         JOIN user_followers uf ON u.id = uf.following_id
         WHERE uf.follower_id = $1
+        AND u.status = 'ACTIVE'
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_users du
+          WHERE du.user_id = u.id
+        )
         LIMIT $2 OFFSET $3
       `;
 
@@ -88,7 +98,13 @@ export default class FollowService {
     try {
       const res = await query(
         `SELECT 1 FROM user_followers 
-        WHERE follower_id = $1 AND following_id = $2`,
+        WHERE follower_id = $1 
+        AND following_id = $2
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_users du
+          WHERE du.user_id = following_id
+        )
+        LIMIT 1`,
         [followerId, followingId]
       );
       return res.length > 0;
@@ -102,7 +118,11 @@ export default class FollowService {
     try {
       const res = await query(
         `SELECT COUNT(*) FROM user_followers 
-        WHERE following_id = $1`,
+        WHERE following_id = $1
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_users du
+          WHERE du.user_id = follower_id
+        )`,
         [userId]
       );
       return parseInt(res[0]?.count ?? "0", 10);
@@ -116,7 +136,11 @@ export default class FollowService {
     try {
       const res = await query(
         `SELECT COUNT(*) FROM user_followers 
-        WHERE follower_id = $1`,
+        WHERE follower_id = $1
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_users du
+          WHERE du.user_id = following_id
+        )`,
         [userId]
       );
       return parseInt(res[0]?.count ?? "0", 10);
@@ -139,13 +163,16 @@ export default class FollowService {
         options?.offset || 0,
       ];
       const sql = `
-        SELECT u.* FROM users u
+        SELECT DISTINCT u.* FROM users u
         JOIN user_followers uf1 ON u.id = uf1.follower_id
         JOIN user_followers uf2 ON u.id = uf2.follower_id
         WHERE uf1.following_id = $1 AND uf2.following_id = $2
-        LIMIT $3 OFFSET $4
-      `;
-
+        AND u.status = 'ACTIVE'
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_users du
+          WHERE du.user_id = u.id
+        )
+        LIMIT $3 OFFSET $4`;
       const res = await query(sql, params);
       return res;
     } catch (error) {
