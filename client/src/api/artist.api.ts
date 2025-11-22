@@ -57,6 +57,22 @@ export const artistApi = {
     return response.data;
   },
 
+  async getPinnedAlbum(
+    id: UUID,
+    accessContext: AccessContext,
+    options?: AlbumOptions
+  ) {
+    const response = await api.get<Album>(`/artists/${id}/pinned-album`, {
+      params: {
+        ...options,
+        role: accessContext.role,
+        userId: accessContext.userId,
+        scope: accessContext.scope,
+      },
+    });
+    return response.data;
+  },
+
   async getArtistPlaylists(
     id: UUID,
     accessContext: AccessContext,

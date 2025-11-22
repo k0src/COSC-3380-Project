@@ -237,6 +237,36 @@ router.get(
   }
 );
 
+// GET /api/artists/:id/albums
+router.get(
+  "/:id/pinned-album",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { includeLikes, includeRuntime, includeSongCount } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const accessContext = parseAccessContext(req.query);
+
+      const album = await ArtistRepository.getPinnedAlbum(id, accessContext, {
+        includeLikes: includeLikes === "true",
+        includeRuntime: includeRuntime === "true",
+        includeSongCount: includeSongCount === "true",
+      });
+
+      res.status(200).json(album);
+    } catch (error: any) {
+      console.error("Error in GET /artists/:id/pinned-album:", error);
+      const errorMessage = error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
+    }
+  }
+);
+
 // GET /api/artists/:id/artist-playlists
 router.get(
   "/:id/artist-playlists",

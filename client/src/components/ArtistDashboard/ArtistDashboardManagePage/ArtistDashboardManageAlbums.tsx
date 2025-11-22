@@ -250,7 +250,7 @@ const ArtistDashboardManageAlbums: React.FC<
         }}
         onConfirm={handleConfirmPin}
         title="Pin Album to Artist Page"
-        message={`Are you sure you want to pin the album "${albumToPin?.title}" to your artist page? A maximum of 3 albums can be pinned at a time.`}
+        message={`Are you sure you want to pin the album "${albumToPin?.title}" to your artist page? Only one album can be pinned at a time. If another album is already pinned, it will be unpinned.`}
         confirmButtonText="Pin Album"
       />
 
