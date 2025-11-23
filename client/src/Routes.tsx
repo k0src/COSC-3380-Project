@@ -34,6 +34,14 @@ export default function AppRoutes() {
               />
             )}
             <Route
+              path="/appeals/:entityType/:entityId"
+              element={
+                <MainLayout>
+                  <Pages.AppealsPage />
+                </MainLayout>
+              }
+            />
+            <Route
               path="/search"
               element={
                 <MainLayout>

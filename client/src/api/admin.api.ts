@@ -161,4 +161,17 @@ export const adminApi = {
     );
     return response.data;
   },
+
+  async submitAppeal(
+    userId: UUID,
+    entityType: "songs" | "albums" | "playlists" | "users",
+    entityId: UUID,
+    reason: string
+  ) {
+    const response = await api.post(
+      `/admin/appeals/${entityType}/${entityId}`,
+      { userId, reason }
+    );
+    return response.data;
+  },
 };

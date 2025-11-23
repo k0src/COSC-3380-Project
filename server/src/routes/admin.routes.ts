@@ -263,6 +263,39 @@ router.post(
   }
 );
 
+// POST /api/admin/appeals/:entityType/:entityId
+router.post(
+  "/appeals/:entityType/:entityId",
+  async (req: Request, res: Response) => {
+    try {
+      const { entityType, entityId } = req.params;
+      const { userId, reason } = req.body;
+
+      if (!userId || !entityType || !entityId || !reason) {
+        res.status(400).json({ error: "Missing required fields" });
+        return;
+      }
+
+      if (!["songs", "albums", "playlists", "users"].includes(entityType)) {
+        res.status(400).json({ error: "Invalid entity type" });
+        return;
+      }
+
+      const result = await AdminService.submitAppeal(
+        entityType as "songs" | "albums" | "playlists" | "users",
+        entityId,
+        userId,
+        reason
+      );
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error in POST /admin/appeals:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 // GET /api/admin/featured-playlist
 router.get("/featured-playlist", async (req: Request, res: Response) => {
   try {

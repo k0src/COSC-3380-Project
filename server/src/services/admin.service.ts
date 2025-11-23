@@ -463,6 +463,45 @@ export default class AdminService {
     }
   }
 
+  static async submitAppeal(
+    entityType: "songs" | "albums" | "playlists" | "users",
+    entityId: UUID,
+    userId: UUID,
+    reason: string
+  ) {
+    try {
+      let sql;
+      let params;
+
+      switch (entityType) {
+        case "songs":
+          sql = `INSERT INTO song_appeals (user_id, song_id, reason) VALUES ($1, $2, $3)`;
+          params = [userId, entityId, reason];
+          break;
+        case "albums":
+          sql = `INSERT INTO album_appeals (user_id, album_id, reason) VALUES ($1, $2, $3)`;
+          params = [userId, entityId, reason];
+          break;
+        case "playlists":
+          sql = `INSERT INTO playlist_appeals (user_id, playlist_id, reason) VALUES ($1, $2, $3)`;
+          params = [userId, entityId, reason];
+          break;
+        case "users":
+          sql = `INSERT INTO user_appeals (user_id, reason) VALUES ($1, $2, $3)`;
+          params = [userId, entityId, reason];
+          break;
+        default:
+          throw new Error("Invalid entity type");
+      }
+
+      await query(sql, params);
+      return { success: true };
+    } catch (error) {
+      console.error("Error submitting appeal:", error);
+      throw error;
+    }
+  }
+
   static async getFeaturedPlaylist(
     accessContext: AccessContext
   ): Promise<FeaturedPlaylist | null> {
