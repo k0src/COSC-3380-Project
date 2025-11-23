@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { PuffLoader } from "react-spinners";
 import { useAsyncData } from "@hooks";
 import { HorizontalRule, LazyImg, TopArtistBannerButtons } from "@components";
-import { adminApi } from "@api";
+import { artistApi } from "@api";
 import { formatNumber, pluralize } from "@util";
 import styles from "./TopArtistBanner.module.css";
 import {
@@ -21,7 +21,7 @@ export interface TopArtistBannerProps {
 const TopArtistBanner: React.FC<TopArtistBannerProps> = ({ days = 30 }) => {
   const { data, loading, error } = useAsyncData(
     {
-      topArtist: () => adminApi.getTopArtist(days),
+      topArtist: () => artistApi.getTopArtist(days),
     },
     [days],
     {

@@ -10,6 +10,7 @@ import {
   Playlist,
   PlaylistOrderByColumn,
   ArtistAlbum,
+  Song,
   ArtistOptions,
 } from "@types";
 import { query, withTransaction } from "@config/database";
@@ -1147,6 +1148,145 @@ export default class ArtistRepository {
       });
     } catch (error) {
       console.error("Error fetching artist recommendations:", error);
+      throw error;
+    }
+  }
+
+  static async getTopArtist(days: number): Promise<Artist | null> {
+    try {
+      const interval = `${days} days`;
+      const sql = `
+      SELECT 
+        a.*,
+        row_to_json(u.*) as user,
+        (SELECT COUNT(DISTINCT sl.user_id)
+          FROM song_likes sl
+          JOIN song_artists sa ON sl.song_id = sa.song_id
+          WHERE sa.artist_id = a.id
+            AND sl.liked_at >= NOW() - INTERVAL '${interval}'
+          ) as likes,
+        (SELECT COUNT(*) 
+         FROM song_history sh
+         JOIN song_artists sa ON sh.song_id = sa.song_id
+         WHERE sa.artist_id = a.id
+           AND sh.played_at >= NOW() - INTERVAL '${interval}'
+        ) as streams,
+        (SELECT COUNT(*) FROM user_followers uf
+         WHERE uf.following_id = u.id
+           AND NOT EXISTS (
+             SELECT 1 FROM deleted_users du 
+             WHERE du.user_id = u.id
+           )
+        ) as followers
+      FROM artists a
+      JOIN users u ON a.user_id = u.id
+      WHERE NOT EXISTS (
+        SELECT 1 FROM deleted_artists da
+        WHERE da.artist_id = a.id
+      )
+      ORDER BY streams DESC, likes DESC, followers DESC
+      LIMIT 1`;
+
+      const result = await query(sql);
+      if (!result || result.length === 0) return null;
+
+      const topArtist: Artist = result[0];
+      if (topArtist.user && topArtist.user.profile_picture_url) {
+        topArtist.user.profile_picture_url = getBlobUrl(
+          topArtist.user.profile_picture_url
+        );
+      }
+      if (topArtist.banner_image_url) {
+        topArtist.banner_image_url = getBlobUrl(topArtist.banner_image_url);
+      }
+      topArtist.type = "artist";
+      return topArtist;
+    } catch (error) {
+      console.error("Error fetching top artist:", error);
+      throw error;
+    }
+  }
+
+  static async getNewFromFollowedArtists(
+    userId: UUID,
+    accessContext: AccessContext,
+    limit: number = 10
+  ): Promise<Song[]> {
+    try {
+      const { sql: predicateSqlRaw, params: predicateParams } =
+        getAccessPredicate(accessContext, "s", 1);
+
+      const predicateSql =
+        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+
+      const userIdIndex = 1;
+      const limitIndex = predicateParams.length + 2;
+
+      const sql = `
+        SELECT 
+          s.*,
+          (SELECT json_agg(row_to_json(album_with_artist))
+            FROM (
+              SELECT a.*, row_to_json(ar) AS artist
+              FROM albums a
+              JOIN album_songs als ON als.album_id = a.id
+              LEFT JOIN artists ar ON ar.id = a.created_by
+              WHERE als.song_id = s.id
+            ) AS album_with_artist
+          ) AS albums,
+          (SELECT json_agg(row_to_json(ar_with_role))
+            FROM (
+              SELECT ar.*, sa.role, row_to_json(u) AS user
+              FROM artists ar
+              JOIN users u ON u.artist_id = ar.id
+              JOIN song_artists sa ON sa.artist_id = ar.id
+              WHERE sa.song_id = s.id
+            ) AS ar_with_role
+          ) AS artists
+        FROM songs s
+        JOIN song_artists sa ON sa.song_id = s.id
+        JOIN artists a ON a.id = sa.artist_id
+        JOIN users u ON u.artist_id = a.id
+        LEFT JOIN user_followers uf ON uf.follower_id = $${userIdIndex} 
+          AND uf.following_id = u.id
+        WHERE uf.follower_id IS NOT NULL AND (${predicateSql})
+        GROUP BY s.id
+        ORDER BY s.release_date DESC
+        LIMIT $${limitIndex}`;
+
+      const params = [userId, ...predicateParams, limit];
+
+      const songs = await query(sql, params);
+      if (!songs || songs.length === 0) return [];
+
+      return songs.map((song: Song) => {
+        if (song.image_url) song.image_url = getBlobUrl(song.image_url);
+        if (song.audio_url) song.audio_url = getBlobUrl(song.audio_url);
+
+        if (song.albums?.length) {
+          song.albums.forEach((album) => {
+            if (album.image_url) album.image_url = getBlobUrl(album.image_url);
+            if (album.artist) album.artist.type = "artist";
+            album.type = "album";
+          });
+        }
+
+        if (song.artists?.length) {
+          song.artists.forEach((artist) => {
+            if (artist.user?.profile_picture_url) {
+              artist.user.profile_picture_url = getBlobUrl(
+                artist.user.profile_picture_url
+              );
+            }
+            artist.type = "artist";
+          });
+        }
+
+        song.type = "song";
+        return song;
+      });
+    } catch (error) {
+      console.error("Error fetching new songs from followed artists:", error);
       throw error;
     }
   }

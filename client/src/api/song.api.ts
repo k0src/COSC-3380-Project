@@ -171,4 +171,23 @@ export const songApi = {
     const response = await api.post(`/songs/bulk-delete`, { songIds });
     return response.data;
   },
+
+  async getTrendingSongs(accessContext: AccessContext, options?: SongOptions) {
+    try {
+      const response = await api.get<Song[]>(`/songs/trending`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
 };

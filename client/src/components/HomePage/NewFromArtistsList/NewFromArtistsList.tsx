@@ -4,7 +4,7 @@ import { useAsyncData } from "@hooks";
 import { getMainArtist } from "@util";
 import { EntityItemCard } from "@components";
 import type { AccessContext, Song, UUID } from "@types";
-import { adminApi } from "@api";
+import { artistApi } from "@api";
 import styles from "./NewFromArtistsList.module.css";
 
 export interface NewFromArtistsListProps {
@@ -19,7 +19,7 @@ const NewFromArtistsList: React.FC<NewFromArtistsListProps> = ({
   const { data, loading, error } = useAsyncData(
     {
       newFromArtists: () =>
-        adminApi.getNewFromFollowedArtists(userId, accessContext, 8),
+        artistApi.getNewFromFollowedArtists(userId, accessContext, 8),
     },
     [userId],
     {

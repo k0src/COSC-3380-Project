@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { PuffLoader } from "react-spinners";
-import { adminApi } from "@api";
+import { songApi } from "@api";
 import type { AccessContext, Song } from "@types";
 import { useAsyncData } from "@hooks";
 import { getMainArtist } from "@util";
@@ -16,7 +16,7 @@ const TrendingList: React.FC<TrendingListProps> = ({ accessContext }) => {
   const { data, loading, error } = useAsyncData(
     {
       trending: () =>
-        adminApi.getTrendingSongs(accessContext, {
+        songApi.getTrendingSongs(accessContext, {
           orderByColumn: "streams",
           includeAlbums: true,
           includeArtists: true,

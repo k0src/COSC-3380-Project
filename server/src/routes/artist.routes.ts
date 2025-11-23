@@ -11,6 +11,26 @@ const router = express.Router();
 /*                                Main Routes                                 */
 /* ========================================================================== */
 
+// GET /api/artists/top-artist
+router.get("/top-artist", async (req: Request, res: Response) => {
+  try {
+    const days = parseInt(req.query.days as string, 10) || 30;
+
+    const topArtist = await ArtistRepository.getTopArtist(days);
+
+    if (!topArtist) {
+      res.status(404).json({ message: "Top artist not found" });
+      return;
+    }
+
+    res.status(200).json(topArtist);
+  } catch (error) {
+    console.error("Error in GET /artists/top-artist:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
 // GET /api/artists
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -584,6 +604,34 @@ router.get("/recommendations/:userId", async (req: Request, res: Response) => {
     res.status(statusCode).json({ error: message });
   }
 });
+
+// GET /api/artists/recommendations/new/:userId
+router.get(
+  "/recommendations/:userId/new/songs",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { userId } = req.params;
+      if (!userId) {
+        res.status(400).json({ error: "Missing userId parameter" });
+        return;
+      }
+
+      const accessContext = parseAccessContext(req);
+
+      const limit = req.query.limit
+        ? parseInt(req.query.limit as string, 10)
+        : 10;
+
+      const songs = await ArtistRepository.getNewFromFollowedArtists(
+        userId,
+        accessContext,
+        limit
+      );
+
+      res.status(200).json(songs);
+    } catch (error: any) {}
+  }
+);
 
 /* ========================================================================== */
 /*                              Artist Checks                                 */

@@ -10,6 +10,7 @@ import type {
   AlbumOptions,
   PlaylistOptions,
   ArtistOptions,
+  Song,
 } from "@types";
 
 export const artistApi = {
@@ -259,5 +260,31 @@ export const artistApi = {
       }
       throw error;
     }
+  },
+
+  async getTopArtist(days: number = 30) {
+    const response = await api.get<Artist>(`/artists/top-artist`, {
+      params: { days },
+    });
+    return response.data;
+  },
+
+  async getNewFromFollowedArtists(
+    userId: UUID,
+    accessContext: AccessContext,
+    limit: number = 10
+  ) {
+    const response = await api.get<Song[]>(
+      `/artists/recommendations/${userId}/new/songs`,
+      {
+        params: {
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+          limit,
+        },
+      }
+    );
+    return response.data;
   },
 };
