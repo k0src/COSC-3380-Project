@@ -463,6 +463,60 @@ export default class AdminService {
     }
   }
 
+  static async checkPendingAppeal(
+    entityType: "songs" | "albums" | "playlists" | "users",
+    entityId: UUID,
+    userId: UUID
+  ): Promise<boolean> {
+    try {
+      let sql;
+      let params;
+
+      switch (entityType) {
+        case "songs":
+          sql = `SELECT EXISTS(
+            SELECT 1 FROM song_appeals 
+            WHERE user_id = $1 AND song_id = $2 
+            AND appeal_status != 'RESOLVED'
+          ) as has_pending`;
+          params = [userId, entityId];
+          break;
+        case "albums":
+          sql = `SELECT EXISTS(
+            SELECT 1 FROM album_appeals 
+            WHERE user_id = $1 AND album_id = $2 
+            AND appeal_status != 'RESOLVED'
+          ) as has_pending`;
+          params = [userId, entityId];
+          break;
+        case "playlists":
+          sql = `SELECT EXISTS(
+            SELECT 1 FROM playlist_appeals 
+            WHERE user_id = $1 AND playlist_id = $2 
+            AND appeal_status != 'RESOLVED'
+          ) as has_pending`;
+          params = [userId, entityId];
+          break;
+        case "users":
+          sql = `SELECT EXISTS(
+            SELECT 1 FROM user_appeals 
+            WHERE user_id = $1 
+            AND appeal_status != 'RESOLVED'
+          ) as has_pending`;
+          params = [userId];
+          break;
+        default:
+          throw new Error("Invalid entity type");
+      }
+
+      const result = await query(sql, params);
+      return result[0]?.has_pending || false;
+    } catch (error) {
+      console.error("Error checking pending appeal:", error);
+      throw error;
+    }
+  }
+
   static async submitAppeal(
     entityType: "songs" | "albums" | "playlists" | "users",
     entityId: UUID,

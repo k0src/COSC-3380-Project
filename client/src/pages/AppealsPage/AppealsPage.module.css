@@ -141,3 +141,24 @@
   font-size: var(--font-size-sm);
   line-height: var(--line-height-relaxed);
 }
+.pendingAppealMessage {
+  background-color: var(--color-panel-gray-dark);
+  border-radius: var(--border-radius-md);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.pendingAppealHeader {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+.pendingAppealText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  line-height: var(--line-height-relaxed);
+}

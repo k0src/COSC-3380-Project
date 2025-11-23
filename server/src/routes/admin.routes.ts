@@ -263,6 +263,39 @@ router.post(
   }
 );
 
+// GET /api/admin/appeals/:entityType/:entityId/check
+router.get(
+  "/appeals/:entityType/:entityId/check",
+  async (req: Request, res: Response) => {
+    try {
+      const { entityType, entityId } = req.params;
+      const { userId } = req.query;
+
+      if (!userId || !entityType || !entityId) {
+        res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
+      if (!["songs", "albums", "playlists", "users"].includes(entityType)) {
+        res.status(400).json({ error: "Invalid entity type" });
+        return;
+      }
+
+      const hasPendingAppeal = await AdminService.checkPendingAppeal(
+        entityType as "songs" | "albums" | "playlists" | "users",
+        entityId,
+        userId as string
+      );
+
+      res.json({ hasPendingAppeal });
+    } catch (error: any) {
+      console.error("Error in GET /admin/appeals/check:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 // POST /api/admin/appeals/:entityType/:entityId
 router.post(
   "/appeals/:entityType/:entityId",

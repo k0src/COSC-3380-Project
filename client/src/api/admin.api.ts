@@ -174,4 +174,16 @@ export const adminApi = {
     );
     return response.data;
   },
+
+  async checkPendingAppeal(
+    userId: UUID,
+    entityType: "songs" | "albums" | "playlists" | "users",
+    entityId: UUID
+  ) {
+    const response = await api.get<{ hasPendingAppeal: boolean }>(
+      `/admin/appeals/${entityType}/${entityId}/check`,
+      { params: { userId } }
+    );
+    return response.data;
+  },
 };

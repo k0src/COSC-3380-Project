@@ -68,8 +68,10 @@ const AppealsPage: React.FC = () => {
             return null;
         }
       },
+      pendingAppeal: () =>
+        adminApi.checkPendingAppeal(user.id, entityType, entityId),
     },
-    [entityType, entityId],
+    [entityType, entityId, user.id],
     {
       cacheKey: `appeal_${entityType}_${entityId}`,
       hasBlobUrl: true,
@@ -77,6 +79,7 @@ const AppealsPage: React.FC = () => {
   );
 
   const entity = data?.entity as Song | Album | Playlist | User | null;
+  const hasPendingAppeal = data?.pendingAppeal?.hasPendingAppeal ?? false;
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -194,41 +197,63 @@ const AppealsPage: React.FC = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className={styles.appealsForm}>
-            <SettingsTextArea
-              label="Appeal Reason"
-              name="reason"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Explain why you believe this content does not violate our guidelines..."
-              height="medium"
-              required
-              hint={`${reason.length}/500 characters`}
-              error={error}
-            />
-
-            {successMessage && (
-              <div className={styles.successMessage}>{successMessage}</div>
-            )}
-
-            <div className={styles.formActions}>
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className={styles.cancelButton}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className={styles.submitButton}
-                disabled={isSubmitting}
-              >
-                Submit
-              </button>
+          {hasPendingAppeal ? (
+            <div className={styles.pendingAppealMessage}>
+              <div className={styles.pendingAppealHeader}>
+                Appeal Already Submitted
+              </div>
+              <p className={styles.pendingAppealText}>
+                You have already submitted an appeal for this{" "}
+                {getEntityType().toLowerCase()}. Your appeal is currently being
+                reviewed. You will be notified once a decision has been made.
+              </p>
+              <div className={styles.formActions}>
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className={styles.cancelButton}
+                >
+                  Go Back
+                </button>
+              </div>
             </div>
-          </form>
+          ) : (
+            <form onSubmit={handleSubmit} className={styles.appealsForm}>
+              <SettingsTextArea
+                label="Appeal Reason"
+                name="reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Explain why you believe this content does not violate our guidelines..."
+                height="medium"
+                required
+                hint={`${reason.length}/500 characters`}
+                error={error}
+              />
+
+              {successMessage && (
+                <div className={styles.successMessage}>{successMessage}</div>
+              )}
+
+              <div className={styles.formActions}>
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className={styles.cancelButton}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={styles.submitButton}
+                  disabled={isSubmitting}
+                >
+                  Submit
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </>
