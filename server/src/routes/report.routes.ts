@@ -128,7 +128,7 @@ router.post(
     }
 
     try {
-      await ReportService.reportUser({
+      await ReportService.reportArtist({
         reporter_id,
         reported_id,
         report_type,

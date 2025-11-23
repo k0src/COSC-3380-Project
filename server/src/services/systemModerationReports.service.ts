@@ -48,16 +48,20 @@ export class SystemModerationReportsService {
       SELECT 
         COUNT(*) as total_reports,
         COUNT(DISTINCT r.reporter_id) as unique_reporters,
-        COUNT(DISTINCT r.reported_id) as unique_items_reported
-      FROM (
+        COUNT(DISTINCT r.reported_entity_id) as unique_items_reported
+      FROM reports r
+      WHERE r.reported_at >= $1::date AND r.reported_at < ($2::date + INTERVAL '1 day')
     `;
     
     const params = [dateRange.from, dateRange.to];
     let paramIndex = 3;
     
-    // Build union query
-    sql += this.buildUnionQuery(contentType);
-    sql += `) r WHERE r.reported_at >= $1::date AND r.reported_at < ($2::date + INTERVAL '1 day')`;
+    // Filter by content type
+    if (contentType !== 'all') {
+      sql += ` AND r.reported_entity_type = $${paramIndex}`;
+      params.push(contentType.toUpperCase());
+      paramIndex++;
+    }
     
     // Filter by report types if given
     if (reportTypes && reportTypes.length > 0) {
@@ -134,14 +138,19 @@ export class SystemModerationReportsService {
       SELECT 
         r.report_type,
         COUNT(*) as count
-      FROM (
+      FROM reports r
+      WHERE r.reported_at BETWEEN $1 AND $2
     `;
     
     const params = [dateRange.from, dateRange.to];
     let paramIndex = 3;
     
-    sql += this.buildUnionQuery(contentType);
-    sql += `) r WHERE r.reported_at BETWEEN $1 AND $2`;
+    // Filter by content type
+    if (contentType !== 'all') {
+      sql += ` AND r.reported_entity_type = $${paramIndex}`;
+      params.push(contentType.toUpperCase());
+      paramIndex++;
+    }
     
     if (reportTypes && reportTypes.length > 0) {
       const placeholders = reportTypes.map((_, index) => `$${paramIndex + index}`).join(', ');
@@ -206,14 +215,19 @@ export class SystemModerationReportsService {
       SELECT 
         DATE(r.reported_at) as date,
         COUNT(*) as count
-      FROM (
+      FROM reports r
+      WHERE r.reported_at BETWEEN $1 AND $2
     `;
     
     const params = [dateRange.from, dateRange.to];
     let paramIndex = 3;
     
-    sql += this.buildUnionQuery(contentType);
-    sql += `) r WHERE r.reported_at BETWEEN $1 AND $2`;
+    // Filter by content type
+    if (contentType !== 'all') {
+      sql += ` AND r.reported_entity_type = $${paramIndex}`;
+      params.push(contentType.toUpperCase());
+      paramIndex++;
+    }
     
     // Filter by report types if given
     if (reportTypes && reportTypes.length > 0) {
@@ -345,23 +359,23 @@ export class SystemModerationReportsService {
     
     switch (itemType) {
       case 'user':
-        entityJoin = 'LEFT JOIN users e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN users e ON r.reported_entity_id = e.id';
         entityName = 'e.username';
         break;
       case 'artist':
-        entityJoin = 'LEFT JOIN artists e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN artists e ON r.reported_entity_id = e.id';
         entityName = 'e.display_name';
         break;
       case 'song':
-        entityJoin = 'LEFT JOIN songs e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN songs e ON r.reported_entity_id = e.id';
         entityName = 'e.title';
         break;
       case 'album':
-        entityJoin = 'LEFT JOIN albums e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN albums e ON r.reported_entity_id = e.id';
         entityName = 'e.title';
         break;
       case 'playlist':
-        entityJoin = 'LEFT JOIN playlists e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN playlists e ON r.reported_entity_id = e.id';
         entityName = 'e.title';
         break;
     }
@@ -372,9 +386,10 @@ export class SystemModerationReportsService {
         '${itemType}' as content_type,
         COUNT(*) as total_reports,
         MAX(r.reported_at) as latest_reported_at
-      FROM ${itemType}_reports r
+      FROM reports r
       ${entityJoin}
-      WHERE r.reported_at >= $1::date AND r.reported_at < ($2::date + INTERVAL '1 day')
+      WHERE r.reported_entity_type = '${itemType.toUpperCase()}'
+        AND r.reported_at >= $1::date AND r.reported_at < ($2::date + INTERVAL '1 day')
     `;
     
     const params = [dateRange.from, dateRange.to];
@@ -444,23 +459,23 @@ export class SystemModerationReportsService {
     
     switch (itemType) {
       case 'user':
-        entityJoin = 'LEFT JOIN users e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN users e ON r.reported_entity_id = e.id';
         entityName = 'e.username';
         break;
       case 'artist':
-        entityJoin = 'LEFT JOIN artists e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN artists e ON r.reported_entity_id = e.id';
         entityName = 'e.display_name';
         break;
       case 'song':
-        entityJoin = 'LEFT JOIN songs e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN songs e ON r.reported_entity_id = e.id';
         entityName = 'e.title';
         break;
       case 'album':
-        entityJoin = 'LEFT JOIN albums e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN albums e ON r.reported_entity_id = e.id';
         entityName = 'e.title';
         break;
       case 'playlist':
-        entityJoin = 'LEFT JOIN playlists e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN playlists e ON r.reported_entity_id = e.id';
         entityName = 'e.title';
         break;
     }
@@ -471,15 +486,16 @@ export class SystemModerationReportsService {
         ${entityName} as name,
         r.report_type,
         CASE 
-          WHEN r.report_status = 'PENDING_REVIEW' THEN 'pending'
-          WHEN r.report_status = 'ACTION_TAKEN' AND '${itemType}' IN ('user', 'artist') THEN 'suspended'
-          WHEN r.report_status = 'ACTION_TAKEN' THEN 'hidden'
-          WHEN r.report_status = 'DISMISSED' THEN 'dismissed'
+          WHEN r.status = 'PENDING' THEN 'pending'
+          WHEN r.status = 'RESOLVED' AND '${itemType}' IN ('user', 'artist') THEN 'suspended'
+          WHEN r.status = 'RESOLVED' THEN 'hidden'
+          WHEN r.status = 'DISMISSED' THEN 'dismissed'
           ELSE 'pending'
         END as status
-      FROM ${itemType}_reports r
+      FROM reports r
       ${entityJoin}
-      WHERE r.reported_at >= $1::date AND r.reported_at < ($2::date + INTERVAL '1 day')
+      WHERE r.reported_entity_type = '${itemType.toUpperCase()}'
+        AND r.reported_at >= $1::date AND r.reported_at < ($2::date + INTERVAL '1 day')
     `;
     
     const params = [dateRange.from, dateRange.to];
@@ -514,23 +530,23 @@ export class SystemModerationReportsService {
     
     switch (itemType) {
       case 'user':
-        entityJoin = 'LEFT JOIN users e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN users e ON r.reported_entity_id = e.id';
         entityName = 'e.username';
         break;
       case 'artist':
-        entityJoin = 'LEFT JOIN artists e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN artists e ON r.reported_entity_id = e.id';
         entityName = 'e.display_name';
         break;
       case 'song':
-        entityJoin = 'LEFT JOIN songs e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN songs e ON r.reported_entity_id = e.id';
         entityName = 'e.title';
         break;
       case 'album':
-        entityJoin = 'LEFT JOIN albums e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN albums e ON r.reported_entity_id = e.id';
         entityName = 'e.title';
         break;
       case 'playlist':
-        entityJoin = 'LEFT JOIN playlists e ON r.reported_id = e.id';
+        entityJoin = 'LEFT JOIN playlists e ON r.reported_entity_id = e.id';
         entityName = 'e.title';
         break;
     }
@@ -540,24 +556,25 @@ export class SystemModerationReportsService {
         r.report_type,
         '${itemType}' as item_type,
         ${entityName} as item_name,
-        r.reported_id as item_id,
-        COUNT(*) OVER (PARTITION BY r.reported_id) as report_count,
+        r.reported_entity_id as item_id,
+        COUNT(*) OVER (PARTITION BY r.reported_entity_id) as report_count,
         CASE 
-          WHEN r.report_status = 'PENDING_REVIEW' THEN 'pending'
-          WHEN r.report_status = 'ACTION_TAKEN' THEN 'resolved'
-          WHEN r.report_status = 'DISMISSED' THEN 'dismissed'
+          WHEN r.status = 'PENDING' THEN 'pending'
+          WHEN r.status = 'RESOLVED' THEN 'resolved'
+          WHEN r.status = 'DISMISSED' THEN 'dismissed'
           ELSE 'pending'
         END as status,
         r.reported_at as created_at,
         CASE 
-          WHEN r.report_status = 'ACTION_TAKEN' AND '${itemType}' IN ('user', 'artist') THEN 'suspended'
-          WHEN r.report_status = 'ACTION_TAKEN' THEN 'hidden'
-          WHEN r.report_status = 'DISMISSED' THEN 'dismissed'
+          WHEN r.status = 'RESOLVED' AND '${itemType}' IN ('user', 'artist') THEN 'suspended'
+          WHEN r.status = 'RESOLVED' THEN 'hidden'
+          WHEN r.status = 'DISMISSED' THEN 'dismissed'
           ELSE NULL
         END as action
-      FROM ${itemType}_reports r
+      FROM reports r
       ${entityJoin}
-      WHERE r.reported_at BETWEEN $1 AND $2
+      WHERE r.reported_entity_type = '${itemType.toUpperCase()}'
+        AND r.reported_at BETWEEN $1 AND $2
     `;
     
     const params = [dateRange.from, dateRange.to];
@@ -599,48 +616,45 @@ export class SystemModerationReportsService {
   private static buildUnionQuery(contentType: string): string {
     if (contentType === 'all') {
       return `
-        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM user_reports
-        UNION ALL
-        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM artist_reports
-        UNION ALL
-        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM song_reports
-        UNION ALL
-        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM album_reports
-        UNION ALL
-        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM playlist_reports
+        SELECT report_type, status as report_status, reported_at, reporter_id, reported_entity_id as reported_id 
+        FROM reports
       `;
     } else {
       return `
-        SELECT report_type, report_status, reported_at, reporter_id, reported_id FROM ${contentType}_reports
+        SELECT report_type, status as report_status, reported_at, reporter_id, reported_entity_id as reported_id 
+        FROM reports
+        WHERE reported_entity_type = '${contentType.toUpperCase()}'
       `;
     }
   }
 
   // Build union query with joins for name search
   private static buildUnionQueryWithSearch(contentType: string, searchPattern: string, baseParamIndex: number): { sql: string, params: string[], newParamIndex: number } {
-    const unions: string[] = [];
     const params: string[] = [];
     let paramIndex = baseParamIndex;
 
     const contentTypes = contentType === 'all' 
-      ? [{ type: 'user', table: 'users', nameCol: 'username' },
-         { type: 'artist', table: 'artists', nameCol: 'display_name' },
-         { type: 'song', table: 'songs', nameCol: 'title' },
-         { type: 'album', table: 'albums', nameCol: 'title' },
-         { type: 'playlist', table: 'playlists', nameCol: 'title' }]
-      : [{ type: contentType, 
+      ? [{ type: 'USER', table: 'users', nameCol: 'username' },
+         { type: 'ARTIST', table: 'artists', nameCol: 'display_name' },
+         { type: 'SONG', table: 'songs', nameCol: 'title' },
+         { type: 'ALBUM', table: 'albums', nameCol: 'title' },
+         { type: 'PLAYLIST', table: 'playlists', nameCol: 'title' }]
+      : [{ type: contentType.toUpperCase(), 
            table: contentType === 'user' ? 'users' : contentType === 'artist' ? 'artists' : `${contentType}s`, 
            nameCol: contentType === 'user' ? 'username' : contentType === 'artist' ? 'display_name' : 'title' }];
 
-    contentTypes.forEach(({ type, table, nameCol }) => {
-      unions.push(`
-        SELECT r.report_type, r.reporter_id, r.reported_id, r.reported_at
-        FROM ${type}_reports r
-        LEFT JOIN ${table} e ON r.reported_id = e.id
-        WHERE r.reported_at BETWEEN $1 AND $2 AND e.${nameCol} ILIKE $${paramIndex}
-      `);
+    const unions = contentTypes.map(({ type, table, nameCol }) => {
       params.push(searchPattern);
+      const sql = `
+        SELECT r.report_type, r.reporter_id, r.reported_entity_id as reported_id, r.reported_at
+        FROM reports r
+        LEFT JOIN ${table} e ON r.reported_entity_id = e.id
+        WHERE r.reported_entity_type = '${type}' 
+          AND r.reported_at BETWEEN $1 AND $2 
+          AND e.${nameCol} ILIKE $${paramIndex}
+      `;
       paramIndex++;
+      return sql;
     });
 
     return { sql: unions.join(' UNION ALL '), params, newParamIndex: paramIndex };

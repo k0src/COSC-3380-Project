@@ -1,7 +1,6 @@
 import api from "./api";
-import type { UUID } from "@types";
+import type { UUID, ReportEntity } from "@types";
 
-export type EntityType = "user" | "song" | "album" | "playlist" | "artist";
 
 export type Report = {
   report_id: UUID;
@@ -15,17 +14,17 @@ export type Report = {
   reviewer_id?: UUID | null;
   entity_name?: string; // optional joined data
   reporter_username?: string; // username of the person who made the report
-  reported_username?: string; // username of the person being reported
+  reported_name?: string; // username of the person being reported
 };
 
 export const AdminAPI = {
-  async getReports(entity: EntityType) {
+  async getReports(entity: ReportEntity) {
     const response = await api.get(`/admin/reports/${entity}`);
     return response.data.data; // match Express response
   },
 
   async decideReport(
-    entity: EntityType,
+    entity: ReportEntity,
     reportId: UUID,
     result: "suspend" | "reject",
     adminId: UUID

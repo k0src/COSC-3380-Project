@@ -1,127 +1,134 @@
 import { query } from "config/database.js";
-import type { UUID } from "types";
+import type { UUID, ReportEntity } from "types"; 
 
-export type ReportEntity = "user" | "song" | "album" | "playlist" | "artist";
+export type ReportStatus = 'PENDING' | 'RESOLVED' | 'DISMISSED';
 
 export default class AdminRepository {
+  
+  /**
+   * Fetches reports filtering by the entity type (e.g., get all SONG reports).
+   * It dynamically joins the specific entity table to get the name/title.
+   */
   static async getReports(
     entity: ReportEntity,
     limit = 50,
     offset = 0
   ): Promise<any[]> {
     try {
-      const entityConfig = {
-        user: { table: "users", titleColumn: "username" },
-        song: { table: "songs", titleColumn: "title" },
-        album: { table: "albums", titleColumn: "title" },
-        playlist: { table: "playlists", titleColumn: "name" },
-        artist: { table: "artists", titleColumn: "display_name" },
+      // Config mapping to switch between tables based on the ENUM
+      // Keys match the ReportEntityType enum (Uppercase)
+      const entityConfig: Record<ReportEntity, { table: string; titleColumn: string }> = {
+        USER: { table: "users", titleColumn: "username" },
+        SONG: { table: "songs", titleColumn: "title" },
+        ALBUM: { table: "albums", titleColumn: "title" },
+        PLAYLIST: { table: "playlists", titleColumn: "title" },
+        ARTIST: { table: "artists", titleColumn: "display_name" },  
       };
 
       const config = entityConfig[entity];
-      const reportTable = `"${entity}_reports"`; // quoted table name
+
+      if (!config) {
+        throw new Error(`Invalid report entity type: ${entity}`);
+      }
 
       const sql = `
         SELECT 
+          r.id as report_id,
           r.reporter_id,
-          r.reported_id,
+          r.reported_entity_id as reported_id,
+          r.reported_entity_type,
           r.report_type,
           r.description,
-          r.report_status,
+          r.status as report_status,
           r.reported_at as created_at,
           r.reviewer_id,
-          r.reported_id as report_id,
           reporter.username AS reporter_username,
-          reported_entity.${config.titleColumn} AS reported_username
-        FROM ${reportTable} r
+          -- Dynamically select the name/title of the reported item
+          reported_entity.${config.titleColumn} AS reported_name
+        FROM reports r
         LEFT JOIN users reporter ON r.reporter_id = reporter.id
-        LEFT JOIN ${config.table} reported_entity ON r.reported_id = reported_entity.id
-        WHERE r.report_status = 'PENDING_REVIEW'
+        -- Dynamic join based on the entity type
+        LEFT JOIN ${config.table} reported_entity ON r.reported_entity_id = reported_entity.id
+        WHERE r.reported_entity_type = $1 
+          AND r.status = 'PENDING'
         ORDER BY r.reported_at DESC
-        LIMIT $1 OFFSET $2;
+        LIMIT $2 OFFSET $3;
       `;
 
-      const result = await query(sql, [limit, offset]);
-      return Array.isArray(result) ? result : result ?? result;
+      // Pass entity directly (assuming it matches the ENUM string exactly)
+      const result = await query(sql, [entity, limit, offset]);
+      return Array.isArray(result) ? result : [];
     } catch (error) {
-      console.error(`Error fetching ${entity} reports:`, error);
+      console.error(`Error fetching ${entity.toLowerCase()} reports:`, error);
       throw error;
     }
   }
 
+  /**
+   * Updates the report status and takes action on the entity (e.g., suspends user).
+   */
   static async updateReportDecision(
     entity: ReportEntity,
     reportId: UUID,
     result: "suspend" | "reject",
     adminId: UUID
   ) {
-    const table = `"${entity}_reports"`;
+    try {
+      // 1. Determine the new Database Status
+      const status: ReportStatus = result === "reject" ? "DISMISSED" : "RESOLVED";
 
-    // Convert the result to the proper status value based on the enum
-    const status = result === "reject" ? "DISMISSED" : "ACTION_TAKEN";
+      // 2. Update the report record
+      const sql = `
+        UPDATE reports
+        SET 
+          status = $1::report_status, 
+          reviewer_id = $2, 
+          resolved_at = NOW(), 
+          updated_at = NOW()
+        WHERE id = $3
+        RETURNING *;
+      `;
 
-    // Update the report status
-    const sql = `
-      UPDATE ${table}
-      SET report_status = $1, reviewer_id = $2
-      WHERE reported_id = $3
-      RETURNING *;
-    `;
+      const res = await query(sql, [status, adminId, reportId]);
+      const reportResult = Array.isArray(res) ? res[0] : res;
 
-    const res = await query(sql, [status, adminId, reportId]);
-    const reportResult = Array.isArray(res) ? res[0] : res ?? res;
+      // 3. If the decision was to suspend/hide, update the actual entity table
+      if (status === "RESOLVED" && reportResult) {
+        const entityId = reportResult.reported_entity_id;
+        let entityUpdateSql = "";
 
-    // If action is taken (suspend), update the corresponding entity
-    if (status === "ACTION_TAKEN") {
-      let entityUpdateSql = "";
+        // Determine the action based on the Entity Type
+        switch (entity) {
+          case "SONG":
+            entityUpdateSql = `UPDATE songs SET visibility_status = 'PRIVATE' WHERE id = $1`;
+            break;
 
-      switch (entity) {
-        case "song":
-          entityUpdateSql = `
-            UPDATE songs
-            SET visibility_status = 'PRIVATE'
-            WHERE id = $1;
-          `;
-          break;
+          case "USER":
+            entityUpdateSql = `UPDATE users SET status = 'SUSPENDED' WHERE id = $1`;
+            break;
 
-        case "user":
-          entityUpdateSql = `
-            UPDATE users
-            SET status = 'SUSPENDED'
-            WHERE id = $1;
-          `;
-          break;
+          case "ARTIST":
+            entityUpdateSql = `UPDATE artists SET status = 'SUSPENDED' WHERE id = $1`;
+            break;
 
-        case "artist":
-          entityUpdateSql = `
-            UPDATE artists
-            SET status = 'SUSPENDED'
-            WHERE id = $1;
-          `;
-          break;
+          case "ALBUM":
+            entityUpdateSql = `UPDATE albums SET visibility_status = 'UNLISTED' WHERE id = $1`;
+            break;
 
-        case "album":
-          entityUpdateSql = `
-            UPDATE albums
-            SET visibility_status = 'UNLISTED'
-            WHERE id = $1;
-          `;
-          break;
+          case "PLAYLIST":
+            entityUpdateSql = `UPDATE playlists SET visibility_status = 'private' WHERE id = $1`;
+            break;
+        }
 
-        case "playlist":
-          entityUpdateSql = `
-            UPDATE playlists
-            SET visibility_status = 'private'
-            WHERE id = $1;
-          `;
-          break;
+        if (entityUpdateSql && entityId) {
+          await query(entityUpdateSql, [entityId]);
+        }
       }
 
-      if (entityUpdateSql) {
-        await query(entityUpdateSql, [reportId]);
-      }
+      return reportResult;
+    } catch (error) {
+      console.error(`Error updating report decision for ${entity}:`, error);
+      throw error;
     }
-
-    return reportResult;
   }
 }

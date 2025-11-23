@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
+import type { ReportEntity, ReportType } from '@types';
 import styles from './ReportSection.module.css';
 
-export type ReportType = 'user' | 'song' | 'album' | 'playlist' | 'artist';
+// export type ReportType = 'user' | 'song' | 'album' | 'playlist' | 'artist';
 
 interface ReportDropdownProps {
-  selectedReport: ReportType;
-  onSelect: (type: ReportType) => void;
+  selectedReport: ReportEntity;
+  onSelect: (type: ReportEntity) => void;
 }
 
 const ReportDropdown: React.FC<ReportDropdownProps> = ({ selectedReport, onSelect }) => {
@@ -26,7 +27,7 @@ const ReportDropdown: React.FC<ReportDropdownProps> = ({ selectedReport, onSelec
     };
   }, []);
 
-  const handleSelect = (type: ReportType) => {
+  const handleSelect = (type: ReportEntity) => {
     if (type !== selectedReport) {
       onSelect(type); // trigger parent to fetch new reports
     }
@@ -59,7 +60,7 @@ const ReportDropdown: React.FC<ReportDropdownProps> = ({ selectedReport, onSelec
           role="listbox"
           style={{ position: 'absolute', top: 'calc(100% + 0.4rem)', left: 0 }}
         >
-          {(['user', 'song', 'album', 'playlist', 'artist'] as ReportType[]).map((type) => (
+          {(['USER', 'SONG', 'ALBUM', 'PLAYLIST', 'ARTIST'] as ReportEntity[]).map((type) => (
             <div
               key={type}
               className={`${styles.dropdownItem} ${

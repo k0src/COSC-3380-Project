@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {AdminAPI, type Report, type EntityType  } from "../../api/admin.api"; 
+import {AdminAPI, type Report  } from "../../api/admin.api"; 
+import type { ReportEntity } from "@types";
 import ReportDropdown from "./sections/ReportDrpdown";
 import ReportsList from "./sections/ReportList";
 import styles from "./Report.module.css";
@@ -8,7 +9,7 @@ import { useAuth } from "@contexts";
 
 const ReportPage: React.FC = () => {
   const navigate = useNavigate();
-  const [entity, setEntity] = useState<EntityType>("song");
+  const [entity, setEntity] = useState<ReportEntity>("SONG");
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +81,7 @@ const ReportPage: React.FC = () => {
             {error && <p className="text-red-500">{error}</p>}
             {!loading && !error && (
               <ReportsList
-                reportType={entity}
+                ReportEntity={entity}
                 reports={reports}
                 loading={loading}
                 error={error}

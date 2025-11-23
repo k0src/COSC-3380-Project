@@ -10,7 +10,7 @@ export interface AdminAppealData {
   submitted_at: string;
   report_type: string;
   reason: string;
-  appeal_status: "PENDING_REVIEW" | "APPROVED" | "REJECTED";
+  appeal_status: "PENDING" | "APPROVED" | "REJECTED";
   reviewer_id?: UUID | null;
 
   // Additional fields for display
@@ -43,7 +43,7 @@ export default class AdminAppealsRepository {
             u.username
           FROM user_appeals ua
           LEFT JOIN users u ON ua.user_id = u.id
-          WHERE ua.appeal_status = 'PENDING_REVIEW'
+          WHERE ua.appeal_status = 'PENDING'
           ORDER BY ua.submitted_at DESC
           LIMIT $1 OFFSET $2;
         `;
@@ -72,7 +72,7 @@ export default class AdminAppealsRepository {
             LEFT JOIN song_artists sa ON s.id = sa.song_id AND sa.role = 'primary'
             LEFT JOIN artists ar ON sa.artist_id = ar.id
             LEFT JOIN users artist_user ON artist_user.artist_id = ar.id
-            WHERE a.appeal_status = 'PENDING_REVIEW'
+            WHERE a.appeal_status = 'PENDING'
             ORDER BY a.submitted_at DESC
             LIMIT $1 OFFSET $2;
           `;
@@ -95,7 +95,7 @@ export default class AdminAppealsRepository {
             LEFT JOIN albums alb ON a.album_id = alb.id
             LEFT JOIN artists ar ON alb.created_by = ar.id
             LEFT JOIN users artist_user ON artist_user.artist_id = ar.id
-            WHERE a.appeal_status = 'PENDING_REVIEW'
+            WHERE a.appeal_status = 'PENDING'
             ORDER BY a.submitted_at DESC
             LIMIT $1 OFFSET $2;
           `;
@@ -117,7 +117,7 @@ export default class AdminAppealsRepository {
             LEFT JOIN users u ON a.user_id = u.id
             LEFT JOIN playlists p ON a.playlist_id = p.id
             LEFT JOIN users owner ON p.created_by = owner.id
-            WHERE a.appeal_status = 'PENDING_REVIEW'
+            WHERE a.appeal_status = 'PENDING'
             ORDER BY a.submitted_at DESC
             LIMIT $1 OFFSET $2;
           `;
