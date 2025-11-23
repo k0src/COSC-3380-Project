@@ -22,7 +22,7 @@ export default class AdminRepository {
         SONG: { table: "songs", titleColumn: "title" },
         ALBUM: { table: "albums", titleColumn: "title" },
         PLAYLIST: { table: "playlists", titleColumn: "title" },
-        ARTIST: { table: "artists", titleColumn: "display_name" },  
+        ARTIST: { table: "users", titleColumn: "username" },  
       };
 
       const config = entityConfig[entity];

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {AdminAPI, type Report  } from "../../api/admin.api"; 
-import type { ReportEntity } from "@types";
+import { AdminAPI } from "@api"; 
+import { artistApi } from "../../api/artist.api";
+import type { ReportEntity, Report } from "@types";
 import ReportDropdown from "./sections/ReportDrpdown";
 import ReportsList from "./sections/ReportList";
 import styles from "./Report.module.css";
@@ -28,7 +29,48 @@ const ReportPage: React.FC = () => {
     setLoading(true);
     setError(null);
     const data = await AdminAPI.getReports(entity);
-    setReports(data);
+      // If we're viewing ARTIST reports and the server didn't join the artist name,
+      // fetch missing artist display names and merge into the reports.
+      if (entity === "ARTIST" && data && data.length) {
+        const missingIds: string[] = Array.from(
+          new Set(
+            data.filter((r: Report) => !r.reported_name).map((r: Report) => r.reported_id)
+          )
+        );
+
+        if (missingIds.length && user) {
+          const accessContext = {
+            role: user.role === "ADMIN" ? "admin" : "user",
+            userId: user.id,
+            scope: "single",
+          } as const;
+
+          // Batch fetch artist info in parallel
+          const artistPromises = missingIds.map((id: string) =>
+            artistApi.getArtistById(id, accessContext, { includeUser: false }).then(
+              (a: any) => ({ id, name: a.display_name })
+            ).catch(() => ({ id, name: undefined }))
+          );
+
+          const artists = await Promise.all(artistPromises);
+          const nameMap: Record<string, string | undefined> = {};
+          artists.forEach((a) => (nameMap[a.id] = a.name));
+
+          // Merge names into reports
+          const merged = data.map((r: Report) => ({
+            ...r,
+            reported_name: r.reported_name || nameMap[r.reported_id],
+          }));
+
+          console.log("Merged reports with artist names:", merged);
+
+          setReports(merged);
+        } else {
+          setReports(data);
+        }
+      } else {
+        setReports(data);
+      }
   } catch (err) {
     console.error(err);
     setError("An error occurred while fetching reports");

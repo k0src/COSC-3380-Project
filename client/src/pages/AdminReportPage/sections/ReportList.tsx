@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./ReportSection.module.css";
 import type { ReportEntity } from "@types";
-import type { Report } from "../../../api/admin.api";
+import type { Report } from "@types";
 
 interface ReportsListProps {
   ReportEntity: ReportEntity;

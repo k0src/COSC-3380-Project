@@ -4,6 +4,7 @@ import type {
   EntityType,
   Playlist,
   Song,
+  Artist,
   Album,
   Comment,
   User,
