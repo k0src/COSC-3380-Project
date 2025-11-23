@@ -418,6 +418,38 @@ export default class AdminService {
     }
   }
 
+  static async verifyArtist(artistId: UUID) {
+    try {
+      const result = await query(
+        `UPDATE artists
+        SET verified = true
+        WHERE id = $1
+        RETURNING *`,
+        [artistId]
+      );
+      return result[0];
+    } catch (error) {
+      console.error("Error verifying artist:", error);
+      throw error;
+    }
+  }
+
+  static async unverifyArtist(artistId: UUID) {
+    try {
+      const result = await query(
+        `UPDATE artists
+        SET verified = false
+        WHERE id = $1
+        RETURNING *`,
+        [artistId]
+      );
+      return result[0];
+    } catch (error) {
+      console.error("Error unverifying artist:", error);
+      throw error;
+    }
+  }
+
   static async getFeaturedPlaylist(
     accessContext: AccessContext
   ): Promise<FeaturedPlaylist | null> {

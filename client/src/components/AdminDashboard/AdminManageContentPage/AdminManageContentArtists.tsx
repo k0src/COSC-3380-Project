@@ -6,12 +6,12 @@ import type {
   AccessContext,
 } from "@types";
 import { DataTable, ConfirmationModal, EditArtistModal } from "@components";
-import { artistApi } from "@api";
+import { artistApi, adminApi } from "@api";
 import {
   artistColumns,
   artistFilterKeys,
 } from "@components/DataTable/columnDefinitions";
-import { LuTrash2, LuSquarePen } from "react-icons/lu";
+import { LuTrash2, LuSquarePen, LuBadgeCheck } from "react-icons/lu";
 
 export interface AdminManageContentArtistsProps {
   accessContext: AccessContext;
@@ -61,6 +61,36 @@ const AdminManageContentArtists: React.FC<AdminManageContentArtistsProps> = ({
       refetchRef.current();
     }
   }, []);
+
+  const handleVerifyClick = useCallback(
+    async (artist: Artist, refetch: () => void) => {
+      try {
+        if (artist.verified) {
+          await adminApi.unverifyArtist(artist.id);
+        } else {
+          await adminApi.verifyArtist(artist.id);
+        }
+        refetch();
+      } catch (error) {
+        console.error("Failed to toggle artist verification:", error);
+        throw error;
+      }
+    },
+    []
+  );
+
+  const handleBulkVerifyClick = useCallback(
+    async (artists: Artist[], refetch: () => void) => {
+      try {
+        await Promise.all(artists.map((a) => adminApi.verifyArtist(a.id)));
+        refetch();
+      } catch (error) {
+        console.error("Failed to bulk verify artists:", error);
+        throw error;
+      }
+    },
+    []
+  );
 
   const handleConfirmDelete = useCallback(async () => {
     if (!artistToDelete) return;
@@ -112,6 +142,13 @@ const AdminManageContentArtists: React.FC<AdminManageContentArtistsProps> = ({
         onClick: handleEditClick,
       },
       {
+        id: "verify",
+        icon: LuBadgeCheck,
+        label: (row: Artist) =>
+          row.verified ? "Unverify Artist" : "Verify Artist",
+        onClick: handleVerifyClick,
+      },
+      {
         id: "delete",
         icon: LuTrash2,
         label: "Delete Artist",
@@ -119,11 +156,17 @@ const AdminManageContentArtists: React.FC<AdminManageContentArtistsProps> = ({
         variant: "danger",
       },
     ],
-    [handleDeleteClick, handleEditClick]
+    [handleDeleteClick, handleEditClick, handleVerifyClick]
   );
 
   const bulkActions = useMemo<DataTableBulkAction<Artist>[]>(
     () => [
+      {
+        id: "verify",
+        icon: LuBadgeCheck,
+        label: "Verify Artists",
+        onClick: handleBulkVerifyClick,
+      },
       {
         id: "delete",
         icon: LuTrash2,
@@ -132,7 +175,7 @@ const AdminManageContentArtists: React.FC<AdminManageContentArtistsProps> = ({
         variant: "danger",
       },
     ],
-    [handleBulkDeleteClick]
+    [handleBulkDeleteClick, handleBulkVerifyClick]
   );
 
   return (

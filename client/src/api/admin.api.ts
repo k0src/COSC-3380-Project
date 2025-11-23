@@ -144,4 +144,14 @@ export const adminApi = {
     const response = await api.post(`/admin/users/${userId}/reactivate`);
     return response.data;
   },
+
+  async verifyArtist(artistId: UUID) {
+    const response = await api.post(`/admin/artists/${artistId}/verify`);
+    return response.data;
+  },
+
+  async unverifyArtist(artistId: UUID) {
+    const response = await api.post(`/admin/artists/${artistId}/unverify`);
+    return response.data;
+  },
 };

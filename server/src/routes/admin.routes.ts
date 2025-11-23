@@ -189,6 +189,56 @@ router.post(
   }
 );
 
+// POST /api/admin/artists/:artistId/verify
+router.post(
+  "/artists/:artistId/verify",
+  async (req: Request, res: Response) => {
+    try {
+      const { artistId } = req.params;
+      if (!artistId) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const artist = await AdminService.verifyArtist(artistId);
+      if (!artist) {
+        res.status(404).json({ error: "Artist not found" });
+        return;
+      }
+      res.json(artist);
+    } catch (error: any) {
+      console.error("Error in POST /admin/artists/:artistId/verify:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
+// POST /api/admin/artists/:artistId/unverify
+router.post(
+  "/artists/:artistId/unverify",
+  async (req: Request, res: Response) => {
+    try {
+      const { artistId } = req.params;
+      if (!artistId) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const artist = await AdminService.unverifyArtist(artistId);
+      if (!artist) {
+        res.status(404).json({ error: "Artist not found" });
+        return;
+      }
+      res.json(artist);
+    } catch (error: any) {
+      console.error("Error in POST /admin/artists/:artistId/unverify:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 // GET /api/admin/featured-playlist
 router.get("/featured-playlist", async (req: Request, res: Response) => {
   try {
