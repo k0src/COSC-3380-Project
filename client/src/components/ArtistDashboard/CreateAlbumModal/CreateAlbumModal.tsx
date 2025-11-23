@@ -1,10 +1,10 @@
 import { useState, memo, useEffect, useCallback, useMemo } from "react";
-import type { UUID, Album, VisibilityStatus } from "@types";
+import type { UUID, Album } from "@types";
 import { albumApi } from "@api";
 import {
   SettingsInput,
   SettingsImageUpload,
-  SettingsRadio,
+  SettingsToggle,
   SettingsDatePicker,
 } from "@components";
 import styles from "./CreateAlbumModal.module.css";
@@ -23,7 +23,7 @@ interface CreateAlbumForm {
   title: string;
   releaseDate: string;
   genre: string;
-  visibilityStatus: "PUBLIC" | "PRIVATE" | "UNLISTED";
+  visibilityStatus: "PUBLIC" | "PRIVATE";
   image?: File | null;
   removeImage?: boolean;
 }
@@ -106,20 +106,17 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({
     [error]
   );
 
-  const handleVisibilityChange = (value: string) => {
+  const handlePrivacyChange = (checked: boolean) => {
     setFormState((prev) => ({
       ...prev,
-      visibility_status: value as VisibilityStatus,
+      visibilityStatus: checked ? "PUBLIC" : "PRIVATE",
     }));
-    if (error) {
-      setError("");
-    }
   };
 
   const handleDateChange = (value: string) => {
     setFormState((prev) => ({
       ...prev,
-      release_date: value,
+      releaseDate: value,
     }));
     if (error) {
       setError("");
@@ -238,7 +235,7 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({
           />
           <SettingsDatePicker
             label="Release Date"
-            name="release_date"
+            name="releaseDate"
             value={formState.releaseDate}
             onChange={handleDateChange}
             placeholder="YYYY-MM-DD"
@@ -246,18 +243,16 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({
             disabled={isCreating}
             max={today}
           />
-          <SettingsRadio
-            label="Visibility"
-            name="visibility_status"
-            value={formState.visibilityStatus}
-            onChange={handleVisibilityChange}
-            options={[
-              { label: "Public", value: "PUBLIC" },
-              { label: "Private", value: "PRIVATE" },
-              { label: "Unlisted", value: "UNLISTED" },
-            ]}
+
+          <SettingsToggle
+            label="Album Privacy"
+            name="visibilityStatus"
+            checked={formState.visibilityStatus === "PUBLIC"}
+            onChange={handlePrivacyChange}
             disabled={isCreating}
+            values={{ on: "Public", off: "Private" }}
           />
+
           <SettingsImageUpload
             label="Cover Image"
             currentImage={musicPlaceholder}

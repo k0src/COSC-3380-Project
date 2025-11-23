@@ -6,7 +6,7 @@ import { songApi } from "@api";
 import {
   SettingsInput,
   SettingsImageUpload,
-  SettingsRadio,
+  SettingsToggle,
   SettingsDatePicker,
   SearchableDropdown,
   SearchableList,
@@ -25,7 +25,7 @@ interface UploadForm {
   artists: SearchableListItem[];
   genre: string;
   releaseDate: string;
-  visibilityStatus: string;
+  visibilityStatus: "PUBLIC" | "PRIVATE";
   coverImage: File | null;
   audioFile: File | null;
   albumId: string;
@@ -117,6 +117,13 @@ const ArtistDashboardAddPage: React.FC<ArtistDashboardAddPageProps> = ({
     },
     [error]
   );
+
+  const handlePrivacyChange = (checked: boolean) => {
+    setUploadForm((prev) => ({
+      ...prev,
+      visibilityStatus: checked ? "PUBLIC" : "PRIVATE",
+    }));
+  };
 
   const handleCoverImageChange = useCallback(
     (file: File | null) => {
@@ -468,19 +475,13 @@ const ArtistDashboardAddPage: React.FC<ArtistDashboardAddPageProps> = ({
                     max={new Date().toISOString().split("T")[0]}
                   />
 
-                  <SettingsRadio
-                    label="Visibility"
+                  <SettingsToggle
+                    label="Song Privacy"
                     name="visibilityStatus"
-                    value={uploadForm.visibilityStatus}
-                    onChange={(value) =>
-                      handleDropdownChange("visibilityStatus", value)
-                    }
-                    options={[
-                      { label: "Public", value: "PUBLIC" },
-                      { label: "Private", value: "PRIVATE" },
-                      { label: "Unlisted", value: "UNLISTED" },
-                    ]}
+                    checked={uploadForm.visibilityStatus === "PUBLIC"}
+                    onChange={handlePrivacyChange}
                     disabled={isUploading}
+                    values={{ on: "Public", off: "Private" }}
                   />
                 </div>
                 <div className={styles.formRight}>

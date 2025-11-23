@@ -1,6 +1,6 @@
 import { useState, memo, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import type { UUID, LibraryPlaylist, Playlist } from "@types";
+import { useNavigate, Link } from "react-router-dom";
+import type { UUID, LibraryPlaylist, Playlist, VisibilityStatus } from "@types";
 import { playlistApi } from "@api";
 import {
   SettingsInput,
@@ -53,7 +53,7 @@ type CreatePlaylistModalProps =
 interface CreatePlaylistForm {
   title: string;
   description: string;
-  visibilityStatus: "PUBLIC" | "PRIVATE";
+  visibilityStatus: VisibilityStatus;
   image?: File | null;
   removeImage?: boolean;
 }
@@ -260,6 +260,15 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
+  const unlisted = useMemo(
+    () =>
+      !adminMode &&
+      mode === "edit" &&
+      playlist &&
+      playlist.visibility_status === "UNLISTED",
+    [adminMode, mode, playlist]
+  );
+
   useEffect(() => {
     if (!isOpen) {
       setError("");
@@ -287,6 +296,20 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
             </button>
           </div>
           <form className={styles.playlistForm} onSubmit={handleSubmit}>
+            {unlisted && (
+              <div className={styles.unlistedMessage}>
+                Your playlist has been unlisted due to admin action or
+                auto-moderation. You may appeal this decision by{" "}
+                <Link
+                  to={`/appeals/playlists/${playlist!.id}`}
+                  className={styles.unlistedLink}
+                >
+                  submitting an appeal request
+                </Link>
+                .
+              </div>
+            )}
+
             <SettingsInput
               label="Playlist Title"
               name="title"
@@ -315,7 +338,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
               name="visibilityStatus"
               checked={playlistForm.visibilityStatus === "PUBLIC"}
               onChange={handlePrivacyChange}
-              disabled={isCreating}
+              disabled={isCreating || unlisted}
               values={{ on: "Public", off: "Private" }}
             />
             <SettingsImageUpload

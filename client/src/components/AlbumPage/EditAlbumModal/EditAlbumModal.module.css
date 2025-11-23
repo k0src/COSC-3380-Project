@@ -119,6 +119,7 @@
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
+
 .unsavedText {
   font-size: var(--font-size-xs);
   color: var(--color-accent);
@@ -128,4 +129,24 @@
   font-weight: 500;
   font-size: var(--font-size-xs);
   color: var(--color-accent);
+}
+
+.unlistedMessage {
+  background: var(--color-orange-ui-bg);
+  border: var(--border-size-sm) solid var(--color-orange-ui-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sd);
+  color: var(--color-orange-ui);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.unlistedLink {
+  font-weight: 500;
+  text-decoration: none;
+  transition: text-decoration var(--transition-speed) ease;
+}
+
+.unlistedLink:hover {
+  text-decoration: underline;
 }

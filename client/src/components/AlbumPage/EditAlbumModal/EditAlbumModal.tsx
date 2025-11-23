@@ -1,11 +1,11 @@
 import { useState, memo, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Album, VisibilityStatus } from "@types";
 import { formatDateString } from "@util";
 import { albumApi } from "@api";
 import {
   SettingsInput,
-  SettingsRadio,
+  SettingsToggle,
   SettingsImageUpload,
   SettingsDatePicker,
   ConfirmationModal,
@@ -24,8 +24,8 @@ export interface EditAlbumModalProps {
 interface EditAlbumForm {
   title: string;
   genre: string;
-  release_date: string;
-  visibility_status: VisibilityStatus;
+  releaseDate: string;
+  visibilityStatus: VisibilityStatus;
   image?: File | null;
   removeImage?: boolean;
 }
@@ -46,8 +46,8 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
     return {
       title: album.title,
       genre: album.genre,
-      release_date: formatDateString(album.release_date),
-      visibility_status: album.visibility_status,
+      releaseDate: formatDateString(album.release_date),
+      visibilityStatus: album.visibility_status,
       image: null,
       removeImage: false,
     };
@@ -64,8 +64,8 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
     const isFormDirty =
       formState.title !== initialFormState.title ||
       formState.genre !== initialFormState.genre ||
-      formState.release_date !== initialFormState.release_date ||
-      formState.visibility_status !== initialFormState.visibility_status ||
+      formState.releaseDate !== initialFormState.releaseDate ||
+      formState.visibilityStatus !== initialFormState.visibilityStatus ||
       formState.image !== initialFormState.image ||
       formState.removeImage === true;
     setIsDirty(isFormDirty);
@@ -108,20 +108,17 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
     [error]
   );
 
-  const handleVisibilityChange = (value: string) => {
+  const handlePrivacyChange = (checked: boolean) => {
     setFormState((prev) => ({
       ...prev,
-      visibility_status: value as VisibilityStatus,
+      visibilityStatus: checked ? "PUBLIC" : "PRIVATE",
     }));
-    if (error) {
-      setError("");
-    }
   };
 
   const handleDateChange = (value: string) => {
     setFormState((prev) => ({
       ...prev,
-      release_date: value,
+      releaseDate: value,
     }));
     if (error) {
       setError("");
@@ -144,8 +141,8 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
         const albumData: any = {
           title: formState.title.trim(),
           genre: formState.genre.trim(),
-          release_date: formState.release_date.trim(),
-          visibility_status: formState.visibility_status,
+          release_date: formState.releaseDate.trim(),
+          visibility_status: formState.visibilityStatus,
         };
 
         if (formState.removeImage) {
@@ -189,6 +186,11 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
 
+  const unlisted = useMemo(
+    () => !adminMode && album.visibility_status === "UNLISTED",
+    [adminMode, album.visibility_status]
+  );
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -224,6 +226,20 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
           </div>
 
           <form className={styles.albumForm} onSubmit={handleSubmit}>
+            {unlisted && (
+              <div className={styles.unlistedMessage}>
+                Your album has been unlisted due to admin action or
+                auto-moderation. You may appeal this decision by{" "}
+                <Link
+                  to={`/appeals/albums/${album.id}`}
+                  className={styles.unlistedLink}
+                >
+                  submitting an appeal request
+                </Link>
+                .
+              </div>
+            )}
+
             <SettingsInput
               label="Album Title"
               name="title"
@@ -244,25 +260,21 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
             />
             <SettingsDatePicker
               label="Release Date"
-              name="release_date"
-              value={formState.release_date}
+              name="releaseDate"
+              value={formState.releaseDate}
               onChange={handleDateChange}
               placeholder="YYYY-MM-DD"
               error={error}
               disabled={isEditing}
               max={today}
             />
-            <SettingsRadio
-              label="Visibility"
-              name="visibility_status"
-              value={formState.visibility_status}
-              onChange={handleVisibilityChange}
-              options={[
-                { label: "Public", value: "PUBLIC" },
-                { label: "Private", value: "PRIVATE" },
-                { label: "Unlisted", value: "UNLISTED" },
-              ]}
-              disabled={isEditing}
+            <SettingsToggle
+              label="Album Privacy"
+              name="visibilityStatus"
+              checked={formState.visibilityStatus === "PUBLIC"}
+              onChange={handlePrivacyChange}
+              disabled={isEditing || unlisted}
+              values={{ on: "Public", off: "Private" }}
             />
             <SettingsImageUpload
               label="Cover Image"

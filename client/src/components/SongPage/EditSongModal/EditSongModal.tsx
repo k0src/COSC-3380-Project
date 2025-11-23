@@ -1,11 +1,11 @@
 import { useState, memo, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Song, VisibilityStatus } from "@types";
 import { formatDateString } from "@util";
 import { songApi } from "@api";
 import {
   SettingsInput,
-  SettingsRadio,
+  SettingsToggle,
   SettingsImageUpload,
   SettingsDatePicker,
   ConfirmationModal,
@@ -141,14 +141,11 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
     [error]
   );
 
-  const handleVisibilityChange = (value: string) => {
+  const handlePrivacyChange = (checked: boolean) => {
     setFormState((prev) => ({
       ...prev,
-      visibility_status: value as VisibilityStatus,
+      visibility_status: checked ? "PUBLIC" : "PRIVATE",
     }));
-    if (error) {
-      setError("");
-    }
   };
 
   const handleDateChange = (value: string) => {
@@ -243,6 +240,11 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
 
+  const unlisted = useMemo(
+    () => !adminMode && song.visibility_status === "UNLISTED",
+    [adminMode, song.visibility_status]
+  );
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -278,6 +280,20 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
           </div>
 
           <form className={styles.songForm} onSubmit={handleSubmit}>
+            {unlisted && (
+              <div className={styles.unlistedMessage}>
+                Your song has been unlisted due to admin action or
+                auto-moderation. You may appeal this decision by{" "}
+                <Link
+                  to={`/appeals/songs/${song.id}`}
+                  className={styles.unlistedLink}
+                >
+                  submitting an appeal request
+                </Link>
+                .
+              </div>
+            )}
+
             <SettingsInput
               label="Song Title"
               name="title"
@@ -306,17 +322,13 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
               disabled={isEditing}
               max={today}
             />
-            <SettingsRadio
-              label="Visibility"
+            <SettingsToggle
+              label="Song Privacy"
               name="visibility_status"
-              value={formState.visibility_status}
-              onChange={handleVisibilityChange}
-              options={[
-                { label: "Public", value: "PUBLIC" },
-                { label: "Private", value: "PRIVATE" },
-                { label: "Unlisted", value: "UNLISTED" },
-              ]}
-              disabled={isEditing}
+              checked={formState.visibility_status === "PUBLIC"}
+              onChange={handlePrivacyChange}
+              disabled={isEditing || unlisted}
+              values={{ on: "Public", off: "Private" }}
             />
             <SearchableDropdown
               label="Album"
