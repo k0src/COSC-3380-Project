@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type { Playlist } from "@types";
 import { formatRuntime, pluralize } from "@util";
 import { CoverLightbox, PlaylistPlayButton, LazyImg } from "@components";
-import { LuAudioLines, LuClock, LuThumbsUp } from "react-icons/lu";
+import { LuAudioLines, LuClock, LuEyeOff, LuThumbsUp } from "react-icons/lu";
 import styles from "./PlaylistContainer.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 import { LuPencil } from "react-icons/lu";
@@ -64,17 +64,24 @@ const PlaylistContainer: React.FC<PlaylistContainerProps> = ({
   return (
     <>
       <div className={styles.playlistContainer}>
-        <LazyImg
-          src={imageUrl}
-          alt={`${playlist.title} Cover`}
-          imgClassNames={[
-            styles.coverImage,
-            imageUrl !== musicPlaceholder ? styles.coverImageClickable : "",
-          ]}
-          blurHash={playlist.image_url_blurhash ?? undefined}
-          onClick={handleImageClick}
-          loading="eager"
-        />
+        <div className={styles.coverImageWrapper}>
+          <LazyImg
+            src={imageUrl}
+            alt={`${playlist.title} Cover`}
+            imgClassNames={[
+              styles.coverImage,
+              imageUrl !== musicPlaceholder ? styles.coverImageClickable : "",
+            ]}
+            blurHash={playlist.image_url_blurhash ?? undefined}
+            onClick={handleImageClick}
+            loading="eager"
+          />
+          {playlist.visibility_status === "UNLISTED" && (
+            <div className={styles.unlistedStatus}>
+              <LuEyeOff />
+            </div>
+          )}
+        </div>
         <div className={styles.playlistRight}>
           <div className={styles.playlistInfoWrapper}>
             <div className={styles.playlistInfoContainer}>

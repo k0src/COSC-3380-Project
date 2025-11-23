@@ -164,3 +164,18 @@
   align-items: center;
   justify-content: center;
 }
+
+.unlistedStatus {
+  position: absolute;
+  top: var(--spacing-sd);
+  right: var(--spacing-sd);
+  background: var(--color-gray-button);
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-white-alt);
+  font-size: var(--icon-size-md);
+  padding: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

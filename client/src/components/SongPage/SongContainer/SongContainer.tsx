@@ -11,6 +11,7 @@ import {
   LuPencil,
   LuChartLine,
   LuFlame,
+  LuEyeOff,
 } from "react-icons/lu";
 import styles from "./SongContainer.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
@@ -80,9 +81,14 @@ const SongContainer: React.FC<SongContainerProps> = ({
           loading="eager"
           onClick={handleImageClick}
         />
-        {song.is_trending && (
+        {song.is_trending && song.visibility_status !== "UNLISTED" && (
           <div className={styles.trendingBadge}>
             <LuFlame />
+          </div>
+        )}
+        {song.visibility_status === "UNLISTED" && (
+          <div className={styles.unlistedStatus}>
+            <LuEyeOff />
           </div>
         )}
       </div>

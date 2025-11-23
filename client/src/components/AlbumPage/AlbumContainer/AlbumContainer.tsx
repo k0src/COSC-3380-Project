@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 import type { Album } from "@types";
 import { formatRuntime, pluralize } from "@util";
 import { CoverLightbox, AlbumPlayButton, LazyImg } from "@components";
-import { LuAudioLines, LuClock, LuPencil, LuThumbsUp } from "react-icons/lu";
+import {
+  LuAudioLines,
+  LuClock,
+  LuEyeOff,
+  LuPencil,
+  LuThumbsUp,
+} from "react-icons/lu";
 import styles from "./AlbumContainer.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
 
@@ -60,17 +66,24 @@ const AlbumContainer: React.FC<AlbumContainerProps> = ({
   return (
     <>
       <div className={styles.albumContainer}>
-        <LazyImg
-          src={imageUrl}
-          blurHash={album.image_url_blurhash}
-          alt={`${album.title} Cover`}
-          imgClassNames={[
-            styles.coverImage,
-            imageUrl !== musicPlaceholder ? styles.coverImageClickable : "",
-          ]}
-          loading="eager"
-          onClick={handleImageClick}
-        />
+        <div className={styles.coverImageWrapper}>
+          <LazyImg
+            src={imageUrl}
+            blurHash={album.image_url_blurhash}
+            alt={`${album.title} Cover`}
+            imgClassNames={[
+              styles.coverImage,
+              imageUrl !== musicPlaceholder ? styles.coverImageClickable : "",
+            ]}
+            loading="eager"
+            onClick={handleImageClick}
+          />
+          {album.visibility_status === "UNLISTED" && (
+            <div className={styles.unlistedStatus}>
+              <LuEyeOff />
+            </div>
+          )}
+        </div>
         <div className={styles.albumRight}>
           <div className={styles.albumInfoWrapper}>
             <div className={styles.albumInfoContainer}>
