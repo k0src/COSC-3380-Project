@@ -1,4 +1,5 @@
 import { memo, useState, useMemo, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import type {
   Song,
   DataTableAction,
@@ -11,7 +12,7 @@ import {
   songColumns,
   songFilterKeys,
 } from "@components/DataTable/columnDefinitions";
-import { LuTrash2, LuSquarePen } from "react-icons/lu";
+import { LuTrash2, LuSquarePen, LuMessageSquare } from "react-icons/lu";
 
 export interface AdminManageContentSongsProps {
   accessContext: AccessContext;
@@ -20,6 +21,7 @@ export interface AdminManageContentSongsProps {
 const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
   accessContext,
 }) => {
+  const navigate = useNavigate();
   const [songToEdit, setSongToEdit] = useState<Song | null>(null);
   const [songToDelete, setSongToDelete] = useState<Song | null>(null);
   const [songsToBulkDelete, setSongsToBulkDelete] = useState<Song[]>([]);
@@ -54,6 +56,13 @@ const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
     setIsSongEditModalOpen(true);
     refetchRef.current = refetch;
   }, []);
+
+  const handleManageCommentsClick = useCallback(
+    (song: Song) => {
+      navigate(`/admin/manage-content/comments/${song.id}`);
+    },
+    [navigate]
+  );
 
   const handleSongEdited = useCallback(() => {
     if (refetchRef.current) {
@@ -111,6 +120,12 @@ const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
         onClick: handleEditClick,
       },
       {
+        id: "comments",
+        icon: LuMessageSquare,
+        label: "Manage Comments",
+        onClick: handleManageCommentsClick,
+      },
+      {
         id: "delete",
         icon: LuTrash2,
         label: "Delete Song",
@@ -118,7 +133,7 @@ const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
         variant: "danger",
       },
     ],
-    [handleDeleteClick, handleEditClick]
+    [handleDeleteClick, handleEditClick, handleManageCommentsClick]
   );
 
   const bulkActions = useMemo<DataTableBulkAction<Song>[]>(

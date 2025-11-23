@@ -29,3 +29,4 @@ export { default as ArtistDashboardStatsPage } from "./ArtistDashboard/ArtistDas
 export { default as AdminDashboard } from "./AdminDashboard/AdminDashboard.js";
 export { default as AdminDashboardUsersPage } from "./AdminDashboard/AdminDashboardUsersPage/AdminDashboardUsersPage.js";
 export { default as AdminManageContentPage } from "./AdminDashboard/AdminManageContentPage/AdminManageContentPage.js";
+export { default as AdminManageCommentsPage } from "./AdminDashboard/AdminManageCommentsPage/AdminManageCommentsPage.js";

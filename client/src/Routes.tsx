@@ -203,6 +203,16 @@ export default function AppRoutes() {
               </AdminRoute>
             }
           />
+          <Route
+            path="/admin/manage-content/comments/:songId"
+            element={
+              <AdminRoute>
+                <AdminDashboardLayout>
+                  <Pages.AdminManageCommentsPage />
+                </AdminDashboardLayout>
+              </AdminRoute>
+            }
+          />
         </Routes>
       )}
     </>
