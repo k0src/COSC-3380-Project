@@ -13,6 +13,7 @@ export { default as NotificationModal } from "./MainLayout/NotificationModal/Not
 
 /* ================================= Routes ================================= */
 export { default as ProtectedRoute } from "./ProtectedRoute/ProtectedRoute.js";
+export { default as AdminRoute } from "./AdminRoute/AdminRoute.js";
 export { default as AppLayout } from "./AppLayout/AppLayout.js";
 export { default as MeWrapper } from "./MeWrapper/MeWrapper.js";
 
@@ -22,6 +23,18 @@ export { default as UploadPromptModal } from "./LandingPage/UploadPromptModal/Up
 /* ================================ Home Page =============================== */
 export { default as FeaturedSection } from "./HomePage/FeaturedSection/FeaturedSection.js";
 export { default as SongCard } from "./HomePage/SongCard/SongCard.js";
+export { default as FeaturedPlaylist } from "./HomePage/FeaturedPlaylist/FeaturedPlaylist.js";
+export { default as RecentlyPlayedList } from "./HomePage/RecentlyPlayedList/RecentlyPlayedList.js";
+export { default as PopularList } from "./HomePage/PopularList/PopularList.js";
+export { default as NewFromArtistsList } from "./HomePage/NewFromArtistsList/NewFromArtistsList.js";
+export { default as ArtistCtaBanner } from "./HomePage/ArtistCtaBanner/ArtistCtaBanner.js";
+export { default as MyUploadsList } from "./HomePage/MyUploadsList/MyUploadsList.js";
+export { default as UserLikesList } from "./HomePage/UserLikesList/UserLikesList.js";
+export { default as RecentSongsList } from "./HomePage/RecentSongsList/RecentSongsList.js";
+export { default as TopArtistBannerButtons } from "./HomePage/TopArtistBanner/TopArtistBannerButtons/TopArtistBannerButtons.js";
+export { default as TopArtistBanner } from "./HomePage/TopArtistBanner/TopArtistBanner.js";
+export { default as TrendingList } from "./HomePage/TrendingList/TrendingList.js";
+export { default as ArtistRecommendations } from "./HomePage/ArtistRecommendations/ArtistRecommendations.js";
 
 /* ============================ Feed Components ============================ */
 export { default as ArtistBar } from "./Feedpage/ArtistBar/ArtistBar.js";
@@ -133,6 +146,10 @@ export { default as ArtistDashboardBarChart } from "./ArtistDashboard/ArtistDash
 export { default as ArtistDashboardTopSongsBarChart } from "./ArtistDashboard/ArtistDashboardTopSongsBarChart/ArtistDashboardTopSongsBarChart.js";
 export { default as ArtistDashboardPieChart } from "./ArtistDashboard/ArtistDashboardPieChart/ArtistDashboardPieChart.js";
 export { default as ArtistDashboardFollowerChart } from "./ArtistDashboard/ArtistDashboardFollowerChart/ArtistDashboardFollowerChart.js";
+
+/* ============================= Admin Dashboard ============================ */
+export { default as AdminDashboardLayout } from "./AdminDashboard/AdminDashboardLayout/AdminDashboardLayout.js";
+export { default as AdminDashboardLayoutSidebar } from "./AdminDashboard/AdminDashboardLayoutSidebar/AdminDashboardLayoutSidebar.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

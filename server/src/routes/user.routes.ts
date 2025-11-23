@@ -622,6 +622,56 @@ router.delete(
   }
 );
 
+// GET /api/users/:id/library/history/has-history
+router.get(
+  "/:id/library/history/has-history",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    try {
+      const hasHistory = await HistoryService.checkUserHasHistory(id);
+      res.status(200).json({ hasHistory });
+    } catch (error: any) {
+      console.error(
+        "Error in GET /users/:id/library/history/has-history:",
+        error
+      );
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
+// GET /api/users/:id/library/history/has-song-history
+router.get(
+  "/:id/library/history/has-song-history",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    try {
+      const hasSongHistory = await HistoryService.checkUserHasSongHistory(id);
+      res.status(200).json({ hasSongHistory });
+    } catch (error: any) {
+      console.error(
+        "Error in GET /users/:id/library/history/has-song-history:",
+        error
+      );
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
 /* ========================================================================== */
 /*                            User Likes & Comments                           */
 /* ========================================================================== */

@@ -6,6 +6,8 @@ import {
   MeWrapper,
   ProtectedRoute,
   ArtistDashboardLayout,
+  AdminRoute,
+  AdminDashboardLayout,
 } from "@components";
 import { useAuth } from "@contexts";
 
@@ -188,11 +190,11 @@ export default function AppRoutes() {
                 </MainLayout>
               }
             />
-            <Route path="/Admin" element={
+            {/* <Route path="/Admin" element={
               <MainLayout>
                 < Pages.AdminPage />
               </MainLayout>} 
-              />
+              /> */}
 
             <Route path="/admin/reports" element={
               <MainLayout>
@@ -208,16 +210,6 @@ export default function AppRoutes() {
           </Route>
           <Route
             path="/artist-dashboard"
-            element={
-              <ProtectedRoute>
-                <ArtistDashboardLayout>
-                  <Pages.ArtistDashboard />
-                </ArtistDashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/artist-dashboard/overview"
             element={
               <ProtectedRoute>
                 <ArtistDashboardLayout>
@@ -264,6 +256,16 @@ export default function AppRoutes() {
                   <Pages.ArtistDashboardStatsPage />
                 </ArtistDashboardLayout>
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboardLayout>
+                  <Pages.AdminDashboard />
+                </AdminDashboardLayout>
+              </AdminRoute>
             }
           />
         </Routes>

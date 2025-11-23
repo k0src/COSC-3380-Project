@@ -13,6 +13,9 @@ export interface Artist {
   follower_count?: number;
   stream_count?: number;  
   user?: User;
+  streams?: number;
+  likes?: number;
+  followers?: number;
 
   type: "artist";
 }

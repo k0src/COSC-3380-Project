@@ -1,0 +1,43 @@
+.recentSongsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.recentSongsList {
+  width: 100%;
+  display: flex;
+  gap: var(--spacing-md);
+  min-width: 0;
+  height: 100%;
+}
+
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: 18rem;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: 18rem;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}

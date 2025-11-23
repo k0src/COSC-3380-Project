@@ -1,0 +1,37 @@
+.topArtistButtons {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  width: 100%;
+}
+
+.actionButton {
+  font-family: var(--font-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  background: var(--color-accent);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: var(--color-accent-200);
+  cursor: pointer;
+  padding: var(--spacing-sd) var(--spacing-md);
+  width: 100%;
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.actionButton:hover {
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
+}
+
+.followed {
+  background: var(--color-accent-800);
+  border-color: var(--color-accent-800);
+  color: var(--color-accent-300);
+}
+
+.followed:hover {
+  background: var(--color-accent-800);
+}

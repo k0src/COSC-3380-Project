@@ -13,11 +13,11 @@ interface EntityActionButtonsProps {
   type: "song" | "playlist" | "album" | "artist";
   entity?: Song | Playlist | Album;
   isHovered: boolean;
-  isSmall: boolean;
+  size?: "small" | "medium" | "large";
 }
 
 const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
-  ({ type, entity, isHovered, isSmall }) => {
+  ({ type, entity, isHovered, size = "small" }) => {
     const { state, actions } = useAudioQueue();
     const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -85,77 +85,80 @@ const EntityActionButtons: React.FC<EntityActionButtonsProps> = memo(
       }
     }, [isAuthenticated, navigate]);
 
-    if (isSmall) {
-      return (
-        <div className={styles.entityActionButtonContainer}>
-          {type === "song" && (
-            <div className={styles.queueButtonContainer}>
+    switch (size) {
+      case "small": {
+        return (
+          <div className={styles.entityActionButtonContainer}>
+            {type === "song" && (
+              <div className={styles.queueButtonContainer}>
+                <button
+                  ref={queueButtonRef}
+                  onClick={handleAddToQueue}
+                  className={styles.entityActionButton}
+                >
+                  <LuListEnd />
+                </button>
+                <QueueMenu
+                  isOpen={queueMenuOpen}
+                  onClose={() => setQueueMenuOpen(false)}
+                  entity={entity as Song}
+                  entityType="song"
+                  buttonRef={queueButtonRef}
+                  justification="right"
+                />
+              </div>
+            )}
+            {(type === "song" || type === "playlist" || type === "album") && (
               <button
-                ref={queueButtonRef}
-                onClick={handleAddToQueue}
-                className={styles.entityActionButton}
+                onClick={handlePlayPause}
+                className={classNames(styles.entityActionButton, {
+                  [styles.entityActionButtonActive]:
+                    isEntityPlaying && state.isPlaying,
+                })}
               >
-                <LuListEnd />
+                {isEntityPlaying && state.isPlaying ? <LuPause /> : <LuPlay />}
               </button>
-              <QueueMenu
-                isOpen={queueMenuOpen}
-                onClose={() => setQueueMenuOpen(false)}
-                entity={entity as Song}
-                entityType="song"
-                buttonRef={queueButtonRef}
-                justification="right"
-              />
-            </div>
-          )}
-          {(type === "song" || type === "playlist" || type === "album") && (
-            <button
-              onClick={handlePlayPause}
-              className={classNames(styles.entityActionButton, {
-                [styles.entityActionButtonActive]:
-                  isEntityPlaying && state.isPlaying,
-              })}
-            >
-              {isEntityPlaying && state.isPlaying ? <LuPause /> : <LuPlay />}
-            </button>
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <div className={styles.entityActionButtonContainerWide}>
-        {type === "song" && (
-          <div className={styles.queueButtonContainer}>
-            <button
-              ref={queueButtonRef}
-              onClick={handleAddToQueue}
-              className={styles.entityActionButton}
-            >
-              <LuListEnd />
-            </button>
-            <QueueMenu
-              isOpen={queueMenuOpen}
-              onClose={() => setQueueMenuOpen(false)}
-              entity={entity as Song}
-              entityType="song"
-              buttonRef={queueButtonRef}
-              justification="right"
-            />
+            )}
           </div>
-        )}
-        {(type === "song" || type === "playlist" || type === "album") && (
-          <button
-            onClick={handlePlayPause}
-            className={classNames(styles.entityActionButton, {
-              [styles.entityActionButtonActive]:
-                isEntityPlaying && state.isPlaying,
-            })}
-          >
-            {isEntityPlaying && state.isPlaying ? <LuPause /> : <LuPlay />}
-          </button>
-        )}
-      </div>
-    );
+        );
+      }
+      default: {
+        return (
+          <div className={styles.entityActionButtonContainerWide}>
+            {type === "song" && (
+              <div className={styles.queueButtonContainer}>
+                <button
+                  ref={queueButtonRef}
+                  onClick={handleAddToQueue}
+                  className={styles.entityActionButton}
+                >
+                  <LuListEnd />
+                </button>
+                <QueueMenu
+                  isOpen={queueMenuOpen}
+                  onClose={() => setQueueMenuOpen(false)}
+                  entity={entity as Song}
+                  entityType="song"
+                  buttonRef={queueButtonRef}
+                  justification="right"
+                />
+              </div>
+            )}
+            {(type === "song" || type === "playlist" || type === "album") && (
+              <button
+                onClick={handlePlayPause}
+                className={classNames(styles.entityActionButton, {
+                  [styles.entityActionButtonActive]:
+                    isEntityPlaying && state.isPlaying,
+                })}
+              >
+                {isEntityPlaying && state.isPlaying ? <LuPause /> : <LuPlay />}
+              </button>
+            )}
+          </div>
+        );
+      }
+    }
   }
 );
 
@@ -170,7 +173,7 @@ type EntityItemProps =
       imageUrl?: string;
       blurHash?: string;
       entity?: never;
-      isSmall?: boolean;
+      size?: "small" | "medium" | "large";
       index?: number;
     }
   | {
@@ -183,7 +186,7 @@ type EntityItemProps =
       imageUrl?: string;
       blurHash?: string;
       entity: Song | Playlist | Album;
-      isSmall?: boolean;
+      size?: "small" | "medium" | "large";
       index?: number;
     };
 
@@ -197,7 +200,7 @@ const EntityItem: React.FC<EntityItemProps> = ({
   title,
   subtitle,
   type,
-  isSmall = true,
+  size = "small",
   index,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -206,7 +209,7 @@ const EntityItem: React.FC<EntityItemProps> = ({
 
   const isCurrentSong =
     type === "song" && entity && state.currentSong?.id === (entity as Song).id;
-  const showVisualizer = !isSmall && type === "song" && isCurrentSong;
+  const showVisualizer = size !== "small" && type === "song" && isCurrentSong;
 
   const imgSrc = useMemo(
     () =>
@@ -235,7 +238,7 @@ const EntityItem: React.FC<EntityItemProps> = ({
       onMouseLeave={() => setIsHovered(false)}
       onContextMenu={handleContextMenu}
     >
-      {!isSmall && index !== undefined && (
+      {!(size === "small") && index !== undefined && (
         <>
           {showVisualizer ? (
             <div className={styles.entityIndex}>
@@ -250,7 +253,13 @@ const EntityItem: React.FC<EntityItemProps> = ({
         src={imgSrc}
         blurHash={blurHash}
         alt={imgAlt}
-        imgClassNames={[styles.entityImage]}
+        imgClassNames={[
+          classNames(styles.entityImage, {
+            [styles.entityImageSmall]: size === "small",
+            [styles.entityImageLarge]: size === "large",
+            [styles.entityImageMedium]: size === "medium",
+          }),
+        ]}
       />
       <div className={styles.entityInfo}>
         {author &&
@@ -277,7 +286,7 @@ const EntityItem: React.FC<EntityItemProps> = ({
         type={type}
         entity={entity}
         isHovered={isHovered}
-        isSmall={isSmall}
+        size={size}
       />
     </div>
   );

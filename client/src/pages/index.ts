@@ -30,3 +30,5 @@ export { default as dataReport } from "./AdminDataReportPage/DataReportPage.js";
 export { default as AdminPage } from "./AdminPage/AdminPage.js";
 export { default as AppealsPage } from "./AppealsPage/AppealsPage.js";
 export { default as AdminAppealsPage } from "./AdminAppealsPage/AdminAppealsPage.js";
+
+export { default as AdminDashboard } from "./AdminDashboard/AdminDashboard.js";

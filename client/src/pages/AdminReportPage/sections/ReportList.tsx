@@ -44,6 +44,11 @@ const ReportsList: React.FC<ReportsListProps> = ({
     navigate(route);
   };
 
+  const handleReporterClick = (reporterId: string) => {
+    // navigate to user profile route (singular user path as requested)
+    navigate(`/users/${reporterId}`);
+  };
+
   return (
     <div className={styles.reportListSection}>
       <h3 className={styles.reportListTitle}>
@@ -54,34 +59,55 @@ const ReportsList: React.FC<ReportsListProps> = ({
         {reports.map((report, index) => (
           <li key={index} className={styles.reportListItem}>
             <div className={styles.reportRow}>
-              <div className={styles.reportDetails}>
-                <p><strong>Reporter:</strong> {report.reporter_username || report.reporter_id}</p>
-                <p>
-                  <strong>Reported:</strong>{" "}
-                  <button
-                    type="button"
-                    className={styles.reportedLink}
-                    onClick={() => handleReportedClick(report.reported_id)}
-                    aria-label={`View details for ${report.reported_name || report.reported_id}`}
-                    style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
-                  >
-                    {report.reported_name || report.reported_id}
-                  </button>
-                </p>
-                <p><strong>Reason:</strong> {report.report_type}</p>
-                <p><strong>Description:</strong> {report.description || "—"}</p>
-                <p><strong>Status:</strong> {report.report_status?.toUpperCase()}</p>
+              <div className={styles.reportContent}>
+                <div className={styles.detailsLeft}>
+                  <p>
+                    <strong>Reporter:</strong>{" "}
+                    <button
+                      type="button"
+                      className={styles.reportedLink}
+                      onClick={() => handleReporterClick(report.reporter_id)}
+                      aria-label={`View profile for ${report.reporter_username || report.reporter_id}`}
+                      style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                    >
+                      {report.reporter_username || report.reporter_id}
+                    </button>
+                  </p>
+                  <p>
+                    <strong>Reported:</strong>{" "}
+                    <button
+                      type="button"
+                      className={styles.reportedLink}
+                      onClick={() => handleReportedClick(report.reported_id)}
+                      aria-label={`View details for ${report.reported_name || report.reported_id}`}
+                      style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                    >
+                      {report.reported_name || report.reported_id}
+                    </button>
+                  </p>
+                  <p><strong>Status:</strong> {report.report_status?.toUpperCase()}</p>
+                </div>
+
+                <div className={styles.detailsRight}>
+                  <p><strong>Reason:</strong> {report.report_type}</p>
+                  <p><strong>Description:</strong> {report.description || "—"}</p>
+                </div>
+
+                <div className={styles.metaRow}>
+                  <span className={styles.metaItem}><strong>ID:</strong> {report.report_id}</span>
+                  <span className={styles.metaItem}><strong>Created:</strong> {report.created_at ? new Date(report.created_at).toLocaleString() : "—"}</span>
+                </div>
               </div>
 
               <div className={styles.reportActions}>
                 <button
-                  className={styles.actionButton}
+                  className={`${styles.actionButton} ${styles.suspendButton}`}
                   onClick={() => onAction(report.report_id, "suspend")}
                 >
                   Suspend
                 </button>
                 <button
-                  className={styles.actionButton}
+                  className={`${styles.actionButton} ${styles.dismissButton}`}
                   onClick={() => onAction(report.report_id, "reject")}
                 >
                   Dismiss

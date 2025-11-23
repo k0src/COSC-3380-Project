@@ -8,12 +8,29 @@
 }
 
 .entityImage {
-  width: 8rem;
-  height: 8rem;
-  border-radius: var(--border-radius-sm);
   object-fit: cover;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
+}
+
+.entityImageSmall {
+  width: 8rem;
+  height: 8rem;
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-sd);
+}
+
+.entityImageMedium {
+  width: 6.4rem;
+  height: 6.4rem;
+  border-radius: var(--border-radius-xs);
+  box-shadow: var(--shadow-sm);
+}
+
+.entityImageLarge {
+  width: 8rem;
+  height: 8rem;
+  border-radius: var(--border-radius-sm);
   box-shadow: var(--shadow-sd);
 }
 

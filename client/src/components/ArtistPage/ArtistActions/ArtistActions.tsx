@@ -6,6 +6,7 @@ import { useAudioQueue } from "@contexts";
 import { useAsyncData, useFollowStatus } from "@hooks";
 import { formatNumber } from "@util";
 import { artistApi, userApi } from "@api";
+import type { UUID } from "@types";
 import { ShareModal, ReportModal } from "@components";
 import { useQueryClient } from "@tanstack/react-query";
 import styles from "./ArtistActions.module.css";
@@ -41,8 +42,8 @@ const StatItem = memo(
 );
 
 export interface ArtistActionsProps {
-  artistId: string;
-  userId: string;
+  artistId: UUID;
+  userId: UUID;
   artistName: string;
   shareLink: string;
 }
@@ -212,7 +213,7 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
       <ReportModal
         isOpen={reportModalOpen}
         onClose={() => setReportModalOpen(false)}
-        reportedId={userId}
+        reportedId={artistId}
         reportedTitle={artistName}
         reportedType="artist"
       />

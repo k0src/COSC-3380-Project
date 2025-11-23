@@ -1,0 +1,61 @@
+.recentlyPlayedContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  width: 100%;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.viewMoreLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray) !important;
+  text-decoration: none;
+  transition: color var(--transition-speed) ease;
+}
+
+.viewMoreLink:hover {
+  color: var(--color-white) !important;
+}
+
+.recentlyPlayedList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  height: 100%;
+}
+
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: var(--loader-height-sm);
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  min-height: var(--loader-height-sm);
+  color: var(--color-text-gray);
+  font-size: var(--font-size-sm);
+}

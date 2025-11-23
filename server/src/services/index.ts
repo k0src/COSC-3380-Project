@@ -14,3 +14,4 @@ export { default as UserBehaviorReportsService } from "./userBehaviorReports.ser
 export { default as ContentStreamingReportsService } from "./contentStreamingReports.service.js";
 export { default as SystemModerationReportsService } from "./systemModerationReports.service.js";
 export { default as AdminAppealsService } from "./adminAppeals.service.js";
+export { default as AdminService } from "./admin.service.js";

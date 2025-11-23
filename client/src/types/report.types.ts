@@ -20,8 +20,10 @@ export type Report = {
   report_result?: "suspend" | "reject" | null;
   report_status: string;
   created_at: string;
-  reviewer_id?: UUID | null;
-  entity_name?: string; // optional joined data
+  reported_entity_type?: ReportEntity; // which entity type was reported
+  resolved_at?: string | null;
+  metadata?: any | null;
+  entity_name?: string; // optional joined data (deprecated - prefer reported_name)
   reporter_username?: string; // username of the person who made the report
-  reported_name?: string; // username of the person being reported
+  reported_name?: string; // username/title of the person/item being reported
 };

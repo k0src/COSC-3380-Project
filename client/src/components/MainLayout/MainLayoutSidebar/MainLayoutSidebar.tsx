@@ -77,10 +77,7 @@ const MainLayoutSidebar: React.FC = () => {
           </NavLink>
           {user && user.role === "ARTIST" && (
             <>
-              <Link
-                to="/artist-dashboard/overview"
-                className={styles.sidebarLink}
-              >
+              <Link to="/artist-dashboard" className={styles.sidebarLink}>
                 <LuUserPen className={styles.sidebarIcon} />
               </Link>
               <Link to="/artist-dashboard/add" className={styles.sidebarLink}>

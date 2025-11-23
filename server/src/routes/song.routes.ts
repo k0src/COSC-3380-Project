@@ -30,6 +30,49 @@ router.get("/count", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// GET /api/songs/trending
+router.get("/trending", async (req: Request, res: Response) => {
+  try {
+    const {
+      includeAlbums,
+      includeArtists,
+      includeLikes,
+      includeComments,
+      orderByColumn,
+      orderByDirection,
+      limit,
+      offset,
+    } = req.query;
+
+    let column = (orderByColumn as string) || "created_at";
+    let direction = (orderByDirection as string) || "DESC";
+    if (!validateOrderBy(column, direction, "song")) {
+      console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+      column = "created_at";
+      direction = "DESC";
+    }
+
+    const accessContext = parseAccessContext(req.query);
+
+    const trendingSongs = await SongRepository.getTrendingSongs(accessContext, {
+      includeAlbums: includeAlbums === "true",
+      includeArtists: includeArtists === "true",
+      includeLikes: includeLikes === "true",
+      includeComments: includeComments === "true",
+      orderByColumn: column as any,
+      orderByDirection: direction as any,
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      offset: offset ? parseInt(offset as string, 10) : undefined,
+    });
+
+    res.status(200).json(trendingSongs);
+  } catch (error) {
+    console.error("Error in GET /songs/trending:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
 // GET /api/songs
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {

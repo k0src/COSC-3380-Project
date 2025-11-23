@@ -11,6 +11,26 @@ const router = express.Router();
 /*                                Main Routes                                 */
 /* ========================================================================== */
 
+// GET /api/artists/top-artist
+router.get("/top-artist", async (req: Request, res: Response) => {
+  try {
+    const days = parseInt(req.query.days as string, 10) || 30;
+
+    const topArtist = await ArtistRepository.getTopArtist(days);
+
+    if (!topArtist) {
+      res.status(404).json({ message: "Top artist not found" });
+      return;
+    }
+
+    res.status(200).json(topArtist);
+  } catch (error) {
+    console.error("Error in GET /artists/top-artist:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
 // GET /api/artists
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -330,6 +350,35 @@ router.post(
   }
 );
 
+// GET /api/artists/:id/playlists
+router.get(
+  "/:id/playlists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { includeUser, limit, offset } = req.query;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      const accessContext = parseAccessContext(req.query);
+
+      const playlists = await ArtistRepository.getPlaylists(id, accessContext, {
+        includeUser: includeUser === "true",
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(playlists);
+    } catch (error: any) {
+      console.error("Error in GET /artists/:id/playlists:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 // GET /api/artists/:id/artist-playlists
 router.get(
   "/:id/artist-playlists",
@@ -378,35 +427,6 @@ router.get(
       res.status(200).json(artistPlaylists);
     } catch (error: any) {
       console.error("Error in GET /artists/:id/artist-playlists:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-// GET /api/artists/:id/playlists
-router.get(
-  "/:id/playlists",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { includeUser, limit, offset } = req.query;
-      if (!id) {
-        res.status(400).json({ error: "Artist ID is required" });
-        return;
-      }
-
-      const accessContext = parseAccessContext(req.query);
-
-      const playlists = await ArtistRepository.getPlaylists(id, accessContext, {
-        includeUser: includeUser === "true",
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(playlists);
-    } catch (error: any) {
-      console.error("Error in GET /artists/:id/playlists:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
     }
@@ -556,6 +576,60 @@ router.get(
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
     }
+  }
+);
+
+// GET /api/artists/recommendations/:userId
+router.get("/recommendations/:userId", async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    const { includeUser, limit, offset } = req.query;
+
+    const artistRecommendations =
+      await ArtistRepository.getArtistRecommendations(userId, {
+        includeUser: includeUser === "true",
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+    res.status(200).json(artistRecommendations);
+  } catch (error) {
+    console.error("Error in GET /artists/recommendations/:userId:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// GET /api/artists/recommendations/new/:userId
+router.get(
+  "/recommendations/:userId/new/songs",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { userId } = req.params;
+      if (!userId) {
+        res.status(400).json({ error: "Missing userId parameter" });
+        return;
+      }
+
+      const accessContext = parseAccessContext(req);
+
+      const limit = req.query.limit
+        ? parseInt(req.query.limit as string, 10)
+        : 10;
+
+      const songs = await ArtistRepository.getNewFromFollowedArtists(
+        userId,
+        accessContext,
+        limit
+      );
+
+      res.status(200).json(songs);
+    } catch (error: any) {}
   }
 );
 

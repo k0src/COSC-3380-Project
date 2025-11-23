@@ -59,7 +59,8 @@ const ArtistLayoutSidebar: React.FC<ArtistLayoutSidebarProps> = ({
 
         <nav className={styles.sidebarNav}>
           <NavLink
-            to="/artist-dashboard/overview"
+            to="/artist-dashboard"
+            end
             className={({ isActive }) =>
               isActive ? styles.sidebarLinkActive : styles.sidebarLink
             }

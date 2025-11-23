@@ -8,7 +8,7 @@ import styles from "./MainLayoutHeader.module.css";
 import classNames from "classnames";
 import {
   LuHouse,
-  LuRss,
+  // LuRss,
   LuBell,
   LuSettings,
   LuCircleUser,
@@ -60,7 +60,7 @@ const MainLayoutHeader: React.FC = () => {
           <LuHouse className={styles.navIcon} />
           <span>Home</span>
         </NavLink>
-        <NavLink
+        {/* <NavLink
           to="/feed"
           className={({ isActive }) =>
             isActive ? styles.navbarLinkActive : styles.navbarLink
@@ -68,7 +68,7 @@ const MainLayoutHeader: React.FC = () => {
         >
           <LuRss className={styles.navIcon} />
           <span>Feed</span>
-        </NavLink>
+        </NavLink> */}
       </nav>
 
       <MainLayoutSearchBar />
