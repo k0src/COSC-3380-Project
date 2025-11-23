@@ -12,7 +12,6 @@ import {
   LuUserRound,
   LuCircleAlert,
   LuFileText,
-  LuBell,
 } from "react-icons/lu";
 import Logo from "@assets/logo.svg?react";
 import userPlaceholder from "@assets/user-placeholder.webp";
@@ -108,15 +107,6 @@ const AdminDashboardLayoutSidebar: React.FC = () => {
           >
             <LuFileText className={styles.sidebarIcon} />
             <span className={styles.sidebarText}>Data Reports</span>
-          </NavLink>
-          <NavLink
-            to="/admin/notifications"
-            className={({ isActive }) =>
-              isActive ? styles.sidebarLinkActive : styles.sidebarLink
-            }
-          >
-            <LuBell className={styles.sidebarIcon} />
-            <span className={styles.sidebarText}>Site Notifications</span>
           </NavLink>
         </nav>
       </div>
