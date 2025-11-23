@@ -153,6 +153,9 @@ export { default as AdminDashboardTopArtists } from "./AdminDashboard/AdminDashb
 export { default as AdminDashboardPlatformHealth } from "./AdminDashboard/AdminDashboardPlatformHealth/AdminDashboardPlatformHealth.js";
 export { default as EditUserModal } from "./AdminDashboard/EditUserModal/EditUserModal.js";
 export { default as CreateUserModal } from "./AdminDashboard/CreateUserModal/CreateUserModal.js";
+export { default as AdminManageContentSongs } from "./AdminDashboard/AdminManageContentPage/AdminManageContentSongs.js";
+export { default as AdminManageContentAlbums } from "./AdminDashboard/AdminManageContentPage/AdminManageContentAlbums.js";
+export { default as AdminManageContentPlaylists } from "./AdminDashboard/AdminManageContentPage/AdminManageContentPlaylists.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

@@ -48,7 +48,7 @@ export const playlistColumns: DataTableColumn<Playlist>[] = [
   {
     key: "description",
     header: "Description",
-    width: "flex",
+    width: 300,
     render: (value) => (
       <span
         style={{

@@ -193,6 +193,16 @@ export default function AppRoutes() {
               </AdminRoute>
             }
           />
+          <Route
+            path="/admin/manage-content/:tab?"
+            element={
+              <AdminRoute>
+                <AdminDashboardLayout>
+                  <Pages.AdminManageContentPage />
+                </AdminDashboardLayout>
+              </AdminRoute>
+            }
+          />
         </Routes>
       )}
     </>
