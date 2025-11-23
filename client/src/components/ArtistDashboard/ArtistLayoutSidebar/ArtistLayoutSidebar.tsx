@@ -61,9 +61,11 @@ const ArtistLayoutSidebar: React.FC<ArtistLayoutSidebarProps> = ({
           <NavLink
             to="/artist-dashboard"
             end
-            className={({ isActive }) =>
-              isActive ? styles.sidebarLinkActive : styles.sidebarLink
-            }
+            className={({ isActive }) => {
+              const path = window.location.pathname.replace(/\/$/, "");
+              const active = isActive || path === "/artist-dashboard";
+              return active ? styles.sidebarLinkActive : styles.sidebarLink;
+            }}
           >
             <LuHouse className={styles.sidebarIcon} />
             <span className={styles.sidebarText}>Overview</span>

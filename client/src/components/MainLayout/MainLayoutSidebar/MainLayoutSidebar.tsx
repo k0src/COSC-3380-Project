@@ -13,6 +13,7 @@ import {
   LuLogOut,
   LuUpload,
   LuAppWindowMac,
+  LuShield,
 } from "react-icons/lu";
 
 const MainLayoutSidebar: React.FC = () => {
@@ -45,9 +46,11 @@ const MainLayoutSidebar: React.FC = () => {
           <NavLink
             to="/library"
             end
-            className={({ isActive }) =>
-              isActive ? styles.sidebarLinkActive : styles.sidebarLink
-            }
+            className={({ isActive }) => {
+              const path = window.location.pathname.replace(/\/$/, "");
+              const active = isActive || path === "/library";
+              return active ? styles.sidebarLinkActive : styles.sidebarLink;
+            }}
           >
             <LuLibrary className={styles.sidebarIcon} />
           </NavLink>
@@ -84,6 +87,11 @@ const MainLayoutSidebar: React.FC = () => {
                 <LuUpload className={styles.sidebarIcon} />
               </Link>
             </>
+          )}
+          {user && user.role === "ADMIN" && (
+            <Link to="/admin" className={styles.sidebarLink}>
+              <LuShield className={styles.sidebarIcon} />
+            </Link>
           )}
         </nav>
       </div>

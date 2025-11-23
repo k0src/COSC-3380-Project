@@ -55,9 +55,11 @@ const AdminDashboardLayoutSidebar: React.FC = () => {
           <NavLink
             to="/admin"
             end
-            className={({ isActive }) =>
-              isActive ? styles.sidebarLinkActive : styles.sidebarLink
-            }
+            className={({ isActive }) => {
+              const path = window.location.pathname.replace(/\/$/, "");
+              const active = isActive || path === "/admin";
+              return active ? styles.sidebarLinkActive : styles.sidebarLink;
+            }}
           >
             <LuHouse className={styles.sidebarIcon} />
             <span className={styles.sidebarText}>Dashboard</span>
