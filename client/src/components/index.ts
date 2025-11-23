@@ -156,6 +156,7 @@ export { default as CreateUserModal } from "./AdminDashboard/CreateUserModal/Cre
 export { default as AdminManageContentSongs } from "./AdminDashboard/AdminManageContentPage/AdminManageContentSongs.js";
 export { default as AdminManageContentAlbums } from "./AdminDashboard/AdminManageContentPage/AdminManageContentAlbums.js";
 export { default as AdminManageContentPlaylists } from "./AdminDashboard/AdminManageContentPage/AdminManageContentPlaylists.js";
+export { default as AdminManageContentArtists } from "./AdminDashboard/AdminManageContentPage/AdminManageContentArtists.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

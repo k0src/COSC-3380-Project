@@ -1,41 +1,39 @@
 import { memo, useState, useMemo, useCallback, useRef } from "react";
 import type {
-  Song,
+  Artist,
   DataTableAction,
   DataTableBulkAction,
   AccessContext,
 } from "@types";
-import { DataTable, ConfirmationModal, EditSongModal } from "@components";
-import { songApi } from "@api";
+import { DataTable, ConfirmationModal, EditArtistModal } from "@components";
+import { artistApi } from "@api";
 import {
-  songColumns,
-  songFilterKeys,
+  artistColumns,
+  artistFilterKeys,
 } from "@components/DataTable/columnDefinitions";
 import { LuTrash2, LuSquarePen } from "react-icons/lu";
 
-export interface AdminManageContentSongsProps {
+export interface AdminManageContentArtistsProps {
   accessContext: AccessContext;
 }
 
-const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
+const AdminManageContentArtists: React.FC<AdminManageContentArtistsProps> = ({
   accessContext,
 }) => {
-  const [songToEdit, setSongToEdit] = useState<Song | null>(null);
-  const [songToDelete, setSongToDelete] = useState<Song | null>(null);
-  const [songsToBulkDelete, setSongsToBulkDelete] = useState<Song[]>([]);
+  const [artistToEdit, setArtistToEdit] = useState<Artist | null>(null);
+  const [artistToDelete, setArtistToDelete] = useState<Artist | null>(null);
+  const [artistsToBulkDelete, setArtistsToBulkDelete] = useState<Artist[]>([]);
 
-  const [isSongEditModalOpen, setIsSongEditModalOpen] = useState(false);
+  const [isArtistEditModalOpen, setIsArtistEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
 
   const refetchRef = useRef<(() => void) | null>(null);
 
-  const fetchSongs = useCallback(
+  const fetchArtists = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return songApi.getMany(accessContext, {
-        includeLikes: true,
-        includeAlbums: true,
-        includeArtists: true,
+      return artistApi.getMany(accessContext, {
+        includeUser: true,
         limit,
         offset,
       });
@@ -43,43 +41,46 @@ const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
     [accessContext]
   );
 
-  const handleDeleteClick = useCallback((song: Song, refetch: () => void) => {
-    setSongToDelete(song);
-    setIsDeleteModalOpen(true);
+  const handleDeleteClick = useCallback(
+    (artist: Artist, refetch: () => void) => {
+      setArtistToDelete(artist);
+      setIsDeleteModalOpen(true);
+      refetchRef.current = refetch;
+    },
+    []
+  );
+
+  const handleEditClick = useCallback((artist: Artist, refetch: () => void) => {
+    setArtistToEdit(artist);
+    setIsArtistEditModalOpen(true);
     refetchRef.current = refetch;
   }, []);
 
-  const handleEditClick = useCallback((song: Song, refetch: () => void) => {
-    setSongToEdit(song);
-    setIsSongEditModalOpen(true);
-    refetchRef.current = refetch;
-  }, []);
-
-  const handleSongEdited = useCallback(() => {
+  const handleArtistEdited = useCallback(() => {
     if (refetchRef.current) {
       refetchRef.current();
     }
   }, []);
 
   const handleConfirmDelete = useCallback(async () => {
-    if (!songToDelete) return;
+    if (!artistToDelete) return;
 
     try {
-      await songApi.delete(songToDelete.id);
+      await artistApi.delete(artistToDelete.id);
       setIsDeleteModalOpen(false);
-      setSongToDelete(null);
+      setArtistToDelete(null);
       if (refetchRef.current) {
         refetchRef.current();
       }
     } catch (error) {
-      console.error("Failed to delete song:", error);
+      console.error("Failed to delete artist:", error);
       throw error;
     }
-  }, [songToDelete]);
+  }, [artistToDelete]);
 
   const handleBulkDeleteClick = useCallback(
-    (songs: Song[], refetch: () => void) => {
-      setSongsToBulkDelete(songs);
+    (artists: Artist[], refetch: () => void) => {
+      setArtistsToBulkDelete(artists);
       setIsBulkDeleteModalOpen(true);
       refetchRef.current = refetch;
     },
@@ -87,33 +88,33 @@ const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
   );
 
   const handleConfirmBulkDelete = useCallback(async () => {
-    if (songsToBulkDelete.length === 0) return;
+    if (artistsToBulkDelete.length === 0) return;
 
     try {
-      await songApi.bulkDelete(songsToBulkDelete.map((c) => c.id));
+      await Promise.all(artistsToBulkDelete.map((a) => artistApi.delete(a.id)));
       setIsBulkDeleteModalOpen(false);
-      setSongsToBulkDelete([]);
+      setArtistsToBulkDelete([]);
       if (refetchRef.current) {
         refetchRef.current();
       }
     } catch (error) {
-      console.error("Failed to bulk delete songs:", error);
+      console.error("Failed to bulk delete artists:", error);
       throw error;
     }
-  }, [songsToBulkDelete]);
+  }, [artistsToBulkDelete]);
 
-  const actions = useMemo<DataTableAction<Song>[]>(
+  const actions = useMemo<DataTableAction<Artist>[]>(
     () => [
       {
         id: "edit",
         icon: LuSquarePen,
-        label: "Edit Song",
+        label: "Edit Artist",
         onClick: handleEditClick,
       },
       {
         id: "delete",
         icon: LuTrash2,
-        label: "Delete Song",
+        label: "Delete Artist",
         onClick: handleDeleteClick,
         variant: "danger",
       },
@@ -121,12 +122,12 @@ const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
     [handleDeleteClick, handleEditClick]
   );
 
-  const bulkActions = useMemo<DataTableBulkAction<Song>[]>(
+  const bulkActions = useMemo<DataTableBulkAction<Artist>[]>(
     () => [
       {
         id: "delete",
         icon: LuTrash2,
-        label: "Delete Songs",
+        label: "Delete Artists",
         onClick: handleBulkDeleteClick,
         variant: "danger",
       },
@@ -137,12 +138,12 @@ const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
   return (
     <>
       <DataTable
-        fetchData={fetchSongs}
-        columns={songColumns}
-        filterKeys={songFilterKeys}
+        fetchData={fetchArtists}
+        columns={artistColumns}
+        filterKeys={artistFilterKeys}
         actions={actions}
         bulkActions={bulkActions}
-        cacheKey="admin-manage-content-songs"
+        cacheKey="admin-manage-content-artists"
         dependencies={[accessContext]}
         initialRowsPerPage={25}
         rowsPerPageOptions={[10, 25, 50, 100]}
@@ -153,11 +154,11 @@ const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
-          setSongToDelete(null);
+          setArtistToDelete(null);
         }}
         onConfirm={handleConfirmDelete}
-        title="Delete Song"
-        message="Are you sure you want to delete this song? This action cannot be undone."
+        title="Delete Artist"
+        message="Are you sure you want to delete this artist? This action cannot be undone."
         confirmButtonText="Delete"
         isDangerous={true}
       />
@@ -166,26 +167,25 @@ const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
         isOpen={isBulkDeleteModalOpen}
         onClose={() => {
           setIsBulkDeleteModalOpen(false);
-          setSongsToBulkDelete([]);
+          setArtistsToBulkDelete([]);
         }}
         onConfirm={handleConfirmBulkDelete}
-        title="Delete Multiple Songs"
+        title="Delete Multiple Artists"
         message={`Are you sure you want to delete ${
-          songsToBulkDelete.length
-        } song${
-          songsToBulkDelete.length === 1 ? "" : "s"
+          artistsToBulkDelete.length
+        } artist${
+          artistsToBulkDelete.length === 1 ? "" : "s"
         }? This action cannot be undone.`}
         confirmButtonText="Delete All"
         isDangerous={true}
       />
 
-      {songToEdit && (
-        <EditSongModal
-          isOpen={isSongEditModalOpen}
-          onClose={() => setIsSongEditModalOpen(false)}
-          song={songToEdit}
-          userId={songToEdit.owner_id}
-          onSongEdited={handleSongEdited}
+      {artistToEdit && (
+        <EditArtistModal
+          isOpen={isArtistEditModalOpen}
+          onClose={() => setIsArtistEditModalOpen(false)}
+          artist={artistToEdit}
+          onArtistEdited={handleArtistEdited}
           adminMode
         />
       )}
@@ -193,4 +193,4 @@ const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
   );
 };
 
-export default memo(AdminManageContentSongs);
+export default memo(AdminManageContentArtists);

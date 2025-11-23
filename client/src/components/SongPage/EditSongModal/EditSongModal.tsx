@@ -23,6 +23,7 @@ export interface EditSongModalProps {
   onSongEdited?: () => void;
   song: Song;
   userId: string;
+  adminMode?: boolean;
 }
 
 interface EditSongForm {
@@ -43,6 +44,7 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
   onSongEdited,
   song,
   userId,
+  adminMode = false,
 }) => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -281,7 +283,7 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
               name="title"
               value={formState.title}
               onChange={handleFormChange}
-              placeholder="My Song"
+              placeholder={adminMode ? "Enter Song Title" : "My Song"}
               error={error}
               disabled={isEditing}
             />
@@ -351,7 +353,11 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
               type="music"
               disabled={isEditing}
               alt="Song Cover Image Preview"
-              hint="Upload a cover image for your song (optional)."
+              hint={
+                adminMode
+                  ? "Upload a cover image for the song (Optional)"
+                  : "Upload a cover image for your song (optional)."
+              }
             />
             <div className={styles.buttonContainer}>
               {isDirty && !error && (

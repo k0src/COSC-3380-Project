@@ -28,21 +28,13 @@ export const artistColumns: DataTableColumn<Artist>[] = [
         }}
       >
         {value}
-        {row.verified && (
-          <LuCheck
-            style={{
-              color: "var(--color-accent)",
-              fontSize: "var(--icon-size-sm)",
-            }}
-          />
-        )}
       </Link>
     ),
   },
   {
     key: "bio",
     header: "Bio",
-    width: "flex",
+    width: 300,
     render: (value) => (
       <span
         style={{
@@ -60,7 +52,7 @@ export const artistColumns: DataTableColumn<Artist>[] = [
     key: "verified",
     header: "Verified",
     sortable: true,
-    width: 80,
+    width: "flex",
     align: "center",
     render: (value) =>
       value ? (
@@ -70,7 +62,9 @@ export const artistColumns: DataTableColumn<Artist>[] = [
             fontSize: "var(--icon-size-md)",
           }}
         />
-      ) : null,
+      ) : (
+        <span style={{ color: "var(--color-text-gray)" }}>—</span>
+      ),
   },
   {
     key: "location",

@@ -23,6 +23,7 @@ type CreatePlaylistModalProps =
       onClose: () => void;
       onPlaylistCreated?: () => void;
       playlist?: never;
+      adminMode?: boolean;
     }
   | {
       mode: "edit";
@@ -34,6 +35,7 @@ type CreatePlaylistModalProps =
       onClose: () => void;
       onPlaylistCreated?: () => void;
       playlist: LibraryPlaylist | Playlist;
+      adminMode?: boolean;
     }
   | {
       mode: "createArtist";
@@ -45,6 +47,7 @@ type CreatePlaylistModalProps =
       onClose: () => void;
       onPlaylistCreated?: () => void;
       playlist?: never;
+      adminMode?: never;
     };
 
 interface CreatePlaylistForm {
@@ -65,6 +68,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
   onClose,
   onPlaylistCreated,
   playlist,
+  adminMode = false,
 }) => {
   const navigate = useNavigate();
 
@@ -288,7 +292,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
               name="title"
               value={playlistForm.title}
               onChange={handleFormChange}
-              placeholder="My Playlist"
+              placeholder={adminMode ? "Enter Playlist Title" : "My Playlist"}
               error={error}
               disabled={isCreating}
             />
@@ -299,7 +303,11 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
               onChange={handleFormChange}
               placeholder="My favorite songs..."
               disabled={isCreating}
-              hint="Enter a description for your playlist (optional)."
+              hint={
+                adminMode
+                  ? "Enter a description for the playlist (optional)."
+                  : "Enter a description for your playlist (optional)."
+              }
               error={error}
             />
             <SettingsToggle
@@ -319,7 +327,11 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
               type="music"
               disabled={isCreating}
               alt="Playlist Image Preview"
-              hint="Upload an cover image for your playlist (optional)."
+              hint={
+                adminMode
+                  ? "Upload an image for the playlist (optional)."
+                  : "Upload an image for your playlist (optional)."
+              }
             />
             <div className={styles.buttonContainer}>
               {isDirty && !error && (

@@ -920,38 +920,6 @@ export default class ArtistRepository {
     }
   }
 
-  static async verifyArtist(artistId: UUID): Promise<boolean> {
-    try {
-      const res = await query(
-        `UPDATE artists SET verified = TRUE 
-        WHERE id = $1 
-        RETURNING verified`,
-        [artistId]
-      );
-
-      return res[0]?.verified ?? false;
-    } catch (error) {
-      console.error("Error verifying artist:", error);
-      throw error;
-    }
-  }
-
-  static async unverifyArtist(artistId: UUID): Promise<boolean> {
-    try {
-      const res = await query(
-        `UPDATE artists SET verified = FALSE
-        WHERE id = $1
-        RETURNING verified`,
-        [artistId]
-      );
-
-      return res[0]?.verified === false;
-    } catch (error) {
-      console.error("Error unverifying artist:", error);
-      throw error;
-    }
-  }
-
   static async pinAlbumToArtistPage(artistId: UUID, albumId: UUID) {
     try {
       await query(

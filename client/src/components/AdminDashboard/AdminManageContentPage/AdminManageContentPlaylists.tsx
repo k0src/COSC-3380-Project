@@ -196,6 +196,7 @@ const AdminManageContentPlaylists: React.FC<
           onClose={() => setIsPlaylistEditModalOpen(false)}
           playlist={playlistToEdit}
           onPlaylistCreated={handlePlaylistEdited}
+          adminMode
         />
       )}
     </>

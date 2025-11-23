@@ -15,6 +15,7 @@ export interface EditArtistModalProps {
   onClose: () => void;
   onArtistEdited?: () => void;
   artist: Artist;
+  adminMode?: boolean;
 }
 
 interface EditArtistForm {
@@ -30,6 +31,7 @@ const EditArtistModal: React.FC<EditArtistModalProps> = ({
   onClose,
   onArtistEdited,
   artist,
+  adminMode = false,
 }) => {
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -37,7 +39,7 @@ const EditArtistModal: React.FC<EditArtistModalProps> = ({
   const initialFormState: EditArtistForm = useMemo(() => {
     return {
       display_name: artist.display_name,
-      bio: artist.bio,
+      bio: artist.bio || "",
       location: artist.location || "",
       banner_image: null,
       removeBannerImage: false,
@@ -190,11 +192,19 @@ const EditArtistModal: React.FC<EditArtistModalProps> = ({
             name="bio"
             value={formState.bio}
             onChange={handleFormChange}
-            placeholder="Tell us about yourself..."
+            placeholder={
+              adminMode
+                ? "Enter artist bio here..."
+                : "Tell us about yourself..."
+            }
             error={error}
             disabled={isEditing}
             height="medium"
-            hint="Enter a bio for your artist profile (optional). Max 500 characters."
+            hint={
+              adminMode
+                ? "Enter the artist's biography (optional). Max 500 characters."
+                : "Enter a bio for your artist profile (optional). Max 500 characters."
+            }
           />
           <SettingsInput
             label="Location"
@@ -204,7 +214,11 @@ const EditArtistModal: React.FC<EditArtistModalProps> = ({
             placeholder="Location"
             error={error}
             disabled={isEditing}
-            hint="Enter your location (optional)."
+            hint={
+              adminMode
+                ? "Enter the artist's location (optional)."
+                : "Enter your location (optional)."
+            }
           />
           <SettingsImageUpload
             label="Banner Image"
@@ -213,7 +227,11 @@ const EditArtistModal: React.FC<EditArtistModalProps> = ({
             type="banner"
             disabled={isEditing}
             alt="Banner Image Preview"
-            hint="Upload a banner image for your artist profile (optional). Recommended size: 1700x300 pixels."
+            hint={
+              adminMode
+                ? "Upload a banner image for the artist (optional). Recommended size: 1700x300 pixels."
+                : "Upload a banner image for your artist profile (optional). Recommended size: 1700x300 pixels."
+            }
           />
           <div className={styles.buttonContainer}>
             {isDirty && !error && (
@@ -223,9 +241,11 @@ const EditArtistModal: React.FC<EditArtistModalProps> = ({
             )}
             {error && <span className={styles.unsavedText}>{error}</span>}
             <div className={styles.buttons}>
-              <Link to="/me/settings" className={styles.deactivateLink}>
-                Deactivate Artist Page
-              </Link>
+              {!adminMode && (
+                <Link to="/me/settings" className={styles.deactivateLink}>
+                  Deactivate Artist Page
+                </Link>
+              )}
               <button
                 type="submit"
                 className={styles.saveButton}

@@ -18,6 +18,7 @@ export interface EditAlbumModalProps {
   onClose: () => void;
   onAlbumEdited?: () => void;
   album: Album;
+  adminMode?: boolean;
 }
 
 interface EditAlbumForm {
@@ -34,6 +35,7 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
   onClose,
   onAlbumEdited,
   album,
+  adminMode = false,
 }) => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -227,7 +229,7 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
               name="title"
               value={formState.title}
               onChange={handleFormChange}
-              placeholder="My Album"
+              placeholder={adminMode ? "Enter Album Title" : "My Album"}
               error={error}
               disabled={isEditing}
             />
@@ -269,7 +271,11 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
               type="music"
               disabled={isEditing}
               alt="Album Cover Image Preview"
-              hint="Upload a cover image for your album (optional)."
+              hint={
+                adminMode
+                  ? "Upload a cover image for the album (optional)."
+                  : "Upload a cover image for your album (optional)."
+              }
             />
             <div className={styles.buttonContainer}>
               {isDirty && !error && (

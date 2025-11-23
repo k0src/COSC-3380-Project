@@ -30,6 +30,25 @@ export const artistApi = {
     return response.data;
   },
 
+  async getMany(accessContext: AccessContext, options?: ArtistOptions) {
+    try {
+      const response = await api.get<Artist[]>(`/artists`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
+
   async getSongs(
     id: UUID,
     accessContext: AccessContext,

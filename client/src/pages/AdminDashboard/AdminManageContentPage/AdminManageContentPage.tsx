@@ -7,13 +7,14 @@ import {
   AdminManageContentSongs,
   AdminManageContentAlbums,
   AdminManageContentPlaylists,
+  AdminManageContentArtists,
 } from "@components";
 import styles from "./AdminManageContentPage.module.css";
 import classNames from "classnames";
-import { LuDisc3, LuDiscAlbum, LuListMusic } from "react-icons/lu";
+import { LuDisc3, LuDiscAlbum, LuListMusic, LuMic } from "react-icons/lu";
 
-type TabType = "albums" | "songs" | "playlists";
-const VALID_TABS = ["albums", "songs", "playlists"] as const;
+type TabType = "albums" | "songs" | "playlists" | "artists";
+const VALID_TABS = ["albums", "songs", "playlists", "artists"] as const;
 
 const TabButton = memo(
   ({
@@ -68,6 +69,7 @@ const AdminManageContentPage: React.FC = () => {
       { id: "songs" as const, icon: LuDisc3, label: "Songs" },
       { id: "albums" as const, icon: LuDiscAlbum, label: "Albums" },
       { id: "playlists" as const, icon: LuListMusic, label: "Playlists" },
+      { id: "artists" as const, icon: LuMic, label: "Artists" },
     ],
     []
   );
@@ -112,6 +114,9 @@ const AdminManageContentPage: React.FC = () => {
         )}
         {activeTab === "playlists" && (
           <AdminManageContentPlaylists accessContext={accessContext} />
+        )}
+        {activeTab === "artists" && (
+          <AdminManageContentArtists accessContext={accessContext} />
         )}
       </div>
     </>

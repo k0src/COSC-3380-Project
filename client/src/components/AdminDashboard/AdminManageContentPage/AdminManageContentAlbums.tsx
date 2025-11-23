@@ -185,6 +185,7 @@ const AdminManageContentAlbums: React.FC<AdminManageContentAlbumsProps> = ({
           onClose={() => setIsAlbumEditModalOpen(false)}
           album={albumToEdit}
           onAlbumEdited={handleAlbumEdited}
+          adminMode
         />
       )}
     </>
