@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { UserRepository } from "@repositories";
+import { UserRepository, ArtistRepository } from "@repositories";
 import {
   FollowService,
   HistoryService,
@@ -155,6 +155,51 @@ router.put(
     }
   }
 );
+
+// POST /api/users
+router.post("/", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userData = await parseForm(req, "user");
+
+    if (!userData.username || !userData.email || !userData.password) {
+      res.status(400).json({ error: "Missing required fields" });
+      return;
+    }
+
+    const user = await UserRepository.create(userData);
+
+    if (!user) {
+      res.status(500).json({ error: "Failed to create user" });
+      return;
+    }
+
+    if (user.role === "ARTIST") {
+      const artist = await ArtistRepository.create({
+        user_id: user.id,
+        display_name: user.username,
+      });
+
+      if (!artist) {
+        res.status(500).json({
+          error: "Internal Server Error",
+          message: "Failed to create artist profile",
+          statusCode: 500,
+        });
+        return;
+      }
+
+      await UserRepository.update(user.id, { artist_id: artist.id });
+      user.artist_id = artist.id;
+    }
+
+    res.status(201).json(user);
+  } catch (error: any) {
+    console.error("Error in POST /users:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+    return;
+  }
+});
 
 /* ========================================================================== */
 /*                               User Playlists                               */

@@ -1,0 +1,220 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-overlay-bg);
+  backdrop-filter: var(--overlay-blur);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: var(--animation-fade-in);
+}
+
+.modal {
+  background: var(--color-panel-gray);
+  border: var(--border-size-md) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  width: 90%;
+  max-width: 80rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-modal);
+  animation: var(--animation-slide-in);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
+}
+
+.title {
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  color: var(--color-white);
+  margin: 0;
+}
+
+.headerButton {
+  background: none;
+  border: none;
+  color: var(--color-text-gray);
+  font-size: var(--icon-size-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed) ease;
+}
+
+.headerButton:hover {
+  color: var(--color-white);
+}
+
+/* .userForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+} */
+
+.userForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.userFormColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.userFormColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.infoSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  background: var(--color-panel-gray-dark);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-white);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.infoLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.infoValue {
+  font-size: var(--font-size-sm);
+  color: var(--color-white-alt);
+  font-family: var(--font-mono);
+}
+
+.artistLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-white) !important;
+  text-decoration: none;
+  transition: color var(--transition-speed) ease;
+}
+
+.artistLink:hover {
+  color: var(--color-accent) !important;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--spacing-sd);
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-panel-gray);
+}
+
+.statIcon {
+  font-size: var(--icon-size-md);
+  color: var(--color-accent);
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.statValue {
+  font-size: var(--font-size-md);
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+.statLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+}
+
+.buttonContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+}
+
+.buttons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.saveButton {
+  font-family: var(--font-main);
+  background: var(--color-white);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-panel-gray);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: var(--color-white-alt);
+}
+
+.saveButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.unsavedText {
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+}

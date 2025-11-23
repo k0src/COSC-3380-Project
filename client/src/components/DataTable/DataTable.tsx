@@ -1,4 +1,4 @@
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useEffect } from "react";
 import { PuffLoader } from "react-spinners";
 import type { DataTableProps } from "@types";
 import { DataTableHeader, DataTableCheckbox } from "@components";
@@ -20,6 +20,7 @@ function DataTable<T extends Record<string, any> = any>({
   dependencies = [],
   theme = "default",
   noDataMessage,
+  onRefetchNeeded,
 }: DataTableProps<T>) {
   const [isActionExecuting, setIsActionExecuting] = useState(false);
   const [isBulkActionExecuting, setIsBulkActionExecuting] = useState(false);
@@ -62,6 +63,12 @@ function DataTable<T extends Record<string, any> = any>({
     hasActions,
     actionsCount: actions.length,
   });
+
+  useEffect(() => {
+    if (onRefetchNeeded) {
+      onRefetchNeeded.current = refetch;
+    }
+  }, [refetch, onRefetchNeeded]);
 
   const handleFilterClear = useCallback(() => {
     setFilterText("");

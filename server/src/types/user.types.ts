@@ -22,6 +22,15 @@ export interface User {
   follower_count?: number;
 }
 
+export interface UserInfo extends User {
+  likes_count?: number;
+  comments_count?: number;
+  playlists_count?: number;
+  songs_count?: number;
+  albums_count?: number;
+  total_reports_count?: number;
+}
+
 export interface UserSettings {
   user_id: UUID;
   release_notifications: boolean;

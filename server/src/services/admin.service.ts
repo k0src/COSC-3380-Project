@@ -10,11 +10,13 @@ import type {
   UserGrowthData,
   PlatformActivity,
   RecentReport,
+  UserInfo,
 } from "@types";
 import { query } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
 import { getAccessPredicate } from "@util";
 import dotenv from "dotenv";
+import { UserRepository } from "@repositories";
 
 dotenv.config();
 
@@ -297,6 +299,121 @@ export default class AdminService {
       return result as RecentReport[];
     } catch (error) {
       console.error("Error retrieving recent reports:", error);
+      throw error;
+    }
+  }
+
+  static async getAllUsers(
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<UserInfo[]> {
+    try {
+      const result = await query(
+        `SELECT
+          u.*,
+          (SELECT COUNT(*)
+            FROM user_followers uf
+            WHERE uf.following_id = u.id
+          ) AS follower_count,
+          (SELECT COUNT(*)
+            FROM user_followers uf
+            WHERE uf.follower_id = u.id
+          ) AS following_count,
+          (SELECT COUNT(*)
+            FROM song_likes sl
+            WHERE sl.user_id = u.id
+              AND NOT EXISTS (
+                SELECT 1 FROM deleted_songs ds
+                WHERE ds.song_id = sl.song_id
+              )
+          ) AS likes_count,
+          (SELECT COUNT(*)
+            FROM comments c
+            WHERE c.user_id = u.id
+              AND NOT EXISTS (
+                SELECT 1 FROM deleted_songs ds
+                WHERE ds.song_id = c.song_id
+              )
+          ) AS comments_count,
+          (SELECT COUNT(*)
+            FROM songs s
+            WHERE s.owner_id = u.id
+              AND NOT EXISTS (
+                SELECT 1 FROM deleted_songs ds
+                WHERE ds.song_id = s.id
+              )
+          ) AS songs_count,
+          (SELECT COUNT(*)
+            FROM albums a
+            WHERE a.owner_id = u.id
+              AND NOT EXISTS (
+                SELECT 1 FROM deleted_albums da
+                WHERE da.album_id = a.id
+              )
+          ) AS albums_count,
+          (SELECT COUNT(*)
+            FROM playlists p
+            WHERE p.owner_id = u.id
+              AND NOT EXISTS (
+                SELECT 1 FROM deleted_playlists dp
+                WHERE dp.playlist_id = p.id
+              )
+          ) AS playlists_count,
+          (SELECT COUNT(*)
+            FROM (
+              SELECT reported_id FROM song_reports WHERE reported_id = u.id
+              UNION ALL
+              SELECT reported_id FROM album_reports WHERE reported_id = u.id
+              UNION ALL
+              SELECT reported_id FROM playlist_reports WHERE reported_id = u.id
+              UNION ALL
+              SELECT reported_id FROM user_reports WHERE reported_id = u.id
+            ) AS all_reports
+          ) AS total_reports_count
+        FROM users u
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_users du WHERE du.user_id = u.id
+        )
+        ORDER BY u.created_at DESC
+        LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
+
+      return result.map((user) => {
+        if (user.profile_picture_url) {
+          user.profile_picture_url = getBlobUrl(user.profile_picture_url);
+        }
+        return user;
+      });
+    } catch (error) {
+      console.error("Error retrieving all users:", error);
+      throw error;
+    }
+  }
+
+  static async suspendUser(userId: UUID) {
+    try {
+      return UserRepository.update(userId, { status: "SUSPENDED" });
+    } catch (error) {
+      console.error("Error suspending user:", error);
+      throw error;
+    }
+  }
+
+  static async deactivateUser(userId: UUID) {
+    try {
+      return UserRepository.update(userId, { status: "DEACTIVATED" });
+    } catch (error) {
+      console.error("Error deactivating user:", error);
+      throw error;
+    }
+  }
+
+  static async reactivateUser(userId: UUID) {
+    try {
+      return UserRepository.update(userId, { status: "ACTIVE" });
+    } catch (error) {
+      console.error("Error reactivating user:", error);
       throw error;
     }
   }

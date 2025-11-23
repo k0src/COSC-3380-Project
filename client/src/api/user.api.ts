@@ -18,9 +18,15 @@ export const userApi = {
     return response.data.userCount;
   },
 
-  async getUserById(id: UUID) {
+  async getUserById(
+    id: UUID,
+    options?: {
+      includeFollowerCount?: boolean;
+      includeFollowingCount?: boolean;
+    }
+  ) {
     const response = await api.get<User>(`/users/${id}`, {
-      params: { includeUser: true },
+      params: options,
     });
     return response.data;
   },
@@ -210,6 +216,29 @@ export const userApi = {
       `/users/${id}/following/count`
     );
     return response.data.followingCount;
+  },
+
+  async create(data: {
+    username: string;
+    email: string;
+    password: string;
+    profile_picture_url?: File | null;
+    role?: string;
+  }) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const response = await api.post<User>(`/users`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
   },
 
   async update(

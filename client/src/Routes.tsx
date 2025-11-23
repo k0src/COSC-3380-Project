@@ -183,6 +183,16 @@ export default function AppRoutes() {
               </AdminRoute>
             }
           />
+          <Route
+            path="/admin/manage-users"
+            element={
+              <AdminRoute>
+                <AdminDashboardLayout>
+                  <Pages.AdminDashboardUsersPage />
+                </AdminDashboardLayout>
+              </AdminRoute>
+            }
+          />
         </Routes>
       )}
     </>

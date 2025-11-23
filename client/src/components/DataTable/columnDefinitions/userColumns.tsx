@@ -1,33 +1,24 @@
 import { Link } from "react-router-dom";
 import { LazyImg } from "@components";
 import type { User, DataTableColumn } from "@types";
-import { formatNumber } from "@util";
+import { formatDateString } from "@util";
 import { LuCheck } from "react-icons/lu";
 import userPlaceholder from "@assets/user-placeholder.webp";
+import styles from "./columns.module.css";
 
 export const userColumns: DataTableColumn<User>[] = [
   {
     key: "profile_picture_url",
-    header: "Avatar",
-    width: 80,
+    header: "Image",
+    width: 110,
     align: "center",
     render: (value, row) => (
-      <div
-        style={{
-          width: "4rem",
-          height: "4rem",
-          borderRadius: "50%",
-          overflow: "hidden",
-        }}
-      >
-        <LazyImg
-          src={value || userPlaceholder}
-          blurHash={row.pfp_blurhash}
-          alt={row.username}
-          imgClassNames={[]}
-          size={64}
-        />
-      </div>
+      <LazyImg
+        src={value || userPlaceholder}
+        blurHash={row.pfp_blurhash}
+        alt={row.username}
+        imgClassNames={[styles.imageRound]}
+      />
     ),
   },
   {
@@ -42,7 +33,7 @@ export const userColumns: DataTableColumn<User>[] = [
           color: "var(--color-white)",
           textDecoration: "none",
           fontWeight: 500,
-          transition: "color 0.2s ease",
+          transition: "color var(--transition-speed) ease",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.color = "var(--color-accent)";
@@ -66,38 +57,46 @@ export const userColumns: DataTableColumn<User>[] = [
   },
   {
     key: "authenticated_with",
-    header: "Auth Method",
+    header: "Auth",
     sortable: true,
-    width: 120,
+    width: "flex",
     render: (value) => (
-      <span
-        style={{
-          color: "var(--color-white-alt)",
-          textTransform: "capitalize",
-        }}
-      >
-        {value}
-      </span>
+      <span style={{ color: "var(--color-text-gray)" }}>{value}</span>
     ),
   },
   {
     key: "role",
     header: "Role",
     sortable: true,
-    width: 100,
+    width: "flex",
     align: "center",
     render: (value) => (
       <span
         style={{
-          color:
-            value === "ADMIN"
-              ? "var(--color-red-ui)"
-              : value === "ARTIST"
-              ? "var(--color-accent)"
-              : "var(--color-white-alt)",
+          color: "var(--color-white-alt)",
           fontWeight: 500,
-          textTransform: "capitalize",
+          textTransform: "uppercase",
         }}
+      >
+        {value.toLowerCase()}
+      </span>
+    ),
+  },
+  {
+    key: "status",
+    header: "Status",
+    sortable: true,
+    width: "flex",
+    align: "center",
+    render: (value) => (
+      <span
+        className={`${styles.statusBadge} ${
+          value === "ACTIVE"
+            ? styles.statusActive
+            : value === "SUSPENDED"
+            ? styles.statusSuspended
+            : styles.statusDeactivated
+        }`}
       >
         {value.toLowerCase()}
       </span>
@@ -112,15 +111,15 @@ export const userColumns: DataTableColumn<User>[] = [
         <Link
           to={`/artists/${value}`}
           style={{
-            color: "var(--color-accent)",
+            color: "var(--color-white-alt)",
             textDecoration: "none",
-            transition: "color 0.2s ease",
+            transition: "color var(--transition-speed) ease",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = "var(--color-accent-800)";
+            e.currentTarget.style.color = "var(--color-accent)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.color = "var(--color-accent)";
+            e.currentTarget.style.color = "var(--color-white-alt)";
           }}
         >
           View Artist
@@ -133,39 +132,28 @@ export const userColumns: DataTableColumn<User>[] = [
     key: "is_private",
     header: "Private",
     sortable: true,
-    width: 80,
+    width: "flex",
     align: "center",
     render: (value) =>
       value ? (
         <LuCheck
           style={{
-            color: "var(--color-accent)",
+            color: "var(--color-ui-red)",
             fontSize: "var(--icon-size-md)",
           }}
         />
-      ) : null,
+      ) : (
+        <span style={{ color: "var(--color-text-gray)" }}>—</span>
+      ),
   },
   {
-    key: "follower_count",
-    header: "Followers",
+    key: "created_at",
+    header: "Joined",
     sortable: true,
-    width: 100,
-    align: "center",
+    width: "flex",
     render: (value) => (
-      <span style={{ color: "var(--color-white-alt)", fontWeight: 500 }}>
-        {formatNumber(value ?? 0)}
-      </span>
-    ),
-  },
-  {
-    key: "following_count",
-    header: "Following",
-    sortable: true,
-    width: 100,
-    align: "center",
-    render: (value) => (
-      <span style={{ color: "var(--color-white-alt)", fontWeight: 500 }}>
-        {formatNumber(value ?? 0)}
+      <span style={{ color: "var(--color-text-gray)" }}>
+        {formatDateString(value)}
       </span>
     ),
   },

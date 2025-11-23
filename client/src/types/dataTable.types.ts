@@ -51,6 +51,7 @@ export interface DataTableProps<T = any> {
   dependencies?: any[];
   theme?: "default" | "dark";
   noDataMessage?: ReactNode;
+  onRefetchNeeded?: React.RefObject<(() => void) | null>;
 }
 
 export interface DataTableState<T> {

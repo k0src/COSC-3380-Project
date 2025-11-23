@@ -7,6 +7,15 @@
   flex-shrink: 0;
 }
 
+.imageRound {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+}
+
 .descriptionCell {
   display: block;
   max-width: 40rem;
@@ -40,6 +49,24 @@
 
 .statusDismissed {
   background: var(--color-gray-button);
-  border: var(--border-size-sm) solid var(--color-red-ui-border);
+  border: var(--border-size-sm) solid var(--color-gray-button-border);
   color: var(--color-white-alt);
+}
+
+.statusActive {
+  background: var(--color-green-ui-bg);
+  border: var(--border-size-sm) solid var(--color-green-ui-border);
+  color: var(--color-green-ui);
+}
+
+.statusSuspended {
+  background: var(--color-red-ui-bg);
+  border: var(--border-size-sm) solid var(--color-red-ui-border);
+  color: var(--color-red-ui);
+}
+
+.statusDeactivated {
+  background: var(--color-orange-ui-bg);
+  border: var(--border-size-sm) solid var(--color-orange-ui-border);
+  color: var(--color-orange-ui);
 }

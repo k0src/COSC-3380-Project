@@ -1,5 +1,7 @@
 import express, { Request, Response } from "express";
 import { AdminService } from "@services";
+import { UserRepository } from "@repositories";
+import { parseForm } from "@infra/form-parser";
 import { validateOrderBy } from "@validators";
 import { handlePgError, parseAccessContext, getCoverGradient } from "@util";
 
@@ -44,17 +46,20 @@ router.get("/dashboard/top-artists", async (req: Request, res: Response) => {
 });
 
 // GET /api/admin/dashboard/platform-activity
-router.get("/dashboard/platform-activity", async (req: Request, res: Response) => {
-  try {
-    const days = parseInt(req.query.days as string) || 30;
-    const platformActivity = await AdminService.getPlatformActivity(days);
-    res.json(platformActivity);
-  } catch (error: any) {
-    console.error("Error in GET /admin/dashboard/platform-activity:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
+router.get(
+  "/dashboard/platform-activity",
+  async (req: Request, res: Response) => {
+    try {
+      const days = parseInt(req.query.days as string) || 30;
+      const platformActivity = await AdminService.getPlatformActivity(days);
+      res.json(platformActivity);
+    } catch (error: any) {
+      console.error("Error in GET /admin/dashboard/platform-activity:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
   }
-});
+);
 
 // GET /api/admin/dashboard/recent-reports
 router.get("/dashboard/recent-reports", async (req: Request, res: Response) => {
@@ -69,6 +74,120 @@ router.get("/dashboard/recent-reports", async (req: Request, res: Response) => {
     res.status(statusCode).json({ error: message });
   }
 });
+
+// GET /api/admin/users
+router.get("/users", async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 50;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const users = await AdminService.getAllUsers(limit, offset);
+    res.json(users);
+  } catch (error: any) {
+    console.error("Error in GET /admin/users:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// PUT /api/admin/users/:userId/update
+router.put(
+  "/users/:userId/update",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { userId } = req.params;
+
+      if (!userId) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+      const updateData = await parseForm(req, "user");
+      const updatedUser = await UserRepository.update(userId, updateData);
+
+      if (!updatedUser) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+
+      res.status(200).json(updatedUser);
+    } catch (error: any) {
+      console.error("Error in PUT /users/:id:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
+// POST /api/admin/users/:userId/suspend
+router.post("/users/:userId/suspend", async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    const user = await AdminService.suspendUser(userId);
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    res.json(user);
+  } catch (error: any) {
+    console.error("Error in POST /admin/users/:userId/suspend:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// POST /api/admin/users/:userId/deactivate
+router.post(
+  "/users/:userId/deactivate",
+  async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      if (!userId) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const user = await AdminService.deactivateUser(userId);
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      res.json(user);
+    } catch (error: any) {
+      console.error("Error in POST /admin/users/:userId/deactivate:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
+// POST /api/admin/users/:userId/reactivate
+router.post(
+  "/users/:userId/reactivate",
+  async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      if (!userId) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const user = await AdminService.reactivateUser(userId);
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      res.json(user);
+    } catch (error: any) {
+      console.error("Error in POST /admin/users/:userId/reactivate:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
 
 // GET /api/admin/featured-playlist
 router.get("/featured-playlist", async (req: Request, res: Response) => {

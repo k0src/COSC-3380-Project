@@ -9,6 +9,8 @@ import type {
   AdminDashboardStats,
   PlatformActivity,
   RecentReport,
+  User,
+  UserInfo,
 } from "@types";
 
 export type CoverEntityType = "song" | "playlist" | "album";
@@ -83,6 +85,63 @@ export const adminApi = {
     const response = await api.get<CoverGradient>(
       `/admin/${entityType}/${entityId}/cover-gradient`
     );
+    return response.data;
+  },
+
+  async getAllUsers(limit: number, offset: number) {
+    const response = await api.get<UserInfo[]>(`/admin/users`, {
+      params: { limit, offset },
+    });
+    return response.data;
+  },
+
+  async update(
+    id: UUID,
+    data: {
+      username?: string;
+      email?: string;
+      new_password?: string;
+      current_password?: string;
+      authenticated_with?: string;
+      role?: string;
+      profile_picture_url?: File | null;
+      artist_id?: UUID;
+      status?: string;
+      is_private?: boolean;
+    }
+  ) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const response = await api.put<User>(
+      `/admin/users/${id}/update`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  },
+
+  async suspendUser(userId: UUID) {
+    const response = await api.post(`/admin/users/${userId}/suspend`);
+    return response.data;
+  },
+
+  async deactivateUser(userId: UUID) {
+    const response = await api.post(`/admin/users/${userId}/deactivate`);
+    return response.data;
+  },
+
+  async reactivateUser(userId: UUID) {
+    const response = await api.post(`/admin/users/${userId}/reactivate`);
     return response.data;
   },
 };

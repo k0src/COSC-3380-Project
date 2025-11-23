@@ -15,12 +15,14 @@ export default class UserRepository {
     email,
     password,
     profile_picture_url,
+    pfp_blurhash,
     role,
   }: {
     username: string;
     email: string;
     password: string;
     profile_picture_url?: string;
+    pfp_blurhash?: string;
     role?: string;
   }): Promise<User | null> {
     try {
@@ -31,9 +33,9 @@ export default class UserRepository {
         const insertSql = `
           INSERT INTO users (
               username, email, password_hash, 
-              authenticated_with, profile_picture_url, role
+              authenticated_with, profile_picture_url, pfp_blurhash, role, status
             )
-          VALUES ($1, $2, $3, $4, $5, $6)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
           RETURNING *`;
 
         const insertParams = [
@@ -42,7 +44,9 @@ export default class UserRepository {
           password_hash,
           "CoogMusic",
           profile_picture_url,
-          role,
+          pfp_blurhash,
+          role || "USER",
+          "ACTIVE",
         ];
 
         const res = await client.query(insertSql, insertParams);
