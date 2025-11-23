@@ -1,28 +1,23 @@
 import { memo, useCallback } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
 import { LazyImg } from "@components";
-import styles from "./ArtistLayoutSidebar.module.css";
+import styles from "./AdminDashboardLayoutSidebar.module.css";
 import {
   LuListMusic,
   LuLogOut,
-  LuChevronRight,
   LuHouse,
-  LuPlus,
   LuChartLine,
-  LuMessageSquare,
+  LuShield,
+  LuUserRound,
+  LuCircleAlert,
+  LuFileText,
+  LuBell,
 } from "react-icons/lu";
 import Logo from "@assets/logo.svg?react";
+import userPlaceholder from "@assets/user-placeholder.webp";
 
-export interface ArtistLayoutSidebarProps {
-  artistName: string;
-  artistImageUrl: string;
-}
-
-const ArtistLayoutSidebar: React.FC<ArtistLayoutSidebarProps> = ({
-  artistName,
-  artistImageUrl,
-}) => {
+const AdminDashboardLayoutSidebar: React.FC = () => {
   const { logout, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
@@ -35,81 +30,98 @@ const ArtistLayoutSidebar: React.FC<ArtistLayoutSidebarProps> = ({
     }
   }, [logout, navigate]);
 
+  if (!user || !isAuthenticated || user.role !== "ADMIN") {
+    navigate("/login");
+  }
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarTop}>
-        <div className={styles.artistLinkContainer}>
+        <div className={styles.pfpContainer}>
           <LazyImg
-            src={artistImageUrl}
-            alt="Artist Profile"
-            imgClassNames={[styles.artistProfileImg]}
+            src={user?.profile_picture_url || userPlaceholder}
+            alt={`${user?.username} Image`}
+            imgClassNames={[styles.pfpImage]}
             blurHash={user?.pfp_blurhash}
           />
 
-          <div className={styles.artistNameContainer}>
-            <span className={styles.artistName}>{artistName}</span>
-            <Link
-              className={styles.artistPageLink}
-              to={`/artists/${user?.artist_id}`}
-            >
-              View Artist Page <LuChevronRight />
-            </Link>
+          <div className={styles.usernameContainer}>
+            <span className={styles.username}>{user?.username ?? "Admin"}</span>
+            <LuShield className={styles.adminIcon} />
           </div>
         </div>
 
         <nav className={styles.sidebarNav}>
           <NavLink
-            to="/artist-dashboard"
+            to="/admin"
             end
             className={({ isActive }) =>
               isActive ? styles.sidebarLinkActive : styles.sidebarLink
             }
           >
             <LuHouse className={styles.sidebarIcon} />
-            <span className={styles.sidebarText}>Overview</span>
+            <span className={styles.sidebarText}>Dashboard</span>
           </NavLink>
           <NavLink
-            to="/artist-dashboard/add"
+            to="/admin/manage-users"
             className={({ isActive }) =>
               isActive ? styles.sidebarLinkActive : styles.sidebarLink
             }
           >
-            <LuPlus className={styles.sidebarIcon} />
-            <span className={styles.sidebarText}>Add Content</span>
+            <LuUserRound className={styles.sidebarIcon} />
+            <span className={styles.sidebarText}>Manage Users</span>
           </NavLink>
           <NavLink
-            to="/artist-dashboard/manage"
+            to="/admin/manage-content"
             className={({ isActive }) =>
               isActive ? styles.sidebarLinkActive : styles.sidebarLink
             }
           >
             <LuListMusic className={styles.sidebarIcon} />
-            <span className={styles.sidebarText}>Manage Content</span>
+            <span className={styles.sidebarText}>Manage Site Content</span>
           </NavLink>
           <NavLink
-            to="/artist-dashboard/stats"
+            to="/admin/reports"
+            className={({ isActive }) =>
+              isActive ? styles.sidebarLinkActive : styles.sidebarLink
+            }
+          >
+            <LuCircleAlert className={styles.sidebarIcon} />
+            <span className={styles.sidebarText}>Reports & Appeals</span>
+          </NavLink>
+          <NavLink
+            to="/admin/stats"
             className={({ isActive }) =>
               isActive ? styles.sidebarLinkActive : styles.sidebarLink
             }
           >
             <LuChartLine className={styles.sidebarIcon} />
-            <span className={styles.sidebarText}>Listeners & Stats</span>
+            <span className={styles.sidebarText}>Site Statistics</span>
           </NavLink>
           <NavLink
-            to="/artist-dashboard/comments"
+            to="/admin/data-reports"
             className={({ isActive }) =>
               isActive ? styles.sidebarLinkActive : styles.sidebarLink
             }
           >
-            <LuMessageSquare className={styles.sidebarIcon} />
-            <span className={styles.sidebarText}>Comments</span>
+            <LuFileText className={styles.sidebarIcon} />
+            <span className={styles.sidebarText}>Data Reports</span>
+          </NavLink>
+          <NavLink
+            to="/admin/notifications"
+            className={({ isActive }) =>
+              isActive ? styles.sidebarLinkActive : styles.sidebarLink
+            }
+          >
+            <LuBell className={styles.sidebarIcon} />
+            <span className={styles.sidebarText}>Site Notifications</span>
           </NavLink>
         </nav>
       </div>
       <div className={styles.sidebarBottom}>
         <div className={styles.sidebarLogo}>
           <Logo className={styles.logoImage} />
-          <span className={styles.logoText}>Artists</span>
+          <span className={styles.logoText}>Admin</span>
         </div>
         {isAuthenticated && (
           <button onClick={handleLogout} className={styles.logoutButton}>
@@ -121,4 +133,4 @@ const ArtistLayoutSidebar: React.FC<ArtistLayoutSidebarProps> = ({
   );
 };
 
-export default memo(ArtistLayoutSidebar);
+export default memo(AdminDashboardLayoutSidebar);

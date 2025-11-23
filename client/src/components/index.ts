@@ -13,6 +13,7 @@ export { default as NotificationModal } from "./MainLayout/NotificationModal/Not
 
 /* ================================= Routes ================================= */
 export { default as ProtectedRoute } from "./ProtectedRoute/ProtectedRoute.js";
+export { default as AdminRoute } from "./AdminRoute/AdminRoute.js";
 export { default as AppLayout } from "./AppLayout/AppLayout.js";
 export { default as MeWrapper } from "./MeWrapper/MeWrapper.js";
 
@@ -141,6 +142,10 @@ export { default as ArtistDashboardBarChart } from "./ArtistDashboard/ArtistDash
 export { default as ArtistDashboardTopSongsBarChart } from "./ArtistDashboard/ArtistDashboardTopSongsBarChart/ArtistDashboardTopSongsBarChart.js";
 export { default as ArtistDashboardPieChart } from "./ArtistDashboard/ArtistDashboardPieChart/ArtistDashboardPieChart.js";
 export { default as ArtistDashboardFollowerChart } from "./ArtistDashboard/ArtistDashboardFollowerChart/ArtistDashboardFollowerChart.js";
+
+/* ============================= Admin Dashboard ============================ */
+export { default as AdminDashboardLayout } from "./AdminDashboard/AdminDashboardLayout/AdminDashboardLayout.js";
+export { default as AdminDashboardLayoutSidebar } from "./AdminDashboard/AdminDashboardLayoutSidebar/AdminDashboardLayoutSidebar.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

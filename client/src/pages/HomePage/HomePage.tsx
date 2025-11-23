@@ -24,7 +24,7 @@ const HomePage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
 
   const userIsArtist = useMemo(() => {
-    return isAuthenticated && user && user.role === "ARTIST";
+    return isAuthenticated && user && user.role !== "USER";
   }, [isAuthenticated, user]);
 
   const userId = useMemo(() => {

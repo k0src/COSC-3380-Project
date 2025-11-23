@@ -25,3 +25,5 @@ export { default as ArtistDashboardCommentsPage } from "./ArtistDashboard/Artist
 export { default as ArtistDashboardManagePage } from "./ArtistDashboard/ArtistDashboardManagePage/ArtistDashboardManagePage.js";
 export { default as ArtistDashboardAddPage } from "./ArtistDashboard/ArtistDashboardAddPage/ArtistDashboardAddPage.js";
 export { default as ArtistDashboardStatsPage } from "./ArtistDashboard/ArtistDashboardStatsPage/ArtistDashboardStatsPage.js";
+
+export { default as AdminDashboard } from "./AdminDashboard/AdminDashboard.js";
