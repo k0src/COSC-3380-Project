@@ -1,0 +1,124 @@
+.sectionContainer {
+  display: flex;
+  flex-direction: column;
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  background: var(--color-panel-gray);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+  padding: var(--spacing-md);
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
+}
+
+.artistsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.artistCard {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sd);
+  padding: var(--spacing-md);
+  background: var(--color-panel-gray);
+}
+
+.artistCard:hover .artistNameText {
+  color: var(--color-accent);
+}
+
+.artistRank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.2rem;
+}
+
+.rankNumber {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  font-weight: 600;
+}
+
+.artistImage {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.artistInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex: 1;
+  min-width: 0;
+}
+
+.artistName {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xsd);
+}
+
+.artistNameText {
+  font-size: var(--font-size-md);
+  color: var(--color-white);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: all var(--transition-speed) ease;
+}
+
+.verifiedIcon {
+  font-size: var(--icon-size-xsd);
+  color: var(--color-white);
+  flex-shrink: 0;
+}
+
+.artistStreams {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}
+
+.loaderContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 20rem;
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 20rem;
+  color: var(--color-red-ui);
+  font-size: var(--font-size-sm);
+}
+
+.noDataContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 20rem;
+}
+
+.noDataMessage {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}

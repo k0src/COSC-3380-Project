@@ -146,6 +146,11 @@ export { default as ArtistDashboardFollowerChart } from "./ArtistDashboard/Artis
 /* ============================= Admin Dashboard ============================ */
 export { default as AdminDashboardLayout } from "./AdminDashboard/AdminDashboardLayout/AdminDashboardLayout.js";
 export { default as AdminDashboardLayoutSidebar } from "./AdminDashboard/AdminDashboardLayoutSidebar/AdminDashboardLayoutSidebar.js";
+export { default as AdminDashboardStats } from "./AdminDashboard/AdminDashboardStats/AdminDashboardStats.js";
+export { default as AdminDashboardUserGrowthChart } from "./AdminDashboard/AdminDashboardUserGrowthChart/AdminDashboardUserGrowthChart.js";
+export { default as AdminDashboardPlatformActivityChart } from "./AdminDashboard/AdminDashboardPlatformActivityChart/AdminDashboardPlatformActivityChart.js";
+export { default as AdminDashboardTopArtists } from "./AdminDashboard/AdminDashboardTopArtists/AdminDashboardTopArtists.js";
+export { default as AdminDashboardPlatformHealth } from "./AdminDashboard/AdminDashboardPlatformHealth/AdminDashboardPlatformHealth.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

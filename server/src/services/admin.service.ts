@@ -5,10 +5,13 @@ import type {
   FeaturedPlaylist,
   Playlist,
   Song,
-  SongOptions,
   UUID,
+  AdminDashboardStats,
+  UserGrowthData,
+  PlatformActivity,
+  RecentReport,
 } from "@types";
-import { query, withTransaction } from "@config/database.js";
+import { query } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
 import { getAccessPredicate } from "@util";
 import dotenv from "dotenv";
@@ -20,6 +23,284 @@ const API_URL = process.env.API_URL;
 export type CoverEntityType = "song" | "playlist" | "album";
 
 export default class AdminService {
+  static async getDashboardStats(): Promise<AdminDashboardStats> {
+    try {
+      const result = await query(
+        `WITH total_users AS (
+          SELECT COUNT(*) AS count
+          FROM users
+          WHERE NOT EXISTS (
+            SELECT 1 FROM deleted_users du WHERE du.user_id = users.id
+          )
+        ),
+        total_songs AS (
+          SELECT COUNT(*) AS count
+          FROM songs
+          WHERE NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = songs.id
+          )
+        ),
+        total_albums AS (
+          SELECT COUNT(*) AS count
+          FROM albums
+          WHERE NOT EXISTS (
+            SELECT 1 FROM deleted_albums da WHERE da.album_id = albums.id
+          )
+        ),
+        total_playlists AS (
+          SELECT COUNT(*) AS count
+          FROM playlists
+          WHERE NOT EXISTS (
+            SELECT 1 FROM deleted_playlists dp WHERE dp.playlist_id = playlists.id
+          )
+        ),
+        total_streams AS (
+          SELECT COALESCE(SUM(streams), 0) AS count
+          FROM songs
+          WHERE NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = songs.id
+          )
+        ),
+        total_artists AS (
+          SELECT COUNT(*) AS count
+          FROM artists
+        ),
+        active_users AS (
+          SELECT COUNT(DISTINCT user_id) AS count
+          FROM song_history
+          WHERE played_at >= NOW() - INTERVAL '30 days'
+        ),
+        pending_reports AS (
+          SELECT COUNT(*) AS count
+          FROM user_reports
+          WHERE report_status = 'PENDING'
+        )
+        SELECT
+          (SELECT count FROM total_users) AS total_users,
+          (SELECT count FROM total_songs) AS total_songs,
+          (SELECT count FROM total_albums) AS total_albums,
+          (SELECT count FROM total_playlists) AS total_playlists,
+          (SELECT count FROM total_streams) AS total_streams,
+          (SELECT count FROM total_artists) AS total_artists,
+          (SELECT count FROM active_users) AS active_users,
+          (SELECT count FROM pending_reports) AS pending_reports`
+      );
+
+      if (result.length === 0) {
+        return {
+          totalUsers: 0,
+          totalSongs: 0,
+          totalAlbums: 0,
+          totalPlaylists: 0,
+          totalStreams: 0,
+          totalArtists: 0,
+          activeUsers: 0,
+          pendingReports: 0,
+        };
+      }
+
+      return {
+        totalUsers: parseInt(result[0].total_users) || 0,
+        totalSongs: parseInt(result[0].total_songs) || 0,
+        totalAlbums: parseInt(result[0].total_albums) || 0,
+        totalPlaylists: parseInt(result[0].total_playlists) || 0,
+        totalStreams: parseInt(result[0].total_streams) || 0,
+        totalArtists: parseInt(result[0].total_artists) || 0,
+        activeUsers: parseInt(result[0].active_users) || 0,
+        pendingReports: parseInt(result[0].pending_reports) || 0,
+      };
+    } catch (error) {
+      console.error("Error retrieving admin dashboard stats:", error);
+      throw error;
+    }
+  }
+
+  static async getUserGrowth(days: number = 30): Promise<UserGrowthData[]> {
+    try {
+      const result = await query(
+        `WITH date_series AS (
+          SELECT generate_series(
+            CURRENT_DATE - $1::integer,
+            CURRENT_DATE - 1,
+            '1 day'::interval
+          )::date AS day
+        ),
+        daily_users AS (
+          SELECT
+            DATE(created_at) AS day,
+            COUNT(*) AS count
+          FROM users
+          WHERE created_at >= CURRENT_DATE - $1::integer
+            AND created_at < CURRENT_DATE
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_users du WHERE du.user_id = users.id
+            )
+          GROUP BY DATE(created_at)
+        )
+        SELECT
+          TO_CHAR(d.day, 'YYYY-MM-DD') AS date,
+          COALESCE(du.count, 0) AS count
+        FROM date_series d
+        LEFT JOIN daily_users du ON d.day = du.day
+        ORDER BY d.day ASC`,
+        [days]
+      );
+
+      return result.map((row) => ({
+        date: row.date,
+        count: parseInt(row.count) || 0,
+      }));
+    } catch (error) {
+      console.error("Error retrieving user growth data:", error);
+      throw error;
+    }
+  }
+
+  static async getTopArtists(limit: number = 10): Promise<Artist[]> {
+    try {
+      const result = await query(
+        `WITH artist_streams AS (
+          SELECT
+            sa.artist_id,
+            COALESCE(SUM(s.streams), 0) AS total_streams
+          FROM song_artists sa
+          JOIN songs s ON sa.song_id = s.id
+          WHERE NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id
+          )
+          GROUP BY sa.artist_id
+        )
+        SELECT
+          a.id,
+          a.display_name,
+          a.verified,
+          row_to_json(u.*) as user,
+          COALESCE(ast.total_streams, 0) AS streams
+        FROM artists a
+        JOIN users u ON a.user_id = u.id
+        LEFT JOIN artist_streams ast ON a.id = ast.artist_id
+        WHERE NOT EXISTS (
+          SELECT 1 FROM deleted_users du WHERE du.user_id = u.id
+        )
+        ORDER BY ast.total_streams DESC NULLS LAST
+        LIMIT $1`,
+        [limit]
+      );
+
+      return result.map((artist) => {
+        if (artist.user?.profile_picture_url) {
+          artist.user.profile_picture_url = getBlobUrl(
+            artist.user.profile_picture_url
+          );
+        }
+        return artist;
+      });
+    } catch (error) {
+      console.error("Error retrieving top artists:", error);
+      throw error;
+    }
+  }
+
+  static async getPlatformActivity(
+    days: number = 30
+  ): Promise<PlatformActivity[]> {
+    try {
+      const result = await query(
+        `WITH date_series AS (
+          SELECT generate_series(
+            CURRENT_DATE - $1::integer,
+            CURRENT_DATE - 1,
+            '1 day'::interval
+          )::date AS day
+        ),
+        daily_songs AS (
+          SELECT
+            DATE(created_at) AS day,
+            COUNT(*) AS count
+          FROM songs
+          WHERE created_at >= CURRENT_DATE - $1::integer
+            AND created_at < CURRENT_DATE
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_songs ds WHERE ds.song_id = songs.id
+            )
+          GROUP BY DATE(created_at)
+        ),
+        daily_albums AS (
+          SELECT
+            DATE(created_at) AS day,
+            COUNT(*) AS count
+          FROM albums
+          WHERE created_at >= CURRENT_DATE - $1::integer
+            AND created_at < CURRENT_DATE
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_albums da WHERE da.album_id = albums.id
+            )
+          GROUP BY DATE(created_at)
+        ),
+        daily_playlists AS (
+          SELECT
+            DATE(created_at) AS day,
+            COUNT(*) AS count
+          FROM playlists
+          WHERE created_at >= CURRENT_DATE - $1::integer
+            AND created_at < CURRENT_DATE
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_playlists dp WHERE dp.playlist_id = playlists.id
+            )
+          GROUP BY DATE(created_at)
+        )
+        SELECT
+          TO_CHAR(d.day, 'YYYY-MM-DD') AS date,
+          COALESCE(ds.count, 0) AS songs,
+          COALESCE(da.count, 0) AS albums,
+          COALESCE(dp.count, 0) AS playlists
+        FROM date_series d
+        LEFT JOIN daily_songs ds ON d.day = ds.day
+        LEFT JOIN daily_albums da ON d.day = da.day
+        LEFT JOIN daily_playlists dp ON d.day = dp.day
+        ORDER BY d.day ASC`,
+        [days]
+      );
+
+      return result.map((row) => ({
+        date: row.date,
+        songs: parseInt(row.songs) || 0,
+        albums: parseInt(row.albums) || 0,
+        playlists: parseInt(row.playlists) || 0,
+      }));
+    } catch (error) {
+      console.error("Error retrieving platform activity data:", error);
+      throw error;
+    }
+  }
+
+  static async getRecentReports(limit: number = 10, offset: number = 0) {
+    try {
+      const result = await query(
+        `SELECT
+          ur.reporter_id,
+          ur.reported_id,
+          ur.reported_at,
+          ur.report_type,
+          ur.description,
+          ur.report_status,
+          u1.username AS reporter_username,
+          u2.username AS reported_username
+        FROM user_reports ur
+        JOIN users u1 ON ur.reporter_id = u1.id
+        JOIN users u2 ON ur.reported_id = u2.id
+        ORDER BY ur.reported_at DESC
+        LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
+
+      return result as RecentReport[];
+    } catch (error) {
+      console.error("Error retrieving recent reports:", error);
+      throw error;
+    }
+  }
+
   static async getFeaturedPlaylist(
     accessContext: AccessContext
   ): Promise<FeaturedPlaylist | null> {

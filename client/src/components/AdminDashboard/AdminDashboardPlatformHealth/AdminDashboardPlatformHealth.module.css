@@ -1,0 +1,83 @@
+.healthContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  background: var(--color-panel-gray);
+}
+
+.healthHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.healthTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  font-weight: 500;
+}
+
+.healthSubtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}
+
+.metricsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xsd);
+  padding: var(--spacing-md);
+  border: var(--border-size-sm) solid var(--color-gray-button-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-gray-button);
+}
+
+.metricValue {
+  font-size: var(--font-size-xl);
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.metricLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-white-alt);
+  font-weight: 500;
+}
+
+.metricDescription {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 20rem;
+}
+
+.loadingText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}
+
+.errorContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 20rem;
+}
+
+.errorText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+}

@@ -107,6 +107,13 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
     ];
   }, [artist, artistId, hasSongs]);
 
+  const checklistComplete = useMemo(() => {
+    return (
+      artistChecklistItems.filter((item) => item.completed).length ===
+      artistChecklistItems.length
+    );
+  }, [artistChecklistItems]);
+
   if (loading || !artist) {
     return <PageLoader />;
   }
@@ -130,35 +137,40 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
           artistImageUrl={artistImageUrl}
           artistImageUrlBlurhash={artist.user?.pfp_blurhash}
         />
+        <ArtistDashboardRecentReleases artistId={artistId!} maxItems={8} />
         <div className={styles.contentAreaBottom}>
-          <div className={styles.contentAreaBottomLeft}>
-            <ArtistDashboardStreamsChart artistId={artistId!} />
-            <ArtistDashboardRecentReleases artistId={artistId!} maxItems={6} />
-            <div className={styles.sectionContainer}>
-              <div className={styles.sectionHeader}>
-                <span className={styles.sectionTitle}>Recent Comments</span>
-                <Link
-                  to="/artist-dashboard/comments"
-                  className={styles.viewMoreLink}
-                >
-                  View More
-                </Link>
-              </div>
-              <DataTable
-                fetchData={fetchArtistComments}
-                columns={commentColumns}
-                cacheKey={`artist_${artistId}_comments`}
-                dependencies={[artistId]}
-                initialRowsPerPage={6}
-                rowsPerPageOptions={[]}
-              />
-            </div>
-          </div>
-          <div className={styles.contentAreaBottomRight}>
-            <ArtistDashboardChecklist items={artistChecklistItems} />
+          <ArtistDashboardStreamsChart artistId={artistId!} />
+          {checklistComplete ? (
             <ArtistDashboardTopSongs artistId={artistId!} />
-            <ArtistDashboardTopPlaylists artistId={artistId!} />
+          ) : (
+            <ArtistDashboardChecklist items={artistChecklistItems} />
+          )}
+        </div>
+        <div className={styles.contentAreaBottom}>
+          <div className={styles.sectionContainer}>
+            <div className={styles.sectionHeader}>
+              <span className={styles.sectionTitle}>Recent Comments</span>
+              <Link
+                to="/artist-dashboard/comments"
+                className={styles.viewMoreLink}
+              >
+                View More
+              </Link>
+            </div>
+            <DataTable
+              fetchData={fetchArtistComments}
+              columns={commentColumns}
+              cacheKey={`artist_${artistId}_comments`}
+              dependencies={[artistId]}
+              initialRowsPerPage={8}
+              rowsPerPageOptions={[]}
+            />
           </div>
+          {checklistComplete ? (
+            <ArtistDashboardTopPlaylists artistId={artistId!} />
+          ) : (
+            <ArtistDashboardTopSongs artistId={artistId!} />
+          )}
         </div>
       </div>
     </>

@@ -75,7 +75,7 @@ const MainLayoutSidebar: React.FC = () => {
           >
             <LuHistory className={styles.sidebarIcon} />
           </NavLink>
-          {user && user.role === "ARTIST" && (
+          {user && (user.role === "ARTIST" || user.role === "ADMIN") && (
             <>
               <Link to="/artist-dashboard" className={styles.sidebarLink}>
                 <LuUserPen className={styles.sidebarIcon} />
