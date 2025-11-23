@@ -154,4 +154,11 @@ export const adminApi = {
     const response = await api.post(`/admin/artists/${artistId}/unverify`);
     return response.data;
   },
+
+  async setFeaturedPlaylist(playlistId: UUID) {
+    const response = await api.post(
+      `/admin/playlists/${playlistId}/set-featured`
+    );
+    return response.data;
+  },
 };

@@ -239,6 +239,30 @@ router.post(
   }
 );
 
+// POST /api/admin/playlists/:playlistId/set-featured
+router.post(
+  "/playlists/:playlistId/set-featured",
+  async (req: Request, res: Response) => {
+    try {
+      const { playlistId } = req.params;
+      if (!playlistId) {
+        res.status(400).json({ error: "Playlist ID is required" });
+        return;
+      }
+
+      const result = await AdminService.setFeaturedPlaylist(playlistId);
+      res.json(result);
+    } catch (error: any) {
+      console.error(
+        "Error in POST /admin/playlists/:playlistId/set-featured:",
+        error
+      );
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
 // GET /api/admin/featured-playlist
 router.get("/featured-playlist", async (req: Request, res: Response) => {
   try {

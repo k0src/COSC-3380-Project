@@ -450,6 +450,19 @@ export default class AdminService {
     }
   }
 
+  static async setFeaturedPlaylist(playlistId: UUID) {
+    try {
+      await query(
+        `INSERT INTO admin_featured_playlist (playlist_id) VALUES ($1)`,
+        [playlistId]
+      );
+      return { success: true };
+    } catch (error) {
+      console.error("Error setting featured playlist:", error);
+      throw error;
+    }
+  }
+
   static async getFeaturedPlaylist(
     accessContext: AccessContext
   ): Promise<FeaturedPlaylist | null> {

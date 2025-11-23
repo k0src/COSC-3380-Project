@@ -6,12 +6,12 @@ import type {
   AccessContext,
 } from "@types";
 import { DataTable, ConfirmationModal, CreatePlaylistModal } from "@components";
-import { playlistApi } from "@api";
+import { playlistApi, adminApi } from "@api";
 import {
   playlistColumns,
   playlistFilterKeys,
 } from "@components/DataTable/columnDefinitions";
-import { LuTrash2, LuSquarePen } from "react-icons/lu";
+import { LuTrash2, LuSquarePen, LuStar } from "react-icons/lu";
 
 export interface AdminManageContentPlaylistsProps {
   accessContext: AccessContext;
@@ -31,6 +31,11 @@ const AdminManageContentPlaylists: React.FC<
   const [isPlaylistEditModalOpen, setIsPlaylistEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isFeaturedConfirmModalOpen, setIsFeaturedConfirmModalOpen] =
+    useState(false);
+  const [playlistToFeature, setPlaylistToFeature] = useState<Playlist | null>(
+    null
+  );
 
   const refetchRef = useRef<(() => void) | null>(null);
 
@@ -64,6 +69,31 @@ const AdminManageContentPlaylists: React.FC<
     },
     []
   );
+
+  const handleFeatureClick = useCallback(
+    (playlist: Playlist, refetch: () => void) => {
+      setPlaylistToFeature(playlist);
+      setIsFeaturedConfirmModalOpen(true);
+      refetchRef.current = refetch;
+    },
+    []
+  );
+
+  const handleConfirmFeature = useCallback(async () => {
+    if (!playlistToFeature) return;
+
+    try {
+      await adminApi.setFeaturedPlaylist(playlistToFeature.id);
+      setIsFeaturedConfirmModalOpen(false);
+      setPlaylistToFeature(null);
+      if (refetchRef.current) {
+        refetchRef.current();
+      }
+    } catch (error) {
+      console.error("Failed to set featured playlist:", error);
+      throw error;
+    }
+  }, [playlistToFeature]);
 
   const handlePlaylistEdited = useCallback(() => {
     if (refetchRef.current) {
@@ -121,6 +151,12 @@ const AdminManageContentPlaylists: React.FC<
         onClick: handleEditClick,
       },
       {
+        id: "feature",
+        icon: LuStar,
+        label: "Set as Featured",
+        onClick: handleFeatureClick,
+      },
+      {
         id: "delete",
         icon: LuTrash2,
         label: "Delete Playlist",
@@ -128,7 +164,7 @@ const AdminManageContentPlaylists: React.FC<
         variant: "danger",
       },
     ],
-    [handleDeleteClick, handleEditClick]
+    [handleDeleteClick, handleEditClick, handleFeatureClick]
   );
 
   const bulkActions = useMemo<DataTableBulkAction<Playlist>[]>(
@@ -187,6 +223,19 @@ const AdminManageContentPlaylists: React.FC<
         }? This action cannot be undone.`}
         confirmButtonText="Delete All"
         isDangerous={true}
+      />
+
+      <ConfirmationModal
+        isOpen={isFeaturedConfirmModalOpen}
+        onClose={() => {
+          setIsFeaturedConfirmModalOpen(false);
+          setPlaylistToFeature(null);
+        }}
+        onConfirm={handleConfirmFeature}
+        title="Set Featured Playlist"
+        message="Setting this playlist as featured will unfeature the currently featured playlist (if one exists). Do you want to continue?"
+        confirmButtonText="Set as Featured"
+        isDangerous={false}
       />
 
       {playlistToEdit && (

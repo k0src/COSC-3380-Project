@@ -1,4 +1,4 @@
-import { memo, useCallback, useState, useRef, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams, useNavigate } from "react-router-dom";
 import { commentApi, songApi } from "@api";
@@ -7,22 +7,43 @@ import {
   commentColumns,
   commentFilterKeys,
 } from "@components/DataTable/columnDefinitions";
-import type {
-  Comment,
-  DataTableAction,
-  DataTableBulkAction,
-  Song,
-} from "@types";
+import type { Comment, DataTableAction, DataTableBulkAction } from "@types";
 import styles from "./AdminManageCommentsPage.module.css";
 import { LuTrash2, LuArrowLeft } from "react-icons/lu";
 import { useAuth } from "@contexts";
+import { useAsyncData } from "@hooks";
 
 const AdminManageCommentsPage: React.FC = () => {
   const { songId } = useParams<{ songId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [song, setSong] = useState<Song | null>(null);
-  const refetchRef = useRef<(() => void) | null>(null);
+
+  if (!songId) {
+    navigate("/admin/manage-content/songs");
+    return;
+  }
+
+  const { data } = useAsyncData(
+    {
+      song: () =>
+        songApi.getSongById(
+          songId,
+          {
+            role: user?.role === "ADMIN" ? "admin" : "user",
+            userId: user?.id,
+            scope: "ownerList",
+          },
+          {
+            includeArtists: true,
+          }
+        ),
+    },
+    [songId],
+    {
+      cacheKey: `admin_song_${songId}`,
+      hasBlobUrl: true,
+    }
+  );
 
   const fetchSongComments = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
@@ -83,36 +104,7 @@ const AdminManageCommentsPage: React.FC = () => {
     [handleBulkDeleteClick]
   );
 
-  // Fetch song details
-  const fetchSongDetails = useCallback(async () => {
-    if (!songId) return;
-    try {
-      const songData = await songApi.getSongById(
-        songId,
-        {
-          role: user?.role === "ADMIN" ? "admin" : "user",
-          userId: user?.id,
-          scope: "ownerList",
-        },
-        {
-          includeArtists: true,
-        }
-      );
-      setSong(songData);
-    } catch (error) {
-      console.error("Failed to fetch song details:", error);
-    }
-  }, [songId, user]);
-
-  // Fetch song on mount
-  useMemo(() => {
-    fetchSongDetails();
-  }, [fetchSongDetails]);
-
-  if (!songId) {
-    navigate("/admin/manage-content/songs");
-    return null;
-  }
+  const song = data?.song;
 
   return (
     <>
