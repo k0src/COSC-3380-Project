@@ -82,7 +82,7 @@ const AdminDashboardLayoutSidebar: React.FC = () => {
             <span className={styles.sidebarText}>Manage Site Content</span>
           </NavLink>
           <NavLink
-            to="/admin/reports"
+            to="/admin/reports-appeals"
             className={({ isActive }) =>
               isActive ? styles.sidebarLinkActive : styles.sidebarLink
             }

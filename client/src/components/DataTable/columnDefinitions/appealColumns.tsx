@@ -2,45 +2,41 @@ import { formatDateString } from "@util";
 import type { DataTableColumn } from "@types";
 import styles from "./columns.module.css";
 
-export const reportsColumns: DataTableColumn[] = [
+export const appealsColumns: DataTableColumn[] = [
   {
-    key: "reporter_username",
+    key: "username",
     width: "flex",
-    header: "Reporter",
+    header: "User",
     sortable: true,
   },
   {
-    key: "reported_name",
+    key: "entity_name",
     width: "flex",
-    header: "Reported",
+    header: "Entity",
     sortable: true,
   },
   {
     key: "entity_type",
     width: "flex",
-    header: "Entity",
+    header: "Type",
     sortable: true,
     render: (value: string) => (
-      <span className={styles.entityBadge}>{value}</span>
+      <span className={styles.entityBadge}>
+        {value.charAt(0).toUpperCase() + value.slice(1)}
+      </span>
     ),
   },
   {
-    key: "report_type",
+    key: "reason",
     width: "flex",
-    header: "Type",
-    sortable: true,
-  },
-  {
-    key: "description",
-    width: "flex",
-    header: "Description",
+    header: "Reason",
     sortable: false,
     render: (value: string) => (
       <span className={styles.descriptionCell}>{value}</span>
     ),
   },
   {
-    key: "report_status",
+    key: "appeal_status",
     width: "flex",
     header: "Status",
     sortable: true,
@@ -59,9 +55,9 @@ export const reportsColumns: DataTableColumn[] = [
     ),
   },
   {
-    key: "reported_at",
+    key: "submitted_at",
     width: "flex",
-    header: "Reported",
+    header: "Submitted",
     sortable: true,
     render: (value: string) => {
       return <span>{formatDateString(value)}</span>;
@@ -69,4 +65,4 @@ export const reportsColumns: DataTableColumn[] = [
   },
 ];
 
-export const reportFilterKeys = ["reporter_username", "reported_name"];
+export const appealFilterKeys = ["reporter_username", "reported_name"];

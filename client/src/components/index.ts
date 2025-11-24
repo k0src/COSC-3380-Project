@@ -157,6 +157,8 @@ export { default as AdminManageContentSongs } from "./AdminDashboard/AdminManage
 export { default as AdminManageContentAlbums } from "./AdminDashboard/AdminManageContentPage/AdminManageContentAlbums.js";
 export { default as AdminManageContentPlaylists } from "./AdminDashboard/AdminManageContentPage/AdminManageContentPlaylists.js";
 export { default as AdminManageContentArtists } from "./AdminDashboard/AdminManageContentPage/AdminManageContentArtists.js";
+export { default as AdminManageReports } from "./AdminDashboard/AdminReportsAndAppealsPage/AdminManageReports.js";
+export { default as AdminManageAppeals } from "./AdminDashboard/AdminReportsAndAppealsPage/AdminManageAppeals.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

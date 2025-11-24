@@ -18,6 +18,7 @@ interface DataTableHeaderProps<T = any> {
   onFilterClear: () => void;
   bulkActions: DataTableBulkAction<T>[];
   selectedCount: number;
+  selectedRows: T[];
   onBulkAction: (action: DataTableBulkAction<T>) => void;
   isBulkActionExecuting: boolean;
   hasPagination: boolean;
@@ -39,6 +40,7 @@ function DataTableHeader<T = any>({
   onFilterClear,
   bulkActions,
   selectedCount,
+  selectedRows,
   onBulkAction,
   isBulkActionExecuting,
   hasPagination,
@@ -56,14 +58,25 @@ function DataTableHeader<T = any>({
 
   const bulkActionOptions: TableDropdownOption[] = useMemo(
     () =>
-      bulkActions.map((action) => ({
-        id: action.id,
-        label: action.label,
-        icon: action.icon,
-        onClick: () => onBulkAction(action),
-        variant: action.variant,
-      })),
-    [bulkActions, onBulkAction]
+      bulkActions.map((action) => {
+        const allDisabled = action.disabled
+          ? selectedRows.every((row) => action.disabled!(row))
+          : false;
+        return {
+          id: action.id,
+          label: action.label,
+          icon: action.icon,
+          onClick: () => onBulkAction(action),
+          variant: action.variant,
+          disabled: allDisabled,
+        };
+      }),
+    [bulkActions, selectedRows, onBulkAction]
+  );
+
+  const allBulkActionsDisabled = useMemo(
+    () => bulkActionOptions.every((option) => option.disabled),
+    [bulkActionOptions]
   );
 
   const rowsPerPageDropdownOptions: TableDropdownOption[] = useMemo(
@@ -75,6 +88,7 @@ function DataTableHeader<T = any>({
       })),
     [rowsPerPageOptions, onRowsPerPageChange]
   );
+
   return (
     <div className={styles.headerContainer}>
       <div className={styles.headerLeft}>
@@ -111,7 +125,10 @@ function DataTableHeader<T = any>({
                     [styles.bulkActionButtonDefault]: theme === "default",
                   })}
                   onClick={() => onBulkAction(bulkActions[0])}
-                  disabled={isBulkActionExecuting}
+                  disabled={
+                    isBulkActionExecuting ||
+                    allBulkActionsDisabled
+                  }
                 >
                   {bulkActions[0].icon &&
                     (() => {
@@ -125,7 +142,7 @@ function DataTableHeader<T = any>({
               ) : (
                 <TableDropdown
                   options={bulkActionOptions}
-                  disabled={isBulkActionExecuting}
+                  disabled={isBulkActionExecuting || allBulkActionsDisabled}
                   trigger={
                     <div className={styles.bulkActionButton}>
                       <span>Actions ({selectedCount})</span>

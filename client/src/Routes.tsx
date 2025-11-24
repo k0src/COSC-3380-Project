@@ -221,6 +221,26 @@ export default function AppRoutes() {
               </AdminRoute>
             }
           />
+          <Route
+            path="/admin/reports-appeals/:tab?"
+            element={
+              <AdminRoute>
+                <AdminDashboardLayout>
+                  <Pages.AdminReportsAndAppealsPage />
+                </AdminDashboardLayout>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/appeals/:entityType/:entityId"
+            element={
+              <AdminRoute>
+                <AdminDashboardLayout>
+                  <Pages.AdminAppealDetailPage />
+                </AdminDashboardLayout>
+              </AdminRoute>
+            }
+          />
         </Routes>
       )}
     </>

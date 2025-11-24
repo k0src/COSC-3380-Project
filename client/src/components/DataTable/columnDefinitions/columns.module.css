@@ -70,3 +70,16 @@
   border: var(--border-size-sm) solid var(--color-orange-ui-border);
   color: var(--color-orange-ui);
 }
+
+.entityBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-xs);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  background: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  color: var(--color-white-alt);
+  text-transform: uppercase;
+}

@@ -21,6 +21,7 @@ export interface DataTableAction<T = any> {
   label: string;
   onClick: (row: T, refetch: () => void) => void | Promise<void>;
   variant?: "default" | "danger";
+  disabled?: (row: T) => boolean;
 }
 
 export interface DataTableBulkAction<T = any> {
@@ -29,6 +30,7 @@ export interface DataTableBulkAction<T = any> {
   label: string;
   onClick: (rows: T[], refetch: () => void) => void | Promise<void>;
   variant?: "default" | "danger";
+  disabled?: (row: T) => boolean;
 }
 
 export interface FetchParams {
@@ -76,4 +78,5 @@ export interface TableDropdownOption {
   icon?: React.ElementType;
   onClick: () => void;
   variant?: "default" | "danger";
+  disabled?: boolean;
 }

@@ -34,8 +34,8 @@ const AdminDashboard: React.FC = () => {
             <LuShield className={styles.adHeaderIcon} />
             <span className={styles.adTitle}>Admin Dashboard</span>
           </div>
-          <Link className={styles.adHeaderButton} to="/admin-dashboard/reports">
-            View All Reports
+          <Link className={styles.adHeaderButton} to="/admin/reports-appeals">
+            View All Reports & Appeals
           </Link>
         </header>
 
@@ -54,7 +54,7 @@ const AdminDashboard: React.FC = () => {
             <div className={styles.sectionHeader}>
               <span className={styles.sectionTitle}>Recent Reports</span>
               <Link
-                to="/admin-dashboard/reports"
+                to="/admin/reports-appeals"
                 className={styles.viewMoreLink}
               >
                 View All

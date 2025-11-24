@@ -39,6 +39,7 @@ const TableDropdown: React.FC<TableDropdownProps> = ({
   }, [isOpen]);
 
   const handleOptionClick = (option: TableDropdownOption) => {
+    if (option.disabled) return;
     option.onClick();
     setIsOpen(false);
   };
@@ -68,6 +69,7 @@ const TableDropdown: React.FC<TableDropdownProps> = ({
                   [styles.dropdownOptionDanger]: option.variant === "danger",
                 })}
                 onClick={() => handleOptionClick(option)}
+                disabled={option.disabled}
               >
                 {Icon && <Icon className={styles.dropdownOptionIcon} />}
                 <span className={styles.dropdownLabel}>{option.label}</span>

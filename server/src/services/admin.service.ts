@@ -9,8 +9,10 @@ import type {
   AdminDashboardStats,
   UserGrowthData,
   PlatformActivity,
-  RecentReport,
+  Report,
+  Appeal,
   UserInfo,
+  ReportableEntityType,
 } from "@types";
 import { query } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
@@ -23,6 +25,27 @@ dotenv.config();
 const API_URL = process.env.API_URL;
 
 export type CoverEntityType = "song" | "playlist" | "album";
+
+const REPORT_TABLE_MAP: Record<ReportableEntityType, string> = {
+  song: "song_reports",
+  album: "album_reports",
+  playlist: "playlist_reports",
+  user: "user_reports",
+};
+
+const APPEAL_TABLE_MAP: Record<ReportableEntityType, string> = {
+  song: "song_appeals",
+  album: "album_appeals",
+  playlist: "playlist_appeals",
+  user: "user_appeals",
+};
+
+const APPEAL_ENTITY_ID_FIELD_MAP: Record<ReportableEntityType, string> = {
+  song: "song_id",
+  album: "album_id",
+  playlist: "playlist_id",
+  user: "user_id",
+};
 
 export default class AdminService {
   static async getDashboardStats(): Promise<AdminDashboardStats> {
@@ -276,27 +299,94 @@ export default class AdminService {
     }
   }
 
-  static async getRecentReports(limit: number = 10, offset: number = 0) {
+  static async getRecentReports(
+    limit: number = 10,
+    offset: number = 0
+  ): Promise<Report[]> {
     try {
       const result = await query(
-        `SELECT
-          ur.reporter_id,
-          ur.reported_id,
-          ur.reported_at,
-          ur.report_type,
-          ur.description,
-          ur.report_status,
-          u1.username AS reporter_username,
-          u2.username AS reported_username
-        FROM user_reports ur
-        JOIN users u1 ON ur.reporter_id = u1.id
-        JOIN users u2 ON ur.reported_id = u2.id
-        ORDER BY ur.reported_at DESC
+        `WITH all_reports AS (
+          SELECT
+            sr.id,
+            sr.reporter_id,
+            sr.reported_id,
+            sr.reported_at,
+            sr.report_type,
+            sr.description,
+            sr.report_status,
+            sr.reviewer_id,
+            u1.username AS reporter_username,
+            s.title AS reported_name,
+            'song' AS entity_type
+          FROM song_reports sr
+          JOIN users u1 ON sr.reporter_id = u1.id
+          JOIN songs s ON sr.reported_id = s.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
+
+          UNION ALL
+
+          SELECT
+            ar.id,
+            ar.reporter_id,
+            ar.reported_id,
+            ar.reported_at,
+            ar.report_type,
+            ar.description,
+            ar.report_status,
+            ar.reviewer_id,
+            u1.username AS reporter_username,
+            a.title AS reported_name,
+            'album' AS entity_type
+          FROM album_reports ar
+          JOIN users u1 ON ar.reporter_id = u1.id
+          JOIN albums a ON ar.reported_id = a.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_albums da WHERE da.album_id = a.id)
+
+          UNION ALL
+
+          SELECT
+            pr.id,
+            pr.reporter_id,
+            pr.reported_id,
+            pr.reported_at,
+            pr.report_type,
+            pr.description,
+            pr.report_status,
+            pr.reviewer_id,
+            u1.username AS reporter_username,
+            p.title AS reported_name,
+            'playlist' AS entity_type
+          FROM playlist_reports pr
+          JOIN users u1 ON pr.reporter_id = u1.id
+          JOIN playlists p ON pr.reported_id = p.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_playlists dp WHERE dp.playlist_id = p.id)
+
+          UNION ALL
+
+          SELECT
+            ur.id,
+            ur.reporter_id,
+            ur.reported_id,
+            ur.reported_at,
+            ur.report_type,
+            ur.description,
+            ur.report_status,
+            ur.reviewer_id,
+            u1.username AS reporter_username,
+            u2.username AS reported_name,
+            'user' AS entity_type
+          FROM user_reports ur
+          JOIN users u1 ON ur.reporter_id = u1.id
+          JOIN users u2 ON ur.reported_id = u2.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_users du WHERE du.user_id = u2.id)
+        )
+        SELECT * FROM all_reports
+        ORDER BY reported_at DESC
         LIMIT $1 OFFSET $2`,
         [limit, offset]
       );
 
-      return result as RecentReport[];
+      return result;
     } catch (error) {
       console.error("Error retrieving recent reports:", error);
       throw error;
@@ -464,7 +554,7 @@ export default class AdminService {
   }
 
   static async checkPendingAppeal(
-    entityType: "songs" | "albums" | "playlists" | "users",
+    entityType: ReportableEntityType,
     entityId: UUID,
     userId: UUID
   ): Promise<boolean> {
@@ -473,7 +563,7 @@ export default class AdminService {
       let params;
 
       switch (entityType) {
-        case "songs":
+        case "song":
           sql = `SELECT EXISTS(
             SELECT 1 FROM song_appeals 
             WHERE user_id = $1 AND song_id = $2 
@@ -481,7 +571,7 @@ export default class AdminService {
           ) as has_pending`;
           params = [userId, entityId];
           break;
-        case "albums":
+        case "album":
           sql = `SELECT EXISTS(
             SELECT 1 FROM album_appeals 
             WHERE user_id = $1 AND album_id = $2 
@@ -489,7 +579,7 @@ export default class AdminService {
           ) as has_pending`;
           params = [userId, entityId];
           break;
-        case "playlists":
+        case "playlist":
           sql = `SELECT EXISTS(
             SELECT 1 FROM playlist_appeals 
             WHERE user_id = $1 AND playlist_id = $2 
@@ -497,7 +587,7 @@ export default class AdminService {
           ) as has_pending`;
           params = [userId, entityId];
           break;
-        case "users":
+        case "user":
           sql = `SELECT EXISTS(
             SELECT 1 FROM user_appeals 
             WHERE user_id = $1 
@@ -518,7 +608,7 @@ export default class AdminService {
   }
 
   static async submitAppeal(
-    entityType: "songs" | "albums" | "playlists" | "users",
+    entityType: ReportableEntityType,
     entityId: UUID,
     userId: UUID,
     reason: string
@@ -528,19 +618,19 @@ export default class AdminService {
       let params;
 
       switch (entityType) {
-        case "songs":
+        case "song":
           sql = `INSERT INTO song_appeals (user_id, song_id, reason) VALUES ($1, $2, $3)`;
           params = [userId, entityId, reason];
           break;
-        case "albums":
+        case "album":
           sql = `INSERT INTO album_appeals (user_id, album_id, reason) VALUES ($1, $2, $3)`;
           params = [userId, entityId, reason];
           break;
-        case "playlists":
+        case "playlist":
           sql = `INSERT INTO playlist_appeals (user_id, playlist_id, reason) VALUES ($1, $2, $3)`;
           params = [userId, entityId, reason];
           break;
-        case "users":
+        case "user":
           sql = `INSERT INTO user_appeals (user_id, reason) VALUES ($1, $2, $3)`;
           params = [userId, entityId, reason];
           break;
@@ -549,7 +639,6 @@ export default class AdminService {
       }
 
       await query(sql, params);
-      return { success: true };
     } catch (error) {
       console.error("Error submitting appeal:", error);
       throw error;
@@ -617,6 +706,519 @@ export default class AdminService {
       return playlist;
     } catch (error) {
       console.error("Error fetching featured playlist:", error);
+      throw error;
+    }
+  }
+
+  static async getAllReports(
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<Report[]> {
+    try {
+      const result = await query(
+        `WITH all_reports AS (
+          SELECT
+            sr.id,
+            sr.reporter_id,
+            sr.reported_id,
+            sr.reported_at,
+            sr.report_type,
+            sr.description,
+            sr.report_status,
+            sr.reviewer_id,
+            u1.username AS reporter_username,
+            s.title AS reported_name,
+            'song' AS entity_type
+          FROM song_reports sr
+          JOIN users u1 ON sr.reporter_id = u1.id
+          JOIN songs s ON sr.reported_id = s.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
+
+          UNION ALL
+
+          SELECT
+            ar.id,
+            ar.reporter_id,
+            ar.reported_id,
+            ar.reported_at,
+            ar.report_type,
+            ar.description,
+            ar.report_status,
+            ar.reviewer_id,
+            u1.username AS reporter_username,
+            a.title AS reported_name,
+            'album' AS entity_type
+          FROM album_reports ar
+          JOIN users u1 ON ar.reporter_id = u1.id
+          JOIN albums a ON ar.reported_id = a.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_albums da WHERE da.album_id = a.id)
+
+          UNION ALL
+
+          SELECT
+            pr.id,
+            pr.reporter_id,
+            pr.reported_id,
+            pr.reported_at,
+            pr.report_type,
+            pr.description,
+            pr.report_status,
+            pr.reviewer_id,
+            u1.username AS reporter_username,
+            p.title AS reported_name,
+            'playlist' AS entity_type
+          FROM playlist_reports pr
+          JOIN users u1 ON pr.reporter_id = u1.id
+          JOIN playlists p ON pr.reported_id = p.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_playlists dp WHERE dp.playlist_id = p.id)
+
+          UNION ALL
+
+          SELECT
+            ur.id,
+            ur.reporter_id,
+            ur.reported_id,
+            ur.reported_at,
+            ur.report_type,
+            ur.description,
+            ur.report_status,
+            ur.reviewer_id,
+            u1.username AS reporter_username,
+            u2.username AS reported_name,
+            'user' AS entity_type
+          FROM user_reports ur
+          JOIN users u1 ON ur.reporter_id = u1.id
+          JOIN users u2 ON ur.reported_id = u2.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_users du WHERE du.user_id = u2.id)
+        )
+        SELECT * FROM all_reports
+        ORDER BY reported_at DESC
+        LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
+
+      return result;
+    } catch (error) {
+      console.error("Error retrieving all reports:", error);
+      throw error;
+    }
+  }
+
+  static async getRecentAppeals(
+    limit: number = 10,
+    offset: number = 0
+  ): Promise<Appeal[]> {
+    try {
+      const result = await query(
+        `WITH all_appeals AS (
+          SELECT
+            sa.id,
+            sa.user_id,
+            sa.song_id AS entity_id,
+            sa.submitted_at,
+            sa.reason,
+            sa.appeal_status,
+            sa.reviewer_id,
+            u.username,
+            s.title AS entity_name,
+            'song' AS entity_type
+          FROM song_appeals sa
+          JOIN users u ON sa.user_id = u.id
+          JOIN songs s ON sa.song_id = s.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
+
+          UNION ALL
+
+          SELECT
+            aa.id,
+            aa.user_id,
+            aa.album_id AS entity_id,
+            aa.submitted_at,
+            aa.reason,
+            aa.appeal_status,
+            aa.reviewer_id,
+            u.username,
+            a.title AS entity_name,
+            'album' AS entity_type
+          FROM album_appeals aa
+          JOIN users u ON aa.user_id = u.id
+          JOIN albums a ON aa.album_id = a.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_albums da WHERE da.album_id = a.id)
+
+          UNION ALL
+
+          SELECT
+            pa.id,
+            pa.user_id,
+            pa.playlist_id AS entity_id,
+            pa.submitted_at,
+            pa.reason,
+            pa.appeal_status,
+            pa.reviewer_id,
+            u.username,
+            p.title AS entity_name,
+            'playlist' AS entity_type
+          FROM playlist_appeals pa
+          JOIN users u ON pa.user_id = u.id
+          JOIN playlists p ON pa.playlist_id = p.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_playlists dp WHERE dp.playlist_id = p.id)
+
+          UNION ALL
+
+          SELECT
+            ua.id,
+            ua.user_id,
+            ua.user_id AS entity_id,
+            ua.submitted_at,
+            ua.reason,
+            ua.appeal_status,
+            ua.reviewer_id,
+            u.username,
+            u.username AS entity_name,
+            'user' AS entity_type
+          FROM user_appeals ua
+          JOIN users u ON ua.user_id = u.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_users du WHERE du.user_id = u.id)
+        )
+        SELECT * FROM all_appeals
+        ORDER BY submitted_at DESC
+        LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
+
+      return result;
+    } catch (error) {
+      console.error("Error retrieving recent appeals:", error);
+      throw error;
+    }
+  }
+
+  static async getAllAppeals(
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<Appeal[]> {
+    try {
+      const result = await query(
+        `WITH all_appeals AS (
+          SELECT
+            sa.id,
+            sa.user_id,
+            sa.song_id AS entity_id,
+            sa.submitted_at,
+            sa.reason,
+            sa.appeal_status,
+            sa.reviewer_id,
+            u.username,
+            s.title AS entity_name,
+            'song' AS entity_type
+          FROM song_appeals sa
+          JOIN users u ON sa.user_id = u.id
+          JOIN songs s ON sa.song_id = s.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
+
+          UNION ALL
+
+          SELECT
+            aa.id,
+            aa.user_id,
+            aa.album_id AS entity_id,
+            aa.submitted_at,
+            aa.reason,
+            aa.appeal_status,
+            aa.reviewer_id,
+            u.username,
+            a.title AS entity_name,
+            'album' AS entity_type
+          FROM album_appeals aa
+          JOIN users u ON aa.user_id = u.id
+          JOIN albums a ON aa.album_id = a.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_albums da WHERE da.album_id = a.id)
+
+          UNION ALL
+
+          SELECT
+            pa.id,
+            pa.user_id,
+            pa.playlist_id AS entity_id,
+            pa.submitted_at,
+            pa.reason,
+            pa.appeal_status,
+            pa.reviewer_id,
+            u.username,
+            p.title AS entity_name,
+            'playlist' AS entity_type
+          FROM playlist_appeals pa
+          JOIN users u ON pa.user_id = u.id
+          JOIN playlists p ON pa.playlist_id = p.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_playlists dp WHERE dp.playlist_id = p.id)
+
+          UNION ALL
+
+          SELECT
+            ua.id,
+            ua.user_id,
+            ua.user_id AS entity_id,
+            ua.submitted_at,
+            ua.reason,
+            ua.appeal_status,
+            ua.reviewer_id,
+            u.username,
+            u.username AS entity_name,
+            'user' AS entity_type
+          FROM user_appeals ua
+          JOIN users u ON ua.user_id = u.id
+          WHERE NOT EXISTS (SELECT 1 FROM deleted_users du WHERE du.user_id = u.id)
+        )
+        SELECT * FROM all_appeals
+        ORDER BY submitted_at DESC
+        LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
+
+      return result;
+    } catch (error) {
+      console.error("Error retrieving all appeals:", error);
+      throw error;
+    }
+  }
+
+  static async getAppealsForEntity(
+    entityType: ReportableEntityType,
+    entityId: UUID
+  ): Promise<Appeal[]> {
+    try {
+      let sql;
+      let params;
+
+      switch (entityType) {
+        case "song":
+          sql = `SELECT
+            sa.id,
+            sa.user_id,
+            sa.song_id AS entity_id,
+            sa.submitted_at,
+            sa.reason,
+            sa.appeal_status,
+            sa.reviewer_id,
+            u.username,
+            s.title AS entity_name,
+            'song' AS entity_type
+          FROM song_appeals sa
+          JOIN users u ON sa.user_id = u.id
+          JOIN songs s ON sa.song_id = s.id
+          WHERE sa.song_id = $1
+            AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
+          ORDER BY sa.submitted_at DESC`;
+          params = [entityId];
+          break;
+        case "album":
+          sql = `SELECT
+            aa.id,
+            aa.user_id,
+            aa.album_id AS entity_id,
+            aa.submitted_at,
+            aa.reason,
+            aa.appeal_status,
+            aa.reviewer_id,
+            u.username,
+            a.title AS entity_name,
+            'album' AS entity_type
+          FROM album_appeals aa
+          JOIN users u ON aa.user_id = u.id
+          JOIN albums a ON aa.album_id = a.id
+          WHERE aa.album_id = $1
+            AND NOT EXISTS (SELECT 1 FROM deleted_albums da WHERE da.album_id = a.id)
+          ORDER BY aa.submitted_at DESC`;
+          params = [entityId];
+          break;
+        case "playlist":
+          sql = `SELECT
+            pa.id,
+            pa.user_id,
+            pa.playlist_id AS entity_id,
+            pa.submitted_at,
+            pa.reason,
+            pa.appeal_status,
+            pa.reviewer_id,
+            u.username,
+            p.title AS entity_name,
+            'playlist' AS entity_type
+          FROM playlist_appeals pa
+          JOIN users u ON pa.user_id = u.id
+          JOIN playlists p ON pa.playlist_id = p.id
+          WHERE pa.playlist_id = $1
+            AND NOT EXISTS (SELECT 1 FROM deleted_playlists dp WHERE dp.playlist_id = p.id)
+          ORDER BY pa.submitted_at DESC`;
+          params = [entityId];
+          break;
+        case "user":
+          sql = `SELECT
+            ua.id,
+            ua.user_id,
+            ua.user_id AS entity_id,
+            ua.submitted_at,
+            ua.reason,
+            ua.appeal_status,
+            ua.reviewer_id,
+            u.username,
+            u.username AS entity_name,
+            'user' AS entity_type
+          FROM user_appeals ua
+          JOIN users u ON ua.user_id = u.id
+          WHERE ua.user_id = $1
+            AND NOT EXISTS (SELECT 1 FROM deleted_users du WHERE du.user_id = u.id)
+          ORDER BY ua.submitted_at DESC`;
+          params = [entityId];
+          break;
+        default:
+          throw new Error("Invalid entity type");
+      }
+
+      const result = await query(sql, params);
+      return result;
+    } catch (error) {
+      console.error("Error retrieving appeals for entity:", error);
+      throw error;
+    }
+  }
+
+  static async resolveReport(
+    id: UUID,
+    entityType: ReportableEntityType,
+    entityId: UUID,
+    reviewerId: UUID
+  ) {
+    try {
+      const reportTable = REPORT_TABLE_MAP[entityType];
+      const appealTable = APPEAL_TABLE_MAP[entityType];
+      const appealEntityIdField = APPEAL_ENTITY_ID_FIELD_MAP[entityType];
+
+      const entityTable = entityType === "user" ? "users" : `${entityType}s`;
+      const entityStatusField =
+        entityType === "user" ? "status" : "visibility_status";
+      const statusValue = entityType === "user" ? "ACTIVE" : "PUBLIC";
+
+      await query(
+        `UPDATE ${reportTable}
+        SET report_status = 'RESOLVED', reviewer_id = $1
+        WHERE id = $2`,
+        [reviewerId, id]
+      );
+
+      await query(
+        `UPDATE ${entityTable}
+        SET ${entityStatusField} = $1
+        WHERE id = $2`,
+        [statusValue, entityId]
+      );
+
+      await query(
+        `UPDATE ${appealTable}
+        SET appeal_status = 'RESOLVED', reviewer_id = $1
+        WHERE ${appealEntityIdField} = $2 AND appeal_status = 'PENDING'`,
+        [reviewerId, entityId]
+      );
+    } catch (error) {
+      console.error("Error resolving report:", error);
+      throw error;
+    }
+  }
+
+  static async dismissReport(
+    id: UUID,
+    entityType: ReportableEntityType,
+    entityId: UUID,
+    reviewerId: UUID
+  ) {
+    try {
+      const reportTable = REPORT_TABLE_MAP[entityType];
+      const appealTable = APPEAL_TABLE_MAP[entityType];
+      const appealEntityIdField = APPEAL_ENTITY_ID_FIELD_MAP[entityType];
+
+      await query(
+        `UPDATE ${reportTable}
+        SET report_status = 'DISMISSED', reviewer_id = $1
+        WHERE id = $2`,
+        [reviewerId, id]
+      );
+
+      await query(
+        `UPDATE ${appealTable}
+        SET appeal_status = 'DISMISSED', reviewer_id = $1
+        WHERE ${appealEntityIdField} = $2 AND appeal_status = 'PENDING'`,
+        [reviewerId, entityId]
+      );
+    } catch (error) {
+      console.error("Error dismissing report:", error);
+      throw error;
+    }
+  }
+
+  static async resolveAppeal(
+    entityType: ReportableEntityType,
+    entityId: UUID,
+    reviewerId: UUID
+  ) {
+    try {
+      const appealTable = APPEAL_TABLE_MAP[entityType];
+      const reportTable = REPORT_TABLE_MAP[entityType];
+
+      const entityTable = entityType === "user" ? "users" : `${entityType}s`;
+      const entityStatusField =
+        entityType === "user" ? "status" : "visibility_status";
+      const statusValue = entityType === "user" ? "ACTIVE" : "PUBLIC";
+
+      await query(
+        `UPDATE ${appealTable}
+        SET appeal_status = 'RESOLVED', reviewer_id = $1
+        WHERE ${APPEAL_ENTITY_ID_FIELD_MAP[entityType]} = $2`,
+        [reviewerId, entityId]
+      );
+
+      await query(
+        `UPDATE ${entityTable}
+        SET ${entityStatusField} = $1
+        WHERE id = $2`,
+        [statusValue, entityId]
+      );
+
+      await query(
+        `UPDATE ${reportTable}
+        SET report_status = 'RESOLVED', reviewer_id = $1
+        WHERE reported_id = $2 AND report_status = 'PENDING'`,
+        [reviewerId, entityId]
+      );
+    } catch (error) {
+      console.error("Error resolving appeal:", error);
+      throw error;
+    }
+  }
+
+  static async dismissAppeal(
+    id: UUID,
+    entityType: ReportableEntityType,
+    entityId: UUID,
+    reviewerId: UUID
+  ) {
+    try {
+      const appealTable = APPEAL_TABLE_MAP[entityType];
+      const reportTable = REPORT_TABLE_MAP[entityType];
+
+      await query(
+        `UPDATE ${appealTable}
+        SET appeal_status = 'DISMISSED', reviewer_id = $1
+        WHERE id = $2`,
+        [reviewerId, id]
+      );
+
+      await query(
+        `UPDATE ${reportTable}
+        SET report_status = 'DISMISSED', reviewer_id = $1
+        WHERE reported_id = $2 AND report_status = 'PENDING'`,
+        [reviewerId, entityId]
+      );
+    } catch (error) {
+      console.error("Error dismissing appeal:", error);
       throw error;
     }
   }

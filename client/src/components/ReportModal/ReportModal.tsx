@@ -2,7 +2,7 @@ import { useState, memo, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@contexts";
 import { Link } from "react-router-dom";
 import { reportApi } from "@api";
-import type { UUID, ReportableEntity, ReportType } from "@types";
+import type { UUID, ReportableEntityType, ReportType } from "@types";
 import {
   SettingsDropdown,
   SettingsTextArea,
@@ -23,7 +23,7 @@ interface ReportModalProps {
   onSubmit?: () => Promise<void>;
   reportedId: UUID;
   reportedTitle?: string;
-  reportedType: ReportableEntity;
+  reportedType: ReportableEntityType;
 }
 
 const ReportModal: React.FC<ReportModalProps> = ({

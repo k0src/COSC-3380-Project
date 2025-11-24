@@ -7,7 +7,7 @@
 
 .appealsContainer {
   width: 100%;
-  max-width: 70rem;
+  max-width: 80rem;
   display: flex;
   flex-direction: column;
   gap: var(--layout-gap-ver);
@@ -41,7 +41,6 @@
 }
 
 .entityInfoHeader {
-  background-color: var(--color-background-tertiary);
   font-weight: 600;
   color: var(--color-white);
   font-size: var(--font-size-md);
@@ -77,10 +76,87 @@
   font-weight: 600;
 }
 
-.appealsForm {
+.entityInfoValueSuccess {
+  font-size: var(--font-size-sm);
+  color: var(--color-green-ui);
+  font-weight: 600;
+}
+
+.appealsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap-ver);
+}
+
+.appealCard {
+  background-color: var(--color-panel-gray-dark);
+  border-radius: var(--border-radius-md);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  padding: var(--spacing-lg);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+}
+
+.appealHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: var(--color-white);
+  font-size: var(--font-size-lg);
+}
+
+.appealStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-xs);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.appealStatusPending {
+  background: var(--color-orange-ui-bg);
+  border: var(--border-size-sm) solid var(--color-orange-ui-border);
+  color: var(--color-orange-ui);
+}
+
+.appealStatusResolved {
+  background: var(--color-green-ui-bg);
+  border: var(--border-size-sm) solid var(--color-green-ui-border);
+  color: var(--color-green-ui);
+}
+
+.appealStatusDismissed {
+  background: var(--color-gray-button);
+  border: var(--border-size-sm) solid var(--color-gray-button-border);
+  color: var(--color-white-alt);
+}
+
+.appealInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.appealInfoRow {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.appealInfoLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  font-weight: 500;
+}
+
+.appealInfoValue {
+  font-size: var(--font-size-sm);
+  color: var(--color-white-alt);
+  font-weight: 500;
 }
 
 .formActions {
@@ -111,38 +187,51 @@
   cursor: not-allowed;
 }
 
-.submitButton {
+.dismissButton {
   font-family: var(--font-main);
-  background: var(--color-white);
-  border: none;
+  background: var(--color-red-ui-bg);
+  border: var(--border-size-sm) solid var(--color-red-ui-border);
   border-radius: var(--border-radius-sm);
   padding: var(--spacing-sm) var(--spacing-md);
-  color: var(--color-panel-gray);
+  color: var(--color-red-ui);
   font-size: var(--font-size-sm);
   cursor: pointer;
   transition: all var(--transition-speed) ease;
 }
 
-.submitButton:hover:not(:disabled) {
-  background: var(--color-white-alt);
+.dismissButton:hover:not(:disabled) {
+  background: var(--color-red-ui-bg-hover);
+  border-color: var(--color-red-ui-border-hover);
 }
 
-.submitButton:disabled {
+.dismissButton:disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
-.successMessage {
+.resolveButton {
+  font-family: var(--font-main);
   background: var(--color-green-ui-bg);
   border: var(--border-size-sm) solid var(--color-green-ui-border);
   border-radius: var(--border-radius-sm);
-  padding: var(--spacing-sd);
+  padding: var(--spacing-sm) var(--spacing-md);
   color: var(--color-green-ui);
   font-size: var(--font-size-sm);
-  line-height: var(--line-height-relaxed);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
 }
 
-.pendingAppealMessage {
+.resolveButton:hover:not(:disabled) {
+  background: var(--color-green-ui-bg-hover);
+  border-color: var(--color-green-ui-border-hover);
+}
+
+.resolveButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.noAppealsMessage {
   background-color: var(--color-panel-gray-dark);
   border-radius: var(--border-radius-md);
   border: var(--border-size-sm) solid var(--color-panel-border);
@@ -152,13 +241,13 @@
   gap: var(--spacing-md);
 }
 
-.pendingAppealHeader {
+.noAppealsHeader {
   font-size: var(--font-size-lg);
   color: var(--color-white);
   font-weight: 600;
 }
 
-.pendingAppealText {
+.noAppealsText {
   font-size: var(--font-size-sm);
   color: var(--color-text-gray);
   line-height: var(--line-height-relaxed);

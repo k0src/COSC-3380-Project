@@ -8,12 +8,13 @@ import type {
   UserGrowthData,
   AdminDashboardStats,
   PlatformActivity,
-  RecentReport,
+  Report,
+  Appeal,
   User,
   UserInfo,
+  CoverEntityType,
+  ReportableEntityType,
 } from "@types";
-
-export type CoverEntityType = "song" | "playlist" | "album";
 
 export const adminApi = {
   async getDashboardStats() {
@@ -51,7 +52,7 @@ export const adminApi = {
   },
 
   async getRecentReports(limit: number, offset: number) {
-    const response = await api.get<RecentReport[]>(
+    const response = await api.get<Report[]>(
       `/admin/dashboard/recent-reports`,
       {
         params: { limit, offset },
@@ -95,7 +96,7 @@ export const adminApi = {
     return response.data;
   },
 
-  async update(
+  async updateUser(
     id: UUID,
     data: {
       username?: string;
@@ -164,7 +165,7 @@ export const adminApi = {
 
   async submitAppeal(
     userId: UUID,
-    entityType: "songs" | "albums" | "playlists" | "users",
+    entityType: ReportableEntityType,
     entityId: UUID,
     reason: string
   ) {
@@ -177,13 +178,100 @@ export const adminApi = {
 
   async checkPendingAppeal(
     userId: UUID,
-    entityType: "songs" | "albums" | "playlists" | "users",
+    entityType: ReportableEntityType,
     entityId: UUID
   ) {
     const response = await api.get<{ hasPendingAppeal: boolean }>(
       `/admin/appeals/${entityType}/${entityId}/check`,
       { params: { userId } }
     );
+    return response.data;
+  },
+
+  async getAllReports(limit: number, offset: number) {
+    const response = await api.get<Report[]>(`/admin/reports`, {
+      params: { limit, offset },
+    });
+    return response.data;
+  },
+
+  async getRecentAppeals(limit: number, offset: number) {
+    const response = await api.get<Appeal[]>(
+      `/admin/dashboard/recent-appeals`,
+      {
+        params: { limit, offset },
+      }
+    );
+    return response.data;
+  },
+
+  async getAllAppeals(limit: number, offset: number) {
+    const response = await api.get<Appeal[]>(`/admin/appeals`, {
+      params: { limit, offset },
+    });
+    return response.data;
+  },
+
+  async getAppealsForEntity(entityType: ReportableEntityType, entityId: UUID) {
+    const response = await api.get<Appeal[]>(
+      `/admin/appeals/${entityType}/${entityId}`
+    );
+    return response.data;
+  },
+
+  async resolveReport(
+    id: UUID,
+    entityType: ReportableEntityType,
+    entityId: UUID,
+    reviewerId: UUID
+  ) {
+    const response = await api.post(`/admin/reports/${id}/resolve`, {
+      entityType,
+      entityId,
+      reviewerId,
+    });
+    return response.data;
+  },
+
+  async dismissReport(
+    id: UUID,
+    entityType: ReportableEntityType,
+    entityId: UUID,
+    reviewerId: UUID
+  ) {
+    const response = await api.post(`/admin/reports/${id}/dismiss`, {
+      entityType,
+      entityId,
+      reviewerId,
+    });
+    return response.data;
+  },
+
+  async resolveAppeal(
+    id: UUID,
+    entityType: ReportableEntityType,
+    entityId: UUID,
+    reviewerId: UUID
+  ) {
+    const response = await api.post(`/admin/appeals/${id}/resolve`, {
+      entityType,
+      entityId,
+      reviewerId,
+    });
+    return response.data;
+  },
+
+  async dismissAppeal(
+    id: UUID,
+    entityType: ReportableEntityType,
+    entityId: UUID,
+    reviewerId: UUID
+  ) {
+    const response = await api.post(`/admin/appeals/${id}/dismiss`, {
+      entityType,
+      entityId,
+      reviewerId,
+    });
     return response.data;
   },
 };

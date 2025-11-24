@@ -76,6 +76,8 @@ function DataTable<T extends Record<string, any> = any>({
 
   const handleActionClick = useCallback(
     async (action: (typeof actions)[0], row: T) => {
+      if (action.disabled && action.disabled(row)) return;
+
       setIsActionExecuting(true);
       try {
         await action.onClick(row, refetch);
@@ -86,7 +88,7 @@ function DataTable<T extends Record<string, any> = any>({
         setIsActionExecuting(false);
       }
     },
-    [refetch]
+    [refetch, clearSelection]
   );
 
   const handleBulkActionClick = useCallback(
@@ -98,7 +100,16 @@ function DataTable<T extends Record<string, any> = any>({
         const selectedRows = sortedData.filter((row) =>
           selectedIds.has(row.id)
         );
-        await action.onClick(selectedRows, refetch);
+        const enabledRows = action.disabled
+          ? selectedRows.filter((row) => !action.disabled!(row))
+          : selectedRows;
+
+        if (enabledRows.length === 0) {
+          setIsBulkActionExecuting(false);
+          return;
+        }
+
+        await action.onClick(enabledRows, refetch);
         clearSelection();
       } catch (error) {
         console.error("Failed to execute bulk action:", error);
@@ -125,6 +136,7 @@ function DataTable<T extends Record<string, any> = any>({
           onFilterClear={handleFilterClear}
           bulkActions={bulkActions}
           selectedCount={selectedIds.size}
+          selectedRows={sortedData.filter((row) => selectedIds.has(row.id))}
           onBulkAction={handleBulkActionClick}
           isBulkActionExecuting={isBulkActionExecuting}
           hasPagination={hasPagination}
@@ -287,6 +299,9 @@ function DataTable<T extends Record<string, any> = any>({
                     <div className={styles.actionButtons}>
                       {actions.map((action) => {
                         const Icon = action.icon;
+                        const isDisabled =
+                          isActionExecuting ||
+                          (action.disabled && action.disabled(row));
                         return (
                           <button
                             key={action.id}
@@ -295,7 +310,7 @@ function DataTable<T extends Record<string, any> = any>({
                                 action.variant === "danger",
                             })}
                             onClick={() => handleActionClick(action, row)}
-                            disabled={isActionExecuting}
+                            disabled={isDisabled}
                           >
                             <Icon />
                           </button>

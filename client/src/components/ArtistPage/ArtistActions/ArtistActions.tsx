@@ -215,7 +215,7 @@ const ArtistActions: React.FC<ArtistActionsProps> = ({
         onClose={() => setReportModalOpen(false)}
         reportedId={userId}
         reportedTitle={artistName}
-        reportedType="artist"
+        reportedType="user"
       />
     </>
   );

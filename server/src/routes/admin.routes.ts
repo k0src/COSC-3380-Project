@@ -3,6 +3,7 @@ import { AdminService } from "@services";
 import { UserRepository } from "@repositories";
 import { parseForm } from "@infra/form-parser";
 import { validateOrderBy } from "@validators";
+import type { ReportableEntityType } from "@types";
 import { handlePgError, parseAccessContext, getCoverGradient } from "@util";
 
 const router = express.Router();
@@ -276,13 +277,13 @@ router.get(
         return;
       }
 
-      if (!["songs", "albums", "playlists", "users"].includes(entityType)) {
+      if (!["song", "album", "playlist", "user"].includes(entityType)) {
         res.status(400).json({ error: "Invalid entity type" });
         return;
       }
 
       const hasPendingAppeal = await AdminService.checkPendingAppeal(
-        entityType as "songs" | "albums" | "playlists" | "users",
+        entityType as ReportableEntityType,
         entityId,
         userId as string
       );
@@ -295,6 +296,180 @@ router.get(
     }
   }
 );
+
+// GET /api/admin/reports
+router.get("/reports", async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 50;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const reports = await AdminService.getAllReports(limit, offset);
+    res.json(reports);
+  } catch (error: any) {
+    console.error("Error in GET /admin/reports:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// GET /api/admin/dashboard/recent-appeals
+router.get("/dashboard/recent-appeals", async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const recentAppeals = await AdminService.getRecentAppeals(limit, offset);
+    res.json(recentAppeals);
+  } catch (error: any) {
+    console.error("Error in GET /admin/dashboard/recent-appeals:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// GET /api/admin/appeals
+router.get("/appeals", async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 50;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const appeals = await AdminService.getAllAppeals(limit, offset);
+    res.json(appeals);
+  } catch (error: any) {
+    console.error("Error in GET /admin/appeals:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// GET /api/admin/appeals/:entityType/:entityId
+router.get(
+  "/appeals/:entityType/:entityId",
+  async (req: Request, res: Response) => {
+    try {
+      const { entityType, entityId } = req.params;
+
+      if (!entityType || !entityId) {
+        res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
+      if (!["song", "album", "playlist", "user"].includes(entityType)) {
+        res.status(400).json({ error: "Invalid entity type" });
+        return;
+      }
+
+      const appeals = await AdminService.getAppealsForEntity(
+        entityType as ReportableEntityType,
+        entityId
+      );
+      res.json(appeals);
+    } catch (error: any) {
+      console.error(
+        "Error in GET /admin/appeals/:entityType/:entityId:",
+        error
+      );
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
+// POST /api/admin/reports/:id/resolve
+router.post("/reports/:id/resolve", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { entityType, entityId, reviewerId } = req.body;
+
+    if (!id || !entityType || !entityId || !reviewerId) {
+      res.status(400).json({ error: "Missing required fields" });
+      return;
+    }
+
+    const result = await AdminService.resolveReport(
+      id,
+      entityType,
+      entityId,
+      reviewerId
+    );
+    res.json(result);
+  } catch (error: any) {
+    console.error("Error in POST /admin/reports/:id/resolve:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// POST /api/admin/reports/:id/dismiss
+router.post("/reports/:id/dismiss", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { entityType, entityId, reviewerId } = req.body;
+
+    if (!id || !entityType || !entityId || !reviewerId) {
+      res.status(400).json({ error: "Missing required fields" });
+      return;
+    }
+
+    const result = await AdminService.dismissReport(
+      id,
+      entityType,
+      entityId,
+      reviewerId
+    );
+    res.json(result);
+  } catch (error: any) {
+    console.error("Error in POST /admin/reports/:id/dismiss:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// POST /api/admin/appeals/:id/resolve
+router.post("/appeals/:id/resolve", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { entityType, entityId, reviewerId } = req.body;
+
+    if (!id || !entityType || !entityId || !reviewerId) {
+      res.status(400).json({ error: "Missing required fields" });
+      return;
+    }
+
+    const result = await AdminService.resolveAppeal(
+      entityType,
+      entityId,
+      reviewerId
+    );
+    res.json(result);
+  } catch (error: any) {
+    console.error("Error in POST /admin/appeals/:id/resolve:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// POST /api/admin/appeals/:id/dismiss
+router.post("/appeals/:id/dismiss", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { entityType, entityId, reviewerId } = req.body;
+
+    if (!id || !entityType || !entityId || !reviewerId) {
+      res.status(400).json({ error: "Missing required fields" });
+      return;
+    }
+
+    const result = await AdminService.dismissAppeal(
+      id,
+      entityType,
+      entityId,
+      reviewerId
+    );
+    res.json(result);
+  } catch (error: any) {
+    console.error("Error in POST /admin/appeals/:id/dismiss:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
 
 // POST /api/admin/appeals/:entityType/:entityId
 router.post(
@@ -309,18 +484,18 @@ router.post(
         return;
       }
 
-      if (!["songs", "albums", "playlists", "users"].includes(entityType)) {
+      if (!["song", "album", "playlist", "user"].includes(entityType)) {
         res.status(400).json({ error: "Invalid entity type" });
         return;
       }
 
-      const result = await AdminService.submitAppeal(
-        entityType as "songs" | "albums" | "playlists" | "users",
+      await AdminService.submitAppeal(
+        entityType as ReportableEntityType,
         entityId,
         userId,
         reason
       );
-      res.json(result);
+      res.json({ message: "Appeal submitted successfully" });
     } catch (error: any) {
       console.error("Error in POST /admin/appeals:", error);
       const { message, statusCode } = handlePgError(error);

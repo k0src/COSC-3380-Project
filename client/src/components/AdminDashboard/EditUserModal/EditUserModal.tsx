@@ -168,7 +168,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           updates.profile_picture_url = formState.profile_picture_url;
         }
 
-        await adminApi.update(user.id, updates);
+        await adminApi.updateUser(user.id, updates);
 
         onUserEdited?.();
         onClose();

@@ -30,5 +30,7 @@ export { default as AdminDashboard } from "./AdminDashboard/AdminDashboard.js";
 export { default as AdminDashboardUsersPage } from "./AdminDashboard/AdminDashboardUsersPage/AdminDashboardUsersPage.js";
 export { default as AdminManageContentPage } from "./AdminDashboard/AdminManageContentPage/AdminManageContentPage.js";
 export { default as AdminManageCommentsPage } from "./AdminDashboard/AdminManageCommentsPage/AdminManageCommentsPage.js";
+export { default as AdminReportsAndAppealsPage } from "./AdminDashboard/AdminReportsAndAppealsPage/AdminReportsAndAppealsPage.js";
+export { default as AdminAppealDetailPage } from "./AdminDashboard/AdminAppealDetailPage/AdminAppealDetailPage.js";
 
 export { default as AppealsPage } from "./AppealsPage/AppealsPage.js";

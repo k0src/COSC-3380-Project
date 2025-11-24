@@ -3,22 +3,29 @@ import { Helmet } from "react-helmet-async";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
+import { capitalize } from "@util";
 import { songApi, albumApi, playlistApi, userApi, adminApi } from "@api";
 import { SettingsTextArea, ErrorPage, PageLoader } from "@components";
 import styles from "./AppealsPage.module.css";
-import type { Song, Album, Playlist, User, AccessContext } from "@types";
-
-type EntityType = "songs" | "albums" | "playlists" | "users";
+import type {
+  Song,
+  Album,
+  Playlist,
+  User,
+  AccessContext,
+  ReportableEntityType,
+} from "@types";
 
 const AppealsPage: React.FC = () => {
   const { entityType, entityId } = useParams<{
-    entityType: EntityType;
+    entityType: ReportableEntityType;
     entityId: string;
   }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
+  const [hasAppealed, setHasAppealed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -30,7 +37,7 @@ const AppealsPage: React.FC = () => {
   if (
     !entityType ||
     !entityId ||
-    !["songs", "albums", "playlists", "users"].includes(entityType)
+    !["song", "album", "playlist", "user"].includes(entityType)
   ) {
     return (
       <ErrorPage
@@ -50,19 +57,19 @@ const AppealsPage: React.FC = () => {
     {
       entity: async () => {
         switch (entityType) {
-          case "songs":
+          case "song":
             return await songApi.getSongById(entityId, accessContext, {
               includeArtists: true,
             });
-          case "albums":
+          case "album":
             return await albumApi.getAlbumById(entityId, accessContext, {
               includeArtist: true,
             });
-          case "playlists":
+          case "playlist":
             return await playlistApi.getPlaylistById(entityId, accessContext, {
               includeUser: true,
             });
-          case "users":
+          case "user":
             return await userApi.getUserById(entityId);
           default:
             return null;
@@ -105,13 +112,14 @@ const AppealsPage: React.FC = () => {
           "Your appeal has been submitted successfully. You will be notified of the decision."
         );
         setReason("");
-      } catch (err: any) {
+      } catch (error: any) {
         setError(
-          err.response?.data?.error ||
+          error.response?.data?.error ||
             "Failed to submit appeal. Please try again."
         );
       } finally {
         setIsSubmitting(false);
+        setHasAppealed(true);
       }
     },
     [entityType, entityId, reason]
@@ -130,8 +138,21 @@ const AppealsPage: React.FC = () => {
     );
   }
 
+  if (
+    entityType !== "user" &&
+    "owner_id" in entity &&
+    entity.owner_id !== user.id
+  ) {
+    return (
+      <ErrorPage
+        title="Invalid Appeal Request"
+        message="You are not authorized to appeal this content."
+      />
+    );
+  }
+
   const isUnlisted =
-    entityType === "users"
+    entityType === "user"
       ? (entity as User).status === "SUSPENDED"
       : (entity as Song | Album | Playlist).visibility_status === "UNLISTED";
 
@@ -148,14 +169,12 @@ const AppealsPage: React.FC = () => {
   }
 
   const getEntityTitle = () => {
-    if (entityType === "users") return (entity as User).username;
+    if (entityType === "user") return (entity as User).username;
     return (entity as Song | Album | Playlist).title;
   };
 
   const getEntityType = () => {
-    return (
-      entityType.slice(0, -1).charAt(0).toUpperCase() + entityType.slice(1, -1)
-    );
+    return capitalize(entityType);
   };
 
   return (
@@ -170,8 +189,8 @@ const AppealsPage: React.FC = () => {
             <h1 className={styles.appealsTitle}>Submit Appeal</h1>
             <p className={styles.appealsSubtitle}>
               Your {getEntityType().toLowerCase()} has been{" "}
-              {entityType === "users" ? "suspended" : "unlisted"}. You can
-              submit an appeal to request a review.
+              {entityType === "user" ? "suspended" : "unlisted"}. You can submit
+              an appeal to request a review.
             </p>
           </header>
 
@@ -191,7 +210,7 @@ const AppealsPage: React.FC = () => {
               <div className={styles.entityInfoRow}>
                 <span className={styles.entityInfoLabel}>Status:</span>
                 <span className={styles.entityInfoValueDanger}>
-                  {entityType === "users" ? "Suspended" : "Unlisted"}
+                  {entityType === "user" ? "Suspended" : "Unlisted"}
                 </span>
               </div>
             </div>
@@ -210,10 +229,10 @@ const AppealsPage: React.FC = () => {
               <div className={styles.formActions}>
                 <button
                   type="button"
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate("/")}
                   className={styles.cancelButton}
                 >
-                  Go Back
+                  Go Home
                 </button>
               </div>
             </div>
@@ -229,6 +248,7 @@ const AppealsPage: React.FC = () => {
                 required
                 hint={`${reason.length}/500 characters`}
                 error={error}
+                disabled={isSubmitting || hasAppealed}
               />
 
               {successMessage && (
@@ -238,16 +258,16 @@ const AppealsPage: React.FC = () => {
               <div className={styles.formActions}>
                 <button
                   type="button"
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate("/")}
                   className={styles.cancelButton}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || hasAppealed}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className={styles.submitButton}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || hasAppealed}
                 >
                   Submit
                 </button>
