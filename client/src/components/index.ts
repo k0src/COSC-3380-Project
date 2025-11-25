@@ -120,6 +120,8 @@ export { default as SettingsCheckbox } from "./SettingsPage/SettingsCheckbox/Set
 
 export { default as ChangePasswordModal } from "./SettingsPage/ChangePasswordModal/ChangePasswordModal.js";
 export { default as ConfirmationModal } from "./SettingsPage/ConfirmationModal/ConfirmationModal.js";
+export { default as SettingsArtistCta } from "./SettingsPage/SettingsArtistCta/SettingsArtistCta.js";
+export { default as ArtistSignupModal } from "./SettingsPage/ArtistSignupModal/ArtistSignupModal.js";
 
 /* ============================ Artist Dashboard ============================ */
 export { default as ArtistDashboardLayout } from "./ArtistDashboard/ArtistDashboardLayout/ArtistDashboardLayout.js";

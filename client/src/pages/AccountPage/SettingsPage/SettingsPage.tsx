@@ -11,10 +11,11 @@ import {
   SettingsImageUpload,
   ChangePasswordModal,
   ConfirmationModal,
+  SettingsArtistCta,
 } from "@components";
+import { userApi } from "@api";
 import { useAuth, useSettings } from "@contexts";
 import styles from "./SettingsPage.module.css";
-import { userApi } from "@api";
 
 interface AccountFormData {
   username: string;
@@ -573,6 +574,10 @@ const SettingsPage: React.FC = () => {
               Go to Artist Dashboard
             </button>
           </SettingsSection>
+        )}
+
+        {user && (user.role === "USER" || !user.artist_id) && (
+          <SettingsArtistCta user={user} />
         )}
 
         <SettingsSection

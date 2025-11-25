@@ -3,6 +3,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xl);
+  justify-content: space-between;
   flex: 1;
   padding: var(--spacing-xl);
   background: var(--container-gradient-bg);

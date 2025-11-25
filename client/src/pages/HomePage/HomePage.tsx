@@ -71,7 +71,7 @@ const HomePage: React.FC = () => {
 
   return (
     <div className={styles.homeLayout}>
-      <div className={styles.homeTopSection}>
+      <div className={styles.homeRowBigRight}>
         {featuredPlaylist && (
           <FeaturedPlaylist featuredPlaylist={featuredPlaylist} />
         )}
@@ -86,13 +86,13 @@ const HomePage: React.FC = () => {
         <NewFromArtistsList userId={userId} accessContext={accessContext} />
       )}
 
-      <div className={styles.homeRow}>
+      <div className={styles.homeRowBigRight}>
         <TrendingList accessContext={accessContext} />
         <TopArtistBanner days={30} />
       </div>
 
       {!userIsArtist && (
-        <div className={styles.homeRow}>
+        <div className={styles.homeRowBigRight}>
           <ArtistCtaBanner />
           <UserLikesList userId={user!.id} accessContext={accessContext} />
         </div>

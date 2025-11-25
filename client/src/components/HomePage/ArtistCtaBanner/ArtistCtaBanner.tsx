@@ -13,7 +13,7 @@ const ArtistCtaBanner: React.FC = () => {
             Join a community of creators and share your music with the world.
           </span>
         </div>
-        <Link to="/settings/me" className={styles.ctaBannerButton}>
+        <Link to="/me/settings" className={styles.ctaBannerButton}>
           Sign Up as an Artist
         </Link>
       </div>

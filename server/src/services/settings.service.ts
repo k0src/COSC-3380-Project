@@ -1,5 +1,5 @@
 import { query, withTransaction } from "@config/database";
-import type { UUID, UserSettings } from "@types";
+import type { UUID, User, UserSettings } from "@types";
 
 export default class UserSettingsService {
   static async getSettings(userId: UUID): Promise<UserSettings | null> {
@@ -92,6 +92,47 @@ export default class UserSettingsService {
       return result;
     } catch (error) {
       console.error("Error updating user settings:", error);
+      throw error;
+    }
+  }
+
+  static async registerArtist(
+    userId: UUID,
+    username: string,
+    displayName?: string,
+    location?: string,
+    bio?: string
+  ): Promise<User> {
+    try {
+      const result = await withTransaction(async (client) => {
+        const artistRes = await client.query(
+          `INSERT INTO artists 
+          (user_id, display_name, location, bio) 
+          VALUES ($1, $2, $3, $4) RETURNING id`,
+          [userId, displayName ?? username, location ?? null, bio ?? null]
+        );
+
+        if (!artistRes.rows[0] || !artistRes.rows[0].id) {
+          throw new Error("Failed to create artist profile.");
+        }
+        const artistId: UUID = artistRes.rows[0].id;
+
+        const updatedUserRes = await client.query(
+          `UPDATE users SET role = 'ARTIST', artist_id = $1 WHERE id = $2 RETURNING *`,
+          [artistId, userId]
+        );
+
+        const updatedUser: User = updatedUserRes.rows[0];
+        if (!updatedUser) {
+          throw new Error("Failed to update user role to ARTIST.");
+        }
+
+        return updatedUser;
+      });
+
+      return result;
+    } catch (error) {
+      console.error("Error registering artist:", error);
       throw error;
     }
   }
