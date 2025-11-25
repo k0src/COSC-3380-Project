@@ -1,76 +1,197 @@
 # CoogMusic
 
-A full-stack music streaming application built with React and a Node.js backend.
+CoogMusic is a full-stack music streaming application built with React, Node.js, and PostgreSQL.
+
+- [Website](https://cosc-3380.azurewebsites.net)
+- [Standalone Application](https://github.com/k0src/COSC-3380-Project/releases/latest)
+- [GitHub Repository](https://github.com/k0src/COSC-3380-Project)
+
+> Team 8 GitHub Usernames:
+>
+> - Joshua- `joshngu`
+> - Koren - `k0src`
+> - Ron - `ron-alex`
+> - Santiago- `marujpree`
+> - Shamake - `musa20`
+
+![CoogMusic Homepage](./assets/homepage.png)
 
 ## Tech Stack
 
-- **Client:** React, TypeScript, Vite
-- **Server:** Node.js, Express, TypeScript, PostgreSQL
-- **Authentication:** JWTs stored in cookies
-- **Deployment:** Configured for Azure
+- **Client**:
+  - [React](https://react.dev), [TypeScript](https://www.typescriptlang.org), [Vite](https://vitejs.dev)
+  - Standalone application built with [Tauri](https://tauri.app)
+- **Server**:
+  - [Node.js](https://nodejs.org), [Express](https://expressjs.com), [TypeScript](https://www.typescriptlang.org)
+- **Database**:
+  - [PostgreSQL](https://www.postgresql.org)
+- **Deployment**:
+  - [Azure App Service](https://azure.microsoft.com/products/app-service/), [Azure Database for PostgreSQL](https://azure.microsoft.com/products/postgresql/)
 
 ## Features
 
-- User authentication (signup, login, logout)
-- Browse and play songs, albums, and artist pages
+- User authentication (sign-up, login, logout)
+- Browse user-generated music library, including songs, albums, and playlists
 - Create and manage playlists
-- Like songs and follow artists
-- Persistent audio queue
-- Dynamic theming
+- Social interactions: like and comment on songs, follow artists, and view follower/following lists
+- User notifications for likes, follows, comment mentions, and more
+- Persistent, dynamic audio queue; queue and play songs seamlessly; queue sessions are saved over reloads
+- Comprehensive user settings, including dynamic theming options
+- Automatic duplicate song detection: identifies and prevents duplicate song uploads based on waveform data
+- Search functionality for songs, albums, artists, and playlists
+- In-depth artist dashboard for song and album management, including upload, edit, and delete capabilities
+- Artist audience engagement features, such as artist profile customization, featured artist playlists, and profile album pins.
 
-## Getting Started
+## Development
 
-To run this project locally, you'll need to set up both the client and server.
+Follow these instructions to get a copy of the project up and running on your local machine.
 
-**1. Installation**
+### Clone the Repository
 
-There's a root `package.json` to handle installation for both client and server.
+Open your terminal and navigate to your desired directory. Then run:
 
 ```bash
+git clone https://github.com/k0src/COSC-3380-Project.git
+cd COSC-3380-Project
+```
+
+to clone the repository and navigate into the project directory.
+
+### Installation
+
+The project consists of a **client** and a **server**. You must install dependencies for both.
+
+In the project root directory, run:
+
+```bash
+npm run install:all
+```
+
+This installs the dependencies for both the client and server. If you prefer, you can navigate into each directory (`client` and `server`) and run `npm install` individually:
+
+```
+cd client
 npm install
+
+cd ../server
+# The react-helmet-async package is out-of-date with the latest version of React:
+npm install --legacy-peer-deps
 ```
 
-**2. Environment Variables**
+### Environment Variables
 
-You will need to create `.env` files for both the `client` and `server`.
+#### Client Configuration
 
-- **Server:** Create a `.env` file in the `server/` directory. It will need variables for the database connection, JWT secret, and blob storage. Refer to the database and JWT config files for required variables.
-
-- **Client:** Create a `.env.development` file in the `client/` directory.
+1. Create a `.env` file in the `client` directory.
+2. Add the following environment variables to the `.env` file:
 
 ```
+# Set the mode to development
+VITE_MODE=development
+# Set the API URL to point to the local server where the PostgreSQL database is hosted
 VITE_API_URL=http://localhost:8080/api
 ```
 
-**3. Running the App**
+#### Server Configuration
 
-You can run both client and server concurrently from the root directory.
+1. Create a `.env` file in the `server` directory.
+2. Add the following environment variables to the `.env` file:
+
+```
+# Development mode
+NODE_ENV=development
+
+# Server configuration
+PORT=8080
+HOST=localhost
+CLIENT_URL=http://localhost:5173
+CLIENT_PORT=5173
+
+# Database configuration
+PGHOST=your_database_host
+PGPORT=5432 # Default PostgreSQL port
+PGUSER=your_database_user
+PGPASSWORD=your_database_password
+PGDATABASE=your_database_name
+PGPOOLSIZE=10
+PGSSLMODE=require
+
+# Blob Storage
+AZURE_STORAGE_CONNECTION_STRING="your_connection_string"
+AZURE_STORAGE_ACCOUNT="your_account_name"
+AZURE_STORAGE_ACCOUNT_KEY="your_account_key"
+AZURE_STORAGE_CONTAINER="uploads"
+SAS_TOKEN_DURATION=3600
+
+# Security
+BCRYPT_ROUNDS=12
+CORS_ORIGIN=http://localhost:5173 # Default client URL
+
+# Rate limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# JWT Configuration
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRES_IN=24h
+JWT_REFRESH_SECRET=your_jwt_refresh_secret
+JWT_REFRESH_EXPIRES_IN=7d
+
+API_URL=http://localhost:8080/api
+```
+
+### Running the Application
+
+To start both the client and server, run the following command from the project root directory:
 
 ```bash
 npm run dev
 ```
 
-This will start the Vite dev server for the client (usually on `localhost:5173`) and the Node.js server for the backend (on `localhost:8080`).
+This will start the server on `http://localhost:8080` and the client on `http://localhost:5173`.
 
-## Architecture
+Alternatively, you can start the client and server separately:
 
-The project follows a client-server architecture with a React frontend communicating with a Node.js backend via a RESTful API.
+1. Start the server:
+   ```bash
+   cd server
+   npm run dev
+   ```
+2. Start the client:
+   ```bash
+   cd client
+   npm run dev
+   ```
 
-### Client (`client/`)
+### Building the Application
 
-The client is a single-page application built with React and Vite. It handles all user interface rendering and client-side state.
+To build both the client and server for production, run the following command from the project root directory:
 
-### Server (`server/`)
+```bash
+npm run build
+```
 
-The backend is a layered Express application that serves the API and handles all business logic. The structure is designed to separate concerns:
+This will run the `build.js` script located in the `scripts` directory, which does the following:
 
-- **Routes:** Define the API endpoints and direct requests to the appropriate controllers/services.
-- **Middleware:** Handles authentication, error handling, and request parsing.
-- **Services:** Contain the core business logic. They orchestrate data flow between the routes and the data access layer.
-- **Repositories:** The data access layer. Each repository corresponds to a database table and encapsulates all the SQL queries and logic for that entity.
+1. Runs `npm install` in the server directory to install all dependencies.
+2. Runs `npm run build` in the server directory to build the server.
+3. Runs `npm install` in the client directory to install all dependencies.
+4. Runs `npm run build` in the client directory to build the client.
+5. Copies the built client files into the server's `public` directory for serving.
+6. Creates a deployment package in the `server/dist` directory.
 
-### Database & Repositories
+#### Building the Standalone Application
 
-The backend uses a **PostgreSQL** database.
+To build the standalone application using Tauri, navigate to the `client` directory and run:
 
-Interaction with the database is handled through a **repository pattern**. Each major entity (e.g., `User`, `Song`, `Playlist`) has its own repository class in the `server/src/repos/` directory.
+```bash
+npm run tauri:build
+```
+
+This will create a standalone application in the `client/src-tauri/target/release` directory.
+
+Note: Ensure you have Tauri prerequisites installed. Refer to the [Tauri documentation](https://tauri.app/v1/guides/getting-started/prerequisites) for more information. You can also run the standalone application in development mode with:
+
+```bash
+npm run tauri:dev
+```
