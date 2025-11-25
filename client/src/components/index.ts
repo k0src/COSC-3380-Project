@@ -120,6 +120,8 @@ export { default as SettingsCheckbox } from "./SettingsPage/SettingsCheckbox/Set
 
 export { default as ChangePasswordModal } from "./SettingsPage/ChangePasswordModal/ChangePasswordModal.js";
 export { default as ConfirmationModal } from "./SettingsPage/ConfirmationModal/ConfirmationModal.js";
+export { default as SettingsArtistCta } from "./SettingsPage/SettingsArtistCta/SettingsArtistCta.js";
+export { default as ArtistSignupModal } from "./SettingsPage/ArtistSignupModal/ArtistSignupModal.js";
 
 /* ============================ Artist Dashboard ============================ */
 export { default as ArtistDashboardLayout } from "./ArtistDashboard/ArtistDashboardLayout/ArtistDashboardLayout.js";
@@ -162,7 +164,6 @@ export { default as AdminManageAppeals } from "./AdminDashboard/AdminReportsAndA
 export { default as AdminDashboardSummary } from "./AdminDashboard/AdminDashboardSummary/AdminDashboardSummary.js";
 
 /* ============================ Data Reports Page =========================== */
-
 export { default as DataReportsNav } from "./AdminDashboard/DataReportsNav/DataReportsNav.js";
 export { default as KpiCard } from "./AdminDashboard/KpiCard/KpiCard.js";
 export { default as OverviewKpiCards } from "./AdminDashboard/OverviewKpiCards/OverviewKpiCards.js";

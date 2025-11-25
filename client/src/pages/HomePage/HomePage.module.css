@@ -6,16 +6,23 @@
   position: relative;
 }
 
-.homeTopSection {
+.homeRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-lg);
   min-width: 0;
 }
 
-.homeRow {
+.homeRowBigLeft {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 6fr 5fr;
+  gap: var(--spacing-lg);
+  min-width: 0;
+}
+
+.homeRowBigRight {
+  display: grid;
+  grid-template-columns: 5fr 6fr;
   gap: var(--spacing-lg);
   min-width: 0;
 }

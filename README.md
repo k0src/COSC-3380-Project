@@ -3,7 +3,6 @@
 CoogMusic is a full-stack music streaming application built with React, Node.js, and PostgreSQL.
 
 - [Website](https://cosc-3380.azurewebsites.net)
-- [Standalone Application](https://github.com/k0src/COSC-3380-Project/releases/latest)
 - [GitHub Repository](https://github.com/k0src/COSC-3380-Project)
 
 > Team 8 GitHub Usernames:
@@ -20,7 +19,6 @@ CoogMusic is a full-stack music streaming application built with React, Node.js,
 
 - **Client**:
   - [React](https://react.dev), [TypeScript](https://www.typescriptlang.org), [Vite](https://vitejs.dev)
-  - Standalone application built with [Tauri](https://tauri.app)
 - **Server**:
   - [Node.js](https://nodejs.org), [Express](https://expressjs.com), [TypeScript](https://www.typescriptlang.org)
 - **Database**:

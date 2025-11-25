@@ -201,6 +201,47 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// POST /api/users/:id/register-artist
+router.post(
+  "/:id/register-artist",
+  authenticateToken,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { username, displayName, location, bio } = req.body;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
+        return;
+      }
+
+      const updatedUser = await UserSettingsService.registerArtist(
+        id,
+        username,
+        displayName,
+        location,
+        bio
+      );
+
+      res.status(200).json(updatedUser);
+    } catch (error: any) {
+      console.error("Error in POST /users/:id/register-artist:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
 /* ========================================================================== */
 /*                               User Playlists                               */
 /* ========================================================================== */
