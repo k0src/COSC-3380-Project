@@ -22,18 +22,14 @@ export function getVisibilityCondition(
   accessContext: AccessContext
 ): string {
   const { role, userId, scope } = accessContext;
-
-  // Admin with owner scope sees everything
   if (role === "admin" && scope === "owner") {
     return "TRUE";
   }
 
-  // Global scope: only show public items (even for admins)
   if (scope === "global") {
     return `${alias}.${visibilityField} = 'PUBLIC'`;
   }
 
-  // Owner scope with user: show public + owned private/unlisted
   if (scope === "owner" && userId) {
     return `(
       ${alias}.${visibilityField} = 'PUBLIC' 
@@ -41,7 +37,6 @@ export function getVisibilityCondition(
     )`;
   }
 
-  // Fallback to global (public only)
   return `${alias}.${visibilityField} = 'PUBLIC'`;
 }
 
@@ -51,12 +46,10 @@ export function getUserVisibilityCondition(
 ): string {
   const { role, scope } = accessContext;
 
-  // Admin with owner scope sees everything
   if (role === "admin" && scope === "owner") {
     return "TRUE";
   }
 
-  // Global scope or non-admin: only show users that are not private
   return `${userAlias}.is_private = FALSE`;
 }
 
