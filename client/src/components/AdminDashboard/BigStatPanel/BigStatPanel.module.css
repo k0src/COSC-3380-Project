@@ -1,0 +1,74 @@
+.panel {
+  background: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  min-height: 16rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.icon {
+  font-size: var(--icon-size-sm);
+  color: var(--color-text-gray);
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-gray);
+  text-transform: uppercase;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  flex: 1;
+}
+
+.valueSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sd);
+}
+
+.value {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-white-alt);
+}
+
+.trend {
+  font-size: var(--font-size-xsd);
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+}
+
+.trendUp {
+  color: var(--color-green-ui);
+  background: var(--color-green-ui-bg);
+}
+
+.trendDown {
+  color: var(--color-red-ui);
+  background: var(--color-red-ui-bg);
+}
+
+.trendNeutral {
+  color: var(--color-text-gray);
+  background: var(--color-gray-button);
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  line-height: var(--line-height-normal);
+}

@@ -11,7 +11,7 @@ export interface AdminDashboardStats {
   pendingReports: number;
 }
 
-export interface UserGrowthData {
+export interface AdminUserGrowthData {
   date: string;
   count: number;
 }

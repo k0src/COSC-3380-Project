@@ -35,7 +35,6 @@ function DataTable<T extends Record<string, any> = any>({
     goToNextPage,
     goToPrevPage,
     sortColumn,
-    sortDirection,
     handleSort,
     sortedData,
     filterText,
@@ -226,9 +225,7 @@ function DataTable<T extends Record<string, any> = any>({
                       <span>{column.header}</span>
                       <LuArrowUpDown
                         className={classNames(styles.sortIcon, {
-                          [styles.sortIconDesc]:
-                            sortColumn === column.key &&
-                            sortDirection === "DESC",
+                          [styles.sortIconActice]: sortColumn === column.key,
                         })}
                       />
                     </button>

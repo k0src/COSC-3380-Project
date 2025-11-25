@@ -32,5 +32,8 @@ export { default as AdminManageContentPage } from "./AdminDashboard/AdminManageC
 export { default as AdminManageCommentsPage } from "./AdminDashboard/AdminManageCommentsPage/AdminManageCommentsPage.js";
 export { default as AdminReportsAndAppealsPage } from "./AdminDashboard/AdminReportsAndAppealsPage/AdminReportsAndAppealsPage.js";
 export { default as AdminAppealDetailPage } from "./AdminDashboard/AdminAppealDetailPage/AdminAppealDetailPage.js";
+export { default as DataReportOverview } from "./AdminDataReports/DataReportOverview/DataReportOverview.js";
+export { default as DataReportUsers } from "./AdminDataReports/DataReportUsers/DataReportUsers.js";
+export { default as DataReportEngagement } from "./AdminDataReports/DataReportEngagement/DataReportEngagement.js";
 
 export { default as AppealsPage } from "./AppealsPage/AppealsPage.js";

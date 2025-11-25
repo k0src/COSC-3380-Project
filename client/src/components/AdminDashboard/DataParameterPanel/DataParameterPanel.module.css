@@ -1,0 +1,231 @@
+.panel {
+  background-color: var(--color-panel-gray);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+}
+
+.toggleButton {
+  font: var(--font-main);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: transparent;
+  border: none;
+  color: var(--color-white-alt);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.toggleButton:hover {
+  background-color: var(--color-panel-gray-hover);
+}
+
+.toggleIcon {
+  font-size: var(--icon-size-sm);
+}
+
+.closeIcon {
+  font-size: var(--icon-size-sm);
+  margin-left: auto;
+}
+
+.content {
+  padding: var(--spacing-md);
+  border-top: var(--border-size-sm) solid var(--color-panel-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sd);
+}
+
+.sectionLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  font-weight: 500;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.sectionIcon {
+  font-size: var(--icon-size-sm);
+}
+
+.quickRanges {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.quickRangeButton {
+  font: var(--font-main);
+  padding: var(--spacing-sm);
+  background-color: var(--color-gray-button);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-gray);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.quickRangeButton:hover {
+  background-color: var(--color-gray-button-border);
+  color: var(--color-white-alt);
+}
+
+.dateInputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.inputLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+  font-weight: 500;
+}
+
+.dateInput,
+.numberInput {
+  font-family: var(--font-main);
+  padding: var(--spacing-input);
+  background-color: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  width: 100%;
+  cursor: pointer;
+}
+
+.dateInput:focus,
+.numberInput:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.settingsDatePicker::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.numberInput::-webkit-outer-spin-button,
+.numberInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.numberInput[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.optionButton {
+  font: var(--font-main);
+  padding: var(--spacing-sm);
+  background-color: var(--color-gray-button);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-gray);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.optionButton:hover {
+  background-color: var(--color-panel-border);
+  color: var(--color-white-alt);
+}
+
+.optionButton.active {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-background);
+}
+
+.thresholdGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+.thresholdGrid .inputGroup {
+  min-width: 0;
+}
+
+.thresholdGrid .numberInput {
+  max-width: none;
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-sd);
+  border-top: var(--border-size-sm) solid var(--color-panel-border);
+}
+
+.actionButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  justify-content: center;
+  font-family: var(--font-main);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sd);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.actionButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.resetButton {
+  background-color: var(--color-gray-button);
+  color: var(--color-text-gray);
+  border-color: var(--color-panel-border);
+}
+
+.resetButton:hover:not(:disabled) {
+  background-color: var(--color-panel-border);
+  color: var(--color-white-alt);
+}
+
+.submitButton {
+  background-color: var(--color-accent);
+  color: var(--color-accent-200);
+  border-color: var(--color-accent);
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: var(--color-accent-800);
+  color: var(--color-accent-300);
+}

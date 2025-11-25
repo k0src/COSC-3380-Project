@@ -1,0 +1,78 @@
+.panel {
+  background: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  min-height: 16rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.icon {
+  font-size: var(--icon-size-sm);
+  color: var(--color-text-gray);
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-gray);
+  text-transform: uppercase;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.valueSection {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-white-alt);
+}
+
+.change {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.changePercent {
+  font-weight: 500;
+  font-size: var(--font-size-xs);
+}
+
+.changePositive {
+  color: var(--color-green-ui);
+}
+
+.changeNegative {
+  color: var(--color-red-ui);
+}
+
+.changeLabel {
+  color: var(--color-text-gray);
+  font-size: var(--font-size-xs);
+}
+
+.sparkline {
+  height: 100%;
+}
+
+.subtitle {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+}

@@ -1,0 +1,103 @@
+.card {
+  background-color: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  font-weight: 500;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.significantBadge {
+  font-size: var(--font-size-xs);
+  color: var(--color-white-alt);
+  font-weight: 600;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.mainValue {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sd);
+}
+
+.currentValue {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-white-alt);
+}
+
+.delta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-gray);
+}
+
+.deltaIcon {
+  font-size: var(--icon-size-xs);
+}
+
+.deltaPositive {
+  color: var(--color-green-ui) !important;
+}
+
+.deltaNegative {
+  color: var(--color-red-ui) !important;
+}
+
+.deltaNeutral {
+  color: var(--color-text-gray) !important;
+}
+
+.deltaText {
+  font-size: var(--font-size-sm);
+}
+
+.trendChart {
+  height: 4rem;
+}
+
+.comparison {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--spacing-sm);
+  border-top: var(--border-size-sm) solid var(--color-panel-border);
+}
+
+.comparisonLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+}
+
+.comparisonValue {
+  font-size: var(--font-size-sm);
+  color: var(--color-white-alt);
+  font-weight: 500;
+}

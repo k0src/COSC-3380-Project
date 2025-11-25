@@ -82,6 +82,7 @@ app.use("/api/report", Routes.reportRoutes);
 app.use("/api/stats", Routes.statsRoutes);
 app.use("/api/comments", Routes.commentRoutes);
 app.use("/api/admin", Routes.adminRoutes);
+app.use("/api/data", Routes.dataRoutes);
 
 const clientDistPath = path.join(__dirname, "public");
 app.use(express.static(clientDistPath));

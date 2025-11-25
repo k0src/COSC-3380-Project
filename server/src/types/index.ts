@@ -11,3 +11,4 @@ export * from "./notifications.types.js";
 export * from "./report.types.js";
 export * from "./access.types.js";
 export * from "./admin.types.js";
+export * from "./dataReport.types.js";

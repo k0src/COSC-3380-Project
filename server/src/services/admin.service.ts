@@ -7,7 +7,7 @@ import type {
   Song,
   UUID,
   AdminDashboardStats,
-  UserGrowthData,
+  AdminUserGrowthData,
   PlatformActivity,
   Report,
   Appeal,
@@ -140,7 +140,7 @@ export default class AdminService {
     }
   }
 
-  static async getUserGrowth(days: number = 30): Promise<UserGrowthData[]> {
+  static async getUserGrowth(days: number = 30): Promise<AdminUserGrowthData[]> {
     try {
       const result = await query(
         `WITH date_series AS (

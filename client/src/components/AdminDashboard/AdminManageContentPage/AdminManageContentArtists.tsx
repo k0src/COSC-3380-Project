@@ -144,8 +144,7 @@ const AdminManageContentArtists: React.FC<AdminManageContentArtistsProps> = ({
       {
         id: "verify",
         icon: LuBadgeCheck,
-        label: (row: Artist) =>
-          row.verified ? "Unverify Artist" : "Verify Artist",
+        label: "Toggle Verification",
         onClick: handleVerifyClick,
       },
       {

@@ -80,8 +80,8 @@
   font-size: var(--icon-size-xs);
 }
 
-.sortIconDesc {
-  transform: rotate(180deg);
+.sortIconActive {
+  color: var(--color-accent);
 }
 
 .dataRow {

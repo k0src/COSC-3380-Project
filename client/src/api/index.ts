@@ -12,6 +12,7 @@ export { notificationsApi } from "./notifications.api.js";
 export { reportApi } from "./report.api.js";
 export { statsApi } from "./stats.api.js";
 export { adminApi } from "./admin.api.js";
+export { dataApi } from "./data.api.js";
 
 export type {
   SignupData,

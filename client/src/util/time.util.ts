@@ -17,6 +17,18 @@ export const formatPlaybackTime = (seconds: number) => {
 export const formatDateString = (dateString: string): string =>
   dateString.split("T")[0];
 
+export const formatLocaleDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+export const formatHour = (hour: number) => {
+  return hour.toString().padStart(2, "0") + ":00";
+};
+
 /**
  * Formats a date string into a relative time description (e.g., "2 days ago").
  * @param dateString The timestamptz string (e.g., "2025-10-14T05:00:00.000Z").

@@ -5,7 +5,7 @@ import type {
   CoverGradient,
   UUID,
   Artist,
-  UserGrowthData,
+  AdminUserGrowthData,
   AdminDashboardStats,
   PlatformActivity,
   Report,
@@ -25,7 +25,7 @@ export const adminApi = {
   },
 
   async getUserGrowth(days: number = 30) {
-    const response = await api.get<UserGrowthData[]>(
+    const response = await api.get<AdminUserGrowthData[]>(
       `/admin/dashboard/user-growth`,
       {
         params: { days },

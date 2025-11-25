@@ -10,3 +10,4 @@ export { default as reportRoutes } from "./report.routes.js";
 export { default as statsRoutes } from "./stats.routes.js";
 export { default as commentRoutes } from "./comment.routes.js";
 export { default as adminRoutes } from "./admin.routes.js";
+export { default as dataRoutes } from "./data.routes.js";

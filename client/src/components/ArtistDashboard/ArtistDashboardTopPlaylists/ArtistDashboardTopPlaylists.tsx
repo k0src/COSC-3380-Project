@@ -75,7 +75,7 @@ const ArtistDashboardTopPlaylists: React.FC<
     }
   );
 
-  const topPlaylists = data?.topPlaylists ?? [];
+  const topPlaylists = (data?.topPlaylists ?? []) as PlaylistWithStreams[];
 
   return (
     <div className={styles.topPlaylistsContainer}>

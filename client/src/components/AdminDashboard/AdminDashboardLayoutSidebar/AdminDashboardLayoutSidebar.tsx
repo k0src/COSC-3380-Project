@@ -7,7 +7,6 @@ import {
   LuListMusic,
   LuLogOut,
   LuHouse,
-  LuChartLine,
   LuShield,
   LuUserRound,
   LuCircleAlert,
@@ -89,15 +88,6 @@ const AdminDashboardLayoutSidebar: React.FC = () => {
           >
             <LuCircleAlert className={styles.sidebarIcon} />
             <span className={styles.sidebarText}>Reports & Appeals</span>
-          </NavLink>
-          <NavLink
-            to="/admin/stats"
-            className={({ isActive }) =>
-              isActive ? styles.sidebarLinkActive : styles.sidebarLink
-            }
-          >
-            <LuChartLine className={styles.sidebarIcon} />
-            <span className={styles.sidebarText}>Site Statistics</span>
           </NavLink>
           <NavLink
             to="/admin/data-reports"

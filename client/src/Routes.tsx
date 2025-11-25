@@ -241,6 +241,36 @@ export default function AppRoutes() {
               </AdminRoute>
             }
           />
+          <Route
+            path="/admin/data-reports"
+            element={
+              <AdminRoute>
+                <AdminDashboardLayout>
+                  <Pages.DataReportOverview />
+                </AdminDashboardLayout>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/data-reports/user-growth"
+            element={
+              <AdminRoute>
+                <AdminDashboardLayout>
+                  <Pages.DataReportUsers />
+                </AdminDashboardLayout>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/data-reports/engagement"
+            element={
+              <AdminRoute>
+                <AdminDashboardLayout>
+                  <Pages.DataReportEngagement />
+                </AdminDashboardLayout>
+              </AdminRoute>
+            }
+          />
         </Routes>
       )}
     </>
