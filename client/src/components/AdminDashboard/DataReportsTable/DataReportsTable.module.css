@@ -1,7 +1,12 @@
-.container {
+.tableSection {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   min-width: 0;
 }
@@ -32,8 +37,11 @@
 .tableWrapper {
   overflow-x: auto;
   background: var(--color-panel-gray);
-  border: var(--border-size-sm) solid var(--color-panel-border);
-  border-radius: var(--border-radius-sm);
+  border-left: var(--border-size-sm) solid var(--color-panel-border);
+  border-right: var(--border-size-sm) solid var(--color-panel-border);
+  border-top: var(--border-size-sm) solid var(--color-panel-border);
+  border-top-left-radius: var(--border-radius-sm);
+  border-top-right-radius: var(--border-radius-sm);
 }
 
 .tableGrid {
@@ -196,7 +204,8 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-md);
-  border-top: var(--border-size-sm) solid var(--color-panel-border);
+  border-bottom-left-radius: var(--border-radius-sm);
+  border-bottom-right-radius: var(--border-radius-sm);
   background-color: var(--color-panel-gray);
 }
 

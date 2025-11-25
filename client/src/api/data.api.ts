@@ -1,19 +1,18 @@
 import api from "./api";
 import type {
   DataReportParams,
-  ExecutiveOverviewData,
-  UserGrowthMetrics,
   EngagementMetrics,
-  ModerationMetrics,
-  ContentHealthMetrics,
   ActivityTimelineData,
-  KpisData,
-  AnomaliesData,
-  ExecutiveSummaryData,
   RetentionCohort,
   UserGrowthData,
   DetailedPeriodData,
   ExecutiveSummary,
+  KpisData,
+  GenreBreakdownData,
+  ArtistPerformance,
+  EnhancedTrackData,
+  ChurnMetrics,
+  UserAnalyticsData,
 } from "@types";
 
 export const dataApi = {
@@ -62,13 +61,6 @@ export const dataApi = {
     return response.data;
   },
 
-  async getAnomaliesData(params: DataReportParams) {
-    const response = await api.get<AnomaliesData>(`/data/anomalies`, {
-      params,
-    });
-    return response.data;
-  },
-
   async getExecutiveSummaryData(params: DataReportParams) {
     const response = await api.get<ExecutiveSummary>(
       `/data/executive-summary`,
@@ -86,23 +78,6 @@ export const dataApi = {
     return response.data;
   },
 
-  async getModerationMetrics(params: DataReportParams) {
-    const response = await api.get<ModerationMetrics>(`/data/moderation`, {
-      params,
-    });
-    return response.data;
-  },
-
-  async getContentHealthMetrics(params: DataReportParams) {
-    const response = await api.get<ContentHealthMetrics>(
-      `/data/content-health`,
-      {
-        params,
-      }
-    );
-    return response.data;
-  },
-
   async getActivityTimeline(params: DataReportParams) {
     const response = await api.get<ActivityTimelineData[]>(
       `/data/activity-timeline`,
@@ -114,28 +89,17 @@ export const dataApi = {
   },
 
   async getArtistPerformance(params: DataReportParams) {
-    const response = await api.get<any[]>(`/data/artist-performance`, {
-      params,
-    });
+    const response = await api.get<ArtistPerformance[]>(
+      `/data/artist-performance`,
+      {
+        params,
+      }
+    );
     return response.data;
   },
 
   async getChurnMetrics(params: DataReportParams) {
-    const response = await api.get<any>(`/data/churn-metrics`, {
-      params,
-    });
-    return response.data;
-  },
-
-  async getEngagementTimeSeries(params: DataReportParams) {
-    const response = await api.get<any[]>(`/data/engagement-timeseries`, {
-      params,
-    });
-    return response.data;
-  },
-
-  async getParetoData(params: DataReportParams) {
-    const response = await api.get<any[]>(`/data/pareto`, {
+    const response = await api.get<ChurnMetrics>(`/data/churn-metrics`, {
       params,
     });
     return response.data;
@@ -152,9 +116,6 @@ export const dataApi = {
   },
 
   async getEnhancedTrackPerformance(params: DataReportParams) {
-    console.log("🎵 [API] Calling enhanced-tracks with params:", params);
-
-    // Build query params properly - don't spread the whole params object
     const queryParams: any = {
       "timeRange[startDate]": params.timeRange.startDate,
       "timeRange[endDate]": params.timeRange.endDate,
@@ -170,7 +131,6 @@ export const dataApi = {
       showOnlyTrending: params.showOnlyTrending,
     };
 
-    // Handle array parameters
     if (params.artistIds && params.artistIds.length > 0) {
       queryParams.artistIds = JSON.stringify(params.artistIds);
     }
@@ -181,14 +141,13 @@ export const dataApi = {
       queryParams.albumIds = JSON.stringify(params.albumIds);
     }
 
-    const response = await api.get<any[]>(`/data/enhanced-tracks`, {
-      params: queryParams,
-    });
-    console.log(
-      "🎵 [API] Enhanced tracks response:",
-      response.data.length,
-      "tracks"
+    const response = await api.get<EnhancedTrackData[]>(
+      `/data/enhanced-tracks`,
+      {
+        params: queryParams,
+      }
     );
+
     return response.data;
   },
 
@@ -212,12 +171,15 @@ export const dataApi = {
   },
 
   async getGenreBreakdown(params: DataReportParams) {
-    const response = await api.get<any[]>(`/data/genre-breakdown`, {
-      params: {
-        "timeRange[startDate]": params.timeRange.startDate,
-        "timeRange[endDate]": params.timeRange.endDate,
-      },
-    });
+    const response = await api.get<GenreBreakdownData[]>(
+      `/data/genre-breakdown`,
+      {
+        params: {
+          "timeRange[startDate]": params.timeRange.startDate,
+          "timeRange[endDate]": params.timeRange.endDate,
+        },
+      }
+    );
     return response.data;
   },
 
@@ -233,11 +195,15 @@ export const dataApi = {
       minStreams: params.minStreams,
     };
 
-    const response = await api.get<any[]>(`/data/user-analytics`, {
-      params: queryParams,
-    });
+    const response = await api.get<UserAnalyticsData[]>(
+      `/data/user-analytics`,
+      {
+        params: queryParams,
+      }
+    );
     return response.data;
   },
+
   async getPeakActivityHour(params: DataReportParams) {
     const response = await api.get<{ hour: number; totalActivity: number }>(
       `/data/peak-hour`,

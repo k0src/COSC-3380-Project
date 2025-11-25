@@ -157,7 +157,7 @@ function DataReportsTable<T extends Record<string, any>>({
   }
 
   return (
-    <div className={classNames(styles.container, className)}>
+    <div className={styles.tableSection}>
       {title && (
         <div className={styles.tableHeader}>
           <h2 className={styles.tableTitle}>{title}</h2>
@@ -168,90 +168,96 @@ function DataReportsTable<T extends Record<string, any>>({
           )}
         </div>
       )}
-      <div className={styles.tableWrapper}>
-        <div
-          className={styles.tableGrid}
-          style={{ gridTemplateColumns: gridColumns }}
-        >
-          <div className={styles.headerRow}>
-            {expandable && <div className={styles.headerCell}></div>}
+      <div className={classNames(styles.container, className)}>
+        <div className={styles.tableWrapper}>
+          <div
+            className={styles.tableGrid}
+            style={{ gridTemplateColumns: gridColumns }}
+          >
+            <div className={styles.headerRow}>
+              {expandable && <div className={styles.headerCell}></div>}
 
-            {columns.map((column) => (
-              <div
-                key={column.key}
-                className={classNames(styles.headerCell, {
-                  [styles.headerCellCenter]: column.align === "center",
-                  [styles.headerCellRight]: column.align === "right",
-                })}
-              >
-                {column.sortable ? (
-                  <button
-                    className={styles.sortButton}
-                    onClick={() => handleSort(column.key)}
-                  >
+              {columns.map((column) => (
+                <div
+                  key={column.key}
+                  className={classNames(styles.headerCell, {
+                    [styles.headerCellCenter]: column.align === "center",
+                    [styles.headerCellRight]: column.align === "right",
+                  })}
+                >
+                  {column.sortable ? (
+                    <button
+                      className={styles.sortButton}
+                      onClick={() => handleSort(column.key)}
+                    >
+                      <span>{column.header}</span>
+                      <LuArrowUpDown
+                        className={classNames(styles.sortIcon, {
+                          [styles.sortIconActive]: sortBy === column.key,
+                        })}
+                      />
+                    </button>
+                  ) : (
                     <span>{column.header}</span>
-                    <LuArrowUpDown
-                      className={classNames(styles.sortIcon, {
-                        [styles.sortIconActive]: sortBy === column.key,
-                      })}
-                    />
-                  </button>
-                ) : (
-                  <span>{column.header}</span>
-                )}
-              </div>
-            ))}
-          </div>
+                  )}
+                </div>
+              ))}
+            </div>
 
-          {tableData.map((row: T, rowIndex: number) => {
-            const isExpanded = expandedRows.has(rowIndex);
+            {tableData.map((row: T, rowIndex: number) => {
+              const isExpanded = expandedRows.has(rowIndex);
 
-            return (
-              <div key={rowIndex} className={styles.rowGroup}>
-                <div className={styles.dataRow}>
-                  {expandable && (
-                    <div className={styles.dataCell}>
-                      <button
-                        className={styles.expandButton}
-                        onClick={() => toggleExpanded(rowIndex)}
-                      >
-                        {isExpanded ? (
-                          <LuChevronDown className={styles.expandIcon} />
-                        ) : (
-                          <LuChevronRight className={styles.expandIcon} />
+              return (
+                <div key={rowIndex} className={styles.rowGroup}>
+                  <div className={styles.dataRow}>
+                    {expandable && (
+                      <div className={styles.dataCell}>
+                        <button
+                          className={styles.expandButton}
+                          onClick={() => toggleExpanded(rowIndex)}
+                        >
+                          {isExpanded ? (
+                            <LuChevronDown className={styles.expandIcon} />
+                          ) : (
+                            <LuChevronRight className={styles.expandIcon} />
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {columns.map((column) => (
+                      <div
+                        key={column.key}
+                        className={classNames(
+                          styles.dataCell,
+                          column.className,
+                          {
+                            [styles.dataCellCenter]: column.align === "center",
+                            [styles.dataCellRight]: column.align === "right",
+                          }
                         )}
-                      </button>
+                      >
+                        <div className={styles.cellContent}>
+                          {column.render
+                            ? column.render(row[column.key], row)
+                            : row[column.key]}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {expandable && isExpanded && renderExpanded && (
+                    <div
+                      className={styles.expandedRow}
+                      style={{ gridColumn: `1 / -1` }}
+                    >
+                      {renderExpanded(row)}
                     </div>
                   )}
-
-                  {columns.map((column) => (
-                    <div
-                      key={column.key}
-                      className={classNames(styles.dataCell, column.className, {
-                        [styles.dataCellCenter]: column.align === "center",
-                        [styles.dataCellRight]: column.align === "right",
-                      })}
-                    >
-                      <div className={styles.cellContent}>
-                        {column.render
-                          ? column.render(row[column.key], row)
-                          : row[column.key]}
-                      </div>
-                    </div>
-                  ))}
                 </div>
-
-                {expandable && isExpanded && renderExpanded && (
-                  <div
-                    className={styles.expandedRow}
-                    style={{ gridColumn: `1 / -1` }}
-                  >
-                    {renderExpanded(row)}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {hasPagination && tableData.length > 0 && (

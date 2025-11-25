@@ -26,8 +26,6 @@ const AdminDashboardSummary: React.FC<AdminDashboardSummaryProps> = ({
     }
   );
 
-  const summary: ExecutiveSummary = data?.summary;
-
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
@@ -44,9 +42,11 @@ const AdminDashboardSummary: React.FC<AdminDashboardSummaryProps> = ({
     );
   }
 
-  if (!summary) {
+  if (!data?.summary) {
     return null;
   }
+
+  const summary: ExecutiveSummary = data.summary;
 
   return (
     <div className={styles.summaryPanel}>

@@ -16,8 +16,6 @@ const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({ params }) => {
     [JSON.stringify(params)]
   );
 
-  const kpiData = data?.kpiData;
-
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
@@ -34,7 +32,9 @@ const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({ params }) => {
     );
   }
 
-  if (!kpiData) {
+  const kpiData = data?.kpiData;
+
+  if (!kpiData?.kpis) {
     return null;
   }
 

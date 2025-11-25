@@ -5,15 +5,6 @@ import type { DataReportParams } from "@types";
 
 const router = express.Router();
 
-/**
- * GET /api/data/executive-overview
- * Get high-level KPIs with trends and comparisons
- */
-
-/**
- * GET /api/data/executive-summary
- * Get executive summary data
- */
 router.get("/executive-summary", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -40,10 +31,6 @@ router.get("/executive-summary", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/kpis
- * Get KPIs data with trends and comparisons
- */
 router.get("/kpis", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -70,67 +57,6 @@ router.get("/kpis", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/anomalies
- * Get anomalies data
- */
-router.get("/anomalies", async (req: Request, res: Response) => {
-  try {
-    const params: DataReportParams = {
-      timeRange: {
-        startDate:
-          (req.query["timeRange[startDate]"] as string) ||
-          (req.query.startDate as string) ||
-          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate:
-          (req.query["timeRange[endDate]"] as string) ||
-          (req.query.endDate as string) ||
-          new Date().toISOString(),
-      },
-      granularity: (req.query.granularity as any) || "day",
-    };
-
-    const data = await DataService.getAnomaliesData(params);
-    res.json(data);
-  } catch (error: any) {
-    console.error("Error in GET /data/anomalies:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// router.get("/executive-overview", async (req: Request, res: Response) => {
-//   try {
-//     const params: DataReportParams = {
-//       timeRange: {
-//         startDate:
-//           (req.query["timeRange[startDate]"] as string) ||
-//           (req.query.startDate as string) ||
-//           new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-//         endDate:
-//           (req.query["timeRange[endDate]"] as string) ||
-//           (req.query.endDate as string) ||
-//           new Date().toISOString(),
-//       },
-//       granularity: (req.query.granularity as any) || "day",
-//       compareTo: (req.query.compareTo as any) || "previous_period",
-//     };
-
-//     console.log("📤 [ROUTE] Calling DataService with params:", params);
-
-//     const data = await DataService.getExecutiveOverview(params);
-//     res.json(data);
-//   } catch (error: any) {
-//     console.error("Error in GET /data/executive-overview:", error);
-//     const { message, statusCode } = handlePgError(error);
-//     res.status(statusCode).json({ error: message });
-//   }
-// });
-
-/**
- * GET /api/data/user-growth
- * Get user growth data over time
- */
 router.get("/user-growth", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -156,10 +82,6 @@ router.get("/user-growth", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/retention-cohorts
- * Get retention cohort analysis with pagination and sorting
- */
 router.get("/retention-cohorts", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -190,38 +112,33 @@ router.get("/retention-cohorts", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/average-time-to-first-stream
- * Get average time to first stream metric
- */
-router.get("/average-time-to-first-stream", async (req: Request, res: Response) => {
-  try {
-    const params: DataReportParams = {
-      timeRange: {
-        startDate:
-          (req.query["timeRange[startDate]"] as string) ||
-          (req.query.startDate as string) ||
-          new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate:
-          (req.query["timeRange[endDate]"] as string) ||
-          (req.query.endDate as string) ||
-          new Date().toISOString(),
-      },
-    };
+router.get(
+  "/average-time-to-first-stream",
+  async (req: Request, res: Response) => {
+    try {
+      const params: DataReportParams = {
+        timeRange: {
+          startDate:
+            (req.query["timeRange[startDate]"] as string) ||
+            (req.query.startDate as string) ||
+            new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate:
+            (req.query["timeRange[endDate]"] as string) ||
+            (req.query.endDate as string) ||
+            new Date().toISOString(),
+        },
+      };
 
-    const data = await DataService.getAverageTimeToFirstStream(params);
-    res.json(data);
-  } catch (error: any) {
-    console.error("Error in GET /data/average-time-to-first-stream:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
+      const data = await DataService.getAverageTimeToFirstStream(params);
+      res.json(data);
+    } catch (error: any) {
+      console.error("Error in GET /data/average-time-to-first-stream:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
   }
-});
+);
 
-/**
- * GET /api/data/engagement
- * Get listening and engagement metrics
- */
 router.get("/engagement", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -249,66 +166,6 @@ router.get("/engagement", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/moderation
- * Get moderation analytics
- */
-router.get("/moderation", async (req: Request, res: Response) => {
-  try {
-    const params: DataReportParams = {
-      timeRange: {
-        startDate:
-          (req.query["timeRange[startDate]"] as string) ||
-          (req.query.startDate as string) ||
-          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate:
-          (req.query["timeRange[endDate]"] as string) ||
-          (req.query.endDate as string) ||
-          new Date().toISOString(),
-      },
-    };
-
-    const data = await DataService.getModerationMetrics(params);
-    res.json(data);
-  } catch (error: any) {
-    console.error("Error in GET /data/moderation:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-/**
- * GET /api/data/content-health
- * Get content health metrics
- */
-router.get("/content-health", async (req: Request, res: Response) => {
-  try {
-    const params: DataReportParams = {
-      timeRange: {
-        startDate:
-          (req.query["timeRange[startDate]"] as string) ||
-          (req.query.startDate as string) ||
-          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate:
-          (req.query["timeRange[endDate]"] as string) ||
-          (req.query.endDate as string) ||
-          new Date().toISOString(),
-      },
-    };
-
-    const data = await DataService.getContentHealthMetrics(params);
-    res.json(data);
-  } catch (error: any) {
-    console.error("Error in GET /data/content-health:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-/**
- * GET /api/data/activity-timeline
- * Get activity timeline data
- */
 router.get("/activity-timeline", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -334,10 +191,6 @@ router.get("/activity-timeline", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/artist-performance
- * Get artist performance metrics
- */
 router.get("/artist-performance", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -352,7 +205,10 @@ router.get("/artist-performance", async (req: Request, res: Response) => {
           new Date().toISOString(),
       },
       limit: parseInt(req.query.limit as string) || 20,
+      offset: parseInt(req.query.offset as string) || 0,
       minStreams: parseInt(req.query.minStreams as string) || 10,
+      sortBy: (req.query.sortBy as string) || "totalStreams",
+      sortDirection: (req.query.sortDirection as "ASC" | "DESC") || "DESC",
     };
 
     const data = await DataService.getArtistPerformanceMetrics(params);
@@ -364,10 +220,6 @@ router.get("/artist-performance", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/churn-metrics
- * Get churn and retention metrics
- */
 router.get("/churn-metrics", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -393,68 +245,6 @@ router.get("/churn-metrics", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/engagement-timeseries
- * Get engagement time series data
- */
-router.get("/engagement-timeseries", async (req: Request, res: Response) => {
-  try {
-    const params: DataReportParams = {
-      timeRange: {
-        startDate:
-          (req.query["timeRange[startDate]"] as string) ||
-          (req.query.startDate as string) ||
-          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate:
-          (req.query["timeRange[endDate]"] as string) ||
-          (req.query.endDate as string) ||
-          new Date().toISOString(),
-      },
-      granularity: (req.query.granularity as any) || "day",
-    };
-
-    const data = await DataService.getEngagementTimeSeries(params);
-    res.json(data);
-  } catch (error: any) {
-    console.error("Error in GET /data/engagement-timeseries:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-/**
- * GET /api/data/pareto
- * Get Pareto data for concentration curve
- */
-router.get("/pareto", async (req: Request, res: Response) => {
-  try {
-    const params: DataReportParams = {
-      timeRange: {
-        startDate:
-          (req.query["timeRange[startDate]"] as string) ||
-          (req.query.startDate as string) ||
-          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate:
-          (req.query["timeRange[endDate]"] as string) ||
-          (req.query.endDate as string) ||
-          new Date().toISOString(),
-      },
-      limit: parseInt(req.query.limit as string) || 100,
-    };
-
-    const data = await DataService.getParetoData(params);
-    res.json(data);
-  } catch (error: any) {
-    console.error("Error in GET /data/pareto:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-/**
- * GET /api/data/detailed-periods
- * Get detailed period data for complex table
- */
 router.get("/detailed-periods", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -490,13 +280,8 @@ router.get("/detailed-periods", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/enhanced-tracks
- * Get enhanced track performance with FULL dynamic filtering (Task 5.9)
- */
 router.get("/enhanced-tracks", async (req: Request, res: Response) => {
   try {
-    // Parse array parameters
     const parseArrayParam = (param: any): string[] | undefined => {
       if (!param) return undefined;
       if (Array.isArray(param)) return param;
@@ -531,7 +316,6 @@ router.get("/enhanced-tracks", async (req: Request, res: Response) => {
       minGrowthPercent: req.query.minGrowthPercent
         ? parseFloat(req.query.minGrowthPercent as string)
         : undefined,
-      // Advanced filters (Task 5.9)
       searchTerm: req.query.searchTerm as string,
       artistIds: parseArrayParam(req.query.artistIds),
       genres: parseArrayParam(req.query.genres),
@@ -552,13 +336,6 @@ router.get("/enhanced-tracks", async (req: Request, res: Response) => {
           : undefined,
     };
 
-    console.log("🎵 [ROUTE] Enhanced tracks called with params:", {
-      ...params,
-      artistIds: params.artistIds?.length || 0,
-      genres: params.genres?.length || 0,
-      albumIds: params.albumIds?.length || 0,
-    });
-
     const data = await DataService.getEnhancedTrackPerformance(params);
     res.json(data);
   } catch (error: any) {
@@ -568,10 +345,6 @@ router.get("/enhanced-tracks", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/filter-options/artists
- * Get list of artists for filter dropdowns
- */
 router.get("/filter-options/artists", async (req: Request, res: Response) => {
   try {
     const data = await DataService.getArtistFilterOptions();
@@ -583,10 +356,6 @@ router.get("/filter-options/artists", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/filter-options/genres
- * Get list of genres for filter dropdowns
- */
 router.get("/filter-options/genres", async (req: Request, res: Response) => {
   try {
     const data = await DataService.getGenreFilterOptions();
@@ -598,10 +367,6 @@ router.get("/filter-options/genres", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/filter-options/albums
- * Get list of albums for filter dropdowns
- */
 router.get("/filter-options/albums", async (req: Request, res: Response) => {
   try {
     const data = await DataService.getAlbumFilterOptions();
@@ -613,10 +378,6 @@ router.get("/filter-options/albums", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/genre-breakdown
- * Get genre breakdown with streams and listener metrics
- */
 router.get("/genre-breakdown", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -641,10 +402,6 @@ router.get("/genre-breakdown", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/data/user-analytics
- * Get comprehensive per-user analytics with extensive metrics
- */
 router.get("/user-analytics", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -679,10 +436,7 @@ router.get("/user-analytics", async (req: Request, res: Response) => {
     res.status(statusCode).json({ error: message });
   }
 });
-/**
- * GET /api/data/peak-hour
- * Get peak activity hour
- */
+
 router.get("/peak-hour", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {

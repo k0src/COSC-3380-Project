@@ -15,7 +15,6 @@ import {
   PeakActivityDayPanel,
   DataReportsTable,
 } from "@components";
-
 import styles from "./DataReportOverview.module.css";
 
 const DataReportOverview: React.FC = () => {
@@ -55,35 +54,50 @@ const DataReportOverview: React.FC = () => {
         header: "Active Users",
         sortable: true,
         align: "right",
-        render: (value: number) => formatNumber(value),
+        render: (value: number) => {
+          const val = typeof value === "number" && !isNaN(value) ? value : 0;
+          return formatNumber(val);
+        },
       },
       {
         key: "totalStreams",
         header: "Total Streams",
         sortable: true,
         align: "right",
-        render: (value: number) => formatNumber(value),
+        render: (value: number) => {
+          const val = typeof value === "number" && !isNaN(value) ? value : 0;
+          return formatNumber(val);
+        },
       },
       {
         key: "uniqueSongs",
         header: "Unique Songs",
         sortable: true,
         align: "right",
-        render: (value: number) => formatNumber(value),
+        render: (value: number) => {
+          const val = typeof value === "number" && !isNaN(value) ? value : 0;
+          return formatNumber(val);
+        },
       },
       {
         key: "engagementRate",
         header: "Engagement",
         sortable: true,
         align: "right",
-        render: (value: number) => formatPercentage(value),
+        render: (value: number) => {
+          const val = typeof value === "number" && !isNaN(value) ? value : 0;
+          return formatPercentage(val);
+        },
       },
       {
         key: "newUsers",
         header: "New Users",
         sortable: true,
         align: "right",
-        render: (value: number) => formatNumber(value),
+        render: (value: number) => {
+          const val = typeof value === "number" && !isNaN(value) ? value : 0;
+          return formatNumber(val);
+        },
       },
       {
         key: "topArtist",

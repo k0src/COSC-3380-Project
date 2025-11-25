@@ -23,7 +23,9 @@ const MainLayoutHeader: React.FC = () => {
   const { data, refetch: refetchUnreadStatus } = useAsyncData(
     {
       hasUnreadNotifications: () =>
-        notificationsApi.hasUnreadNotifications(user!.id),
+        user?.id
+          ? notificationsApi.hasUnreadNotifications(user.id)
+          : Promise.resolve(false),
     },
     [user?.id],
     {
@@ -32,7 +34,7 @@ const MainLayoutHeader: React.FC = () => {
     }
   );
 
-  const hasUnreadNotifications = data?.hasUnreadNotifications;
+  const hasUnreadNotifications = data?.hasUnreadNotifications ?? false;
 
   useEffect(() => {
     if (!user?.id) return;

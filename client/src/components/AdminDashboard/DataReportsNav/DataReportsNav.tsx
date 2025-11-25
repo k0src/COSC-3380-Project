@@ -27,7 +27,7 @@ const DataReportsNav: React.FC = () => {
       },
       {
         id: "user-growth",
-        label: "User Growth",
+        label: "User Growth & Analytics",
         icon: LuTrendingUp,
         path: "/admin/data-reports/user-growth",
       },

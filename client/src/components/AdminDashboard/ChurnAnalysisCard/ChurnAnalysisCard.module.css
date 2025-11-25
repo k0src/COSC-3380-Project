@@ -1,0 +1,82 @@
+.churnSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+.churnDataSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+}
+
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20rem;
+}
+
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20rem;
+}
+
+.errorText {
+  color: var(--color-text-gray);
+  font-size: var(--font-size-md);
+}
+
+.churnGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.churnCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+  background-color: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.churnLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  font-weight: var(--font-weight-medium);
+}
+
+.churnValue {
+  font-size: var(--font-size-xxl);
+  color: var(--color-white-alt);
+  font-weight: var(--font-weight-bold);
+}
+
+.churnSubtext {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+}
+
+.churnStory {
+  padding: var(--spacing-md);
+  background-color: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.churnStoryText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  line-height: 1.6;
+  margin: 0;
+}

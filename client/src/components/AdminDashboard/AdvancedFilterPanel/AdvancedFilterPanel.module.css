@@ -1,0 +1,213 @@
+.container {
+  background-color: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.header:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-white-alt);
+}
+
+.filterBadge {
+  background-color: var(--color-accent);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 0.125rem var(--spacing-xs);
+  border-radius: var(--border-radius-full);
+  min-width: var(--spacing-lg);
+  text-align: center;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-lg);
+}
+
+.content {
+  padding: var(--spacing-lg);
+  border-top: var(--border-size-sm) solid var(--color-panel-border);
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+}
+
+.section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.sectionLabel {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-white-alt);
+  margin-bottom: var(--spacing-sm);
+}
+
+.searchInput {
+  width: 100%;
+  font-family: var(--font-main);
+  padding: var(--spacing-sd);
+  background-color: var(--color-background);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white-alt);
+  font-size: var(--font-size-sm);
+  transition: border-color 0.2s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-gray);
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.filterLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-white-alt);
+  margin-bottom: var(--spacing-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.03125rem;
+}
+
+.multiSelect {
+  font-family: var(--font-main);
+  min-height: 7.5rem;
+  padding: var(--spacing-xs);
+  background-color: var(--color-background);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white-alt);
+  font-size: var(--font-size-xs);
+  transition: border-color 0.2s ease;
+}
+
+.multiSelect:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.multiSelect option {
+  padding: var(--spacing-xs);
+  background-color: var(--color-background);
+  color: var(--color-white-alt);
+}
+
+.multiSelect option:checked {
+  background-color: var(--color-accent);
+}
+
+.selectedCount {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-gray);
+  margin-top: var(--spacing-xs);
+  font-style: italic;
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+  gap: var(--spacing-sm);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-white-alt);
+  cursor: pointer;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  padding-top: var(--spacing-md);
+  border-top: var(--border-size-sm) solid var(--color-panel-border);
+}
+
+.actionButton {
+  font-family: var(--font-main);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: var(--border-size-sm) solid transparent;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 7.5rem;
+}
+
+.actionButton:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.actionButton.primary {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.actionButton.primary:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.actionButton.secondary {
+  background-color: transparent;
+  border-color: var(--color-panel-border);
+  color: var(--color-text-gray);
+}
+
+.actionButton.secondary:hover:not(:disabled) {
+  background-color: var(--color-panel-border);
+  color: var(--color-white-alt);
+}

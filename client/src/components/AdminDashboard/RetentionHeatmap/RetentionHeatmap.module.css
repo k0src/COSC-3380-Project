@@ -1,0 +1,101 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-panel-gray);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20rem;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20rem;
+  color: var(--color-text-gray);
+  font-size: var(--font-size-md);
+}
+
+.heatmapGrid {
+  display: grid;
+  grid-template-columns: auto repeat(5, 1fr);
+  gap: var(--spacing-xs);
+  overflow-x: auto;
+}
+
+.header {
+  border-bottom: var(--border-size-sm) solid var(--color-panel-border);
+  padding: var(--spacing-md);
+}
+
+.headerCell {
+  background-color: var(--color-panel-gray);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-white-alt);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.row {
+  display: contents;
+}
+
+.cohortCell {
+  background-color: var(--color-panel-gray);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: var(--spacing-md);
+}
+
+.dataCell {
+  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.8rem;
+  border-radius: var(--border-radius-xs);
+}
+
+.cellValue {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-black);
+  pointer-events: none;
+}
+
+.tooltip {
+  position: fixed;
+  background-color: var(--color-panel-gray-dark);
+  border: var(--border-size-sm) solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm);
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: var(--shadow-md);
+}
+
+.tooltipRow {
+  display: flex;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-gray);
+  white-space: nowrap;
+}
+
+.tooltipRow strong {
+  color: var(--color-white);
+  font-weight: var(--font-weight-semibold);
+}

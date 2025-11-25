@@ -160,6 +160,9 @@ export { default as AdminManageContentArtists } from "./AdminDashboard/AdminMana
 export { default as AdminManageReports } from "./AdminDashboard/AdminReportsAndAppealsPage/AdminManageReports.js";
 export { default as AdminManageAppeals } from "./AdminDashboard/AdminReportsAndAppealsPage/AdminManageAppeals.js";
 export { default as AdminDashboardSummary } from "./AdminDashboard/AdminDashboardSummary/AdminDashboardSummary.js";
+
+/* ============================ Data Reports Page =========================== */
+
 export { default as DataReportsNav } from "./AdminDashboard/DataReportsNav/DataReportsNav.js";
 export { default as KpiCard } from "./AdminDashboard/KpiCard/KpiCard.js";
 export { default as OverviewKpiCards } from "./AdminDashboard/OverviewKpiCards/OverviewKpiCards.js";
@@ -173,6 +176,18 @@ export { default as PeakHourPanel } from "./AdminDashboard/PeakHourPanel/PeakHou
 export { default as EngagementVelocityPanel } from "./AdminDashboard/EngagementVelocityPanel/EngagementVelocityPanel.js";
 export { default as PeakActivityDayPanel } from "./AdminDashboard/PeakActivityDayPanel/PeakActivityDayPanel.js";
 export { default as UserGrowthChart } from "./AdminDashboard/UserGrowthChart/UserGrowthChart.js";
+export { default as AvgTimeCard } from "./AdminDashboard/AvgTimeCard/AvgTimeCard.js";
+export { default as ChurnAnalysisCard } from "./AdminDashboard/ChurnAnalysisCard/ChurnAnalysisCard.js";
+export { default as ActivationRatePanel } from "./AdminDashboard/ActivationRatePanel/ActivationRatePanel.js";
+export { default as RetentionRatePanel } from "./AdminDashboard/RetentionRatePanel/RetentionRatePanel.js";
+export { default as RetentionHeatmap } from "./AdminDashboard/RetentionHeatmap/RetentionHeatmap.js";
+export { default as DataReportStoryPanel } from "./AdminDashboard/DataReportStoryPanel/DataReportStoryPanel.js";
+export { default as GenreBreakdownPanel } from "./AdminDashboard/GenreBreakdownPanel/GenreBreakdownPanel.js";
+export { default as AvgSessionLengthCard } from "./AdminDashboard/AvgSessionLengthCard/AvgSessionLengthCard.js";
+export { default as ContentDiversityPanel } from "./AdminDashboard/ContentDiversityPanel/ContentDiversityPanel.js";
+export { default as ListenerLoyaltyPanel } from "./AdminDashboard/ListenerLoyaltyPanel/ListenerLoyaltyPanel.js";
+export { default as AdvancedFilterPanel } from "./AdminDashboard/AdvancedFilterPanel/AdvancedFilterPanel.js";
+export { default as ContentConcentrationCard } from "./AdminDashboard/ContentConcentrationCard/ContentConcentrationCard.js";
 
 /* ================================== Lists ================================= */
 export { default as SongsList } from "./SongsList/SongsList.js";

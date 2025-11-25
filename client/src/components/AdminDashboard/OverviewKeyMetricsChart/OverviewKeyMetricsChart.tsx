@@ -1,11 +1,11 @@
 import { memo } from "react";
 import { PuffLoader } from "react-spinners";
-import { useAsyncData } from "@hooks";
-import { dataApi } from "@api";
-import styles from "./OverviewKeyMetricsChart.module.css";
-import type { DataReportParams } from "@types";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { chartsTooltipClasses } from "@mui/x-charts";
+import { useAsyncData } from "@hooks";
+import type { DataReportParams } from "@types";
+import { dataApi } from "@api";
+import styles from "./OverviewKeyMetricsChart.module.css";
 
 export interface OverviewKeyMetricsChartProps {
   params: DataReportParams;
@@ -23,8 +23,6 @@ const OverviewKeyMetricsChart: React.FC<OverviewKeyMetricsChartProps> = ({
       cacheKey: `kpi_data_${JSON.stringify(params)}`,
     }
   );
-
-  const kpiData = data?.kpiData;
 
   if (loading) {
     return (
@@ -48,7 +46,9 @@ const OverviewKeyMetricsChart: React.FC<OverviewKeyMetricsChartProps> = ({
     );
   }
 
-  if (!kpiData) {
+  const kpiData = data?.kpiData;
+
+  if (!kpiData?.kpis) {
     return null;
   }
 

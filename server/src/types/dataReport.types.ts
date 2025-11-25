@@ -1,6 +1,5 @@
 import type { UUID } from "@types";
 
-// Time range and granularity
 export type TimeRange = {
   startDate: string;
   endDate: string;
@@ -9,7 +8,6 @@ export type TimeRange = {
 export type Granularity = "hour" | "day" | "week" | "month";
 export type CompareTo = "none" | "previous_period" | "year_ago" | "custom";
 
-// Executive Overview Types
 export interface KPIMetric {
   label: string;
   currentValue: number;
@@ -45,13 +43,6 @@ export interface ExecutiveSummary {
     percent: number;
     isLarge: boolean;
   };
-  topAnomalies: Array<{
-    date: string;
-    metric: string;
-    value: number;
-    zScore: number;
-    severity: "high" | "moderate";
-  }>;
 }
 
 export interface ExecutiveOverviewData {
@@ -64,7 +55,6 @@ export interface ExecutiveOverviewData {
     engagementRate: KPIMetric;
   };
   summary: ExecutiveSummary;
-  anomalies: Anomaly[];
 }
 
 export interface KpisData {
@@ -83,33 +73,11 @@ export interface ExecutiveSummaryData {
   summary: ExecutiveSummary;
 }
 
-export interface AnomaliesData {
-  timeRange: TimeRange;
-  anomalies: Anomaly[];
-}
-
-export interface Anomaly {
-  date: string;
-  metric: string;
-  value: number;
-  zScore: number;
-  description: string;
-}
-
-// User Growth & Retention Types
 export interface UserGrowthData {
   period: string;
   newUsers: number;
   totalUsers: number;
   growthRate: number;
-}
-
-export interface RetentionData {
-  cohort: string;
-  cohortSize: number;
-  retention: {
-    [day: string]: number;
-  };
 }
 
 export interface RetentionCohort {
@@ -122,14 +90,6 @@ export interface RetentionCohort {
   day90: number;
 }
 
-export interface UserGrowthMetrics {
-  timeRange: TimeRange;
-  growthData: UserGrowthData[];
-  retentionCohorts: RetentionCohort[];
-  averageTimeToFirstStream: number;
-}
-
-// Listening & Engagement Types
 export interface TopTrack {
   songId: UUID;
   title: string;
@@ -152,51 +112,6 @@ export interface EngagementMetrics {
   story: string;
 }
 
-// Moderation Analytics Types
-export interface ModerationMetrics {
-  timeRange: TimeRange;
-  totalReports: number;
-  resolvedReports: number;
-  dismissedReports: number;
-  pendingReports: number;
-  avgResolutionTime: number;
-  actionRate: number;
-  reportsByType: {
-    type: string;
-    count: number;
-  }[];
-  story: string;
-}
-
-export interface RepeatOffender {
-  userId: UUID;
-  username: string;
-  reportCount: number;
-  invalidCount: number;
-  validCount: number;
-  lastReportedAt: string;
-}
-
-// Content Health Types
-export interface ContentHealthMetrics {
-  timeRange: TimeRange;
-  totalSongs: number;
-  songsWithMetadata: number;
-  songsWithCover: number;
-  metadataCompletenessScore: number;
-  story: string;
-}
-
-// Playlist Health Types
-export interface PlaylistHealthMetrics {
-  timeRange: TimeRange;
-  totalPlaylists: number;
-  averagePlaylistSize: number;
-  averageEngagementRate: number;
-  story: string;
-}
-
-// Artist Performance Types
 export interface ArtistPerformance {
   artistId: UUID;
   displayName: string;
@@ -207,7 +122,6 @@ export interface ArtistPerformance {
   trend: number[];
 }
 
-// Activity Timeline Types
 export interface ActivityTimelineData {
   period: string;
   streams: number;
@@ -216,7 +130,6 @@ export interface ActivityTimelineData {
   followers: number;
 }
 
-// Detailed Table Data Types
 export interface DetailedPeriodData {
   period: string;
   activeUsers: number;
@@ -227,8 +140,6 @@ export interface DetailedPeriodData {
   topArtist: string;
   topSong: string;
 }
-
-export type DetailedPeriodDataResponse = DetailedPeriodData[];
 
 export interface ChurnMetrics {
   timeRange: TimeRange;
@@ -272,7 +183,6 @@ export interface EngagementTimeSeriesData {
   engagementRate: number;
 }
 
-// Enhanced Cohort Data
 export interface DetailedCohortData {
   cohortWeek: string;
   cohortSize: number;
@@ -286,7 +196,6 @@ export interface DetailedCohortData {
   engagementRate: number;
 }
 
-// Enhanced Track Data
 export interface EnhancedTrackData {
   songId: UUID;
   title: string;
@@ -301,7 +210,6 @@ export interface EnhancedTrackData {
   firstStreamedDate: string;
 }
 
-// Genre Breakdown Data
 export interface GenreBreakdownData {
   genre: string;
   streams: number;
@@ -309,7 +217,6 @@ export interface GenreBreakdownData {
   percentOfTotal: number;
 }
 
-// User Analytics Data
 export interface UserAnalyticsData {
   userId: UUID;
   username: string;
@@ -330,7 +237,6 @@ export interface UserAnalyticsData {
   engagementScore: number;
 }
 
-// Parameters
 export interface DataReportParams {
   timeRange: TimeRange;
   granularity?: Granularity;
@@ -342,7 +248,6 @@ export interface DataReportParams {
   retentionWindows?: number[];
   minStreams?: number;
   groupBy?: "artist" | "album" | "genre";
-  // New detailed table parameters
   sortBy?: string;
   sortDirection?: "ASC" | "DESC";
   minUsers?: number;
@@ -351,7 +256,6 @@ export interface DataReportParams {
   genreFilter?: string[];
   minGrowthPercent?: number;
   minEngagementRate?: number;
-  // Advanced filter parameters for Task 5.9
   searchTerm?: string;
   artistIds?: string[];
   genres?: string[];

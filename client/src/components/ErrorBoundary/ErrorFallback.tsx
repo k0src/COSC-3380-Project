@@ -1,5 +1,4 @@
-import { memo } from "react";
-import { Helmet } from "react-helmet-async";
+import { memo, useEffect } from "react";
 import { LuCircleAlert, LuRefreshCw, LuHouse } from "react-icons/lu";
 import styles from "./ErrorFallback.module.css";
 
@@ -16,6 +15,10 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({
 }) => {
   const isDev = import.meta.env.DEV;
 
+  useEffect(() => {
+    document.title = "Something Went Wrong";
+  }, []);
+
   const handleGoHome = () => {
     onReset();
     window.location.href = "/";
@@ -28,9 +31,6 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({
 
   return (
     <>
-      <Helmet>
-        <title>Something Went Wrong</title>
-      </Helmet>
       <div className={styles.errorFallbackContainer}>
         <div className={styles.errorContent}>
           <header className={styles.errorHeader}>
