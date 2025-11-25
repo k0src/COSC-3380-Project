@@ -7,7 +7,12 @@ import {
   commentColumns,
   commentFilterKeys,
 } from "@components/DataTable/columnDefinitions";
-import type { Comment, DataTableAction, DataTableBulkAction } from "@types";
+import type {
+  AccessContext,
+  Comment,
+  DataTableAction,
+  DataTableBulkAction,
+} from "@types";
 import styles from "./AdminManageCommentsPage.module.css";
 import { LuTrash2, LuArrowLeft } from "react-icons/lu";
 import { useAuth } from "@contexts";
@@ -23,20 +28,15 @@ const AdminManageCommentsPage: React.FC = () => {
     return;
   }
 
+  const accessContext: AccessContext = {
+    role: user?.role === "ADMIN" ? "admin" : "user",
+    userId: user?.id,
+    scope: "owner",
+  };
+
   const { data } = useAsyncData(
     {
-      song: () =>
-        songApi.getSongById(
-          songId,
-          {
-            role: user?.role === "ADMIN" ? "admin" : "user",
-            userId: user?.id,
-            scope: "ownerList",
-          },
-          {
-            includeArtists: true,
-          }
-        ),
+      song: () => songApi.getSongDetails(songId, accessContext),
     },
     [songId],
     {

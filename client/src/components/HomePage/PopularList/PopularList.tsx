@@ -16,10 +16,8 @@ const PopularList: React.FC<PopularListProps> = ({ accessContext }) => {
   const { data, loading, error } = useAsyncData(
     {
       popular: () =>
-        songApi.getMany(accessContext, {
+        songApi.getManySongs(accessContext, {
           orderByColumn: "streams",
-          includeAlbums: true,
-          includeArtists: true,
           orderByDirection: "DESC",
           limit: 5,
         }),

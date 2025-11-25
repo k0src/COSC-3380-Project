@@ -49,7 +49,7 @@ const AdminAppealDetailPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: "admin",
     userId: user.id,
-    scope: "single",
+    scope: "owner",
   };
 
   const { data, loading, error } = useAsyncData(
@@ -57,9 +57,7 @@ const AdminAppealDetailPage: React.FC = () => {
       entity: async () => {
         switch (entityType) {
           case "song":
-            return await songApi.getSongById(entityId, accessContext, {
-              includeArtists: true,
-            });
+            return await songApi.getSongDetails(entityId, accessContext);
           case "album":
             return await albumApi.getAlbumById(entityId, accessContext, {
               includeArtist: true,

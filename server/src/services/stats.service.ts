@@ -340,6 +340,7 @@ export default class StatsService {
     }
   }
 
+  //done
   static async getWeeklyPlays(songId: UUID): Promise<WeeklyPlays> {
     try {
       const result = await query(
@@ -348,7 +349,9 @@ export default class StatsService {
             DATE_TRUNC('week', played_at) AS week_start,
             COUNT(*) AS play_count
           FROM song_history
-          WHERE song_id = $1
+          WHERE song_id = $1 AND NOT EXISTS (
+            SELECT 1 FROM deleted_songs ds WHERE ds.song_id = song_history.song_id
+          )
           GROUP BY DATE_TRUNC('week', played_at)
           ORDER BY week_start
         )

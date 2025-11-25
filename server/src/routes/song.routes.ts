@@ -7,7 +7,7 @@ import {
   generateWaveform,
 } from "@util";
 import { parseForm } from "@infra/form-parser";
-import { CommentService, StatsService, LikeService } from "@services";
+import { StatsService, LikeService, CommentService } from "@services";
 import { validateOrderBy } from "@validators";
 import { authenticateToken } from "@middleware";
 
@@ -17,50 +17,13 @@ const router = express.Router();
 /*                                Main Routes                                 */
 /* ========================================================================== */
 
-// GET /api/songs/count
-router.get("/count", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const count = await SongRepository.count();
-    res.status(200).json({ count });
-  } catch (error: any) {
-    console.error("Error in GET /api/songs/count:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-    return;
-  }
-});
-
 // GET /api/songs/trending
 router.get("/trending", async (req: Request, res: Response) => {
   try {
-    const {
-      includeAlbums,
-      includeArtists,
-      includeLikes,
-      includeComments,
-      orderByColumn,
-      orderByDirection,
-      limit,
-      offset,
-    } = req.query;
-
-    let column = (orderByColumn as string) || "created_at";
-    let direction = (orderByDirection as string) || "DESC";
-    if (!validateOrderBy(column, direction, "song")) {
-      console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
-      column = "created_at";
-      direction = "DESC";
-    }
+    const { limit, offset } = req.query;
 
     const accessContext = parseAccessContext(req.query);
-
     const trendingSongs = await SongRepository.getTrendingSongs(accessContext, {
-      includeAlbums: includeAlbums === "true",
-      includeArtists: includeArtists === "true",
-      includeLikes: includeLikes === "true",
-      includeComments: includeComments === "true",
-      orderByColumn: column as any,
-      orderByDirection: direction as any,
       limit: limit ? parseInt(limit as string, 10) : undefined,
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });
@@ -76,16 +39,7 @@ router.get("/trending", async (req: Request, res: Response) => {
 // GET /api/songs
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const {
-      includeAlbums,
-      includeArtists,
-      includeLikes,
-      includeComments,
-      orderByColumn,
-      orderByDirection,
-      limit,
-      offset,
-    } = req.query;
+    const { orderByColumn, orderByDirection, limit, offset } = req.query;
 
     let column = (orderByColumn as string) || "created_at";
     let direction = (orderByDirection as string) || "DESC";
@@ -97,11 +51,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 
     const accessContext = parseAccessContext(req.query);
 
-    const songs = await SongRepository.getMany(accessContext, {
-      includeAlbums: includeAlbums === "true",
-      includeArtists: includeArtists === "true",
-      includeLikes: includeLikes === "true",
-      includeComments: includeComments === "true",
+    const songs = await SongRepository.getManySongs(accessContext, {
       orderByColumn: column as any,
       orderByDirection: direction as any,
       limit: limit ? parseInt(limit as string, 10) : undefined,
@@ -128,12 +78,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     }
 
     const accessContext = parseAccessContext(req.query);
-    const song = await SongRepository.getOne(id, accessContext, {
-      includeAlbums: req.query.includeAlbums === "true",
-      includeArtists: req.query.includeArtists === "true",
-      includeLikes: req.query.includeLikes === "true",
-      includeComments: req.query.includeComments === "true",
-    });
+    const song = await SongRepository.getSongDetails(id, accessContext);
 
     if (!song) {
       res.status(404).json({ error: "Song not found" });
@@ -321,25 +266,13 @@ router.post(
   }
 );
 
-/* ========================================================================== */
-/*                              Song Relations                                */
-/* ========================================================================== */
-
 // GET /api/songs/:id/suggestions
 router.get(
   "/:id/suggestions",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const {
-        userId,
-        includeAlbums,
-        includeArtists,
-        includeLikes,
-        includeComments,
-        limit,
-        offset,
-      } = req.query;
+      const { userId, limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "Song ID is required" });
         return;
@@ -347,182 +280,12 @@ router.get(
 
       const suggestions = await SongRepository.getSuggestedSongs(id, {
         userId: userId as string | undefined,
-        includeAlbums: includeAlbums === "true",
-        includeArtists: includeArtists === "true",
-        includeLikes: includeLikes === "true",
-        includeComments: includeComments === "true",
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
       res.status(200).json(suggestions);
     } catch (error: any) {
       console.error("Error in GET /songs/:id/suggestions:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-// GET /api/songs/:id/albums
-router.get(
-  "/:id/albums",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const {
-        includeArtist,
-        includeLikes,
-        includeRuntime,
-        includeSongCount,
-        orderByColumn,
-        orderByDirection,
-        limit,
-        offset,
-      } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "Song ID is required" });
-        return;
-      }
-
-      let column = (orderByColumn as string) || "created_at";
-      let direction = (orderByDirection as string) || "DESC";
-      if (!validateOrderBy(column, direction, "album")) {
-        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
-        column = "created_at";
-        direction = "DESC";
-      }
-
-      const accessContext = parseAccessContext(req.query);
-
-      const albums = await SongRepository.getAlbums(id, accessContext, {
-        includeArtist: includeArtist === "true",
-        includeLikes: includeLikes === "true",
-        includeRuntime: includeRuntime === "true",
-        includeSongCount: includeSongCount === "true",
-        orderByColumn: column as any,
-        orderByDirection: direction as any,
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(albums);
-    } catch (error: any) {
-      console.error("Error in GET /api/songs/:id/album:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-// GET /api/songs/:id/artists
-router.get(
-  "/:id/artists",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { includeUser, orderByColumn, orderByDirection, limit, offset } =
-        req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "Song ID is required!" });
-        return;
-      }
-
-      let column = (orderByColumn as string) || "created_at";
-      let direction = (orderByDirection as string) || "DESC";
-
-      if (!validateOrderBy(column, direction, "artist")) {
-        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
-        column = "created_at";
-        direction = "DESC";
-      }
-
-      const accessContext = parseAccessContext(req.query);
-
-      const artists = await SongRepository.getArtists(id, accessContext, {
-        includeUser: includeUser === "true",
-        orderByColumn: column as any,
-        orderByDirection: direction as any,
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(artists);
-    } catch (error: any) {
-      console.error("Error in GET /api/songs/:id/artists:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-/* ========================================================================== */
-/*                            Song Artist Management                          */
-/* ========================================================================== */
-
-// PUT /api/songs/:id/artist
-router.put(
-  "/:id/artist",
-  authenticateToken,
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      if (!id) {
-        res.status(400).json({ error: "Song ID is required!" });
-        return;
-      }
-
-      const { artist_id, role } = req.body;
-      if (!artist_id || !role) {
-        res.status(400).json({ error: "Artist ID and role are required!" });
-        return;
-      }
-
-      const success = await SongRepository.addArtist(id, artist_id, role);
-      if (!success) {
-        res.status(404).json({ error: "Song or Artist not found" });
-        return;
-      }
-
-      res.status(200).json({ message: "Artist added to song successfully" });
-    } catch (error: any) {
-      console.error("Error in PUT /api/songs/:id/artist:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-// DELETE /api/songs/:id/artist
-router.delete(
-  "/:id/artist",
-  authenticateToken,
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      if (!id) {
-        res.status(400).json({ error: "Song ID is required!" });
-        return;
-      }
-
-      const { artist_id } = req.body;
-      if (!artist_id) {
-        res.status(400).json({ error: "Artist ID is required!" });
-        return;
-      }
-
-      const success = await SongRepository.removeArtist(id, artist_id);
-      if (!success) {
-        res.status(404).json({ error: "Song or Artist not found" });
-        return;
-      }
-
-      res
-        .status(204)
-        .json({ message: "Artist removed from song successfully" });
-    } catch (error: any) {
-      console.error("Error in DELETE /api/songs/:id/artist:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
     }

@@ -34,7 +34,7 @@ const HomePage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "globalList",
+    scope: "global",
   };
 
   const { data, loading, error } = useAsyncData(

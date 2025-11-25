@@ -44,7 +44,12 @@ export default class CommentService {
     const usernames = matches.map((match) => match[1]);
 
     const users = await query(
-      "SELECT id, username FROM users WHERE username = ANY($1)",
+      `SELECT id, username FROM users 
+       WHERE username = ANY($1) 
+       AND is_private = FALSE
+       AND NOT EXISTS (
+        SELECT 1 FROM deleted_users du WHERE du.user_id = users.id
+      )`,
       [usernames]
     );
 
@@ -107,7 +112,11 @@ export default class CommentService {
 
   static async clearComments(songId: UUID) {
     try {
-      await query("DELETE FROM comments WHERE song_id = $1", [songId]);
+      await query(
+        `INSERT INTO deleted_comments (comment_id, deleted_at)
+         SELECT id, NOW() FROM comments WHERE song_id = $1`,
+        [songId]
+      );
     } catch (error) {
       console.error("Error clearing comments:", error);
       throw error;

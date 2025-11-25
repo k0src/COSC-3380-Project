@@ -28,7 +28,7 @@ const SongPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "single",
+    scope: user ? "owner" : "global",
   };
 
   if (!id) {
@@ -42,13 +42,7 @@ const SongPage: React.FC = () => {
 
   const asyncConfig = useMemo(
     () => ({
-      song: () =>
-        songApi.getSongById(id, accessContext, {
-          includeAlbums: true,
-          includeArtists: true,
-          includeLikes: true,
-          includeComments: true,
-        }),
+      song: () => songApi.getSongDetails(id, accessContext),
       coverGradient: () => songApi.getCoverGradient(id),
     }),
     [id]

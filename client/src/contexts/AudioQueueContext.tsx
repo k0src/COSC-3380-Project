@@ -579,12 +579,12 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
       return {
         role: user.role === "ADMIN" ? "admin" : "user",
         userId: user.id,
-        scope: "single",
+        scope: "owner",
       };
     } else {
       return {
         role: "anonymous",
-        scope: "single",
+        scope: "owner",
       };
     }
   };
@@ -614,10 +614,9 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
           for (const persistedItem of persistedState.queue) {
             try {
               const ctx = buildAccessContext(isAuthenticated, user);
-              const song = await songApi.getSongById(
+              const song = await songApi.getSongDetails(
                 persistedItem.songId,
-                ctx,
-                { includeArtists: true }
+                ctx
               );
 
               if (song) {
@@ -1048,9 +1047,10 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
         for (const persistedItem of persistedState.queue) {
           try {
             const ctx = buildAccessContext(isAuthenticated, user);
-            const song = await songApi.getSongById(persistedItem.songId, ctx, {
-              includeArtists: true,
-            });
+            const song = await songApi.getSongDetails(
+              persistedItem.songId,
+              ctx
+            );
 
             if (song) {
               restoredItems.push({

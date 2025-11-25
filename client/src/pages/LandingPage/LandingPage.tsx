@@ -17,7 +17,7 @@ const LandingPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "globalList",
+    scope: "global",
   };
 
   // const singles = Array(4).fill({ // Using your original 'newSongs' data
@@ -29,8 +29,7 @@ const LandingPage: React.FC = () => {
 
   const { data, loading, error } = useAsyncData(
     {
-      singles: () =>
-        songApi.getMany(accessContext, { includeArtists: true, limit: 4 }),
+      singles: () => songApi.getManySongs(accessContext, { limit: 4 }),
     },
     [],
     { cacheKey: "landing_page" }

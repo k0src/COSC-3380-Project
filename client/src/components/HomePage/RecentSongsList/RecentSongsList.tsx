@@ -15,10 +15,8 @@ const RecentSongsList: React.FC<RecentSongsListProps> = ({ accessContext }) => {
   const { data, loading, error } = useAsyncData(
     {
       recentSongs: () =>
-        songApi.getMany(accessContext, {
+        songApi.getManySongs(accessContext, {
           orderByColumn: "release_date",
-          includeAlbums: true,
-          includeArtists: true,
           orderByDirection: "DESC",
           limit: 8,
         }),

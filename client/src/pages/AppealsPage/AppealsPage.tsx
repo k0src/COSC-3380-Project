@@ -50,7 +50,7 @@ const AppealsPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user?.role === "ADMIN" ? "admin" : "user",
     userId: user?.id,
-    scope: "single",
+    scope: "owner",
   };
 
   const { data, loading } = useAsyncData(
@@ -58,9 +58,7 @@ const AppealsPage: React.FC = () => {
       entity: async () => {
         switch (entityType) {
           case "song":
-            return await songApi.getSongById(entityId, accessContext, {
-              includeArtists: true,
-            });
+            return await songApi.getSongDetails(entityId, accessContext);
           case "album":
             return await albumApi.getAlbumById(entityId, accessContext, {
               includeArtist: true,

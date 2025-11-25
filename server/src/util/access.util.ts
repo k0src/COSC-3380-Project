@@ -4,9 +4,63 @@ import { isUuidV4 } from "@validators";
 export const parseAccessContext = (query: any): AccessContext => {
   const role = typeof query.role === "string" ? query.role : "anonymous";
   const userId = typeof query.userId === "string" ? query.userId : undefined;
-  const scope = typeof query.scope === "string" ? query.scope : "globalList";
+  const scope = typeof query.scope === "string" ? query.scope : "global";
   return { role, userId, scope };
 };
+
+export function notDeletedCondition(tableName: string, alias: string): string {
+  return `NOT EXISTS (
+    SELECT 1 FROM deleted_${tableName}s 
+    WHERE ${tableName}_id = ${alias}.id
+  )`;
+}
+
+export function getVisibilityCondition(
+  alias: string,
+  visibilityField: string,
+  ownerField: string,
+  accessContext: AccessContext
+): string {
+  const { role, userId, scope } = accessContext;
+
+  // Admin with owner scope sees everything
+  if (role === "admin" && scope === "owner") {
+    return "TRUE";
+  }
+
+  // Global scope: only show public items (even for admins)
+  if (scope === "global") {
+    return `${alias}.${visibilityField} = 'PUBLIC'`;
+  }
+
+  // Owner scope with user: show public + owned private/unlisted
+  if (scope === "owner" && userId) {
+    return `(
+      ${alias}.${visibilityField} = 'PUBLIC' 
+      OR ${alias}.${ownerField} = '${userId}'
+    )`;
+  }
+
+  // Fallback to global (public only)
+  return `${alias}.${visibilityField} = 'PUBLIC'`;
+}
+
+export function getUserVisibilityCondition(
+  userAlias: string,
+  accessContext: AccessContext
+): string {
+  const { role, scope } = accessContext;
+
+  // Admin with owner scope sees everything
+  if (role === "admin" && scope === "owner") {
+    return "TRUE";
+  }
+
+  // Global scope or non-admin: only show users that are not private
+  return `${userAlias}.is_private = FALSE`;
+}
+
+/* ==================================== x =================================== */
 
 export interface AccessPredicate {
   sql: string;
@@ -47,7 +101,7 @@ export const getAccessPredicate = (
 
     default:
       switch (ctx.scope) {
-        case "single":
+        case "global":
           if (ctx.role === "anonymous") {
             accessSql = `(${tableAlias}.visibility_status IN ('PUBLIC','UNLISTED'))`;
           } else {
@@ -60,11 +114,11 @@ export const getAccessPredicate = (
           }
           break;
 
-        case "globalList":
+        case "global":
           accessSql = `${tableAlias}.visibility_status = 'PUBLIC'`;
           break;
 
-        case "ownerList":
+        case "owner":
           accessSql = `(
             ${tableAlias}.visibility_status IN ('PUBLIC','UNLISTED')
             OR ${tableAlias}.owner_id = $${paramsOffset + 1}

@@ -398,6 +398,7 @@ export default class LikeService {
     return parseInt(res[0]?.count ?? "0", 10);
   }
 
+  //done
   static async getUsersWhoLiked<K extends keyof LikeableEntitiesMap>(
     entityId: UUID,
     entity: K,

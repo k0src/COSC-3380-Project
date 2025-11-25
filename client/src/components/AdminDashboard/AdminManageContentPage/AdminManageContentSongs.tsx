@@ -34,10 +34,7 @@ const AdminManageContentSongs: React.FC<AdminManageContentSongsProps> = ({
 
   const fetchSongs = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return songApi.getMany(accessContext, {
-        includeLikes: true,
-        includeAlbums: true,
-        includeArtists: true,
+      return songApi.getManySongs(accessContext, {
         limit,
         offset,
       });

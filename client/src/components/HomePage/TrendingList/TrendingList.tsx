@@ -15,14 +15,7 @@ export interface TrendingListProps {
 const TrendingList: React.FC<TrendingListProps> = ({ accessContext }) => {
   const { data, loading, error } = useAsyncData(
     {
-      trending: () =>
-        songApi.getTrendingSongs(accessContext, {
-          orderByColumn: "streams",
-          includeAlbums: true,
-          includeArtists: true,
-          orderByDirection: "DESC",
-          limit: 5,
-        }),
+      trending: () => songApi.getTrendingSongs(accessContext, { limit: 5 }),
     },
     [],
     {

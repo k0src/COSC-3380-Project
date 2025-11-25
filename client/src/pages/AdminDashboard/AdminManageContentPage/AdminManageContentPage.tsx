@@ -45,7 +45,7 @@ const AdminManageContentPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "ownerList",
+    scope: "owner",
   };
 
   const isValidTab = (tab: string | undefined): tab is TabType => {
