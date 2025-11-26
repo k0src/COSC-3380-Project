@@ -35,23 +35,15 @@ const RelatedPlaylists: React.FC<RelatedPlaylistsProps> = ({
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "globalList",
+    scope: "global",
   };
 
   const getApiFn = () => {
     switch (mode) {
       case "related":
-        return () =>
-          playlistApi.getRelatedPlaylists(playlistId, {
-            includeUser: true,
-            limit: 10,
-          });
+        return () => playlistApi.getRelatedPlaylists(playlistId, { limit: 10 });
       case "user":
-        return () =>
-          userApi.getPlaylists(userId, accessContext, {
-            includeSongCount: true,
-            limit: 10,
-          });
+        return () => userApi.getPlaylists(userId, accessContext, { limit: 10 });
       default:
         throw new Error(`Invalid mode: ${mode}`);
     }

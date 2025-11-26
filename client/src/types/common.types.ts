@@ -24,4 +24,6 @@ export interface Comment {
   }>;
 }
 
+export type CommentOrderByColumn = "likes" | "commented_at";
+
 export type OrderByDirection = "ASC" | "DESC";

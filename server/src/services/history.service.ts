@@ -1,5 +1,6 @@
 import type { UUID, Song, Album, Playlist, Artist } from "@types";
 import { query } from "@config/database.js";
+import { isDeleted } from "@util";
 
 type HistoryEntity = "song" | "album" | "playlist" | "artist";
 
@@ -29,13 +30,23 @@ export default class HistoryService {
       throw error;
     }
   }
-
+  //done
   static async addToHistory<K extends keyof HistoryEntityMap>(
     userId: UUID,
     entityId: UUID,
     entity: K
   ) {
     try {
+      const userDeleted = await isDeleted(userId, "user");
+      if (userDeleted) {
+        throw new Error("User is deleted");
+      }
+
+      const entityDeleted = await isDeleted(entityId, entity);
+      if (entityDeleted) {
+        throw new Error(`${entity} is deleted`);
+      }
+
       const table = HISTORY_TABLES[entity];
       if (!table) {
         throw new Error("Invalid entity type");

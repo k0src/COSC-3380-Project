@@ -20,15 +20,9 @@ const UserInfoLiked: React.FC<{ userId: UUID }> = ({ userId }) => {
 
   const { data, loading, error } = useAsyncData(
     {
-      likedSongs: () =>
-        userApi.getLikedSongs(userId, accessContext, { includeArtists: true }),
-      likedAlbums: () =>
-        userApi.getLikedAlbums(userId, accessContext, { includeArtist: true }),
-      likedPlaylists: () =>
-        userApi.getLikedPlaylists(userId, accessContext, {
-          includeUser: true,
-          includeSongCount: true,
-        }),
+      likedSongs: () => userApi.getLikedSongs(userId, accessContext),
+      likedAlbums: () => userApi.getLikedAlbums(userId, accessContext),
+      likedPlaylists: () => userApi.getLikedPlaylists(userId, accessContext),
     },
     [userId, accessContext.userId],
     {

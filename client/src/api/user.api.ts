@@ -5,235 +5,17 @@ import type {
   Playlist,
   Song,
   Album,
-  Comment,
   User,
   UserSettings,
   AccessContext,
-  PlaylistOptions,
+  UserOrderByColumn,
+  OrderByDirection,
+  PlaylistOrderByColumn,
+  AlbumOrderByColumn,
+  SongOrderByColumn,
 } from "@types";
 
 export const userApi = {
-  // async registerArtist(
-  //   id: UUID,
-  //   username: string,
-  //   displayName?: string,
-  //   location?: string,
-  //   bio?: string
-  // ) {
-  //   const response = await api.post<User>(`/users/${id}/register-artist`, {
-  //     username,
-  //     displayName,
-  //     location,
-  //     bio,
-  //   });
-  //   return response.data;
-  // },
-
-  async getUserCount() {
-    const response = await api.get<{ userCount: number }>(`/users/count`);
-    return response.data.userCount;
-  },
-
-  async getUserById(
-    id: UUID,
-    options?: {
-      includeFollowerCount?: boolean;
-      includeFollowingCount?: boolean;
-    }
-  ) {
-    const response = await api.get<User>(`/users/${id}`, {
-      params: options,
-    });
-    return response.data;
-  },
-
-  async addToHistory(id: UUID, entityId: UUID, entityType: EntityType) {
-    await api.put(`/users/${id}/history`, {
-      entityId,
-      entityType,
-    });
-  },
-
-  async toggleLike(id: UUID, entityId: UUID, entityType: EntityType) {
-    const response = await api.post(`/users/${id}/likes`, {
-      entityId,
-      entityType,
-    });
-    return response.data;
-  },
-
-  async checkLikeStatus(id: UUID, entityId: UUID, entityType: EntityType) {
-    const response = await api.get(
-      `/users/${id}/likes/check?entityType=${entityType}&entityId=${entityId}`
-    );
-    return response.data;
-  },
-
-  async toggleFollowUser(followerId: UUID, followingId: UUID) {
-    const response = await api.post(`/users/${followerId}/following`, {
-      followingId,
-    });
-    return response.data;
-  },
-
-  async checkFollowStatus(followerId: UUID, followingId: UUID) {
-    const response = await api.get(
-      `/users/${followerId}/following/check?followingId=${followingId}`
-    );
-    return response.data;
-  },
-
-  async getPlaylists(
-    id: UUID,
-    accessContext: AccessContext,
-    options?: PlaylistOptions
-  ) {
-    const response = await api.get<Playlist[]>(`/users/${id}/playlists`, {
-      params: {
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
-  },
-
-  async getLikedCount(id: UUID, entityType: EntityType) {
-    const response = await api.get<{ likedCount: number }>(
-      `/users/${id}/likes/count?entityType=${entityType}`
-    );
-    return response.data.likedCount;
-  },
-
-  async getLikedSongs(
-    id: UUID,
-    accessContext: AccessContext,
-    options?: {
-      includeAlbums?: boolean;
-      includeArtists?: boolean;
-      includeLikes?: boolean;
-      includeComments?: boolean;
-      limit?: number;
-      offset?: number;
-    }
-  ) {
-    const response = await api.get<Song[]>(`/users/${id}/likes/songs`, {
-      params: {
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
-  },
-
-  async getLikedAlbums(
-    id: UUID,
-    accessContext: AccessContext,
-    options?: {
-      includeArtist?: boolean;
-      includeLikes?: boolean;
-      includeRuntime?: boolean;
-      includeSongCount?: boolean;
-      limit?: number;
-      offset?: number;
-    }
-  ) {
-    const response = await api.get<Album[]>(`/users/${id}/likes/albums`, {
-      params: {
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
-  },
-
-  async getLikedPlaylists(
-    id: UUID,
-    accessContext: AccessContext,
-    options?: {
-      includeUser?: boolean;
-      includeLikes?: boolean;
-      includeSongCount?: boolean;
-      includeRuntime?: boolean;
-      limit?: number;
-      offset?: number;
-    }
-  ) {
-    const response = await api.get<Playlist[]>(`/users/${id}/likes/playlists`, {
-      params: {
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
-  },
-
-  async getLikedComments(
-    id: UUID,
-    accessContext: AccessContext,
-    options?: {
-      limit?: number;
-      offset?: number;
-    }
-  ) {
-    const response = await api.get<Comment[]>(`/users/${id}/likes/comments`, {
-      params: {
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
-  },
-
-  async getFollowers(
-    id: UUID,
-    options?: {
-      limit?: number;
-      offset?: number;
-    }
-  ) {
-    const response = await api.get<User[]>(`/users/${id}/followers`, {
-      params: options,
-    });
-    return response.data;
-  },
-
-  async getFollowing(
-    id: UUID,
-    options?: {
-      limit?: number;
-      offset?: number;
-    }
-  ) {
-    const response = await api.get<User[]>(`/users/${id}/following`, {
-      params: options,
-    });
-    return response.data;
-  },
-
-  async getFollowerCount(id: UUID) {
-    const response = await api.get<{ followerCount: number }>(
-      `/users/${id}/followers/count`
-    );
-    return response.data.followerCount;
-  },
-
-  async getFollowingCount(id: UUID) {
-    const response = await api.get<{ followingCount: number }>(
-      `/users/${id}/following/count`
-    );
-    return response.data.followingCount;
-  },
-
   async create(data: {
     username: string;
     email: string;
@@ -288,6 +70,263 @@ export const userApi = {
     return response.data;
   },
 
+  async delete(id: UUID) {
+    const response = await api.delete(`/users/${id}`);
+    return response.data;
+  },
+
+  async getUser(userId: UUID, accessContext: AccessContext) {
+    try {
+      const response = await api.get<User>(`/users/${userId}`, {
+        params: {
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  async getManyUsers(
+    accessContext: AccessContext,
+    options?: {
+      orderByColumn?: UserOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    try {
+      const response = await api.get<Song[]>(`/users`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
+
+  async getPlaylists(
+    userId: UUID,
+    accessContext: AccessContext,
+    options?: {
+      orderByColumn?: PlaylistOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    try {
+      const response = await api.get<Playlist[]>(`/users/${userId}/playlists`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
+
+  async getLikedSongs(
+    userId: UUID,
+    accessContext: AccessContext,
+    options?: {
+      orderByColumn?: SongOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    try {
+      const response = await api.get<Song[]>(`/users/${userId}/likes/songs`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
+
+  async getLikedAlbums(
+    userId: UUID,
+    accessContext: AccessContext,
+    options?: {
+      orderByColumn?: AlbumOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    try {
+      const response = await api.get<Album[]>(`/users/${userId}/likes/albums`, {
+        params: {
+          ...options,
+          role: accessContext.role,
+          userId: accessContext.userId,
+          scope: accessContext.scope,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
+
+  async getLikedPlaylists(
+    userId: UUID,
+    accessContext: AccessContext,
+    options?: {
+      orderByColumn?: PlaylistOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    try {
+      const response = await api.get<Playlist[]>(
+        `/users/${userId}/likes/playlists`,
+        {
+          params: {
+            ...options,
+            role: accessContext.role,
+            userId: accessContext.userId,
+            scope: accessContext.scope,
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
+
+  async getLikedCount(id: UUID, entityType: EntityType) {
+    const response = await api.get<{ likedCount: number }>(
+      `/users/${id}/likes/count?entityType=${entityType}`
+    );
+    return response.data.likedCount;
+  },
+
+  async getFollowers(
+    userId: UUID,
+    options?: {
+      orderByColumn?: UserOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    const response = await api.get<User[]>(`/users/${userId}/followers`, {
+      params: options,
+    });
+    return response.data;
+  },
+
+  async getFollowing(
+    userId: UUID,
+    options?: {
+      orderByColumn?: UserOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    const response = await api.get<User[]>(`/users/${userId}/following`, {
+      params: options,
+    });
+    return response.data;
+  },
+
+  async getFollowerCount(userId: UUID) {
+    const response = await api.get<{ followerCount: number }>(
+      `/users/${userId}/followers/count`
+    );
+    return response.data.followerCount;
+  },
+
+  async getFollowingCount(userId: UUID) {
+    const response = await api.get<{ followingCount: number }>(
+      `/users/${userId}/following/count`
+    );
+    return response.data.followingCount;
+  },
+
+  async addToHistory(userId: UUID, entityId: UUID, entityType: EntityType) {
+    await api.put(`/users/${userId}/library/history`, {
+      entityId,
+      entityType,
+    });
+  },
+
+  async toggleLike(id: UUID, entityId: UUID, entityType: EntityType) {
+    const response = await api.post(`/users/${id}/likes`, {
+      entityId,
+      entityType,
+    });
+    return response.data;
+  },
+
+  async checkLikeStatus(id: UUID, entityId: UUID, entityType: EntityType) {
+    const response = await api.get(
+      `/users/${id}/likes/check?entityType=${entityType}&entityId=${entityId}`
+    );
+    return response.data;
+  },
+
+  async toggleFollowUser(followerId: UUID, followingId: UUID) {
+    const response = await api.post(`/users/${followerId}/following`, {
+      followingId,
+    });
+    return response.data;
+  },
+
+  async checkFollowStatus(followerId: UUID, followingId: UUID) {
+    const response = await api.get(
+      `/users/${followerId}/following/check?followingId=${followingId}`
+    );
+    return response.data;
+  },
+
+  async getUserCount() {
+    const response = await api.get<{ userCount: number }>(`/users/count`);
+    return response.data.userCount;
+  },
+
   async getSettings(id: UUID) {
     const response = await api.get<UserSettings>(`/users/${id}/settings`);
     return response.data;
@@ -298,11 +337,6 @@ export const userApi = {
       `/users/${id}/settings`,
       settings
     );
-    return response.data;
-  },
-
-  async delete(id: UUID) {
-    const response = await api.delete(`/users/${id}`);
     return response.data;
   },
 };

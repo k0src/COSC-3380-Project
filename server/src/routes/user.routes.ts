@@ -19,6 +19,7 @@ const router = express.Router();
 /*                                 Main Routes                                */
 /* ========================================================================== */
 
+//done
 // GET /api/users/count
 router.get("/count", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -31,16 +32,24 @@ router.get("/count", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 });
-
+//done
 // GET /api/users
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { includeFollowerCount, includeFollowingCount, limit, offset } =
-      req.query;
+    const { orderByColumn, orderByDirection, limit, offset } = req.query;
 
-    const users = await UserRepository.getMany({
-      includeFollowerCount: includeFollowerCount === "true",
-      includeFollowingCount: includeFollowingCount === "true",
+    let column = (orderByColumn as string) || "created_at";
+    let direction = (orderByDirection as string) || "DESC";
+    if (!validateOrderBy(column, direction, "user")) {
+      console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+      column = "created_at";
+      direction = "DESC";
+    }
+
+    const accessContext = parseAccessContext(req.query);
+    const users = await UserRepository.getManyUsers(accessContext, {
+      orderByColumn: column as any,
+      orderByDirection: direction as any,
       limit: limit ? parseInt(limit as string, 10) : undefined,
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });
@@ -53,22 +62,18 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 });
-
+//done
 // GET /api/users/:id
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const { includeFollowerCount, includeFollowingCount } = req.query;
-
-  if (!id) {
-    res.status(400).json({ error: "User ID is required" });
-    return;
-  }
-
   try {
-    const user = await UserRepository.getOne(id, {
-      includeFollowerCount: includeFollowerCount === "true",
-      includeFollowingCount: includeFollowingCount === "true",
-    });
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    const accessContext = parseAccessContext(req.query);
+    const user = await UserRepository.getUser(id, accessContext);
 
     if (!user) {
       res.status(404).json({ error: "User not found" });
@@ -83,79 +88,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 });
-
-// DELETE /api/users/:id
-router.delete(
-  "/:id",
-  authenticateToken,
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const reqUserId = req.userId;
-      if (!reqUserId || reqUserId !== id) {
-        res.status(403).json({
-          error:
-            "Forbidden: You do not have permission to perform this action.",
-        });
-        return;
-      }
-
-      await UserRepository.delete(id);
-      res.status(200).json({ message: "User deleted successfully" });
-    } catch (error: any) {
-      console.error("Error in DELETE /users/:id:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-      return;
-    }
-  }
-);
-
-// PUT /api/users/:id
-router.put(
-  "/:id",
-  authenticateToken,
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const reqUserId = req.userId;
-      if (!reqUserId || reqUserId !== id) {
-        res.status(403).json({
-          error:
-            "Forbidden: You do not have permission to perform this action.",
-        });
-        return;
-      }
-
-      const updateData = await parseForm(req, "user");
-      const updatedUser = await UserRepository.update(id, updateData);
-
-      if (!updatedUser) {
-        res.status(404).json({ error: "User not found" });
-        return;
-      }
-
-      res.status(200).json(updatedUser);
-    } catch (error: any) {
-      console.error("Error in PUT /users/:id:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
+//done
 // POST /api/users
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -200,68 +133,90 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 });
+//done
+// PUT /api/users/:id
+router.put(
+  "/:id",
+  authenticateToken,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
 
-// // POST /api/users/:id/register-artist
-// router.post(
-//   "/:id/register-artist",
-//   authenticateToken,
-//   async (req: Request, res: Response): Promise<void> => {
-//     try {
-//       const { id } = req.params;
-//       const { username, displayName, location, bio } = req.body;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
 
-//       if (!id) {
-//         res.status(400).json({ error: "User ID is required" });
-//         return;
-//       }
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
+        return;
+      }
 
-//       const reqUserId = req.userId;
-//       if (!reqUserId || reqUserId !== id) {
-//         res.status(403).json({
-//           error:
-//             "Forbidden: You do not have permission to perform this action.",
-//         });
-//         return;
-//       }
+      const updateData = await parseForm(req, "user");
+      const updatedUser = await UserRepository.update(id, updateData);
 
-//       const updatedUser = await UserSettingsService.registerArtist(
-//         id,
-//         username,
-//         displayName,
-//         location,
-//         bio
-//       );
+      if (!updatedUser) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
 
-//       res.status(200).json(updatedUser);
-//     } catch (error: any) {
-//       console.error("Error in POST /users/:id/register-artist:", error);
-//       const { message, statusCode } = handlePgError(error);
-//       res.status(statusCode).json({ error: message });
-//       return;
-//     }
-//   }
-// );
+      res.status(200).json(updatedUser);
+    } catch (error: any) {
+      console.error("Error in PUT /users/:id:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+//done
+// DELETE /api/users/:id
+router.delete(
+  "/:id",
+  authenticateToken,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const reqUserId = req.userId;
+      if (!reqUserId || reqUserId !== id) {
+        res.status(403).json({
+          error:
+            "Forbidden: You do not have permission to perform this action.",
+        });
+        return;
+      }
+
+      await UserRepository.delete(id);
+      res.status(200).json({ message: "User deleted successfully" });
+    } catch (error: any) {
+      console.error("Error in DELETE /users/:id:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
 
 /* ========================================================================== */
 /*                               User Playlists                               */
 /* ========================================================================== */
-
+//done
 // GET /api/users/:id/playlists
 router.get(
   "/:id/playlists",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const {
-        includeLikes,
-        includeSongCount,
-        includeRuntime,
-        orderByColumn,
-        orderByDirection,
-        limit,
-        offset,
-      } = req.query;
-
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
@@ -269,7 +224,6 @@ router.get(
 
       let column = (orderByColumn as string) || "created_at";
       let direction = (orderByDirection as string) || "DESC";
-
       if (!validateOrderBy(column, direction, "playlist")) {
         console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
         column = "created_at";
@@ -277,15 +231,11 @@ router.get(
       }
 
       const accessContext = parseAccessContext(req.query);
-
       const playlists = await UserRepository.getPlaylists(id, accessContext, {
-        includeLikes: includeLikes === "true",
-        includeSongCount: includeSongCount === "true",
-        includeRuntime: includeRuntime === "true",
         orderByColumn: column as any,
         orderByDirection: direction as any,
-        limit: limit ? parseInt(limit as string) : undefined,
-        offset: offset ? parseInt(offset as string) : undefined,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
       });
 
       res.status(200).json(playlists);
@@ -662,19 +612,19 @@ router.get(
     }
   }
 );
-
+//done
 // PUT /api/users/:id/history
 router.put(
-  "/:id/history",
+  "/:id/library/history",
   async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    const { entityId, entityType } = req.body;
-    if (!id || !entityId || !entityType) {
-      res.status(400).json({ error: "Missing required parameters" });
-      return;
-    }
-
     try {
+      const { id } = req.params;
+      const { entityId, entityType } = req.body;
+      if (!id || !entityId || !entityType) {
+        res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
       await HistoryService.addToHistory(id, entityId, entityType);
       res.status(200).json({ message: "History updated successfully" });
     } catch (error: any) {
@@ -761,42 +711,34 @@ router.get(
 /* ========================================================================== */
 /*                            User Likes & Comments                           */
 /* ========================================================================== */
-
+//done
 // GET /api/users/:id/likes/songs
 router.get(
   "/:id/likes/songs",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const {
-        includeAlbums,
-        includeArtists,
-        includeLikes,
-        includeComments,
-        limit,
-        offset,
-      } = req.query;
-
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
-      const accessContext = parseAccessContext(req.query);
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "song")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
 
-      const likedSongs = await LikeService.getLikedByUser(
-        id,
-        "song",
-        accessContext,
-        {
-          includeAlbums: includeAlbums === "true",
-          includeArtists: includeArtists === "true",
-          includeLikes: includeLikes === "true",
-          includeComments: includeComments === "true",
-          limit: limit ? parseInt(limit as string) : undefined,
-          offset: offset ? parseInt(offset as string) : undefined,
-        }
-      );
+      const accessContext = parseAccessContext(req.query);
+      const likedSongs = await LikeService.getLikedSongs(id, accessContext, {
+        orderByColumn: column as any,
+        orderByDirection: direction as any,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
 
       res.status(200).json(likedSongs);
     } catch (error: any) {
@@ -807,42 +749,34 @@ router.get(
     }
   }
 );
-
+//done
 // GET /api/users/:id/likes/albums
 router.get(
   "/:id/likes/albums",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const {
-        includeArtist,
-        includeLikes,
-        includeRuntime,
-        includeSongCount,
-        limit,
-        offset,
-      } = req.query;
-
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
-      const accessContext = parseAccessContext(req.query);
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "album")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
 
-      const likedAlbums = await LikeService.getLikedByUser(
-        id,
-        "album",
-        accessContext,
-        {
-          includeArtist: includeArtist === "true",
-          includeLikes: includeLikes === "true",
-          includeRuntime: includeRuntime === "true",
-          includeSongCount: includeSongCount === "true",
-          limit: limit ? parseInt(limit as string) : undefined,
-          offset: offset ? parseInt(offset as string) : undefined,
-        }
-      );
+      const accessContext = parseAccessContext(req.query);
+      const likedAlbums = await LikeService.getLikedAlbums(id, accessContext, {
+        orderByColumn: column as any,
+        orderByDirection: direction as any,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
 
       res.status(200).json(likedAlbums);
     } catch (error: any) {
@@ -853,40 +787,36 @@ router.get(
     }
   }
 );
-
+//done
 // GET /api/users/:id/likes/playlists
 router.get(
   "/:id/likes/playlists",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const {
-        includeUser,
-        includeLikes,
-        includeSongCount,
-        includeRuntime,
-        limit,
-        offset,
-      } = req.query;
-
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
-      const accessContext = parseAccessContext(req.query);
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "playlist")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
 
-      const likedPlaylists = await LikeService.getLikedByUser(
+      const accessContext = parseAccessContext(req.query);
+      const likedPlaylists = await LikeService.getLikedPlaylists(
         id,
-        "playlist",
         accessContext,
         {
-          includeUser: includeUser === "true",
-          includeLikes: includeLikes === "true",
-          includeSongCount: includeSongCount === "true",
-          includeRuntime: includeRuntime === "true",
-          limit: limit ? parseInt(limit as string) : undefined,
-          offset: offset ? parseInt(offset as string) : undefined,
+          orderByColumn: column as any,
+          orderByDirection: direction as any,
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+          offset: offset ? parseInt(offset as string, 10) : undefined,
         }
       );
 
@@ -899,42 +829,7 @@ router.get(
     }
   }
 );
-
-// GET /api/users/:id/likes/comments
-router.get(
-  "/:id/likes/comments",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const accessContext = parseAccessContext(req.query);
-
-      const likedComments = await LikeService.getLikedByUser(
-        id,
-        "comment",
-        accessContext,
-        {
-          limit: limit ? parseInt(limit as string) : undefined,
-          offset: offset ? parseInt(offset as string) : undefined,
-        }
-      );
-
-      res.status(200).json(likedComments);
-    } catch (error: any) {
-      console.error("Error in GET /users/:id/likes/comments:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-      return;
-    }
-  }
-);
-
+//done
 // POST /api/users/:id/likes
 router.post(
   "/:id/likes",
@@ -967,20 +862,20 @@ router.post(
     }
   }
 );
-
+//done
 // GET /api/users/:id/likes/check
 router.get(
   "/:id/likes/check",
   async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    const { entityType, entityId } = req.query;
-
-    if (!id || !entityType || !entityId) {
-      res.status(400).json({ error: "Missing required parameters" });
-      return;
-    }
-
     try {
+      const { id } = req.params;
+      const { entityType, entityId } = req.query;
+
+      if (!id || !entityType || !entityId) {
+        res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
       const isLiked = await LikeService.hasUserLiked(
         id,
         entityId as string,
@@ -995,20 +890,19 @@ router.get(
     }
   }
 );
-
+//done
 // GET /api/users/:id/likes/count
 router.get(
   "/:id/likes/count",
   async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    const { entityType } = req.query;
-
-    if (!id || !entityType) {
-      res.status(400).json({ error: "Missing required parameters" });
-      return;
-    }
-
     try {
+      const { id } = req.params;
+      const { entityType } = req.query;
+      if (!id || !entityType) {
+        res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
       const likedCount = await LikeService.getLikedCount(id, entityType as any);
       res.status(200).json({ likedCount });
     } catch (error: any) {
@@ -1023,20 +917,30 @@ router.get(
 /* ========================================================================== */
 /*                               User Followers                               */
 /* ========================================================================== */
-
+//done
 // GET /api/users/:id/followers
 router.get(
   "/:id/followers",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { limit, offset } = req.query;
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "user")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
+
       const followers = await FollowService.getFollowers(id, {
+        orderByColumn: column as any,
+        orderByDirection: direction as any,
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
@@ -1049,20 +953,30 @@ router.get(
     }
   }
 );
-
+//done
 // GET /api/users/:id/following
 router.get(
   "/:id/following",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { limit, offset } = req.query;
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "user")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
+
       const following = await FollowService.getFollowing(id, {
+        orderByColumn: column as any,
+        orderByDirection: direction as any,
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
@@ -1075,7 +989,7 @@ router.get(
     }
   }
 );
-
+//done
 // POST /api/users/:id/following
 router.post(
   "/:id/following",
@@ -1108,7 +1022,7 @@ router.post(
     }
   }
 );
-
+//done
 // GET /api/users/:id/followers/count
 router.get(
   "/:id/followers/count",
@@ -1130,7 +1044,7 @@ router.get(
     }
   }
 );
-
+//done
 // GET /api/users/:id/following/count
 router.get(
   "/:id/following/count",
@@ -1152,19 +1066,19 @@ router.get(
     }
   }
 );
-
+//done
 // GET /api/users/:id/following/check
 router.get(
   "/:id/following/check",
   async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    const { followingId } = req.query;
-    if (!id || !followingId) {
-      res.status(400).json({ error: "Missing required parameters" });
-      return;
-    }
-
     try {
+      const { id } = req.params;
+      const { followingId } = req.query;
+      if (!id || !followingId) {
+        res.status(400).json({ error: "Missing required parameters" });
+        return;
+      }
+
       const isFollowing = await FollowService.isFollowing(
         id,
         followingId as string

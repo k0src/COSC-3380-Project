@@ -338,7 +338,11 @@ router.post("/refresh", async (req: Request, res: Response) => {
       return;
     }
 
-    const user = await UserRepository.getOne(decoded.userId);
+    const user = await UserRepository.getUser(decoded.userId, {
+      role: "user",
+      userId: decoded.userId,
+      scope: "owner",
+    });
     if (!user) {
       res.status(401).json({
         error: "Unauthorized",

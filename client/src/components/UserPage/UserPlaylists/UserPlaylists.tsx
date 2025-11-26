@@ -20,16 +20,13 @@ const UserPlaylists: React.FC<UserPlaylistsProps> = ({ userId, username }) => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "globalList",
+    scope: "global",
   };
 
   const { data, loading, error } = useAsyncData(
     {
       playlists: () =>
-        userApi.getPlaylists(userId, accessContext, {
-          includeSongCount: true,
-          limit: 10,
-        }),
+        userApi.getPlaylists(userId, accessContext, { limit: 10 }),
     },
     [userId, user?.id],
     {

@@ -67,7 +67,7 @@ const AppealsPage: React.FC = () => {
               accessContext
             );
           case "user":
-            return await userApi.getUserById(entityId);
+            return await userApi.getUser(entityId, accessContext);
           default:
             return null;
         }

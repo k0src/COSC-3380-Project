@@ -11,7 +11,6 @@ const router = express.Router();
 /*                                Main Routes                                 */
 /* ========================================================================== */
 
-//done
 // GET /api/artists
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -42,7 +41,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-//done
 // GET /api/artists/top-artist
 router.get("/top-artist", async (req: Request, res: Response) => {
   try {
@@ -62,7 +60,6 @@ router.get("/top-artist", async (req: Request, res: Response) => {
   }
 });
 
-//done
 // GET /api/artists/:id
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -89,7 +86,6 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-//done
 // POST /api/artists
 router.post(
   "/",
@@ -114,7 +110,6 @@ router.post(
   }
 );
 
-//done
 // PUT /api/artists/:id
 router.put(
   "/:id",
@@ -145,7 +140,6 @@ router.put(
   }
 );
 
-//done
 // DELETE /api/artists/:id
 router.delete(
   "/:id",
@@ -172,7 +166,6 @@ router.delete(
 /*                              Artist Content                                */
 /* ========================================================================== */
 
-//done
 // GET /api/artists/:id/songs
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -208,7 +201,6 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-//done
 // GET /api/artists/:id/singles
 router.get(
   "/:id/singles",
@@ -247,7 +239,6 @@ router.get(
   }
 );
 
-//done
 // GET /api/artists/:id/albums
 router.get(
   "/:id/albums",
@@ -287,7 +278,6 @@ router.get(
   }
 );
 
-//done
 // GET /api/artists/:id/pinned-album
 router.get(
   "/:id/pinned-album",
@@ -363,7 +353,6 @@ router.post(
   }
 );
 
-//done
 // GET /api/artists/:id/playlists
 router.get(
   "/:id/playlists",
@@ -406,7 +395,6 @@ router.get(
   }
 );
 
-//done
 // GET /api/artists/:id/artist-playlists
 router.get(
   "/:id/artist-playlists",
@@ -453,7 +441,6 @@ router.get(
 /*                              Artist Stats                                  */
 /* ========================================================================== */
 
-//done
 // GET /api/artists/:id/count/songs
 router.get(
   "/:id/count/songs",
@@ -476,7 +463,6 @@ router.get(
   }
 );
 
-//done
 // GET /api/artists/:id/count/streams
 router.get(
   "/:id/count/streams",
@@ -499,7 +485,6 @@ router.get(
   }
 );
 
-//done
 // GET /api/artists/:id/count/monthly-listeners
 router.get(
   "/:id/count/monthly-listeners",
@@ -529,7 +514,6 @@ router.get(
 /*                              Artist Related                                */
 /* ========================================================================== */
 
-//done
 // GET /api/artists/:id/related
 router.get(
   "/:id/related",
@@ -557,7 +541,6 @@ router.get(
   }
 );
 
-//done
 // GET /api/artists/recommendations/:userId
 router.get("/recommendations/:userId", async (req: Request, res: Response) => {
   try {
@@ -628,7 +611,6 @@ router.get(
 /*                              Artist Checks                                 */
 /* ========================================================================== */
 
-//done
 // GET /api/artists/:id/has-artist-playlists
 router.get(
   "/:id/has/artist-playlists",
@@ -653,7 +635,6 @@ router.get(
   }
 );
 
-//done
 // GET /api/artists/:id/has-songs
 router.get(
   "/:id/has/songs",

@@ -19,7 +19,6 @@ import styles from "./UserPage.module.css";
 
 const UserPage: React.FC = () => {
   const { id } = useParams<{ id: UUID }>();
-
   const { user, isAuthenticated } = useAuth();
 
   if (!id) {
@@ -31,9 +30,15 @@ const UserPage: React.FC = () => {
     );
   }
 
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "owner",
+  };
+
   const { data, loading, error } = useAsyncData(
     {
-      pageUser: () => userApi.getUserById(id),
+      pageUser: () => userApi.getUser(id, accessContext),
     },
     [id],
     {
@@ -82,27 +87,27 @@ const UserPage: React.FC = () => {
     return <ErrorPage title={errorTitle} message={errorMessage} />;
   }
 
-  const userIsArtist = pageUser.role === "ARTIST";
-  const userIsAdmin = pageUser.role === "ADMIN";
+  const userIsArtist = pageUser!.role === "ARTIST";
+  const userIsAdmin = pageUser!.role === "ADMIN";
 
-  const accessContext: AccessContext = {
+  const globalCtx: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "globalList",
+    scope: "global",
   };
 
   return (
     <>
       <Helmet>
-        <title>{`${pageUser.username} - CoogMusic`}</title>
+        <title>{`${pageUser!.username} - CoogMusic`}</title>
       </Helmet>
 
       <div className={styles.userLayout}>
         <UserContainer
-          user={pageUser}
+          user={pageUser!}
           userIsArtist={userIsArtist}
           userIsAdmin={userIsAdmin}
-          artistId={pageUser.artist_id}
+          artistId={pageUser!.artist_id}
           isOwner={isOwner}
         />
         <div className={styles.userLayoutBottom}>
@@ -110,34 +115,37 @@ const UserPage: React.FC = () => {
             <UserRecentActivity
               userId={id}
               maxItems={20}
-              accessContext={accessContext}
+              accessContext={globalCtx}
             />
-            {userIsArtist && pageUser.artist_id && (
-              <UserRecentReleases artistId={pageUser.artist_id} maxItems={8} />
+            {userIsArtist && pageUser!.artist_id && (
+              <UserRecentReleases artistId={pageUser!.artist_id} maxItems={8} />
             )}
           </div>
           <div className={styles.userLayoutRight}>
             <UserActions
-              artistId={pageUser.artist_id}
+              artistId={pageUser!.artist_id}
               userId={id}
-              userCreatedAt={pageUser.created_at}
+              userCreatedAt={pageUser!.created_at}
               userIsArtist={userIsArtist}
-              username={pageUser.username}
+              username={pageUser!.username}
             />
             <FollowProfiles
               title="Followers"
-              userId={pageUser.id}
+              userId={pageUser!.id}
               profileLimit={8}
               profileMin={4}
               following={false}
             />
             <FollowProfiles
               title="Following"
-              userId={pageUser.id}
+              userId={pageUser!.id}
               profileMin={4}
               profileLimit={8}
             />
-            <UserPlaylists userId={pageUser.id} username={pageUser.username} />
+            <UserPlaylists
+              userId={pageUser!.id}
+              username={pageUser!.username}
+            />
           </div>
         </div>
       </div>

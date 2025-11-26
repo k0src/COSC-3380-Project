@@ -1,11 +1,17 @@
 import { query, withTransaction } from "@config/database";
-import type { UUID, User, UserSettings } from "@types";
+import type { UUID, UserSettings } from "@types";
+import { isDeleted } from "@util";
 
 export default class UserSettingsService {
   static async getSettings(userId: UUID): Promise<UserSettings | null> {
     try {
       const result = await query(
-        "SELECT * FROM user_settings WHERE user_id = $1",
+        `SELECT * FROM user_settings 
+        WHERE user_id = $1
+        AND NOT EXISTS (
+          SELECT 1 FROM deleted_users
+          WHERE deleted_users.user_id = user_settings.user_id
+        )`,
         [userId]
       );
 
@@ -32,6 +38,11 @@ export default class UserSettingsService {
     }: Partial<UserSettings>
   ): Promise<UserSettings | null> {
     try {
+      const userDeleted = await isDeleted(userId, "user");
+      if (userDeleted) {
+        throw new Error("Cannot update settings for a deleted user.");
+      }
+
       const result = await withTransaction(async (client) => {
         const fields: string[] = [];
         const values: any[] = [];
@@ -92,47 +103,6 @@ export default class UserSettingsService {
       return result;
     } catch (error) {
       console.error("Error updating user settings:", error);
-      throw error;
-    }
-  }
-
-  static async registerArtist(
-    userId: UUID,
-    username: string,
-    displayName?: string,
-    location?: string,
-    bio?: string
-  ): Promise<User> {
-    try {
-      const result = await withTransaction(async (client) => {
-        const artistRes = await client.query(
-          `INSERT INTO artists 
-          (user_id, display_name, location, bio) 
-          VALUES ($1, $2, $3, $4) RETURNING id`,
-          [userId, displayName ?? username, location ?? null, bio ?? null]
-        );
-
-        if (!artistRes.rows[0] || !artistRes.rows[0].id) {
-          throw new Error("Failed to create artist profile.");
-        }
-        const artistId: UUID = artistRes.rows[0].id;
-
-        const updatedUserRes = await client.query(
-          `UPDATE users SET role = 'ARTIST', artist_id = $1 WHERE id = $2 RETURNING *`,
-          [artistId, userId]
-        );
-
-        const updatedUser: User = updatedUserRes.rows[0];
-        if (!updatedUser) {
-          throw new Error("Failed to update user role to ARTIST.");
-        }
-
-        return updatedUser;
-      });
-
-      return result;
-    } catch (error) {
-      console.error("Error registering artist:", error);
       throw error;
     }
   }

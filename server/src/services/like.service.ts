@@ -6,10 +6,23 @@ import type {
   User,
   Comment,
   AccessContext,
+  SongOrderByColumn,
+  AlbumOrderByColumn,
+  PlaylistOrderByColumn,
+  OrderByDirection,
 } from "@types";
+import {
+  notDeletedCondition,
+  getUserVisibilityCondition,
+  getVisibilityCondition,
+} from "@util";
 import { query } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
-import { getAccessPredicate } from "@util";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const API_URL = process.env.API_URL;
 
 type LikeableEntity = "song" | "album" | "playlist" | "comment";
 
@@ -64,321 +77,6 @@ export default class LikeService {
     }
   }
 
-  static async getLikeCount(
-    entityId: UUID,
-    entity: LikeableEntity
-  ): Promise<number> {
-    try {
-      const table = LIKE_TABLES[entity];
-      if (!table) {
-        throw new Error("Invalid entity type");
-      }
-
-      const res = await query(
-        `SELECT COUNT(*) FROM ${table} WHERE ${entity}_id = $1
-        AND NOT EXISTS (
-          SELECT 1 FROM ${DELETED_MAP[entity]} de
-          WHERE de.${entity}_id = $1
-        )`,
-        [entityId]
-      );
-      return parseInt(res[0]?.count ?? "0", 10);
-    } catch (error) {
-      console.error("Error getting like count:", error);
-      throw error;
-    }
-  }
-
-  static async getLikedByUser<K extends keyof LikeableEntitiesMap>(
-    userId: UUID,
-    entity: K,
-    accessContext: AccessContext,
-    options?: { limit?: number; offset?: number; [key: string]: any }
-  ): Promise<LikeableEntitiesMap[K][]> {
-    const likeTable = LIKE_TABLES[entity];
-
-    const limit = options?.limit ?? 50;
-    const offset = options?.offset ?? 0;
-
-    let sql = "";
-    let params: any[] = [];
-
-    switch (entity) {
-      case "song": {
-        const { sql: predicateSqlRaw, params: predicateParams } =
-          getAccessPredicate(accessContext, "s", 2);
-        const predicateSql =
-          (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
-
-        const baseParamCount = 1 + predicateParams.length;
-        const includeAlbumsIndex = baseParamCount + 1;
-        const includeArtistsIndex = baseParamCount + 2;
-        const includeLikesIndex = baseParamCount + 3;
-        const includeCommentsIndex = baseParamCount + 4;
-        const limitIndex = baseParamCount + 5;
-        const offsetIndex = baseParamCount + 6;
-
-        sql = `
-          SELECT s.*,
-            CASE WHEN $${includeAlbumsIndex} THEN
-              (SELECT json_agg(row_to_json(album_with_artist))
-              FROM (
-                SELECT a.*,
-                  row_to_json(ar) AS artist
-                FROM albums a
-                JOIN album_songs als ON als.album_id = a.id
-                LEFT JOIN artists ar ON ar.id = a.created_by
-                WHERE als.song_id = s.id
-              ) AS album_with_artist)
-            ELSE NULL END AS albums,
-            CASE WHEN $${includeArtistsIndex} THEN
-              (SELECT json_agg(row_to_json(ar_with_role))
-              FROM (
-                SELECT
-                  ar.*,
-                  sa.role,
-                  row_to_json(u) AS user
-                FROM artists ar
-                JOIN users u ON u.artist_id = ar.id
-                JOIN song_artists sa ON sa.artist_id = ar.id
-                WHERE sa.song_id = s.id
-              ) AS ar_with_role)
-            ELSE NULL END AS artists,
-            CASE WHEN $${includeLikesIndex} THEN
-              (SELECT COUNT(*) FROM song_likes sl
-              WHERE sl.song_id = s.id)
-            ELSE NULL END AS likes,
-            CASE WHEN $${includeCommentsIndex} THEN
-              (SELECT COUNT(*) FROM comments c
-              WHERE c.song_id = s.id)
-            ELSE NULL END AS comments
-          FROM songs s
-          JOIN ${likeTable} l ON s.id = l.song_id
-          WHERE l.user_id = $1 AND (${predicateSql})
-          LIMIT $${limitIndex} OFFSET $${offsetIndex}
-        `;
-        params = [
-          userId,
-          ...predicateParams,
-          options?.includeAlbums ?? false,
-          options?.includeArtists ?? false,
-          options?.includeLikes ?? false,
-          options?.includeComments ?? false,
-          limit,
-          offset,
-        ];
-        break;
-      }
-
-      case "album": {
-        const { sql: predicateSqlRaw, params: predicateParams } =
-          getAccessPredicate(accessContext, "a", 2);
-        const predicateSql =
-          (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
-
-        const baseParamCount = 1 + predicateParams.length;
-        const includeArtistIndex = baseParamCount + 1;
-        const includeLikesIndex = baseParamCount + 2;
-        const includeRuntimeIndex = baseParamCount + 3;
-        const includeSongCountIndex = baseParamCount + 4;
-        const limitIndex = baseParamCount + 5;
-        const offsetIndex = baseParamCount + 6;
-
-        sql = `
-          SELECT a.*,
-          CASE WHEN $${includeArtistIndex} THEN 
-            (SELECT row_to_json(artist_with_user)
-            FROM (
-              SELECT ar.*,
-                row_to_json(u) AS user
-              FROM artists ar
-              LEFT JOIN users u ON ar.user_id = u.id
-              WHERE ar.id = a.created_by
-            ) AS artist_with_user)
-          ELSE NULL END as artist,
-          CASE WHEN $${includeLikesIndex} THEN (SELECT COUNT(*) FROM album_likes al 
-            WHERE al.album_id = a.id) 
-          ELSE NULL END as likes,
-          CASE WHEN $${includeRuntimeIndex} THEN (SELECT SUM(s.duration) FROM songs s 
-            JOIN album_songs als ON s.id = als.song_id 
-            WHERE als.album_id = a.id
-              AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)) 
-          ELSE NULL END as runtime,
-          CASE WHEN $${includeSongCountIndex} THEN (SELECT COUNT(*) FROM album_songs als 
-            WHERE als.album_id = a.id
-              AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = als.song_id))
-          ELSE NULL END as song_count
-          FROM albums a
-          JOIN ${likeTable} l ON a.id = l.album_id
-          WHERE l.user_id = $1 AND (${predicateSql})
-          LIMIT $${limitIndex} OFFSET $${offsetIndex}
-        `;
-        params = [
-          userId,
-          ...predicateParams,
-          options?.includeArtist ?? false,
-          options?.includeLikes ?? false,
-          options?.includeRuntime ?? false,
-          options?.includeSongCount ?? false,
-          limit,
-          offset,
-        ];
-        break;
-      }
-
-      case "playlist": {
-        const { sql: predicateSqlRaw, params: predicateParams } =
-          getAccessPredicate(accessContext, "p", 2);
-        const predicateSql =
-          (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
-
-        const baseParamCount = 1 + predicateParams.length;
-        const includeUserIndex = baseParamCount + 1;
-        const includeLikesIndex = baseParamCount + 2;
-        const includeSongCountIndex = baseParamCount + 3;
-        const includeRuntimeIndex = baseParamCount + 4;
-        const limitIndex = baseParamCount + 5;
-        const offsetIndex = baseParamCount + 6;
-
-        sql = `
-          SELECT p.*,
-          CASE WHEN $${includeUserIndex} THEN row_to_json(u.*)
-          ELSE NULL END as user,
-          CASE WHEN $${includeLikesIndex} THEN (SELECT COUNT(*) FROM playlist_likes pl
-            WHERE pl.playlist_id = p.id)
-          ELSE NULL END as likes,
-          CASE WHEN $${includeSongCountIndex} THEN (SELECT COUNT(*) FROM playlist_songs ps
-            WHERE ps.playlist_id = p.id
-              AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id))
-          ELSE NULL END as song_count,
-          CASE WHEN $${includeRuntimeIndex} THEN (SELECT COALESCE(SUM(s.duration), 0) FROM songs s
-            JOIN playlist_songs ps ON ps.song_id = s.id
-            WHERE ps.playlist_id = p.id
-              AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id))
-          ELSE NULL END as runtime
-          FROM playlists p
-          LEFT JOIN users u ON p.owner_id = u.id
-          JOIN ${likeTable} l ON p.id = l.playlist_id
-          WHERE l.user_id = $1 AND (${predicateSql})
-          LIMIT $${limitIndex} OFFSET $${offsetIndex}
-        `;
-        params = [
-          userId,
-          ...predicateParams,
-          options?.includeUser ?? false,
-          options?.includeLikes ?? false,
-          options?.includeSongCount ?? false,
-          options?.includeRuntime ?? false,
-          limit,
-          offset,
-        ];
-        break;
-      }
-
-      case "comment": {
-        const baseParamCount = 1;
-        const limitIndex = baseParamCount + 1;
-        const offsetIndex = baseParamCount + 2;
-
-        sql = `
-          SELECT c.*
-          FROM comments c
-          JOIN ${likeTable} l ON c.id = l.comment_id
-          WHERE l.user_id = $1
-          LIMIT $${limitIndex} OFFSET $${offsetIndex}
-        `;
-        params = [userId, limit, offset];
-        break;
-      }
-
-      default:
-        throw new Error(`Unknown entity type: ${entity}`);
-    }
-
-    const results = await query(sql, params);
-    if (!results || results.length === 0) {
-      return [];
-    }
-
-    const processedItems = await Promise.all(
-      results.map(async (item: any) => {
-        switch (entity) {
-          case "song": {
-            if (item.image_url) {
-              item.image_url = getBlobUrl(item.image_url);
-            }
-            if (item.audio_url) {
-              item.audio_url = getBlobUrl(item.audio_url);
-            }
-            if (item.albums && item.albums?.length > 0) {
-              item.albums = item.albums.map((album: any) => {
-                if (album.image_url) {
-                  album.image_url = getBlobUrl(album.image_url);
-                }
-                if (album.artist) {
-                  album.artist.type = "artist";
-                }
-                album.type = "album";
-                return album;
-              });
-            }
-            if (item.artists && item.artists?.length > 0) {
-              item.artists = item.artists.map((artist: any) => {
-                if (artist.user && artist.user.profile_picture_url) {
-                  artist.user.profile_picture_url = getBlobUrl(
-                    artist.user.profile_picture_url
-                  );
-                }
-                artist.type = "artist";
-                return artist;
-              });
-            }
-            item.type = "song";
-            break;
-          }
-
-          case "album": {
-            if (item.image_url) {
-              item.image_url = getBlobUrl(item.image_url);
-            }
-            if (item.artist) {
-              if (item.artist.user && item.artist.user.profile_picture_url) {
-                item.artist.user.profile_picture_url = getBlobUrl(
-                  item.artist.user.profile_picture_url
-                );
-              }
-              item.artist.type = "artist";
-            }
-            item.type = "album";
-            break;
-          }
-
-          case "playlist": {
-            if (item.user && item.user.profile_picture_url) {
-              item.user.profile_picture_url = getBlobUrl(
-                item.user.profile_picture_url
-              );
-            }
-            item.image_url = `${process.env.API_URL}/playlists/${item.id}/cover-image`;
-            item.type = "playlist";
-            break;
-          }
-
-          case "comment": {
-            if (item.profile_picture_url) {
-              item.profile_picture_url = getBlobUrl(item.profile_picture_url);
-            }
-            break;
-          }
-        }
-
-        return item;
-      })
-    );
-
-    return processedItems as LikeableEntitiesMap[K][];
-  }
-
   static async getLikedCount<K extends keyof LikeableEntitiesMap>(
     userId: UUID,
     entity: K
@@ -398,7 +96,6 @@ export default class LikeService {
     return parseInt(res[0]?.count ?? "0", 10);
   }
 
-  //done
   static async getUsersWhoLiked<K extends keyof LikeableEntitiesMap>(
     entityId: UUID,
     entity: K,
@@ -440,7 +137,6 @@ export default class LikeService {
 
     return processedUsers;
   }
-
   static async hasUserLiked<K extends keyof LikeableEntitiesMap>(
     userId: UUID,
     entityId: UUID,
@@ -464,6 +160,471 @@ export default class LikeService {
       return res.length > 0;
     } catch (error) {
       console.error("Error checking like status:", error);
+      throw error;
+    }
+  }
+
+  static async getLikedSongs(
+    userId: UUID,
+    accessContext: AccessContext,
+    options?: {
+      orderByColumn?: SongOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Song[]> {
+    try {
+      const songVisibility = getVisibilityCondition(
+        "s",
+        "visibility_status",
+        "owner_id",
+        accessContext
+      );
+      const albumVisibility = getVisibilityCondition(
+        "al",
+        "visibility_status",
+        "owner_id",
+        accessContext
+      );
+      const userVisibility = getUserVisibilityCondition("u", accessContext);
+
+      const orderByColumn = options?.orderByColumn || "created_at";
+      const orderByDirection = options?.orderByDirection || "DESC";
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+
+      const orderByMap: Record<SongOrderByColumn, string> = {
+        title: "s.title",
+        created_at: "s.created_at",
+        streams: "s.streams",
+        release_date: "s.release_date",
+        likes: "likes",
+        comments: "comments",
+        duration: "s.duration",
+      };
+
+      const orderBySQL = orderByMap[orderByColumn];
+
+      const sql = `
+        SELECT 
+          s.*,
+          (
+            SELECT json_agg(
+              json_build_object(
+                'id', al.id,
+                'title', al.title,
+                'image_url', al.image_url,
+                'image_url_blurhash', al.image_url_blurhash,
+                'owner_id', al.owner_id,
+                'visibility_status', al.visibility_status,
+                'release_date', al.release_date,
+                'genre', al.genre,
+                'created_at', al.created_at,
+                'updated_at', al.updated_at,
+                'type', 'album',
+                'artist', json_build_object(
+                  'id', ar_album.id,
+                  'display_name', ar_album.display_name,
+                  'bio', ar_album.bio,
+                  'user_id', ar_album.user_id,
+                  'verified', ar_album.verified,
+                  'location', ar_album.location,
+                  'banner_image_url', ar_album.banner_image_url,
+                  'banner_image_url_blurhash', ar_album.banner_image_url_blurhash,
+                  'created_at', ar_album.created_at,
+                  'updated_at', ar_album.updated_at,
+                  'type', 'artist'
+                )
+              )
+            )
+            FROM albums al
+            JOIN album_songs als ON als.album_id = al.id
+            LEFT JOIN artists ar_album ON ar_album.id = al.created_by
+            WHERE als.song_id = s.id
+              AND ${notDeletedCondition("album", "al")}
+              AND ${albumVisibility}
+              AND (ar_album.id IS NULL OR ${notDeletedCondition(
+                "artist",
+                "ar_album"
+              )})
+          ) AS albums,
+          (
+            SELECT json_agg(
+              json_build_object(
+                'id', ar.id,
+                'display_name', ar.display_name,
+                'bio', ar.bio,
+                'user_id', ar.user_id,
+                'verified', ar.verified,
+                'location', ar.location,
+                'banner_image_url', ar.banner_image_url,
+                'banner_image_url_blurhash', ar.banner_image_url_blurhash,
+                'created_at', ar.created_at,
+                'updated_at', ar.updated_at,
+                'role', sa.role,
+                'type', 'artist',
+                'user', json_build_object(
+                  'id', u.id,
+                  'username', u.username,
+                  'email', u.email,
+                  'profile_picture_url', u.profile_picture_url,
+                  'pfp_blurhash', u.pfp_blurhash,
+                  'role', u.role,
+                  'is_private', u.is_private,
+                  'status', u.status,
+                  'artist_id', u.artist_id,
+                  'created_at', u.created_at,
+                  'updated_at', u.updated_at
+                )
+              )
+            )
+            FROM song_artists sa
+            JOIN artists ar ON ar.id = sa.artist_id
+            JOIN users u ON u.id = ar.user_id
+            WHERE sa.song_id = s.id
+              AND ${notDeletedCondition("artist", "ar")}
+              AND ${notDeletedCondition("user", "u")}
+              AND ${userVisibility}
+          ) AS artists,
+          (
+            SELECT COUNT(*)
+            FROM song_likes sl
+            WHERE sl.song_id = s.id
+          ) AS likes,
+          (
+            SELECT COUNT(*)
+            FROM comments c
+            WHERE c.song_id = s.id
+              AND ${notDeletedCondition("comment", "c")}
+          ) AS comments,
+          EXISTS (
+            SELECT 1 
+            FROM trending_songs ts 
+            WHERE ts.song_id = s.id
+          ) AS is_trending
+        FROM songs s
+        JOIN song_likes sl ON sl.song_id = s.id
+        WHERE sl.user_id = $1
+          AND ${notDeletedCondition("song", "s")}
+          AND ${songVisibility}
+        ORDER BY ${orderBySQL} ${orderByDirection}
+        LIMIT $2 OFFSET $3
+      `;
+
+      const res = await query(sql, [userId, limit, offset]);
+      if (!res || res.length === 0) {
+        return [];
+      }
+
+      const songs: Song[] = res.map((song: Song) => {
+        if (song.image_url) {
+          song.image_url = getBlobUrl(song.image_url);
+        }
+        if (song.audio_url) {
+          song.audio_url = getBlobUrl(song.audio_url);
+        }
+
+        if (song.albums?.length) {
+          song.albums.forEach((album) => {
+            if (album.image_url) {
+              album.image_url = getBlobUrl(album.image_url);
+            }
+            if (album.artist?.banner_image_url) {
+              album.artist.banner_image_url = getBlobUrl(
+                album.artist.banner_image_url
+              );
+            }
+          });
+        }
+
+        if (song.artists?.length) {
+          song.artists.forEach((artist) => {
+            if (artist.banner_image_url) {
+              artist.banner_image_url = getBlobUrl(artist.banner_image_url);
+            }
+            if (artist.user?.profile_picture_url) {
+              artist.user.profile_picture_url = getBlobUrl(
+                artist.user.profile_picture_url
+              );
+            }
+          });
+        }
+
+        song.type = "song";
+        return song;
+      });
+
+      return songs;
+    } catch (error) {
+      console.error("Error fetching liked songs:", error);
+      throw error;
+    }
+  }
+
+  static async getLikedAlbums(
+    userId: UUID,
+    accessContext: AccessContext,
+    options?: {
+      orderByColumn?: AlbumOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Album[]> {
+    try {
+      const albumVisibility = getVisibilityCondition(
+        "a",
+        "visibility_status",
+        "owner_id",
+        accessContext
+      );
+      const userVisibility = getUserVisibilityCondition("u", accessContext);
+
+      const orderByColumn = options?.orderByColumn || "created_at";
+      const orderByDirection = options?.orderByDirection || "DESC";
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+
+      const orderByMap: Record<AlbumOrderByColumn, string> = {
+        title: "a.title",
+        created_at: "a.created_at",
+        release_date: "a.release_date",
+        likes: "likes",
+        song_count: "song_count",
+        runtime: "runtime",
+      };
+
+      const orderBySQL = orderByMap[orderByColumn];
+
+      const sql = `
+        SELECT 
+          a.*,
+          (
+            SELECT row_to_json(artist_with_user)
+            FROM (
+              SELECT 
+                ar.id,
+                ar.display_name,
+                ar.bio,
+                ar.user_id,
+                ar.verified,
+                ar.location,
+                ar.banner_image_url,
+                ar.banner_image_url_blurhash,
+                ar.created_at,
+                ar.updated_at,
+                'artist' AS type,
+                row_to_json(u.*) AS user
+              FROM artists ar
+              LEFT JOIN users u ON u.id = ar.user_id
+              WHERE ar.id = a.created_by
+                AND ${notDeletedCondition("artist", "ar")}
+                AND (u.id IS NULL OR (${notDeletedCondition(
+                  "user",
+                  "u"
+                )} AND ${userVisibility}))
+            ) AS artist_with_user
+          ) AS artist,
+          (
+            SELECT COUNT(*)
+            FROM album_likes al
+            WHERE al.album_id = a.id
+          ) AS likes,
+          (
+            SELECT SUM(s.duration)
+            FROM songs s
+            JOIN album_songs als ON als.song_id = s.id
+            WHERE als.album_id = a.id
+              AND ${notDeletedCondition("song", "s")}
+          ) AS runtime,
+          (
+            SELECT COUNT(*)
+            FROM album_songs als
+            JOIN songs s ON s.id = als.song_id
+            WHERE als.album_id = a.id
+              AND ${notDeletedCondition("song", "s")}
+          ) AS song_count,
+          (
+            SELECT json_agg(als.song_id)
+            FROM album_songs als
+            JOIN songs s ON s.id = als.song_id
+            WHERE als.album_id = a.id
+              AND ${notDeletedCondition("song", "s")}
+          ) AS song_ids
+          
+        FROM albums a
+        JOIN album_likes al ON al.album_id = a.id
+        WHERE al.user_id = $1
+          AND ${notDeletedCondition("album", "a")}
+          AND ${albumVisibility}
+        ORDER BY ${orderBySQL} ${orderByDirection}
+        LIMIT $2 OFFSET $3
+      `;
+
+      const res = await query(sql, [userId, limit, offset]);
+      if (!res || res.length === 0) {
+        return [];
+      }
+
+      const albums: Album[] = res.map((album) => {
+        if (album.image_url) {
+          album.image_url = getBlobUrl(album.image_url);
+        }
+
+        if (album.artist) {
+          if (album.artist.banner_image_url) {
+            album.artist.banner_image_url = getBlobUrl(
+              album.artist.banner_image_url
+            );
+          }
+          if (album.artist.user?.profile_picture_url) {
+            album.artist.user.profile_picture_url = getBlobUrl(
+              album.artist.user.profile_picture_url
+            );
+          }
+        }
+
+        album.type = "album";
+        return album;
+      });
+
+      return albums;
+    } catch (error) {
+      console.error("Error fetching liked albums:", error);
+      throw error;
+    }
+  }
+
+  static async getLikedPlaylists(
+    userId: UUID,
+    accessContext: AccessContext,
+    options?: {
+      orderByColumn?: PlaylistOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Playlist[]> {
+    try {
+      const playlistVisibility = getVisibilityCondition(
+        "p",
+        "visibility_status",
+        "owner_id",
+        accessContext
+      );
+
+      const userVisibility = getUserVisibilityCondition("u", accessContext);
+
+      const orderByColumn = options?.orderByColumn || "created_at";
+      const orderByDirection = options?.orderByDirection || "DESC";
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+
+      const orderByMap: Record<PlaylistOrderByColumn, string> = {
+        title: "p.title",
+        created_at: "p.created_at",
+        likes: "likes",
+        runtime: "runtime",
+        song_count: "song_count",
+      };
+
+      const orderBySQL = orderByMap[orderByColumn];
+
+      const sql = `
+        SELECT 
+          p.*,
+          (
+            SELECT row_to_json(user_data)
+            FROM (
+              SELECT 
+                u.id,
+                u.username,
+                u.email,
+                u.profile_picture_url,
+                u.pfp_blurhash,
+                u.role,
+                u.is_private,
+                u.status,
+                u.artist_id,
+                u.created_at,
+                u.updated_at
+              FROM users u
+              WHERE u.id = p.owner_id
+                AND ${notDeletedCondition("user", "u")}
+                AND ${userVisibility}
+            ) AS user_data
+          ) AS user,
+          (
+            SELECT COUNT(*)
+            FROM playlist_likes pl
+            WHERE pl.playlist_id = p.id
+          ) AS likes,
+          (
+            SELECT COUNT(*)
+            FROM playlist_songs ps
+            JOIN songs s ON s.id = ps.song_id
+            WHERE ps.playlist_id = p.id
+              AND ${notDeletedCondition("song", "s")}
+          ) AS song_count,
+          (
+            SELECT COALESCE(SUM(s.duration), 0)
+            FROM songs s
+            JOIN playlist_songs ps ON ps.song_id = s.id
+            WHERE ps.playlist_id = p.id
+              AND ${notDeletedCondition("song", "s")}
+          ) AS runtime,
+          (
+            SELECT json_agg(ps.song_id ORDER BY ps.position)
+            FROM playlist_songs ps
+            JOIN songs s ON s.id = ps.song_id
+            WHERE ps.playlist_id = p.id
+              AND ${notDeletedCondition("song", "s")}
+          ) AS song_ids,
+          (
+            SELECT EXISTS (
+              SELECT 1
+              FROM playlist_songs ps
+              JOIN songs s ON s.id = ps.song_id
+              WHERE ps.playlist_id = p.id
+                AND ${notDeletedCondition("song", "s")}
+            )
+          ) AS has_song
+        FROM playlists p
+        JOIN playlist_likes pl ON pl.playlist_id = p.id
+        WHERE pl.user_id = $1
+          AND ${notDeletedCondition("playlist", "p")}
+          AND ${playlistVisibility}
+        ORDER BY ${orderBySQL} ${orderByDirection}
+        LIMIT $2 OFFSET $3
+      `;
+
+      const res = await query(sql, [userId, limit, offset]);
+      if (!res || res.length === 0) {
+        return [];
+      }
+
+      const playlists: Playlist[] = res.map((playlist) => {
+        if (playlist.user?.profile_picture_url) {
+          playlist.user.profile_picture_url = getBlobUrl(
+            playlist.user.profile_picture_url
+          );
+        }
+
+        if (playlist.image_url) {
+          playlist.image_url = getBlobUrl(playlist.image_url);
+        } else if ((playlist as any).has_song) {
+          playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
+        }
+
+        delete (playlist as any).has_song;
+        playlist.type = "playlist";
+        return playlist;
+      });
+
+      return playlists;
+    } catch (error) {
+      console.error("Error fetching liked playlists:", error);
       throw error;
     }
   }

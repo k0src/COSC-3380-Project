@@ -1,7 +1,20 @@
-import { User, Playlist, UUID, AccessContext, PlaylistOptions } from "@types";
+import {
+  User,
+  Playlist,
+  UUID,
+  AccessContext,
+  UserOrderByColumn,
+  OrderByDirection,
+  PlaylistOrderByColumn,
+} from "@types";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
-import { getAccessPredicate } from "@util";
+import {
+  notDeletedCondition,
+  getUserVisibilityCondition,
+  getVisibilityCondition,
+  isDeleted,
+} from "@util";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 
@@ -32,9 +45,15 @@ export default class UserRepository {
 
         const insertSql = `
           INSERT INTO users (
-              username, email, password_hash, 
-              authenticated_with, profile_picture_url, pfp_blurhash, role, status
-            )
+            username, 
+            email, 
+            password_hash, 
+            authenticated_with, 
+            profile_picture_url, 
+            pfp_blurhash, 
+            role, 
+            status
+          )
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
           RETURNING *`;
 
@@ -68,7 +87,6 @@ export default class UserRepository {
       throw error;
     }
   }
-
   static async update(
     id: UUID,
     {
@@ -98,6 +116,14 @@ export default class UserRepository {
     }
   ): Promise<User | null> {
     try {
+      if (!id) {
+        throw new Error("User ID is required");
+      }
+      const userDeleted = await isDeleted(id, "user");
+      if (userDeleted) {
+        throw new Error("Cannot update a deleted user.");
+      }
+
       if (
         username !== undefined &&
         typeof username === "string" &&
@@ -112,16 +138,15 @@ export default class UserRepository {
       ) {
         throw new Error("Email cannot be empty");
       }
+      if (
+        new_password !== undefined &&
+        typeof new_password === "string" &&
+        new_password.trim() === ""
+      ) {
+        throw new Error("New password cannot be empty");
+      }
 
       const result = await withTransaction(async (client) => {
-        const deletedCheck = await client.query(
-          `SELECT 1 FROM deleted_users WHERE user_id = $1`,
-          [id]
-        );
-        if (deletedCheck.rows.length > 0) {
-          throw new Error("Cannot update a deleted user.");
-        }
-
         const fields: string[] = [];
         const values: any[] = [];
 
@@ -140,7 +165,12 @@ export default class UserRepository {
             );
           }
 
-          const user = await UserRepository.getOne(id);
+          const userRes = await client.query(
+            `SELECT * FROM users WHERE id = $1`,
+            [id]
+          );
+
+          const user: User = userRes.rows[0];
           if (!user || !user.password_hash) {
             throw new Error("User not found or has no password set.");
           }
@@ -214,7 +244,6 @@ export default class UserRepository {
       throw error;
     }
   }
-
   static async delete(id: UUID) {
     try {
       await withTransaction(async (client) => {
@@ -229,36 +258,42 @@ export default class UserRepository {
       throw error;
     }
   }
-
-  static async getOne(
+  static async getUser(
     id: UUID,
-    options?: {
-      includeFollowerCount?: boolean;
-      includeFollowingCount?: boolean;
-    }
+    accessContext: AccessContext
   ): Promise<User | null> {
     try {
+      const userVisibility = getUserVisibilityCondition("u", accessContext);
+
       const sql = `
-        SELECT u.*,
-        CASE WHEN $1 THEN (SELECT COUNT(*) FROM user_followers uf
-          WHERE uf.following_id = u.id)
-        ELSE NULL END AS follower_count,
-        CASE WHEN $2 THEN (SELECT COUNT(*) FROM user_followers uf
-          WHERE uf.follower_id = u.id)
-        ELSE NULL END AS following_count
-        FROM users u
-        WHERE u.id = $3 AND NOT EXISTS (
-          SELECT 1 FROM deleted_users du WHERE du.user_id = u.id
-        )
-      `;
+      SELECT 
+        u.*,
+        (
+          SELECT COUNT(*)
+          FROM user_followers uf
+          WHERE uf.following_id = u.id
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_users du 
+              WHERE du.user_id = uf.follower_id
+            )
+        ) AS follower_count,
+        (
+          SELECT COUNT(*)
+          FROM user_followers uf
+          WHERE uf.follower_id = u.id
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_users du 
+              WHERE du.user_id = uf.following_id
+            )
+        ) AS following_count
+      FROM users u
+      WHERE u.id = $1
+        AND ${notDeletedCondition("user", "u")}
+        AND ${userVisibility}
+      LIMIT 1
+    `;
 
-      const params = [
-        options?.includeFollowerCount ?? false,
-        options?.includeFollowingCount ?? false,
-        id,
-      ];
-
-      const res = await query(sql, params);
+      const res = await query(sql, [id]);
       if (!res || res.length === 0) {
         return null;
       }
@@ -274,55 +309,74 @@ export default class UserRepository {
       throw error;
     }
   }
-
-  static async getMany(options?: {
-    includeFollowerCount?: boolean;
-    includeFollowingCount?: boolean;
-    limit?: number;
-    offset?: number;
-  }): Promise<User[]> {
+  static async getManyUsers(
+    accessContext: AccessContext,
+    options?: {
+      orderByColumn?: UserOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<User[]> {
     try {
-      const limit = options?.limit ?? 50;
-      const offset = options?.offset ?? 0;
+      const userVisibility = getUserVisibilityCondition("u", accessContext);
+
+      const orderByColumn = options?.orderByColumn || "created_at";
+      const orderByDirection = options?.orderByDirection || "DESC";
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+
+      const orderByMap: Record<UserOrderByColumn, string> = {
+        username: "u.username",
+        role: "u.role",
+        created_at: "u.created_at",
+      };
+
+      const orderBySQL = orderByMap[orderByColumn];
 
       const sql = `
-        SELECT u.*,
-        CASE WHEN $1 THEN (SELECT COUNT(*) FROM user_followers uf
-          WHERE uf.following_id = u.id)
-        ELSE NULL END AS follower_count,
-        CASE WHEN $2 THEN (SELECT COUNT(*) FROM user_followers uf
-          WHERE uf.follower_id = u.id)
-        ELSE NULL END AS following_count
-        FROM users u
-        WHERE NOT EXISTS (
-          SELECT 1 FROM deleted_users du WHERE du.user_id = u.id
-        )
-        ORDER BY u.created_at DESC
-        LIMIT $3 OFFSET $4
-      `;
+      SELECT 
+        u.*,
+        (
+          SELECT COUNT(*)
+          FROM user_followers uf
+          WHERE uf.following_id = u.id
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_users du 
+              WHERE du.user_id = uf.follower_id
+            )
+        ) AS follower_count,
+        (
+          SELECT COUNT(*)
+          FROM user_followers uf
+          WHERE uf.follower_id = u.id
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_users du 
+              WHERE du.user_id = uf.following_id
+            )
+        ) AS following_count
+        
+      FROM users u
+      WHERE ${notDeletedCondition("user", "u")}
+        AND ${userVisibility}
+      ORDER BY ${orderBySQL} ${orderByDirection}
+      LIMIT $1 OFFSET $2
+    `;
 
-      const params = [
-        options?.includeFollowerCount ?? false,
-        options?.includeFollowingCount ?? false,
-        limit,
-        offset,
-      ];
-
-      const users = await query(sql, params);
-      if (!users || users.length === 0) {
+      const res = await query(sql, [limit, offset]);
+      if (!res || res.length === 0) {
         return [];
       }
 
-      const processedUsers = await Promise.all(
-        users.map(async (user: User) => {
-          if (user.profile_picture_url) {
-            user.profile_picture_url = getBlobUrl(user.profile_picture_url);
-          }
-          return user;
-        })
-      );
+      const users: User[] = res.map((user) => {
+        if (user.profile_picture_url) {
+          user.profile_picture_url = getBlobUrl(user.profile_picture_url);
+        }
 
-      return processedUsers;
+        return user;
+      });
+
+      return users;
     } catch (error) {
       console.error("Error fetching users:", error);
       throw error;
@@ -382,106 +436,144 @@ export default class UserRepository {
       throw error;
     }
   }
-
   static async getPlaylists(
     userId: UUID,
     accessContext: AccessContext,
-    options?: PlaylistOptions
+    options?: {
+      orderByColumn?: PlaylistOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
   ): Promise<Playlist[]> {
     try {
-      const { sql: predicateSqlRaw, params: predicateParams } =
-        getAccessPredicate(accessContext, "p", 1);
-      const predicateSql =
-        (predicateSqlRaw && predicateSqlRaw.trim()) || "TRUE";
+      const playlistVisibility = getVisibilityCondition(
+        "p",
+        "visibility_status",
+        "owner_id",
+        accessContext
+      );
+      const userVisibility = getUserVisibilityCondition("u", accessContext);
 
-      const limit = options?.limit ?? 50;
-      const offset = options?.offset ?? 0;
-      const orderByColumn = options?.orderByColumn ?? "created_at";
-      const orderByDirection = options?.orderByDirection ?? "DESC";
+      const orderByColumn = options?.orderByColumn || "created_at";
+      const orderByDirection = options?.orderByDirection || "DESC";
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
 
-      const orderByMap: Record<string, string> = {
-        name: "p.name",
+      const orderByMap: Record<PlaylistOrderByColumn, string> = {
+        title: "p.title",
         created_at: "p.created_at",
-        updated_at: "p.updated_at",
+        likes: "likes",
+        runtime: "runtime",
+        song_count: "song_count",
       };
 
-      const sqlOrderByColumn = orderByMap[orderByColumn] ?? "p.created_at";
-
-      const selectFields: string[] = [
-        "p.*",
-        "EXISTS(SELECT 1 FROM playlist_songs ps WHERE ps.playlist_id = p.id) as has_song",
-      ];
-
-      if (options?.includeLikes) {
-        selectFields.push(
-          "(SELECT COUNT(*) FROM playlist_likes pl WHERE pl.playlist_id = p.id) AS likes"
-        );
-      }
-
-      if (options?.includeSongCount) {
-        selectFields.push(
-          `(SELECT COUNT(*) 
-           FROM playlist_songs ps 
-           WHERE ps.playlist_id = p.id
-             AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = ps.song_id)
-          ) AS song_count`
-        );
-      }
-
-      if (options?.includeRuntime) {
-        selectFields.push(
-          `(SELECT COALESCE(SUM(s.duration), 0) 
-           FROM songs s
-           JOIN playlist_songs ps ON ps.song_id = s.id
-           WHERE ps.playlist_id = p.id
-             AND NOT EXISTS (SELECT 1 FROM deleted_songs ds WHERE ds.song_id = s.id)
-          ) AS runtime`
-        );
-      }
-
-      const limitIndex = predicateParams.length + 2;
-      const offsetIndex = predicateParams.length + 3;
+      const orderBySQL = orderByMap[orderByColumn];
 
       const sql = `
-        SELECT ${selectFields.join(",\n")}
+        SELECT 
+          p.*,
+          (
+            SELECT row_to_json(user_data)
+            FROM (
+              SELECT 
+                u.id,
+                u.username,
+                u.email,
+                u.profile_picture_url,
+                u.pfp_blurhash,
+                u.role,
+                u.is_private,
+                u.status,
+                u.artist_id,
+                u.created_at,
+                u.updated_at
+              FROM users u
+              WHERE u.id = p.owner_id
+                AND ${notDeletedCondition("user", "u")}
+                AND ${userVisibility}
+            ) AS user_data
+          ) AS user,
+          (
+            SELECT COUNT(*)
+            FROM playlist_likes pl
+            WHERE pl.playlist_id = p.id
+          ) AS likes,
+          (
+            SELECT COUNT(*)
+            FROM playlist_songs ps
+            JOIN songs s ON s.id = ps.song_id
+            WHERE ps.playlist_id = p.id
+              AND ${notDeletedCondition("song", "s")}
+          ) AS song_count,
+          (
+            SELECT COALESCE(SUM(s.duration), 0)
+            FROM songs s
+            JOIN playlist_songs ps ON ps.song_id = s.id
+            WHERE ps.playlist_id = p.id
+              AND ${notDeletedCondition("song", "s")}
+          ) AS runtime,
+          (
+            SELECT json_agg(ps.song_id ORDER BY ps.position)
+            FROM playlist_songs ps
+            JOIN songs s ON s.id = ps.song_id
+            WHERE ps.playlist_id = p.id
+              AND ${notDeletedCondition("song", "s")}
+          ) AS song_ids,
+          (
+            SELECT EXISTS (
+              SELECT 1
+              FROM playlist_songs ps
+              JOIN songs s ON s.id = ps.song_id
+              WHERE ps.playlist_id = p.id
+                AND ${notDeletedCondition("song", "s")}
+            )
+          ) AS has_song
         FROM playlists p
-        WHERE p.owner_id = $1 AND (${predicateSql})
-        ORDER BY ${sqlOrderByColumn} ${orderByDirection}
-        LIMIT $${limitIndex} OFFSET $${offsetIndex}
+        WHERE p.owner_id = $1
+          AND ${notDeletedCondition("playlist", "p")}
+          AND ${playlistVisibility}
+        ORDER BY ${orderBySQL} ${orderByDirection}
+        LIMIT $2 OFFSET $3
       `;
 
-      const params = [userId, ...predicateParams, limit, offset];
-
-      const playlists = await query(sql, params);
-      if (!playlists || playlists.length === 0) {
+      const res = await query(sql, [userId, limit, offset]);
+      if (!res || res.length === 0) {
         return [];
       }
 
-      const processedPlaylists = playlists.map((playlist: Playlist) => {
+      const playlists: Playlist[] = res.map((playlist) => {
+        if (playlist.user?.profile_picture_url) {
+          playlist.user.profile_picture_url = getBlobUrl(
+            playlist.user.profile_picture_url
+          );
+        }
+
         if (playlist.image_url) {
           playlist.image_url = getBlobUrl(playlist.image_url);
         } else if ((playlist as any).has_song) {
           playlist.image_url = `${API_URL}/playlists/${playlist.id}/cover-image`;
         }
-        delete (playlist as any).has_song;
 
+        delete (playlist as any).has_song;
         playlist.type = "playlist";
+
         return playlist;
       });
 
-      return processedPlaylists;
+      return playlists;
     } catch (error) {
       console.error("Error fetching user playlists:", error);
       throw error;
     }
   }
-
-  static async count(): Promise<number> {
+  static async getUserCount(): Promise<number> {
     try {
       const res = await query(
         `SELECT COUNT(*) FROM users
         WHERE NOT EXISTS (
-          SELECT 1 FROM deleted_users du WHERE du.user_id = users.id
+          SELECT 1 FROM deleted_users du 
+          WHERE du.user_id = users.id
         )`
       );
       return parseInt(res[0]?.count ?? "0", 10);
@@ -528,21 +620,6 @@ export default class UserRepository {
       return user;
     } catch (error) {
       console.error("Error validating credentials:", error);
-      throw error;
-    }
-  }
-
-  static async getUserCount(): Promise<number> {
-    try {
-      const res = await query(
-        `SELECT COUNT(*) FROM users
-        WHERE NOT EXISTS (
-          SELECT 1 FROM deleted_users du WHERE du.user_id = users.id
-        )`
-      );
-      return parseInt(res[0]?.count ?? "0", 10);
-    } catch (error) {
-      console.error("Error counting users:", error);
       throw error;
     }
   }

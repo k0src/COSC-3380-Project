@@ -2,7 +2,8 @@ import { memo, useState, useCallback, useMemo, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { userApi } from "@api";
-import type { UUID } from "@types";
+import { useAuth } from "@contexts";
+import type { AccessContext, UUID } from "@types";
 import { useAsyncData } from "@hooks";
 import {
   ErrorPage,
@@ -21,8 +22,15 @@ import { LuArrowLeft } from "react-icons/lu";
 type TabType = "followers" | "following" | "liked";
 
 const UserInfoPage: React.FC = () => {
+  const { user } = useAuth();
   const { id, tab } = useParams<{ id: UUID; tab?: string }>();
   const navigate = useNavigate();
+
+  const accessContext: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "owner",
+  };
 
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     if (tab === "followers" || tab === "following") return tab;
@@ -51,7 +59,7 @@ const UserInfoPage: React.FC = () => {
 
   const { data, loading, error } = useAsyncData(
     {
-      user: () => userApi.getUserById(id || ""),
+      pageUser: () => userApi.getUser(id, accessContext),
     },
     [id],
     {
@@ -60,11 +68,11 @@ const UserInfoPage: React.FC = () => {
     }
   );
 
-  const user = data?.user;
+  const pageUser = data?.pageUser;
 
   const userImageUrl = useMemo(
-    () => user?.profile_picture_url || userPlaceholder,
-    [user]
+    () => pageUser?.profile_picture_url || userPlaceholder,
+    [pageUser]
   );
 
   const handleTabClick = useCallback(
@@ -76,18 +84,18 @@ const UserInfoPage: React.FC = () => {
   );
 
   const tabTitle = useMemo(() => {
-    if (!user) return "";
+    if (!pageUser) return "";
     switch (activeTab) {
       case "followers":
-        return `${user.username}'s Followers`;
+        return `${pageUser.username}'s Followers`;
       case "following":
-        return `Followed by ${user.username}`;
+        return `Followed by ${pageUser.username}`;
       case "liked":
-        return `Liked by ${user.username}`;
+        return `Liked by ${pageUser.username}`;
       default:
         return "";
     }
-  }, [activeTab, user]);
+  }, [activeTab, pageUser]);
 
   if (error) {
     return (
@@ -101,12 +109,12 @@ const UserInfoPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{user ? `${user.username} - Info` : "User Info"}</title>
+        <title>{pageUser ? `${pageUser.username} - Info` : "User Info"}</title>
       </Helmet>
 
       {loading ? (
         <PageLoader />
-      ) : !user ? (
+      ) : !pageUser ? (
         <ErrorPage
           title="User Not Found"
           message="The requested user does not exist."
@@ -120,8 +128,8 @@ const UserInfoPage: React.FC = () => {
             <header className={styles.userInfoHeader}>
               <LazyImg
                 src={userImageUrl}
-                blurHash={user.pfp_blurhash}
-                alt={`${user.username} Image`}
+                blurHash={pageUser.pfp_blurhash}
+                alt={`${pageUser.username} Image`}
                 imgClassNames={[styles.userImage]}
                 loading="eager"
               />
@@ -160,10 +168,10 @@ const UserInfoPage: React.FC = () => {
               </button>
             </div>
             {activeTab === "followers" && (
-              <UserInfoFollowers userId={id} username={user.username} />
+              <UserInfoFollowers userId={id} username={pageUser.username} />
             )}
             {activeTab === "following" && (
-              <UserInfoFollowing userId={id} username={user.username} />
+              <UserInfoFollowing userId={id} username={pageUser.username} />
             )}
             {activeTab === "liked" && <UserInfoLiked userId={id} />}
           </div>

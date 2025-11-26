@@ -34,7 +34,11 @@ export async function authenticateToken(
       return next();
     }
 
-    const user = await UserRepository.getOne(decoded.userId);
+    const user = await UserRepository.getUser(decoded.userId, {
+      role: "user",
+      userId: decoded.userId,
+      scope: "owner",
+    });
     if (!user) {
       return next();
     }
@@ -90,7 +94,11 @@ export async function requireAuth(
       return;
     }
 
-    const user = await UserRepository.getOne(decoded.userId);
+    const user = await UserRepository.getUser(decoded.userId, {
+      role: "user",
+      userId: decoded.userId,
+      scope: "owner",
+    });
     if (!user) {
       res.status(401).json({
         error: "Unauthorized",
@@ -100,10 +108,10 @@ export async function requireAuth(
       return;
     }
 
-    if (user.status !== "ACTIVE") {
+    if (user.status === "SUSPENDED") {
       res.status(401).json({
         error: "Unauthorized",
-        message: "User account is not active",
+        message: "User account is suspended",
         statusCode: 401,
       });
       return;

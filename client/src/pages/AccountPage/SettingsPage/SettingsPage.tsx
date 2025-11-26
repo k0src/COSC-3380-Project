@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useMemo } from "react";
+import { memo, useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
@@ -13,6 +13,7 @@ import {
   ConfirmationModal,
   SettingsArtistCta,
 } from "@components";
+import type { AccessContext } from "@types";
 import { userApi } from "@api";
 import { useAuth, useSettings } from "@contexts";
 import styles from "./SettingsPage.module.css";
@@ -53,6 +54,17 @@ const SettingsPage: React.FC = () => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  if (!isAuthenticated || !user) {
+    navigate("/login");
+    return;
+  }
+
+  const accessContext: AccessContext = {
+    role: user?.role === "ADMIN" ? "admin" : "user",
+    userId: user?.id,
+    scope: "owner",
+  };
 
   // Account form state
   const [accountForm, setAccountForm] = useState<AccountFormData>({
@@ -436,6 +448,17 @@ const SettingsPage: React.FC = () => {
     }
   };
 
+  const handlePasswordChanged = useCallback(async () => {
+    if (user?.id) {
+      try {
+        const updatedUser = await userApi.getUser(user.id, accessContext);
+        updateUser(updatedUser);
+      } catch (error) {
+        console.error("Failed to refresh user data:", error);
+      }
+    }
+  }, [user?.id, accessContext, updateUser]);
+
   const themeOptions = getAvailableThemes();
 
   const zoomOptions = useMemo(() => {
@@ -509,18 +532,7 @@ const SettingsPage: React.FC = () => {
           isOpen={isPasswordModalOpen}
           onClose={() => setIsPasswordModalOpen(false)}
           userId={user?.id || ""}
-          onPasswordChanged={() => {
-            if (user?.id) {
-              userApi
-                .getUserById(user.id)
-                .then((updatedUser) => {
-                  updateUser(updatedUser);
-                })
-                .catch((error) => {
-                  console.error("Failed to refresh user data:", error);
-                });
-            }
-          }}
+          onPasswordChanged={handlePasswordChanged}
         />
 
         {user && (user.role === "ARTIST" || user.role === "ADMIN") && (
