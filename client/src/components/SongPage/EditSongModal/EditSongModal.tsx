@@ -191,6 +191,7 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
         }
 
         const songData: any = {
+          owner_id: song.owner_id,
           title: formState.title.trim(),
           genre: formState.genre.trim(),
           release_date: formState.release_date.trim(),

@@ -32,13 +32,7 @@ const AdminManageContentAlbums: React.FC<AdminManageContentAlbumsProps> = ({
 
   const fetchAlbums = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return albumApi.getMany(accessContext, {
-        includeLikes: true,
-        includeSongCount: true,
-        includeArtist: true,
-        limit,
-        offset,
-      });
+      return albumApi.getManyAlbums(accessContext, { limit, offset });
     },
     [accessContext]
   );

@@ -34,17 +34,13 @@ const RelatedAlbums: React.FC<RelatedAlbumsProps> = ({
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "ownerList",
+    scope: "global",
   };
 
   const getApiFn = () => {
     switch (mode) {
       case "related":
-        return () =>
-          albumApi.getRelatedAlbums(albumId, {
-            includeArtist: true,
-            limit: 10,
-          });
+        return () => albumApi.getRelatedAlbums(albumId, { limit: 10 });
       case "artist":
         return () =>
           artistApi.getAlbums(artistId, accessContext, {

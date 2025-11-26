@@ -46,6 +46,7 @@ export const songApi = {
   async update(
     songId: UUID,
     data: {
+      owner_id: UUID;
       title?: string;
       genre?: string;
       release_date?: string;
@@ -87,6 +88,7 @@ export const songApi = {
         params: {
           role: accessContext.role,
           userId: accessContext.userId,
+          scope: accessContext.scope,
         },
       });
       return response.data;

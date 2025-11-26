@@ -60,9 +60,7 @@ const AppealsPage: React.FC = () => {
           case "song":
             return await songApi.getSongDetails(entityId, accessContext);
           case "album":
-            return await albumApi.getAlbumById(entityId, accessContext, {
-              includeArtist: true,
-            });
+            return await albumApi.getAlbumDetails(entityId, accessContext);
           case "playlist":
             return await playlistApi.getPlaylistById(entityId, accessContext, {
               includeUser: true,

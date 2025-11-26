@@ -1,5 +1,30 @@
-import type { AccessContext } from "@types";
+import type { AccessContext, UUID } from "@types";
 import { isUuidV4 } from "@validators";
+import { query } from "@config/database.js";
+
+export type DeletableEntityType =
+  | "song"
+  | "album"
+  | "playlist"
+  | "artist"
+  | "user"
+  | "comment";
+
+export async function isDeleted(id: UUID, type: DeletableEntityType) {
+  try {
+    const res = await query(
+      `SELECT 1 FROM deleted_${type}s 
+      WHERE ${type}_id = $1 
+      LIMIT 1`,
+      [id]
+    );
+
+    return Array.isArray(res) && res.length > 0;
+  } catch (error) {
+    console.error("Error checking deletion status:", error);
+    throw error;
+  }
+}
 
 export const parseAccessContext = (query: any): AccessContext => {
   const role = typeof query.role === "string" ? query.role : "anonymous";

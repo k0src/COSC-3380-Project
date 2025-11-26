@@ -15,16 +15,7 @@ const router = express.Router();
 // GET /api/albums
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const {
-      includeArtist,
-      includeRuntime,
-      includeSongCount,
-      includeLikes,
-      orderByColumn,
-      orderByDirection,
-      limit,
-      offset,
-    } = req.query;
+    const { orderByColumn, orderByDirection, limit, offset } = req.query;
 
     let column = (orderByColumn as string) || "created_at";
     let direction = (orderByDirection as string) || "DESC";
@@ -35,12 +26,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     }
 
     const accessContext = parseAccessContext(req.query);
-
-    const albums = await AlbumRepository.getMany(accessContext, {
-      includeArtist: includeArtist === "true",
-      includeRuntime: includeRuntime === "true",
-      includeLikes: includeLikes === "true",
-      includeSongCount: includeSongCount === "true",
+    const albums = await AlbumRepository.getManyAlbums(accessContext, {
       orderByColumn: column as any,
       orderByDirection: direction as any,
       limit: limit ? parseInt(limit as string, 10) : undefined,
@@ -60,13 +46,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const {
-      includeArtist,
-      includeRuntime,
-      includeSongCount,
-      includeLikes,
-      includeSongIds,
-    } = req.query;
 
     if (!id) {
       res.status(400).json({ error: "Album ID is required" });
@@ -74,14 +53,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     }
 
     const accessContext = parseAccessContext(req.query);
-
-    const album = await AlbumRepository.getOne(id, accessContext, {
-      includeArtist: includeArtist === "true",
-      includeRuntime: includeRuntime === "true",
-      includeLikes: includeLikes === "true",
-      includeSongCount: includeSongCount === "true",
-      includeSongIds: includeSongIds === "true",
-    });
+    const album = await AlbumRepository.getAlbumDetails(id, accessContext);
 
     if (!album) {
       res.status(404).json({ error: "Album not found" });
@@ -206,7 +178,7 @@ router.post(
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { includeArtists, includeLikes, limit, offset } = req.query;
+    const { limit, offset } = req.query;
 
     if (!id) {
       res.status(400).json({ error: "Album ID is required" });
@@ -214,10 +186,7 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
     }
 
     const accessContext = parseAccessContext(req.query);
-
     const songs = await AlbumRepository.getSongs(id, accessContext, {
-      includeArtists: includeArtists === "true",
-      includeLikes: includeLikes === "true",
       limit: limit ? parseInt(limit as string, 10) : undefined,
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });
@@ -230,6 +199,31 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 });
+
+// POST /api/albums/:albumId/songs
+router.post(
+  "/:albumId/songs",
+  authenticateToken,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { albumId } = req.params;
+      const { songId, trackNumber } = req.body;
+      if (!albumId || !songId || trackNumber === undefined) {
+        res.status(400).json({
+          error: "Album ID, Song ID, and Track Number are required",
+        });
+        return;
+      }
+
+      await AlbumRepository.addSong(albumId, songId, trackNumber);
+      res.status(200).json({ message: "Song added to album successfully" });
+    } catch (error: any) {
+      console.error("Error in POST /albums/:albumId/songs:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
 
 // DELETE /api/albums/:albumId/songs/:songId
 router.delete(
@@ -288,14 +282,7 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const {
-        includeArtist,
-        includeLikes,
-        includeSongCount,
-        includeRuntime,
-        limit,
-        offset,
-      } = req.query;
+      const { limit, offset } = req.query;
 
       if (!id) {
         res.status(400).json({ error: "Album ID is required" });
@@ -303,10 +290,6 @@ router.get(
       }
 
       const albums = await AlbumRepository.getRelatedAlbums(id, {
-        includeArtist: includeArtist === "true",
-        includeLikes: includeLikes === "true",
-        includeSongCount: includeSongCount === "true",
-        includeRuntime: includeRuntime === "true",
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });

@@ -10,6 +10,7 @@ import {
   getVisibilityCondition,
   getUserVisibilityCondition,
   notDeletedCondition,
+  isDeleted,
 } from "@util";
 import { query, withTransaction } from "@config/database";
 import { getBlobUrl } from "@config/blobStorage";
@@ -43,10 +44,36 @@ export default class SongRepository {
     visibility_status?: string;
   }): Promise<Song | null> {
     try {
+      if (!owner_id) {
+        throw new Error("Owner ID is required");
+      }
+      const ownerDeleted = await isDeleted(owner_id, "user");
+      if (ownerDeleted) {
+        throw new Error("Cannot create song for a deleted user.");
+      }
+
+      if (artists) {
+        for (const artist of artists) {
+          if (!artist.id) {
+            throw new Error("Artist ID is required");
+          }
+          const artistDeleted = await isDeleted(artist.id, "artist");
+          if (artistDeleted) {
+            throw new Error("Cannot add deleted artist to a song.");
+          }
+        }
+      }
+
+      if (album_id) {
+        const albumDeleted = await isDeleted(album_id, "album");
+        if (albumDeleted) {
+          throw new Error("Cannot add song to a deleted album.");
+        }
+      }
+
       if (!title || typeof title !== "string" || title.trim() === "") {
         throw new Error("Song title cannot be empty");
       }
-
       if (!release_date) {
         release_date = new Date().toISOString().split("T")[0];
       }
@@ -141,6 +168,7 @@ export default class SongRepository {
   static async update(
     id: UUID,
     {
+      owner_id,
       title,
       duration,
       genre,
@@ -153,6 +181,7 @@ export default class SongRepository {
       album_id,
       artists,
     }: {
+      owner_id: UUID;
       title?: string;
       duration?: number;
       genre?: string;
@@ -167,6 +196,38 @@ export default class SongRepository {
     }
   ): Promise<Song | null> {
     try {
+      if (!owner_id) {
+        throw new Error("Owner ID is required");
+      }
+      const ownerDeleted = await isDeleted(owner_id, "user");
+      if (ownerDeleted) {
+        throw new Error("Cannot update song for a deleted user.");
+      }
+
+      const songDeleted = await isDeleted(id, "song");
+      if (songDeleted) {
+        throw new Error("Cannot update a deleted song.");
+      }
+
+      if (artists) {
+        for (const artist of artists) {
+          if (!artist.id) {
+            throw new Error("Artist ID is required");
+          }
+          const artistDeleted = await isDeleted(artist.id, "artist");
+          if (artistDeleted) {
+            throw new Error("Cannot add deleted artist to a song.");
+          }
+        }
+      }
+
+      if (album_id) {
+        const albumDeleted = await isDeleted(album_id, "album");
+        if (albumDeleted) {
+          throw new Error("Cannot add song to a deleted album.");
+        }
+      }
+
       if (
         title !== undefined &&
         (typeof title !== "string" || title.trim() === "")
@@ -175,14 +236,6 @@ export default class SongRepository {
       }
 
       const res = await withTransaction(async (client) => {
-        const deletedCheck = await client.query(
-          `SELECT 1 FROM deleted_songs WHERE song_id = $1`,
-          [id]
-        );
-        if (deletedCheck.rows.length > 0) {
-          throw new Error("Cannot update a deleted song.");
-        }
-
         const fields: string[] = [];
         const values: any[] = [];
 

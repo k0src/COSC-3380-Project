@@ -50,7 +50,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     }
 
     const accessContext = parseAccessContext(req.query);
-
     const songs = await SongRepository.getManySongs(accessContext, {
       orderByColumn: column as any,
       orderByDirection: direction as any,

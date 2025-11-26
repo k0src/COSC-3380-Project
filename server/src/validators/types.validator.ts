@@ -14,10 +14,10 @@ const VALID_ORDER_BY_COLUMNS = {
     "release_date",
     "likes",
     "runtime",
-    "songCount",
+    "song_count",
   ] as const,
   artist: ["name", "created_at", "verified", "streams"] as const,
-  playlist: ["title", "created_at", "likes", "songCount"] as const,
+  playlist: ["title", "created_at", "likes", "song_count"] as const,
 } as const;
 
 const VALID_ORDER_BY_DIRECTIONS = ["ASC", "DESC"] as const;
@@ -30,13 +30,6 @@ export type PlaylistOrderByColumn =
   (typeof VALID_ORDER_BY_COLUMNS.playlist)[number];
 export type OrderByDirection = (typeof VALID_ORDER_BY_DIRECTIONS)[number];
 
-/**
- * Validates orderBy column and direction for a given entity type
- * @param column The column to order by
- * @param direction The direction to order by
- * @param entityType The type of entity
- * @returns true if the column and direction are valid for the entity type, false otherwise
- */
 export function validateOrderBy(
   column: string,
   direction: string,

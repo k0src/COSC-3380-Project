@@ -781,9 +781,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
             dispatch({ type: "SET_PLAYING", isPlaying: true });
           }
         } else if (isAlbum(playable)) {
-          const songs = await albumApi.getSongs(playable.id, ctx, {
-            includeArtists: true,
-          });
+          const songs = await albumApi.getSongs(playable.id, ctx);
           dispatch({
             type: "PLAY_LIST",
             songs,
@@ -913,9 +911,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
           });
           songs = playlistSongs ?? [];
         } else if (isAlbum(entity)) {
-          songs = await albumApi.getSongs(entity.id, ctx, {
-            includeArtists: true,
-          });
+          songs = await albumApi.getSongs(entity.id, ctx);
         }
 
         if (songs.length === 0) {
@@ -940,9 +936,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
           });
           songs = playlistSongs ?? [];
         } else if (isAlbum(entity)) {
-          songs = await albumApi.getSongs(entity.id, ctx, {
-            includeArtists: true,
-          });
+          songs = await albumApi.getSongs(entity.id, ctx);
         }
 
         if (songs.length === 0) {

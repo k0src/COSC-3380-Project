@@ -41,7 +41,7 @@ export type AlbumOrderByColumn =
   | "release_date"
   | "likes"
   | "runtime"
-  | "songCount";
+  | "song_count";
 
 export interface AlbumOptions {
   includeArtist?: boolean;

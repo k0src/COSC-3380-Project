@@ -139,6 +139,7 @@ const EditAlbumModal: React.FC<EditAlbumModalProps> = ({
 
       try {
         const albumData: any = {
+          owner_id: album.owner_id,
           title: formState.title.trim(),
           genre: formState.genre.trim(),
           release_date: formState.releaseDate.trim(),

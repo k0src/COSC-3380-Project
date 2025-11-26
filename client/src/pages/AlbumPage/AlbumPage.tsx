@@ -36,7 +36,7 @@ const AlbumPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "single",
+    scope: "owner",
   };
 
   if (!id) {
@@ -50,14 +50,7 @@ const AlbumPage: React.FC = () => {
 
   const { data, loading, error, refetch } = useAsyncData(
     {
-      album: () =>
-        albumApi.getAlbumById(id, accessContext, {
-          includeArtist: true,
-          includeLikes: true,
-          includeSongCount: true,
-          includeRuntime: true,
-          includeSongIds: true,
-        }),
+      album: () => albumApi.getAlbumDetails(id, accessContext),
     },
     [id],
     {
@@ -69,9 +62,7 @@ const AlbumPage: React.FC = () => {
   const album = data?.album;
 
   const fetchSongs = useCallback(async () => {
-    const result = await albumApi.getSongs(id, accessContext, {
-      includeArtists: true,
-    });
+    const result = await albumApi.getSongs(id, accessContext);
     return result ?? [];
   }, [id, accessContext]);
 
