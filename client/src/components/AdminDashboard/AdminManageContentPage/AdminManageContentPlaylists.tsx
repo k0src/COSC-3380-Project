@@ -5,7 +5,7 @@ import type {
   DataTableBulkAction,
   AccessContext,
 } from "@types";
-import { DataTable, ConfirmationModal, CreatePlaylistModal } from "@components";
+import { DataTable, ConfirmationModal, EditPlaylistModal } from "@components";
 import { playlistApi, adminApi } from "@api";
 import {
   playlistColumns,
@@ -41,12 +41,9 @@ const AdminManageContentPlaylists: React.FC<
 
   const fetchPlaylists = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return playlistApi.getMany(accessContext, {
+      return playlistApi.getManyPlaylists(accessContext, {
         limit,
         offset,
-        includeUser: true,
-        includeLikes: true,
-        includeSongCount: true,
       });
     },
     [accessContext]
@@ -239,12 +236,11 @@ const AdminManageContentPlaylists: React.FC<
       />
 
       {playlistToEdit && (
-        <CreatePlaylistModal
-          mode="edit"
+        <EditPlaylistModal
           isOpen={isPlaylistEditModalOpen}
           onClose={() => setIsPlaylistEditModalOpen(false)}
           playlist={playlistToEdit}
-          onPlaylistCreated={handlePlaylistEdited}
+          onPlaylistUpdated={handlePlaylistEdited}
           adminMode
         />
       )}

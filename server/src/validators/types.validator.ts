@@ -17,7 +17,7 @@ const VALID_ORDER_BY_COLUMNS = {
     "song_count",
   ] as const,
   artist: ["name", "created_at", "verified", "streams"] as const,
-  playlist: ["title", "created_at", "likes", "song_count"] as const,
+  playlist: ["title", "created_at", "likes", "song_count", "runtime"] as const,
 } as const;
 
 const VALID_ORDER_BY_DIRECTIONS = ["ASC", "DESC"] as const;

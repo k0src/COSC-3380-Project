@@ -207,15 +207,15 @@ router.post(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { albumId } = req.params;
-      const { songId, trackNumber } = req.body;
-      if (!albumId || !songId || trackNumber === undefined) {
+      const { songId } = req.body;
+      if (!albumId || !songId) {
         res.status(400).json({
-          error: "Album ID, Song ID, and Track Number are required",
+          error: "Album ID and Song ID are required",
         });
         return;
       }
 
-      await AlbumRepository.addSong(albumId, songId, trackNumber);
+      await AlbumRepository.addSong(albumId, songId);
       res.status(200).json({ message: "Song added to album successfully" });
     } catch (error: any) {
       console.error("Error in POST /albums/:albumId/songs:", error);

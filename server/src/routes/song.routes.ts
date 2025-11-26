@@ -70,7 +70,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-
     if (!id) {
       res.status(400).json({ error: "Song ID is required" });
       return;

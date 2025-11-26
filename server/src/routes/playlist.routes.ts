@@ -19,16 +19,7 @@ const router = express.Router();
 // GET /api/playlists
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
-    const {
-      includeUser,
-      includeLikes,
-      includeSongCount,
-      includeRuntime,
-      orderByColumn,
-      orderByDirection,
-      limit,
-      offset,
-    } = req.query;
+    const { orderByColumn, orderByDirection, limit, offset } = req.query;
 
     let column = (orderByColumn as string) || "created_at";
     let direction = (orderByDirection as string) || "DESC";
@@ -39,12 +30,9 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     }
 
     const accessContext = parseAccessContext(req.query);
-
-    const playlists = await PlaylistRepository.getMany(accessContext, {
-      includeUser: includeUser === "true",
-      includeLikes: includeLikes === "true",
-      includeSongCount: includeSongCount === "true",
-      includeRuntime: includeRuntime === "true",
+    const playlists = await PlaylistRepository.getManyPlaylists(accessContext, {
+      orderByColumn: column as any,
+      orderByDirection: direction as any,
       limit: limit ? parseInt(limit as string, 10) : undefined,
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });
@@ -62,22 +50,16 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { includeUser, includeLikes, includeSongCount, includeRuntime } =
-      req.query;
-
     if (!id) {
       res.status(400).json({ error: "Playlist ID is required" });
       return;
     }
 
     const accessContext = parseAccessContext(req.query);
-
-    const playlist = await PlaylistRepository.getOne(id, accessContext, {
-      includeUser: includeUser === "true",
-      includeLikes: includeLikes === "true",
-      includeSongCount: includeSongCount === "true",
-      includeRuntime: includeRuntime === "true",
-    });
+    const playlist = await PlaylistRepository.getPlaylistDetails(
+      id,
+      accessContext
+    );
 
     if (!playlist) {
       res.status(404).json({ error: "Playlist not found" });
@@ -204,8 +186,7 @@ router.post(
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { includeAlbums, includeArtists, includeLikes, limit, offset } =
-      req.query;
+    const { limit, offset } = req.query;
 
     if (!id) {
       res.status(400).json({ error: "Playlist ID is required" });
@@ -213,11 +194,7 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
     }
 
     const accessContext = parseAccessContext(req.query);
-
     const songs = await PlaylistRepository.getSongs(id, accessContext, {
-      includeAlbums: includeAlbums === "true",
-      includeArtists: includeArtists === "true",
-      includeLikes: includeLikes === "true",
       limit: limit ? parseInt(limit as string, 10) : undefined,
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });
@@ -250,6 +227,11 @@ router.put(
         return;
       }
 
+      if (songIds.length === 0) {
+        res.status(400).json({ error: "Song IDs are required" });
+        return;
+      }
+
       await PlaylistRepository.addSongs(id, songIds);
       res.status(200).json({ message: "Songs added to playlist successfully" });
     } catch (error: any) {
@@ -276,6 +258,11 @@ router.put(
 
       if (!Array.isArray(songIds)) {
         res.status(400).json({ error: "songIds must be an array" });
+        return;
+      }
+
+      if (songIds.length === 0) {
+        res.status(400).json({ error: "Song IDs are required" });
         return;
       }
 
@@ -369,14 +356,7 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const {
-        includeUser,
-        includeLikes,
-        includeSongCount,
-        includeRuntime,
-        limit,
-        offset,
-      } = req.query;
+      const { limit, offset } = req.query;
 
       if (!id) {
         res.status(400).json({ error: "Playlist ID is required" });
@@ -384,10 +364,6 @@ router.get(
       }
 
       const playlists = await PlaylistRepository.getRelatedPlaylists(id, {
-        includeUser: includeUser === "true",
-        includeLikes: includeLikes === "true",
-        includeSongCount: includeSongCount === "true",
-        includeRuntime: includeRuntime === "true",
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });

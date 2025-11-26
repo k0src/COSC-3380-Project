@@ -7,7 +7,7 @@ import type {
   AccessContext,
   UUID,
 } from "@types";
-import { DataTable, ConfirmationModal, CreatePlaylistModal } from "@components";
+import { DataTable, ConfirmationModal, EditPlaylistModal } from "@components";
 import { artistApi, playlistApi } from "@api";
 import {
   playlistColumns,
@@ -202,12 +202,12 @@ const ArtistDashboardManagePlaylists: React.FC<
       />
 
       {playlistToEdit && (
-        <CreatePlaylistModal
-          mode="edit"
+        <EditPlaylistModal
           isOpen={isPlaylistEditModalOpen}
           onClose={() => setIsPlaylistEditModalOpen(false)}
           playlist={playlistToEdit}
-          onPlaylistCreated={handlePlaylistEdited}
+          onPlaylistUpdated={handlePlaylistEdited}
+          adminMode
         />
       )}
     </>

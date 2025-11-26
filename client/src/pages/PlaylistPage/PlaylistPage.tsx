@@ -20,7 +20,7 @@ import {
   PlaylistUser,
   PlaylistDescription,
   PlaylistActions,
-  CreatePlaylistModal,
+  EditPlaylistModal,
 } from "@components";
 import { LuTrash } from "react-icons/lu";
 import styles from "./PlaylistPage.module.css";
@@ -36,7 +36,7 @@ const PlaylistPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "single",
+    scope: "owner",
   };
 
   if (!id) {
@@ -50,13 +50,7 @@ const PlaylistPage: React.FC = () => {
 
   const { data, loading, error, refetch } = useAsyncData(
     {
-      playlist: () =>
-        playlistApi.getPlaylistById(id, accessContext, {
-          includeUser: true,
-          includeSongCount: true,
-          includeLikes: true,
-          includeRuntime: true,
-        }),
+      playlist: () => playlistApi.getPlaylistDetails(id, accessContext),
     },
     [id],
     {
@@ -68,10 +62,7 @@ const PlaylistPage: React.FC = () => {
   const playlist = data?.playlist;
 
   const fetchSongs = useCallback(async () => {
-    const result = await playlistApi.getSongs(id, accessContext, {
-      includeArtists: true,
-      includeAlbums: true,
-    });
+    const result = await playlistApi.getSongs(id, accessContext);
     return result ?? [];
   }, [id, accessContext]);
 
@@ -225,12 +216,11 @@ const PlaylistPage: React.FC = () => {
       </div>
 
       {isOwner && (
-        <CreatePlaylistModal
-          mode="edit"
+        <EditPlaylistModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           playlist={playlist!}
-          onPlaylistCreated={handlePlaylistEdited}
+          onPlaylistUpdated={handlePlaylistEdited}
         />
       )}
     </>

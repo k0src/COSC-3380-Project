@@ -767,9 +767,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
             dispatch({ type: "SET_PLAYING", isPlaying: true });
           }
         } else if (isPlaylist(playable)) {
-          const songs = await playlistApi.getSongs(playable.id, ctx, {
-            includeArtists: true,
-          });
+          const songs = await playlistApi.getSongs(playable.id, ctx);
           dispatch({
             type: "PLAY_LIST",
             songs: songs!,
@@ -906,9 +904,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
         let songs: Song[] = [];
 
         if (isPlaylist(entity)) {
-          const playlistSongs = await playlistApi.getSongs(entity.id, ctx, {
-            includeArtists: true,
-          });
+          const playlistSongs = await playlistApi.getSongs(entity.id, ctx);
           songs = playlistSongs ?? [];
         } else if (isAlbum(entity)) {
           songs = await albumApi.getSongs(entity.id, ctx);
@@ -931,9 +927,7 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
         let songs: Song[] = [];
 
         if (isPlaylist(entity)) {
-          const playlistSongs = await playlistApi.getSongs(entity.id, ctx, {
-            includeArtists: true,
-          });
+          const playlistSongs = await playlistApi.getSongs(entity.id, ctx);
           songs = playlistSongs ?? [];
         } else if (isAlbum(entity)) {
           songs = await albumApi.getSongs(entity.id, ctx);

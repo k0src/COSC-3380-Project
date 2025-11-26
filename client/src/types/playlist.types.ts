@@ -20,6 +20,7 @@ export interface Playlist {
   runtime?: number;
   image_url?: string;
   image_url_blurhash?: string;
+  song_ids?: UUID[];
 
   type: "playlist";
 }
@@ -34,7 +35,7 @@ export type PlaylistOrderByColumn =
   | "created_at"
   | "likes"
   | "runtime"
-  | "songCount";
+  | "song_count";
 
 export interface PlaylistOptions {
   includeUser?: boolean;

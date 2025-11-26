@@ -50,7 +50,7 @@
 
 .featuredPlaylistTitleText {
   font-size: var(--font-size-md);
-  color: var(--color-white-alt);
+  color: var(--color-white-alt) !important;
   font-weight: 500;
 }
 
@@ -77,6 +77,12 @@
   white-space: nowrap;
   width: 100%;
   max-width: 100%;
+  cursor: pointer;
+  transition: color var(--transition-speed) ease-in-out;
+}
+
+.featuredPlaylistName:hover {
+  color: var(--color-accent) !important;
 }
 
 .featuredPlaylistUsername {

@@ -202,8 +202,7 @@ export default class AlbumRepository {
       await withTransaction(async (client) => {
         await client.query(
           `INSERT INTO deleted_albums 
-          (album_id, deleted_at) VALUES ($1, NOW())
-          ON CONFLICT (album_id) DO NOTHING`,
+          (album_id, deleted_at) VALUES ($1, NOW())`,
           [id]
         );
       });
@@ -219,8 +218,7 @@ export default class AlbumRepository {
         await client.query(
           `INSERT INTO deleted_albums
           (album_id, deleted_at)
-          SELECT id, NOW() FROM albums WHERE id = ANY($1)
-          ON CONFLICT (album_id) DO NOTHING`,
+          SELECT id, NOW() FROM albums WHERE id = ANY($1)`,
           [albumIds]
         );
       });
@@ -594,7 +592,7 @@ export default class AlbumRepository {
     }
   }
 
-  static async addSong(albumId: UUID, songId: UUID, track_number: number) {
+  static async addSong(albumId: UUID, songId: UUID) {
     try {
       const albumDeleted = await isDeleted(albumId, "album");
       if (albumDeleted) {
@@ -606,11 +604,23 @@ export default class AlbumRepository {
         throw new Error("Cannot add a deleted song to an album.");
       }
 
+      const maxTrackNumberRes = await query(
+        `SELECT COALESCE(MAX(track_number), 0) AS max_track_number
+        FROM album_songs
+        WHERE album_id = $1`,
+        [albumId]
+      );
+
+      const nextTrackNumber =
+        maxTrackNumberRes[0]?.max_track_number !== undefined
+          ? maxTrackNumberRes[0].max_track_number + 1
+          : 1;
+
       await query(
         `INSERT INTO album_songs (album_id, song_id, track_number)
         VALUES ($1, $2, $3)
         RETURNING *`,
-        [albumId, songId, track_number]
+        [albumId, songId, nextTrackNumber]
       );
     } catch (error) {
       console.error("Error adding song:", error);

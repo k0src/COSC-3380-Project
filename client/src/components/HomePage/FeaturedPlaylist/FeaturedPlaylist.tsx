@@ -118,9 +118,12 @@ const FeaturedPlaylist: React.FC<FeaturedPlaylistProps> = ({
         </div>
 
         <div className={styles.featuredPlaylistInfo}>
-          <span className={styles.featuredPlaylistName}>
+          <Link
+            to={`/playlists/${featuredPlaylist.id}`}
+            className={styles.featuredPlaylistName}
+          >
             {featuredPlaylist.title}
-          </span>
+          </Link>
           <Link
             className={styles.featuredPlaylistUsername}
             to={`/users/${featuredPlaylist.user?.id ?? ""}`}

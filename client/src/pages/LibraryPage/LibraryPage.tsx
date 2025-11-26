@@ -16,6 +16,7 @@ import {
   LibraryArtists,
   CreatePlaylistModal,
   ConfirmationModal,
+  EditPlaylistModal,
 } from "@components";
 import { libraryApi, playlistApi } from "@api";
 import styles from "./LibraryPage.module.css";
@@ -171,6 +172,7 @@ const LibraryPage: React.FC = () => {
 
       try {
         await playlistApi.update(playlist.id, {
+          owner_id: playlist.owner_id,
           visibility_status:
             playlist.visibility_status === "PUBLIC" ? "PRIVATE" : "PUBLIC",
         });
@@ -281,7 +283,7 @@ const LibraryPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user.role === "ADMIN" ? "admin" : "user",
     userId: user.id,
-    scope: "ownerList",
+    scope: "owner",
   };
 
   return (
@@ -380,14 +382,13 @@ const LibraryPage: React.FC = () => {
           onPlaylistCreated={handlePlaylistCreated}
         />
       ) : (
-        <CreatePlaylistModal
-          mode="edit"
+        <EditPlaylistModal
           isOpen={isPlaylistModalOpen}
           onClose={() => {
             setIsPlaylistModalOpen(false);
             setPlaylistToEdit(null);
           }}
-          onPlaylistCreated={handlePlaylistCreated}
+          onPlaylistUpdated={handlePlaylistCreated}
           playlist={playlistToEdit!}
         />
       )}

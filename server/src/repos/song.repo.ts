@@ -330,7 +330,9 @@ export default class SongRepository {
             );
 
             const nextTrackNumber =
-              maxTrackNumberRes.rows[0].max_track_number + 1;
+              maxTrackNumberRes?.rows[0]?.max_track_number !== undefined
+                ? maxTrackNumberRes.rows[0].max_track_number + 1
+                : 1;
 
             await client.query(
               `INSERT INTO album_songs (album_id, song_id, track_number)
@@ -702,7 +704,6 @@ export default class SongRepository {
       `;
 
       const res = await query(sql, [limit, offset]);
-
       if (!res || res.length === 0) {
         return [];
       }

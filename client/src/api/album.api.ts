@@ -148,10 +148,9 @@ export const albumApi = {
     return response.data;
   },
 
-  async addSong(albumId: UUID, songId: UUID, trackNumber: number) {
+  async addSong(albumId: UUID, songId: UUID) {
     const response = await api.post(`/albums/${albumId}/songs`, {
       songId,
-      trackNumber,
     });
     return response.data;
   },

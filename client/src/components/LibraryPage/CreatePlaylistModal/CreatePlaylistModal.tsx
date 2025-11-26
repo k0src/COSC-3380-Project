@@ -1,20 +1,19 @@
 import { useState, memo, useEffect, useCallback, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import type { UUID, LibraryPlaylist, Playlist, VisibilityStatus } from "@types";
+import { useNavigate } from "react-router-dom";
+import type { UUID, VisibilityStatus } from "@types";
 import { playlistApi } from "@api";
 import {
   SettingsInput,
   SettingsImageUpload,
   SettingsTextArea,
   SettingsToggle,
-  ConfirmationModal,
 } from "@components";
 import styles from "./CreatePlaylistModal.module.css";
 import { LuX } from "react-icons/lu";
 
 type CreatePlaylistModalProps =
   | {
-      mode?: "create";
+      mode: "create";
       userId: UUID;
       artistId?: never;
       artistName?: never;
@@ -22,19 +21,6 @@ type CreatePlaylistModalProps =
       isOpen: boolean;
       onClose: () => void;
       onPlaylistCreated?: () => void;
-      playlist?: never;
-      adminMode?: boolean;
-    }
-  | {
-      mode: "edit";
-      userId?: never;
-      artistId?: never;
-      artistName?: never;
-      username?: never;
-      isOpen: boolean;
-      onClose: () => void;
-      onPlaylistCreated?: () => void;
-      playlist: LibraryPlaylist | Playlist;
       adminMode?: boolean;
     }
   | {
@@ -46,7 +32,6 @@ type CreatePlaylistModalProps =
       isOpen: boolean;
       onClose: () => void;
       onPlaylistCreated?: () => void;
-      playlist?: never;
       adminMode?: never;
     };
 
@@ -67,26 +52,14 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
   isOpen,
   onClose,
   onPlaylistCreated,
-  playlist,
   adminMode = false,
 }) => {
   const navigate = useNavigate();
 
   const [error, setError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const initialFormState: CreatePlaylistForm = useMemo(() => {
-    if (mode === "edit" && playlist) {
-      return {
-        title: playlist.title,
-        description: playlist.description || "",
-        visibilityStatus:
-          playlist.visibility_status === "PUBLIC" ? "PUBLIC" : "PRIVATE",
-        image: null,
-        removeImage: false,
-      };
-    }
     if (mode === "createArtist") {
       return {
         title: `${artistName} - Artist Playlist`,
@@ -103,7 +76,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
       image: null,
       removeImage: false,
     };
-  }, [mode, playlist, username]);
+  }, [mode, username, artistName]);
 
   const [playlistForm, setPlaylistForm] = useState<CreatePlaylistForm>(
     () => initialFormState
@@ -185,11 +158,8 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
           title: playlistForm.title.trim(),
           description: playlistForm.description.trim(),
           visibility_status: playlistForm.visibilityStatus,
+          owner_id: userId,
         };
-
-        if (mode === "create" || "createArtist") {
-          playlistData.owner_id = userId;
-        }
 
         if (mode === "createArtist") {
           playlistData.artist_id = artistId;
@@ -201,11 +171,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
           playlistData.image_url = playlistForm.image;
         }
 
-        if (mode === "edit" && playlist) {
-          await playlistApi.update(playlist.id, playlistData);
-        } else {
-          await playlistApi.create(playlistData);
-        }
+        await playlistApi.create(playlistData);
 
         onPlaylistCreated?.();
         onClose();
@@ -214,38 +180,15 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
           navigate(`/library/playlists`);
         }
       } catch (error: any) {
-        console.error(
-          `${mode === "edit" ? "Update" : "Create"} playlist error:`,
-          error
-        );
-        const errorMessage =
-          error.response?.data?.error ||
-          `${mode === "edit" ? "Update" : "Creation"} failed`;
+        console.error("Create playlist error:", error);
+        const errorMessage = error.response?.data?.error || "Creation failed";
         setError(errorMessage);
       } finally {
         setIsCreating(false);
       }
     },
-    [mode, userId, playlist, playlistForm, onClose, navigate, onPlaylistCreated]
+    [mode, userId, artistId, playlistForm, onClose, navigate, onPlaylistCreated]
   );
-
-  const handleDeletePlaylist = useCallback(async () => {
-    if (mode !== "edit" || !playlist) return;
-    setIsCreating(true);
-    setError("");
-    try {
-      await playlistApi.delete(playlist.id);
-      onClose();
-      navigate(`/library/playlists`);
-    } catch (error: any) {
-      console.error("Delete playlist error:", error);
-      const errorMessage =
-        error.response?.data?.error || "Failed to delete playlist";
-      setError(errorMessage);
-    } finally {
-      setIsCreating(false);
-    }
-  }, [mode, playlist, onClose, navigate]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -260,15 +203,6 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
-  const unlisted = useMemo(
-    () =>
-      !adminMode &&
-      mode === "edit" &&
-      playlist &&
-      playlist.visibility_status === "UNLISTED",
-    [adminMode, mode, playlist]
-  );
-
   useEffect(() => {
     if (!isOpen) {
       setError("");
@@ -280,129 +214,83 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <>
-      <div className={styles.overlay} onClick={onClose}>
-        <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-          <div className={styles.header}>
-            <span className={styles.title}>
-              {mode === "edit"
-                ? "Edit Playlist"
-                : mode === "createArtist"
-                ? "Create Artist Playlist"
-                : "Create Playlist"}
-            </span>
-            <button className={styles.headerButton} onClick={onClose}>
-              <LuX />
-            </button>
-          </div>
-          <form className={styles.playlistForm} onSubmit={handleSubmit}>
-            {unlisted && (
-              <div className={styles.unlistedMessage}>
-                Your playlist has been unlisted due to admin action or
-                auto-moderation. You may appeal this decision by{" "}
-                <Link
-                  to={`/appeals/playlists/${playlist!.id}`}
-                  className={styles.unlistedLink}
-                >
-                  submitting an appeal request
-                </Link>
-                .
-              </div>
-            )}
-
-            <SettingsInput
-              label="Playlist Title"
-              name="title"
-              value={playlistForm.title}
-              onChange={handleFormChange}
-              placeholder={adminMode ? "Enter Playlist Title" : "My Playlist"}
-              error={error}
-              disabled={isCreating}
-            />
-            <SettingsTextArea
-              label="Description"
-              name="description"
-              value={playlistForm.description}
-              onChange={handleFormChange}
-              placeholder="My favorite songs..."
-              disabled={isCreating}
-              hint={
-                adminMode
-                  ? "Enter a description for the playlist (optional)."
-                  : "Enter a description for your playlist (optional)."
-              }
-              error={error}
-            />
-            <SettingsToggle
-              label="Playlist Privacy"
-              name="visibilityStatus"
-              checked={playlistForm.visibilityStatus === "PUBLIC"}
-              onChange={handlePrivacyChange}
-              disabled={isCreating || unlisted}
-              values={{ on: "Public", off: "Private" }}
-            />
-            <SettingsImageUpload
-              label="Playlist Image"
-              currentImage={
-                mode === "edit" && playlist ? playlist.image_url : undefined
-              }
-              onImageChange={handleImageChange}
-              type="music"
-              disabled={isCreating}
-              alt="Playlist Image Preview"
-              hint={
-                adminMode
-                  ? "Upload an image for the playlist (optional)."
-                  : "Upload an image for your playlist (optional)."
-              }
-            />
-            <div className={styles.buttonContainer}>
-              {isDirty && !error && (
-                <span className={styles.unsavedText}>
-                  You have unsaved changes.
-                </span>
-              )}
-              {error && <span className={styles.error}>{error}</span>}
-              <div className={styles.buttons}>
-                {mode === "edit" && (
-                  <button
-                    type="button"
-                    className={styles.deleteButton}
-                    onClick={() => setIsDeleteModalOpen(true)}
-                    disabled={isCreating}
-                  >
-                    {isCreating ? "Deleting..." : "Delete Playlist"}
-                  </button>
-                )}
-                <button
-                  type="submit"
-                  className={styles.saveButton}
-                  disabled={isCreating || (mode === "edit" && !isDirty)}
-                >
-                  {isCreating
-                    ? mode === "edit"
-                      ? "Updating..."
-                      : "Creating..."
-                    : mode === "edit"
-                    ? "Update Playlist"
-                    : "Create Playlist"}
-                </button>
-              </div>
-            </div>
-          </form>
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.header}>
+          <span className={styles.title}>
+            {mode === "createArtist"
+              ? "Create Artist Playlist"
+              : "Create Playlist"}
+          </span>
+          <button className={styles.headerButton} onClick={onClose}>
+            <LuX />
+          </button>
         </div>
+        <form className={styles.playlistForm} onSubmit={handleSubmit}>
+          <SettingsInput
+            label="Playlist Title"
+            name="title"
+            value={playlistForm.title}
+            onChange={handleFormChange}
+            placeholder={adminMode ? "Enter Playlist Title" : "My Playlist"}
+            error={error}
+            disabled={isCreating}
+          />
+          <SettingsTextArea
+            label="Description"
+            name="description"
+            value={playlistForm.description}
+            onChange={handleFormChange}
+            placeholder="My favorite songs..."
+            disabled={isCreating}
+            hint={
+              adminMode
+                ? "Enter a description for the playlist (optional)."
+                : "Enter a description for your playlist (optional)."
+            }
+            error={error}
+          />
+          <SettingsToggle
+            label="Playlist Privacy"
+            name="visibilityStatus"
+            checked={playlistForm.visibilityStatus === "PUBLIC"}
+            onChange={handlePrivacyChange}
+            disabled={isCreating}
+            values={{ on: "Public", off: "Private" }}
+          />
+          <SettingsImageUpload
+            label="Playlist Image"
+            currentImage={undefined}
+            onImageChange={handleImageChange}
+            type="music"
+            disabled={isCreating}
+            alt="Playlist Image Preview"
+            hint={
+              adminMode
+                ? "Upload an image for the playlist (optional)."
+                : "Upload an image for your playlist (optional)."
+            }
+          />
+          <div className={styles.buttonContainer}>
+            {isDirty && !error && (
+              <span className={styles.unsavedText}>
+                You have unsaved changes.
+              </span>
+            )}
+            {error && <span className={styles.error}>{error}</span>}
+            <div className={styles.buttons}>
+              <button
+                type="submit"
+                className={styles.saveButton}
+                disabled={isCreating}
+              >
+                {isCreating ? "Creating..." : "Create Playlist"}
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
-
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeletePlaylist}
-        title="Delete Playlist"
-        message="Are you sure you want to permanently delete this playlist? This action cannot be undone."
-        confirmButtonText="Delete Playlist"
-        isDangerous={true}
-      />
-    </>
+    </div>
   );
 };
 

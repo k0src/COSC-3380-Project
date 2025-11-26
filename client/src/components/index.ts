@@ -101,6 +101,7 @@ export { default as HistorySongs } from "./LibraryPage/HistorySongs/HistorySongs
 export { default as HistoryAlbums } from "./LibraryPage/HistoryAlbums/HistoryAlbums.js";
 export { default as HistoryArtists } from "./LibraryPage/HistoryArtists/HistoryArtists.js";
 export { default as CreatePlaylistModal } from "./LibraryPage/CreatePlaylistModal/CreatePlaylistModal.js";
+export { default as EditPlaylistModal } from "./LibraryPage/EditPlaylistModal/EditPlaylistModal.js";
 
 /* =========================== Search Results Page ========================== */
 export { default as TopResultCard } from "./SearchResultsPage/TopResultCard/TopResultCard.js";

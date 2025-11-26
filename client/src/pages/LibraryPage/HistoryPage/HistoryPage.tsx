@@ -15,6 +15,7 @@ import {
   HistoryArtists,
   ConfirmationModal,
   CreatePlaylistModal,
+  EditPlaylistModal,
 } from "@components";
 import { libraryApi, playlistApi } from "@api";
 import { useStreamTracking } from "@hooks";
@@ -172,6 +173,7 @@ const HistoryPage: React.FC = () => {
 
       try {
         await playlistApi.update(playlist.id, {
+          owner_id: playlist.owner_id,
           visibility_status:
             playlist.visibility_status === "PUBLIC" ? "PRIVATE" : "PUBLIC",
         });
@@ -237,7 +239,7 @@ const HistoryPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user.role === "ADMIN" ? "admin" : "user",
     userId: user.id,
-    scope: "ownerList",
+    scope: "owner",
   };
 
   return (
@@ -312,6 +314,7 @@ const HistoryPage: React.FC = () => {
 
       {playlistModalMode === "create" ? (
         <CreatePlaylistModal
+          mode="create"
           userId={user.id}
           username={user.username}
           isOpen={isPlaylistModalOpen}
@@ -324,14 +327,13 @@ const HistoryPage: React.FC = () => {
           }}
         />
       ) : (
-        <CreatePlaylistModal
-          mode="edit"
+        <EditPlaylistModal
           isOpen={isPlaylistModalOpen}
           onClose={() => {
             setIsPlaylistModalOpen(false);
             setPlaylistToEdit(null);
           }}
-          onPlaylistCreated={() => {
+          onPlaylistUpdated={() => {
             playlistsRefetchRef.current?.();
           }}
           playlist={playlistToEdit!}
