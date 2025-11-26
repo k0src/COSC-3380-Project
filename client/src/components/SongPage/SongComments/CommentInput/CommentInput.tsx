@@ -8,7 +8,7 @@ import styles from "./CommentInput.module.css";
 import classNames from "classnames";
 import userPlaceholder from "@assets/user-placeholder.webp";
 import { LuSend } from "react-icons/lu";
-import type { User, AccessContext } from "@types";
+import type { User } from "@types";
 
 const MAX_COMMENT_LENGTH = 255;
 
@@ -36,12 +36,6 @@ const CommentInput: React.FC<CommentInputProps> = ({
   const measureRef = useRef<HTMLSpanElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
 
-  const accessContext: AccessContext = {
-    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
-    userId: user?.id,
-    scope: "globalList",
-  };
-
   const handleCommentChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
@@ -62,10 +56,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
 
           if (textAfterAt.length > 0) {
             try {
-              const users = await searchApi.searchUsers(
-                textAfterAt,
-                accessContext
-              );
+              const users = await searchApi.searchUsers(textAfterAt);
               setTagUsers(users.slice(0, 5));
               setShowUserPopup(users.length > 0);
 
@@ -93,7 +84,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
         setTagStart(null);
       }
     },
-    [accessContext.userId]
+    []
   );
 
   const handleAddComment = useCallback(async () => {

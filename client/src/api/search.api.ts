@@ -1,11 +1,4 @@
-import type {
-  Song,
-  Album,
-  User,
-  Artist,
-  Playlist,
-  AccessContext,
-} from "@types";
+import type { Song, Album, User, Artist, Playlist, UUID } from "@types";
 import api from "./api";
 
 export interface SearchResults {
@@ -20,121 +13,151 @@ export interface SearchResults {
 export const searchApi = {
   async search(
     query: string,
-    accessContext: AccessContext,
-    options?: { ownerId?: string }
-  ) {
-    const response = await api.get<SearchResults>(`/search`, {
-      params: {
-        q: query,
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
-  },
-
-  async searchUsers(
-    query: string,
-    accessContext: AccessContext,
     options?: {
+      userId?: UUID;
       limit?: number;
       offset?: number;
     }
   ) {
-    const response = await api.get<User[]>(`/search/users`, {
-      params: {
-        q: query,
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
+    try {
+      const response = await api.get<SearchResults>(`/search`, {
+        params: {
+          q: query,
+          ...options,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return {
+          songs: [],
+          albums: [],
+          artists: [],
+          playlists: [],
+          users: [],
+        };
+      }
+      throw error;
+    }
   },
 
   async searchSongs(
     query: string,
-    accessContext: AccessContext,
     options?: {
-      ownerId?: string;
+      userId?: UUID;
       limit?: number;
       offset?: number;
     }
   ) {
-    const response = await api.get<Song[]>(`/search/songs`, {
-      params: {
-        q: query,
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
-  },
-
-  async searchAlbums(
-    query: string,
-    accessContext: AccessContext,
-    options?: {
-      ownerId?: string;
-      limit?: number;
-      offset?: number;
+    try {
+      const response = await api.get<Song[]>(`/search/songs`, {
+        params: {
+          q: query,
+          ...options,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
     }
-  ) {
-    const response = await api.get<Album[]>(`/search/albums`, {
-      params: {
-        q: query,
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
   },
 
   async searchPlaylists(
     query: string,
-    accessContext: AccessContext,
     options?: {
-      ownerId?: string;
+      userId?: UUID;
       limit?: number;
       offset?: number;
     }
   ) {
-    const response = await api.get<Playlist[]>(`/search/playlists`, {
-      params: {
-        q: query,
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
+    try {
+      const response = await api.get<Playlist[]>(`/search/playlists`, {
+        params: {
+          q: query,
+          ...options,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   async searchArtists(
     query: string,
-    accessContext: AccessContext,
     options?: {
+      userId?: UUID;
       limit?: number;
       offset?: number;
     }
   ) {
-    const response = await api.get<Artist[]>(`/search/artists`, {
-      params: {
-        q: query,
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
+    try {
+      const response = await api.get<Artist[]>(`/search/artists`, {
+        params: {
+          q: query,
+          ...options,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
+
+  async searchAlbums(
+    query: string,
+    options?: {
+      userId?: UUID;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    try {
+      const response = await api.get<Album[]>(`/search/albums`, {
+        params: {
+          q: query,
+          ...options,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
+
+  async searchUsers(
+    query: string,
+    options?: {
+      userId?: UUID;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    try {
+      const response = await api.get<User[]>(`/search/users`, {
+        params: {
+          q: query,
+          ...options,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
   },
 };

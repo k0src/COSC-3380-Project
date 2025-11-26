@@ -2,8 +2,6 @@ import { useState, useEffect, memo, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { searchApi } from "@api";
 import type { SearchResults } from "@api/search.api";
-import type { AccessContext } from "@types";
-import { useAuth } from "@contexts";
 import styles from "./MainLayoutSearchBar.module.css";
 import { LuSearch } from "react-icons/lu";
 
@@ -18,13 +16,6 @@ const MainLayoutSearchBar: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const { user } = useAuth();
-
-  const accessContext: AccessContext = {
-    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
-    userId: user?.id,
-    scope: "globalList",
-  };
 
   useEffect(() => {
     const query = searchParams.get("q");
@@ -47,26 +38,23 @@ const MainLayoutSearchBar: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const fetchSuggestions = useCallback(
-    async (query: string) => {
-      if (!query.trim()) {
-        setSuggestions(null);
-        setShowDropdown(false);
-        return;
-      }
+  const fetchSuggestions = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setSuggestions(null);
+      setShowDropdown(false);
+      return;
+    }
 
-      try {
-        const data = await searchApi.search(query, accessContext);
-        setSuggestions(data);
-        setShowDropdown(true);
-      } catch (err) {
-        console.error("Error fetching suggestions:", err);
-        setSuggestions(null);
-        setShowDropdown(false);
-      }
-    },
-    [accessContext.userId]
-  );
+    try {
+      const data = await searchApi.search(query);
+      setSuggestions(data);
+      setShowDropdown(true);
+    } catch (err) {
+      console.error("Error fetching suggestions:", err);
+      setSuggestions(null);
+      setShowDropdown(false);
+    }
+  }, []);
 
   const handleSearch = useCallback(
     (query: string = searchQuery) => {

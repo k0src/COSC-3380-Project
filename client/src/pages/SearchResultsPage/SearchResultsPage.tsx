@@ -3,9 +3,7 @@ import { useEffect, useState, useMemo, memo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { searchApi } from "@api";
 import type { SearchResults } from "@api/search.api";
-import type { AccessContext } from "@types";
 import { formatDateString, getMainArtist, pluralize } from "@util";
-import { useAuth } from "@contexts";
 import {
   UserItem,
   ArtistItem,
@@ -55,18 +53,11 @@ const TabButton = memo(
 const SearchResultsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
-  const { user } = useAuth();
 
   const [results, setResults] = useState<SearchResults | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("all");
-
-  const accessContext: AccessContext = {
-    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
-    userId: user?.id,
-    scope: "globalList",
-  };
 
   useEffect(() => {
     if (!query) {
@@ -78,7 +69,7 @@ const SearchResultsPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await searchApi.search(query, accessContext);
+        const data = await searchApi.search(query);
         setResults(data);
       } catch (err) {
         console.error("Error fetching search results:", err);
@@ -89,7 +80,7 @@ const SearchResultsPage: React.FC = () => {
     };
 
     fetchResults();
-  }, [query, accessContext.userId]);
+  }, [query]);
 
   const tabs = useMemo(
     () => [

@@ -338,7 +338,7 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
               onChange={(value) => handleDropdownChange("albumId", value)}
               disabled={isEditing}
               placeholder="Select an album..."
-              ownerId={userId}
+              userId={userId}
               hint="Add this song to an existing album (Optional)"
               displayValue={formState.albumName}
             />
@@ -350,6 +350,7 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
               onChange={(artists) =>
                 setFormState((prev) => ({ ...prev, artists }))
               }
+              userId={userId}
               disabled={isEditing}
               placeholder="Search for artists..."
               secondaryField={{
@@ -357,7 +358,7 @@ const EditSongModal: React.FC<EditSongModalProps> = ({
                 label: "Role",
                 placeholder: "e.g., Featured, Producer",
               }}
-              hint="Add featured artists and specify their roles (Optional)"
+              hint="Add featured artists and specify their roles. You must be mutal followers with them (Optional)"
             />
             <SettingsImageUpload
               label="Cover Image"

@@ -492,7 +492,7 @@ const ArtistDashboardAddPage: React.FC<ArtistDashboardAddPageProps> = ({
                     onChange={(value) => handleDropdownChange("albumId", value)}
                     disabled={isUploading}
                     placeholder="Select an album..."
-                    ownerId={user?.id}
+                    userId={user?.id}
                     hint="Add this song to an existing album (Optional)"
                     displayValue={uploadForm.albumName}
                   />
@@ -505,6 +505,7 @@ const ArtistDashboardAddPage: React.FC<ArtistDashboardAddPageProps> = ({
                     onChange={(artists) =>
                       setUploadForm((prev) => ({ ...prev, artists }))
                     }
+                    userId={user?.id}
                     disabled={isUploading}
                     placeholder="Search for artists..."
                     secondaryField={{
@@ -512,7 +513,7 @@ const ArtistDashboardAddPage: React.FC<ArtistDashboardAddPageProps> = ({
                       label: "Role",
                       placeholder: "e.g., Featured, Producer",
                     }}
-                    hint="Add featured artists and specify their roles (Optional)"
+                    hint="Add featured artists and specify their roles. You must be mutal followers with them (Optional)"
                   />
 
                   <SettingsImageUpload

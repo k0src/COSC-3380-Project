@@ -2,8 +2,7 @@ import { memo, useState, useEffect, useRef, useCallback } from "react";
 import styles from "./SearchableList.module.css";
 import classNames from "classnames";
 import { searchApi } from "@api";
-import { useAuth } from "@contexts";
-import type { Song, Album, Artist, Playlist, AccessContext } from "@types";
+import type { Song, Album, Artist, Playlist } from "@types";
 import { LuCheck, LuX } from "react-icons/lu";
 
 export type EntityType = "song" | "album" | "artist" | "playlist";
@@ -30,7 +29,7 @@ export interface SearchableListProps<T extends EntityType> {
   onChange: (value: SearchableListItem[]) => void;
   placeholder?: string;
   disabled?: boolean;
-  ownerId?: string;
+  userId?: string;
   secondaryField?: {
     name: string;
     label: string;
@@ -48,7 +47,7 @@ const SearchableList = <T extends EntityType>({
   onChange,
   placeholder = "Search...",
   disabled,
-  ownerId,
+  userId,
   secondaryField,
 }: SearchableListProps<T>) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,13 +59,6 @@ const SearchableList = <T extends EntityType>({
   );
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const { user } = useAuth();
-
-  const accessContext: AccessContext = {
-    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
-    userId: user?.id,
-    scope: "globalList",
-  };
 
   useEffect(() => {
     if (value.length > 0) {
@@ -123,22 +115,16 @@ const SearchableList = <T extends EntityType>({
         let data;
         switch (entityType) {
           case "song":
-            data = await searchApi.searchSongs(query, accessContext, {
-              ownerId,
-            });
+            data = await searchApi.searchSongs(query, { userId });
             break;
           case "album":
-            data = await searchApi.searchAlbums(query, accessContext, {
-              ownerId,
-            });
+            data = await searchApi.searchAlbums(query, { userId });
             break;
           case "artist":
-            data = await searchApi.searchArtists(query, accessContext);
+            data = await searchApi.searchArtists(query, { userId });
             break;
           case "playlist":
-            data = await searchApi.searchPlaylists(query, accessContext, {
-              ownerId,
-            });
+            data = await searchApi.searchPlaylists(query, { userId });
             break;
         }
         setResults(data as EntityMap[T][]);
@@ -149,7 +135,7 @@ const SearchableList = <T extends EntityType>({
         setIsLoading(false);
       }
     },
-    [entityType, ownerId, accessContext.userId]
+    [entityType, userId]
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
