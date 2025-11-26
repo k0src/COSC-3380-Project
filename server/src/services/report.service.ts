@@ -1,5 +1,6 @@
 import type { UUID, ReportType } from "@types";
 import { withTransaction } from "@config/database.js";
+import { isDeleted, isRemoved } from "@util";
 
 export default class ReportService {
   static async reportSong(reportData: {
@@ -9,6 +10,15 @@ export default class ReportService {
     description: string;
   }) {
     try {
+      const songDeleted = await isDeleted(reportData.reported_id, "song");
+      if (songDeleted) {
+        throw new Error("Cannot report a deleted song.");
+      }
+      const songRemoved = await isRemoved(reportData.reported_id, "song");
+      if (songRemoved) {
+        throw new Error("Song is already removed from public access.");
+      }
+
       await withTransaction(async (client) => {
         await client.query(
           `INSERT INTO song_reports
@@ -35,6 +45,15 @@ export default class ReportService {
     description: string;
   }) {
     try {
+      const albumDeleted = await isDeleted(reportData.reported_id, "album");
+      if (albumDeleted) {
+        throw new Error("Cannot report a deleted album.");
+      }
+      const albumRemoved = await isRemoved(reportData.reported_id, "album");
+      if (albumRemoved) {
+        throw new Error("Album is already removed from public access.");
+      }
+
       await withTransaction(async (client) => {
         await client.query(
           `INSERT INTO album_reports
@@ -61,6 +80,21 @@ export default class ReportService {
     description: string;
   }) {
     try {
+      const playlistDeleted = await isDeleted(
+        reportData.reported_id,
+        "playlist"
+      );
+      if (playlistDeleted) {
+        throw new Error("Cannot report a deleted playlist.");
+      }
+      const playlistRemoved = await isRemoved(
+        reportData.reported_id,
+        "playlist"
+      );
+      if (playlistRemoved) {
+        throw new Error("Playlist is already removed from public access.");
+      }
+
       await withTransaction(async (client) => {
         await client.query(
           `INSERT INTO playlist_reports
@@ -87,6 +121,15 @@ export default class ReportService {
     description: string;
   }) {
     try {
+      const userDeleted = await isDeleted(reportData.reported_id, "user");
+      if (userDeleted) {
+        throw new Error("Cannot report a deleted user.");
+      }
+      const userRemoved = await isRemoved(reportData.reported_id, "user");
+      if (userRemoved) {
+        throw new Error("User is already suspended.");
+      }
+
       await withTransaction(async (client) => {
         await client.query(
           `INSERT INTO user_reports

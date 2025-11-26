@@ -16,3 +16,4 @@ export * from "./access.types.js";
 export * from "./dataTable.types.js";
 export * from "./admin.types.js";
 export * from "./dataReport.types.js";
+export * from "./comment.types.js";

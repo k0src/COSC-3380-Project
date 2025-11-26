@@ -7,7 +7,12 @@ import {
   commentColumns,
   commentFilterKeys,
 } from "@components/DataTable/columnDefinitions";
-import type { Comment, DataTableAction, DataTableBulkAction } from "@types";
+import type {
+  AccessContext,
+  Comment,
+  DataTableAction,
+  DataTableBulkAction,
+} from "@types";
 import styles from "./ArtistDashboardCommentsPage.module.css";
 import { LuTrash2 } from "react-icons/lu";
 
@@ -22,9 +27,18 @@ const ArtistDashboardCommentsPage: React.FC = () => {
   );
   const refetchRef = useRef<(() => void) | null>(null);
 
+  const commentCtx: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "global",
+  };
+
   const fetchArtistComments = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return commentApi.getCommentsByArtistId(artistId!, { limit, offset });
+      return commentApi.getCommentsByArtistId(artistId!, commentCtx, {
+        limit,
+        offset,
+      });
     },
     [artistId]
   );

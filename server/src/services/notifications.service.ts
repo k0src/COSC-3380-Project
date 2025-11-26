@@ -2,18 +2,18 @@ import { query, withTransaction } from "@config/database";
 import type { UUID, Notification } from "@types";
 
 export default class NotificationsService {
-  static async getNotifications(
-    userId: UUID,
-    includeRead = false
-  ): Promise<Notification[]> {
+  static async getNotifications(userId: UUID): Promise<Notification[]> {
     try {
       const result = await query(
         `SELECT * FROM user_notifications
         WHERE user_id = $1 
-          AND ($2::boolean OR is_read = FALSE) 
           AND archived = FALSE
+          AND NOT EXISTS (
+            SELECT 1 FROM deleted_users du
+            WHERE du.user_id = user_notifications.user_id
+          )
         ORDER BY notified_at DESC`,
-        [userId, includeRead]
+        [userId]
       );
       return result;
     } catch (error) {
@@ -28,7 +28,12 @@ export default class NotificationsService {
         await client.query(
           `UPDATE user_notifications 
           SET is_read = TRUE, read_at = NOW() 
-          WHERE user_id = $1 AND id = $2`,
+          WHERE user_id = $1 
+            AND id = $2
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_users du
+              WHERE du.user_id = user_notifications.user_id
+            )`,
           [userId, notificationId]
         );
       });
@@ -44,7 +49,12 @@ export default class NotificationsService {
         await client.query(
           `UPDATE user_notifications
           SET is_read = TRUE, read_at = NOW()
-          WHERE user_id = $1 AND is_read = FALSE`,
+          WHERE user_id = $1 
+            AND is_read = FALSE
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_users du
+              WHERE du.user_id = user_notifications.user_id
+            )`,
           [userId]
         );
       });
@@ -60,7 +70,12 @@ export default class NotificationsService {
         await client.query(
           `UPDATE user_notifications
           SET archived = TRUE, read_at = COALESCE(read_at, NOW())
-          WHERE user_id = $1 AND id = $2`,
+          WHERE user_id = $1 
+            AND id = $2
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_users du
+              WHERE du.user_id = user_notifications.user_id
+            )`,
           [userId, notificationId]
         );
       });
@@ -76,7 +91,11 @@ export default class NotificationsService {
         await client.query(
           `UPDATE user_notifications
           SET archived = TRUE, read_at = COALESCE(read_at, NOW())
-          WHERE user_id = $1`,
+          WHERE user_id = $1
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_users du
+              WHERE du.user_id = user_notifications.user_id
+            )`,
           [userId]
         );
       });
@@ -91,7 +110,13 @@ export default class NotificationsService {
       const result = await query(
         `SELECT EXISTS (
           SELECT 1 FROM user_notifications
-          WHERE user_id = $1 AND is_read = FALSE AND archived = FALSE
+          WHERE user_id = $1 
+            AND is_read = FALSE 
+            AND archived = FALSE
+            AND NOT EXISTS (
+              SELECT 1 FROM deleted_users du
+              WHERE du.user_id = user_notifications.user_id
+            )
         ) AS has_unread`,
         [userId]
       );

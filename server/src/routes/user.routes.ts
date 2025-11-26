@@ -1188,24 +1188,20 @@ router.put(
 /* ========================================================================== */
 /*                             User Notifications                             */
 /* ========================================================================== */
-
+//done
 // GET /api/users/:id/notifications
 router.get(
   "/:id/notifications",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { includeRead } = req.query;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
-      const notifications = await NotificationsService.getNotifications(
-        id,
-        includeRead === "true"
-      );
-
+      const notifications = await NotificationsService.getNotifications(id);
       res.status(200).json(notifications);
     } catch (error: any) {
       console.error("Error in GET /users/:id/notifications:", error);
@@ -1219,6 +1215,7 @@ router.get(
 // GET /api/users/:id/notifications/check
 router.get(
   "/:id/notifications/check",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;

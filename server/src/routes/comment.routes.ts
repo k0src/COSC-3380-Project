@@ -1,13 +1,50 @@
 import express, { Request, Response } from "express";
 import { CommentService } from "@services";
-import { handlePgError } from "@util";
+import { handlePgError, parseAccessContext } from "@util";
+import { validateOrderBy } from "@validators";
 import { authenticateToken } from "@middleware";
 
 const router = express.Router();
 
-/* ========================================================================== */
-/*                              Comment Management                            */
-/* ========================================================================== */
+// GET /api/comments/artists/:artistId
+router.get(
+  "/artists/:artistId",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { artistId } = req.params;
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
+      if (!artistId) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      let column = (orderByColumn as string) || "commented_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "comment")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "commented_at";
+        direction = "DESC";
+      }
+
+      const accessContext = parseAccessContext(req.query);
+      const comments = await CommentService.getCommentsByArtistId(
+        artistId,
+        accessContext,
+        {
+          orderByColumn: column as any,
+          orderByDirection: direction as any,
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+          offset: offset ? parseInt(offset as string, 10) : undefined,
+        }
+      );
+      res.status(200).json(comments);
+    } catch (error: any) {
+      console.error("Error in GET /comments/artists/:artistId:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
 
 // DELETE /api/comments/:id
 router.delete(
@@ -16,7 +53,6 @@ router.delete(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-
       if (!id) {
         res.status(400).json({ error: "Comment ID is required" });
         return;
@@ -39,7 +75,6 @@ router.post(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { commentIds } = req.body;
-
       if (
         !commentIds ||
         !Array.isArray(commentIds) ||
@@ -57,41 +92,6 @@ router.post(
       });
     } catch (error: any) {
       console.error("Error in POST /comments/bulk-delete:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-/* ========================================================================== */
-/*                            Comment Queries                                 */
-/* ========================================================================== */
-
-// GET /api/comments/artists/:artistId
-router.get(
-  "/artists/:artistId",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { artistId } = req.params;
-      const { limit, offset } = req.query;
-
-      if (!artistId) {
-        res.status(400).json({ error: "Artist ID is required" });
-        return;
-      }
-
-      const options = {
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      };
-
-      const comments = await CommentService.getCommentsByArtistId(
-        artistId,
-        options
-      );
-      res.status(200).json(comments);
-    } catch (error: any) {
-      console.error("Error in GET /comments/artists/:artistId:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
     }

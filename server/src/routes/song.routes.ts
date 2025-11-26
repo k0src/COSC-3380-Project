@@ -300,19 +300,31 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "Song ID is required!" });
         return;
       }
 
-      const comments = await CommentService.getCommentsBySongId(id, {
-        limit: req.query.limit
-          ? parseInt(req.query.limit as string, 10)
-          : undefined,
-        offset: req.query.offset
-          ? parseInt(req.query.offset as string, 10)
-          : undefined,
-      });
+      let column = (orderByColumn as string) || "commented_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "comment")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "commented_at";
+        direction = "DESC";
+      }
+
+      const accessContext = parseAccessContext(req.query);
+      const comments = await CommentService.getCommentsBySongId(
+        id,
+        accessContext,
+        {
+          orderByColumn: column as any,
+          orderByDirection: direction as any,
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+          offset: offset ? parseInt(offset as string, 10) : undefined,
+        }
+      );
       res.status(200).json(comments);
     } catch (error: any) {
       console.error("Error in GET /songs/:id/comments:", error);

@@ -10,6 +10,8 @@ export type DeletableEntityType =
   | "user"
   | "comment";
 
+export type RemovableEntityType = "song" | "album" | "playlist" | "user";
+
 export async function isDeleted(id: UUID, type: DeletableEntityType) {
   try {
     const res = await query(
@@ -22,6 +24,36 @@ export async function isDeleted(id: UUID, type: DeletableEntityType) {
     return Array.isArray(res) && res.length > 0;
   } catch (error) {
     console.error("Error checking deletion status:", error);
+    throw error;
+  }
+}
+
+/**
+ * Checks if song, album, or playlist is 'UNLISTED' or user is 'SUSPENDED'
+ */
+export async function isRemoved(id: UUID, type: RemovableEntityType) {
+  try {
+    let sql = "";
+
+    if (type === "user") {
+      sql = "SELECT status FROM users WHERE id = $1 LIMIT 1";
+    } else {
+      sql = `SELECT visibility_status FROM ${type}s WHERE id = $1 LIMIT 1`;
+    }
+
+    const res = await query(sql, [id]);
+    if (Array.isArray(res) && res.length > 0) {
+      const statusField =
+        type === "user" ? res[0].status : res[0].visibility_status;
+      if (type === "user") {
+        return statusField === "SUSPENDED";
+      } else {
+        return statusField === "UNLISTED";
+      }
+    }
+    return false;
+  } catch (error) {
+    console.error("Error checking removal status:", error);
     throw error;
   }
 }

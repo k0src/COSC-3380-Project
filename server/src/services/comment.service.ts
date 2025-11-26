@@ -1,11 +1,218 @@
-import type { UUID, Comment } from "@types";
-import { query, withTransaction } from "../config/database.js";
+import type {
+  UUID,
+  Comment,
+  CommentOrderByColumn,
+  OrderByDirection,
+  AccessContext,
+} from "@types";
+import {
+  notDeletedCondition,
+  getVisibilityCondition,
+  getUserVisibilityCondition,
+  isDeleted,
+} from "@util";
+import { query, withTransaction } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
 import { PoolClient } from "pg";
 
 export default class CommentService {
+  static async getCommentsBySongId(
+    songId: UUID,
+    accessContext: AccessContext,
+    options?: {
+      orderByColumn?: CommentOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Comment[]> {
+    try {
+      const songVisibility = getVisibilityCondition(
+        "s",
+        "visibility_status",
+        "owner_id",
+        accessContext
+      );
+      const userVisibility = getUserVisibilityCondition("u", accessContext);
+
+      const orderByColumn = options?.orderByColumn || "commented_at";
+      const orderByDirection = options?.orderByDirection || "DESC";
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+
+      const orderByMap: Record<CommentOrderByColumn, string> = {
+        likes: "likes",
+        commented_at: "c.commented_at",
+      };
+
+      const orderBySQL = orderByMap[orderByColumn];
+
+      const sql = `
+        SELECT 
+          c.*,
+          s.title AS song_title,
+          u.username,
+          u.profile_picture_url,
+          u.pfp_blurhash,
+          COALESCE(COUNT(cl.comment_id), 0) AS likes
+        FROM comments c
+        JOIN songs s ON c.song_id = s.id
+        JOIN users u ON c.user_id = u.id
+        LEFT JOIN comment_likes cl ON c.id = cl.comment_id
+        WHERE c.song_id = $1
+          AND ${notDeletedCondition("comment", "c")}
+          AND ${notDeletedCondition("song", "s")}
+          AND ${notDeletedCondition("user", "u")}
+          AND ${songVisibility}
+          AND ${userVisibility}
+        GROUP BY
+          c.id, 
+          c.song_id, 
+          c.user_id, 
+          c.comment_text, 
+          c.commented_at, 
+          s.title, 
+          u.username, 
+          u.profile_picture_url, 
+          u.pfp_blurhash
+        ORDER BY ${orderBySQL} ${orderByDirection}
+        LIMIT $2 OFFSET $3
+      `;
+
+      const comments = await query(sql, [songId, limit, offset]);
+      if (comments.length === 0) {
+        return [];
+      }
+
+      const commentIds = comments.map((c) => c.id);
+      const mentionsSql = `
+        SELECT 
+          cm.comment_id, 
+          cm.user_id, 
+          cm.start_pos AS start, 
+          cm.end_pos AS end, 
+          u.username
+        FROM comment_mentions cm
+        JOIN users u ON cm.user_id = u.id
+        WHERE cm.comment_id = ANY($1)
+          AND ${notDeletedCondition("user", "u")}
+      `;
+
+      const mentions = await query(mentionsSql, [commentIds]);
+      const commentTags = new Map<UUID, any[]>();
+      for (const m of mentions) {
+        if (!commentTags.has(m.comment_id)) {
+          commentTags.set(m.comment_id, []);
+        }
+        commentTags.get(m.comment_id)!.push({
+          user_id: m.user_id,
+          username: m.username,
+          start: m.start,
+          end: m.end,
+        });
+      }
+
+      for (const comment of comments) {
+        if (comment.profile_picture_url) {
+          comment.profile_picture_url = getBlobUrl(comment.profile_picture_url);
+        }
+        comment.tags = commentTags.get(comment.id) || [];
+      }
+
+      return comments;
+    } catch (error) {
+      console.error("Error fetching comments", error);
+      throw error;
+    }
+  }
+
+  static async getCommentsByArtistId(
+    artistId: UUID,
+    accessContext: AccessContext,
+    options?: {
+      orderByColumn?: CommentOrderByColumn;
+      orderByDirection?: OrderByDirection;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Comment[]> {
+    try {
+      const songVisibility = getVisibilityCondition(
+        "s",
+        "visibility_status",
+        "owner_id",
+        accessContext
+      );
+      const userVisibility = getUserVisibilityCondition("u", accessContext);
+
+      const orderByColumn = options?.orderByColumn || "commented_at";
+      const orderByDirection = options?.orderByDirection || "DESC";
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
+
+      const orderByMap: Record<CommentOrderByColumn, string> = {
+        likes: "likes",
+        commented_at: "c.commented_at",
+      };
+
+      const orderBySQL = orderByMap[orderByColumn];
+
+      const sql = `
+        SELECT 
+          c.*,
+          s.title AS song_title,
+          u.username,
+          u.profile_picture_url,
+          u.pfp_blurhash,
+          COALESCE(COUNT(cl.comment_id), 0) AS likes
+        FROM comments c
+        JOIN songs s ON c.song_id = s.id
+        JOIN song_artists sa ON sa.song_id = s.id
+        JOIN artists a ON sa.artist_id = a.id
+        JOIN users u ON c.user_id = u.id
+        LEFT JOIN comment_likes cl ON c.id = cl.comment_id
+        WHERE sa.artist_id = $1
+          AND ${notDeletedCondition("comment", "c")}
+          AND ${notDeletedCondition("song", "s")}
+          AND ${notDeletedCondition("artist", "a")}
+          AND ${notDeletedCondition("user", "u")}
+          AND ${songVisibility}
+          AND ${userVisibility}
+        GROUP BY 
+          c.id, 
+          c.song_id, 
+          c.user_id, 
+          c.comment_text, 
+          c.commented_at, 
+          s.title, 
+          u.username, 
+          u.profile_picture_url, 
+          u.pfp_blurhash
+        ORDER BY ${orderBySQL} ${orderByDirection}
+        LIMIT $2 OFFSET $3
+      `;
+
+      const comments = await query(sql, [artistId, limit, offset]);
+      for (const comment of comments) {
+        if (comment.profile_picture_url) {
+          comment.profile_picture_url = getBlobUrl(comment.profile_picture_url);
+        }
+      }
+
+      return comments;
+    } catch (error) {
+      console.error("Error fetching artist comments:", error);
+      throw error;
+    }
+  }
+
   static async addComment(userId: UUID, songId: UUID, commentText: string) {
     try {
+      const songDeleted = await isDeleted(songId, "song");
+      if (songDeleted) {
+        throw new Error("Cannot comment on a deleted song.");
+      }
+
       return await withTransaction(async (client) => {
         const insertSql = `
           INSERT INTO comments (user_id, song_id, comment_text) 
@@ -119,140 +326,6 @@ export default class CommentService {
       );
     } catch (error) {
       console.error("Error clearing comments:", error);
-      throw error;
-    }
-  }
-
-  static async getCommentsBySongId(
-    songId: UUID,
-    options?: {
-      limit?: number;
-      offset?: number;
-    }
-  ): Promise<Comment[]> {
-    try {
-      const limit = options?.limit ?? 50;
-      const offset = options?.offset ?? 0;
-
-      const sql = `
-        SELECT 
-          c.*, 
-          s.title AS song_title,
-          u.id AS user_id, 
-          u.username,
-          u.profile_picture_url,
-          COALESCE(COUNT(cl.comment_id), 0) AS likes
-        FROM comments c 
-        JOIN songs s ON c.song_id = s.id
-        JOIN users u ON c.user_id = u.id
-        LEFT JOIN comment_likes cl ON c.id = cl.comment_id
-        WHERE c.song_id = $1 AND c.id NOT IN (SELECT comment_id FROM deleted_comments)
-        GROUP BY c.id, s.title, u.id, u.username, u.profile_picture_url
-        ORDER BY c.commented_at DESC
-        LIMIT $2 OFFSET $3`;
-
-      const params = [songId, limit, offset];
-
-      const comments = await query(sql, params);
-      if (comments.length === 0) return [];
-
-      const commentIds = comments.map((c) => c.id);
-      const mentionsSql = `
-        SELECT cm.comment_id, cm.user_id, cm.start_pos AS start, cm.end_pos AS end, u.username
-        FROM comment_mentions cm
-        JOIN users u ON cm.user_id = u.id
-        WHERE cm.comment_id = ANY($1)`;
-
-      const mentions = await query(mentionsSql, [commentIds]);
-      const commentTags = new Map<UUID, any[]>();
-      for (const m of mentions) {
-        if (!commentTags.has(m.comment_id)) commentTags.set(m.comment_id, []);
-        commentTags.get(m.comment_id)!.push({
-          user_id: m.user_id,
-          username: m.username,
-          start: m.start,
-          end: m.end,
-        });
-      }
-
-      for (const comment of comments) {
-        if (comment.profile_picture_url) {
-          comment.profile_picture_url = getBlobUrl(comment.profile_picture_url);
-        }
-        comment.tags = commentTags.get(comment.id) || [];
-      }
-
-      return comments;
-    } catch (error) {
-      console.error("Error fetching comments", error);
-      throw error;
-    }
-  }
-
-  static async getCommentsByUserId(
-    userId: UUID,
-    options?: { limit?: number; offset?: number }
-  ): Promise<Comment[]> {
-    try {
-      const params = [userId, options?.limit || 50, options?.offset || 0];
-      const sql = `
-        SELECT c.*, u.username, u.id, u.profile_picture_url
-        FROM comments c 
-        JOIN users u ON c.user_id = u.id
-        WHERE c.user_id = $1 AND c.id NOT IN (SELECT comment_id FROM deleted_comments)
-        ORDER BY c.created_at DESC
-        LIMIT $2 OFFSET $3
-      `;
-
-      const res = await query(sql, params);
-      return res;
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-      throw error;
-    }
-  }
-
-  static async getCommentsByArtistId(
-    artistId: UUID,
-    options?: {
-      limit?: number;
-      offset?: number;
-    }
-  ): Promise<Comment[]> {
-    try {
-      const limit = options?.limit ?? 10;
-      const offset = options?.offset ?? 0;
-
-      const sql = `
-        SELECT 
-          c.*, 
-          s.title AS song_title,
-          u.id AS user_id,
-          u.username,
-          u.profile_picture_url,
-          COALESCE(COUNT(cl.comment_id), 0) AS likes
-        FROM comments c
-        JOIN songs s ON c.song_id = s.id
-        JOIN users u ON c.user_id = u.id
-        LEFT JOIN comment_likes cl ON c.id = cl.comment_id
-        WHERE s.owner_id = (SELECT id FROM users WHERE artist_id = $1) 
-          AND c.id NOT IN (SELECT comment_id FROM deleted_comments)
-        GROUP BY c.id, s.title, u.id, u.username, u.profile_picture_url
-        ORDER BY c.commented_at DESC
-        LIMIT $2 OFFSET $3
-      `;
-
-      const comments = await query(sql, [artistId, limit, offset]);
-
-      for (const comment of comments) {
-        if (comment.profile_picture_url) {
-          comment.profile_picture_url = getBlobUrl(comment.profile_picture_url);
-        }
-      }
-
-      return comments;
-    } catch (error) {
-      console.error("Error fetching artist comments:", error);
       throw error;
     }
   }

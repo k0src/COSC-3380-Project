@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
-import type { Artist } from "@types";
+import type { AccessContext, Artist } from "@types";
 import { artistApi, commentApi } from "@api";
 import {
   PageLoader,
@@ -32,8 +32,13 @@ interface ArtistDashboardProps {
 
 const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
   const { user } = useAuth();
-
   const artistId = user?.artist_id;
+
+  const commentCtx: AccessContext = {
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
+    userId: user?.id,
+    scope: "global",
+  };
 
   const { data, loading } = useAsyncData(
     {
@@ -53,7 +58,10 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
 
   const fetchArtistComments = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return commentApi.getCommentsByArtistId(artistId!, { limit, offset });
+      return commentApi.getCommentsByArtistId(artistId!, commentCtx, {
+        limit,
+        offset,
+      });
     },
     [artistId]
   );

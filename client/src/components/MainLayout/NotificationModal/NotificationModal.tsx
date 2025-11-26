@@ -158,7 +158,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>("unread");
 
   const { data, loading, error, refetch } = useAsyncData(
-    { notifications: () => notificationsApi.getNotifications(user!.id, true) },
+    { notifications: () => notificationsApi.getNotifications(user!.id) },
     [user!.id],
     {
       cacheKey: `notifications_${user!.id}`,

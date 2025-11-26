@@ -29,7 +29,7 @@ const AdminManageCommentsPage: React.FC = () => {
   }
 
   const accessContext: AccessContext = {
-    role: user?.role === "ADMIN" ? "admin" : "user",
+    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
     scope: "owner",
   };
@@ -47,7 +47,10 @@ const AdminManageCommentsPage: React.FC = () => {
 
   const fetchSongComments = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return commentApi.getCommentsBySongId(songId!, { limit, offset });
+      return commentApi.getCommentsBySongId(songId!, accessContext, {
+        limit,
+        offset,
+      });
     },
     [songId]
   );
