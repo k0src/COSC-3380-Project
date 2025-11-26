@@ -69,13 +69,30 @@ export function getUserVisibilityCondition(
   userAlias: string,
   accessContext: AccessContext
 ): string {
-  const { role, scope } = accessContext;
+  const { role, userId, scope } = accessContext;
 
   if (role === "admin" && scope === "owner") {
     return "TRUE";
   }
 
-  return `${userAlias}.is_private = FALSE`;
+  if (scope === "global") {
+    return `(
+      ${userAlias}.status = 'ACTIVE' 
+      AND ${userAlias}.is_private = FALSE
+    )`;
+  }
+
+  if (scope === "owner" && userId) {
+    return `(
+      (${userAlias}.status = 'ACTIVE' AND ${userAlias}.is_private = FALSE)
+      OR (${userAlias}.id = '${userId}' AND ${userAlias}.status IN ('ACTIVE', 'DEACTIVATED'))
+    )`;
+  }
+
+  return `(
+    ${userAlias}.status = 'ACTIVE' 
+    AND ${userAlias}.is_private = FALSE
+  )`;
 }
 
 /* ==================================== x =================================== */

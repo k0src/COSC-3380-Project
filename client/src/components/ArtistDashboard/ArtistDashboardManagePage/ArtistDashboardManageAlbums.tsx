@@ -39,12 +39,7 @@ const ArtistDashboardManageAlbums: React.FC<
 
   const fetchArtistAlbums = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return artistApi.getAlbums(artistId, accessContext, {
-        includeLikes: true,
-        includeSongCount: true,
-        limit,
-        offset,
-      });
+      return artistApi.getAlbums(artistId, accessContext, { limit, offset });
     },
     [artistId, accessContext]
   );

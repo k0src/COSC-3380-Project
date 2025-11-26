@@ -43,10 +43,7 @@ const RelatedAlbums: React.FC<RelatedAlbumsProps> = ({
         return () => albumApi.getRelatedAlbums(albumId, { limit: 10 });
       case "artist":
         return () =>
-          artistApi.getAlbums(artistId, accessContext, {
-            includeSongCount: true,
-            limit: 10,
-          });
+          artistApi.getAlbums(artistId, accessContext, { limit: 10 });
       default:
         throw new Error(`Invalid mode: ${mode}`);
     }

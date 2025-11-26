@@ -22,7 +22,7 @@ const ArtistDashboardRecentReleases: React.FC<
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "ownerList",
+    scope: "owner",
   };
 
   const { data, loading, error } = useAsyncData(

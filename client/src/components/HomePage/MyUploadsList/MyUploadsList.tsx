@@ -21,8 +21,6 @@ const MyUploadsList: React.FC<MyUploadsListProps> = ({
     {
       artistSongs: () =>
         artistApi.getSongs(artistId, accessContext, {
-          includeAlbums: true,
-          includeArtists: true,
           orderByColumn: "release_date",
           orderByDirection: "DESC",
           limit: 8,

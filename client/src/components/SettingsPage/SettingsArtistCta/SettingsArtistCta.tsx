@@ -1,6 +1,6 @@
 import { memo, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import type { User } from "@types";
+import type { Artist, User } from "@types";
 import { ArtistSignupModal } from "@components";
 import styles from "./SettingsArtistCta.module.css";
 import { LuX } from "react-icons/lu";
@@ -38,8 +38,12 @@ const SettingsArtistCta: React.FC<SettingsArtistCtaProps> = ({ user }) => {
   }, []);
 
   const handleSignupSuccess = useCallback(
-    (updatedUser?: User) => {
-      navigate(`/artists/${updatedUser?.artist_id}`);
+    (artist?: Artist) => {
+      if (artist) {
+        navigate(`/artists/${artist.id}`);
+        return;
+      }
+      navigate("/me/settings");
     },
     [navigate]
   );

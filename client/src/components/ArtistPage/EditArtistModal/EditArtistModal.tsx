@@ -117,6 +117,7 @@ const EditArtistModal: React.FC<EditArtistModalProps> = ({
 
       try {
         const artistData: any = {
+          user_id: artist.user_id,
           display_name: formState.display_name.trim(),
           bio: formState.bio.trim(),
           location: formState.location.trim(),

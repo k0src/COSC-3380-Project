@@ -27,11 +27,7 @@ export interface LibraryArtist extends Artist {
   played_at?: string;
 }
 
-export type ArtistOrderByColumn =
-  | "display_name"
-  | "created_at"
-  | "verified"
-  | "streams";
+export type ArtistOrderByColumn = "display_name" | "created_at" | "verified";
 
 export interface ArtistOptions {
   includeUser?: boolean;

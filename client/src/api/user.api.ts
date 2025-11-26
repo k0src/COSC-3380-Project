@@ -13,21 +13,21 @@ import type {
 } from "@types";
 
 export const userApi = {
-  async registerArtist(
-    id: UUID,
-    username: string,
-    displayName?: string,
-    location?: string,
-    bio?: string
-  ) {
-    const response = await api.post<User>(`/users/${id}/register-artist`, {
-      username,
-      displayName,
-      location,
-      bio,
-    });
-    return response.data;
-  },
+  // async registerArtist(
+  //   id: UUID,
+  //   username: string,
+  //   displayName?: string,
+  //   location?: string,
+  //   bio?: string
+  // ) {
+  //   const response = await api.post<User>(`/users/${id}/register-artist`, {
+  //     username,
+  //     displayName,
+  //     location,
+  //     bio,
+  //   });
+  //   return response.data;
+  // },
 
   async getUserCount() {
     const response = await api.get<{ userCount: number }>(`/users/count`);

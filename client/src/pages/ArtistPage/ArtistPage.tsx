@@ -30,13 +30,13 @@ const ArtistPage: React.FC = () => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "single",
+    scope: "owner",
   };
 
   const globalCtx: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "globalList",
+    scope: "global",
   };
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -52,9 +52,8 @@ const ArtistPage: React.FC = () => {
 
   const { data, loading, error, refetch } = useAsyncData(
     {
-      artist: () =>
-        artistApi.getArtistById(id, accessContext, { includeUser: true }),
-      pinned: () => artistApi.getPinnedAlbum(id, accessContext),
+      artist: () => artistApi.getArtistDetails(id, accessContext),
+      pinned: () => artistApi.getPinnedAlbum(id, globalCtx),
       hasSongsData: () => artistApi.checkArtistHasSongs(id),
     },
     [id],
@@ -78,8 +77,6 @@ const ArtistPage: React.FC = () => {
   const fetchPopularSongs = useCallback(
     () =>
       artistApi.getSongs(id, globalCtx, {
-        includeAlbums: true,
-        includeArtists: true,
         orderByColumn: "streams",
         orderByDirection: "DESC",
         limit: 10,
@@ -94,9 +91,7 @@ const ArtistPage: React.FC = () => {
 
   const fetchSingles = useCallback(
     () =>
-      artistApi.getSongs(id, globalCtx, {
-        includeArtists: true,
-        onlySingles: true,
+      artistApi.getSingles(id, globalCtx, {
         limit: 10,
       }),
     [id]
@@ -144,12 +139,12 @@ const ArtistPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{`${artist.display_name} - CoogMusic`}</title>
+        <title>{`${artist!.display_name} - CoogMusic`}</title>
       </Helmet>
 
       <div className={styles.artistLayout}>
         <ArtistBanner
-          artist={artist}
+          artist={artist!}
           isOwner={isOwner}
           onEditButtonClick={handleEditArtist}
         />
@@ -168,7 +163,7 @@ const ArtistPage: React.FC = () => {
                       subtitle={formatDateString(pinnedAlbum.release_date)}
                       imageUrl={pinnedAlbum.image_url}
                       blurHash={pinnedAlbum.image_url_blurhash}
-                      author={artist.display_name}
+                      author={artist!.display_name}
                     />
                   </div>
                 )}
@@ -181,8 +176,8 @@ const ArtistPage: React.FC = () => {
                 />
                 <SlidingCardList
                   title="Albums"
-                  artistName={artist.display_name}
-                  artistId={artist.id}
+                  artistName={artist!.display_name}
+                  artistId={artist!.id}
                   fetchData={fetchAlbums}
                   type="album"
                   itemsPerView={6}
@@ -206,42 +201,42 @@ const ArtistPage: React.FC = () => {
               </div>
             )}
             <div className={styles.artistLayoutBottomRight}>
-              {artist.user?.id && (
+              {artist && (
                 <>
                   <ArtistActions
                     artistId={artist.id}
-                    userId={artist.user.id}
+                    userId={artist.user_id}
                     artistName={artist.display_name}
                     shareLink={window.location.href}
                   />
                   <FollowProfiles
                     title="Followers"
-                    userId={artist.user.id}
+                    userId={artist.user_id}
                     profileLimit={8}
                     profileMin={4}
                     following={false}
                   />
                   <FollowProfiles
                     title="Following"
-                    userId={artist.user.id}
+                    userId={artist.user_id}
                     profileMin={4}
                     profileLimit={8}
                   />
                 </>
               )}
-              <ArtistPlaylists artistId={artist.id} />
+              <ArtistPlaylists artistId={artist!.id} />
               <ArtistFeaturedOnPlaylists
-                artistId={artist.id}
-                artistName={artist.display_name}
+                artistId={artist!.id}
+                artistName={artist!.display_name}
               />
             </div>
           </div>
         </div>
-        <RelatedArtists artistId={artist.id} />
+        <RelatedArtists artistId={artist!.id} />
         <ArtistAbout
-          artistId={artist.id}
-          artistName={artist.display_name}
-          artistBio={artist.bio}
+          artistId={artist!.id}
+          artistName={artist!.display_name}
+          artistBio={artist!.bio}
         />
       </div>
 
@@ -249,7 +244,7 @@ const ArtistPage: React.FC = () => {
         <EditArtistModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          artist={artist}
+          artist={artist!}
           onArtistEdited={handleArtistEdited}
         />
       )}

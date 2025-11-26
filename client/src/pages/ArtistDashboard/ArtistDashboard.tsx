@@ -38,7 +38,8 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
   const { data, loading } = useAsyncData(
     {
       hasSongs: () => artistApi.checkArtistHasSongs(artistId!),
-      hasArtistPlaylists: () => artistApi.checkArtistHasPlaylists(artistId!),
+      hasArtistPlaylists: () =>
+        artistApi.checkArtistHasArtistPlaylists(artistId!),
     },
     [artistId!],
     {

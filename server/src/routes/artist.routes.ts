@@ -11,11 +11,42 @@ const router = express.Router();
 /*                                Main Routes                                 */
 /* ========================================================================== */
 
+//done
+// GET /api/artists
+router.get("/", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { orderByColumn, orderByDirection, limit, offset } = req.query;
+
+    let column = (orderByColumn as string) || "created_at";
+    let direction = (orderByDirection as string) || "DESC";
+    if (!validateOrderBy(column, direction, "artist")) {
+      console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+      column = "created_at";
+      direction = "DESC";
+    }
+
+    const accessContext = parseAccessContext(req.query);
+    const artists = await ArtistRepository.getManyArtists(accessContext, {
+      orderByColumn: column as any,
+      orderByDirection: direction as any,
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      offset: offset ? parseInt(offset as string, 10) : undefined,
+    });
+
+    res.status(200).json(artists);
+  } catch (error: any) {
+    console.error("Error in GET /artists/:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+    return;
+  }
+});
+
+//done
 // GET /api/artists/top-artist
 router.get("/top-artist", async (req: Request, res: Response) => {
   try {
     const days = parseInt(req.query.days as string, 10) || 30;
-
     const topArtist = await ArtistRepository.getTopArtist(days);
 
     if (!topArtist) {
@@ -31,55 +62,18 @@ router.get("/top-artist", async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/artists
-router.get("/", async (req: Request, res: Response): Promise<void> => {
+//done
+// GET /api/artists/:id
+router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { includeUser, orderByColumn, orderByDirection, limit, offset } =
-      req.query;
-
-    let column = (orderByColumn as string) || "created_at";
-    let direction = (orderByDirection as string) || "DESC";
-
-    if (!validateOrderBy(column, direction, "artist")) {
-      console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
-      column = "created_at";
-      direction = "DESC";
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Artist ID is required" });
+      return;
     }
 
     const accessContext = parseAccessContext(req.query);
-
-    const artists = await ArtistRepository.getMany(accessContext, {
-      includeUser: includeUser === "true",
-      orderByColumn: column as any,
-      orderByDirection: direction as any,
-      limit: limit ? parseInt(limit as string, 10) : undefined,
-      offset: offset ? parseInt(offset as string, 10) : undefined,
-    });
-
-    res.status(200).json(artists);
-  } catch (error: any) {
-    console.error("Error in GET /artists/:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// GET /api/artists/:id
-router.get("/:id", async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const { includeUser } = req.query;
-
-  if (!id) {
-    res.status(400).json({ error: "Artist ID is required" });
-    return;
-  }
-
-  try {
-    const accessContext = parseAccessContext(req.query);
-
-    const artist = await ArtistRepository.getOne(id, accessContext, {
-      includeUser: includeUser === "true",
-    });
+    const artist = await ArtistRepository.getArtistDetails(id, accessContext);
 
     if (!artist) {
       res.status(404).json({ error: "Artist not found" });
@@ -91,9 +85,11 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     console.error("Error in GET /artists/:id:", error);
     const { message, statusCode } = handlePgError(error);
     res.status(statusCode).json({ error: message });
+    return;
   }
 });
 
+//done
 // POST /api/artists
 router.post(
   "/",
@@ -113,10 +109,12 @@ router.post(
       console.error("Error in POST /api/artists/:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
 
+//done
 // PUT /api/artists/:id
 router.put(
   "/:id",
@@ -142,10 +140,12 @@ router.put(
       console.error("Error in PUT /api/artists/:id:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
 
+//done
 // DELETE /api/artists/:id
 router.delete(
   "/:id",
@@ -172,21 +172,12 @@ router.delete(
 /*                              Artist Content                                */
 /* ========================================================================== */
 
+//done
 // GET /api/artists/:id/songs
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const {
-      includeAlbums,
-      includeArtists,
-      onlySingles,
-      includeLikes,
-      includeComments,
-      orderByColumn,
-      orderByDirection,
-      limit,
-      offset,
-    } = req.query;
+    const { orderByColumn, orderByDirection, limit, offset } = req.query;
     if (!id) {
       res.status(400).json({ error: "Artist ID is required" });
       return;
@@ -201,13 +192,7 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
     }
 
     const accessContext = parseAccessContext(req.query);
-
     const songs = await ArtistRepository.getSongs(id, accessContext, {
-      includeAlbums: includeAlbums === "true",
-      includeArtists: includeArtists === "true",
-      onlySingles: onlySingles === "true",
-      includeLikes: includeLikes === "true",
-      includeComments: includeComments === "true",
       orderByColumn: column as any,
       orderByDirection: direction as any,
       limit: limit ? parseInt(limit as string, 10) : undefined,
@@ -223,21 +208,53 @@ router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+//done
+// GET /api/artists/:id/singles
+router.get(
+  "/:id/singles",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "song")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
+
+      const accessContext = parseAccessContext(req.query);
+      const singles = await ArtistRepository.getSingles(id, accessContext, {
+        orderByColumn: column as any,
+        orderByDirection: direction as any,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+      res.status(200).json(singles);
+    } catch (error: any) {
+      console.error("Error in GET /artists/:id/singles:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
+//done
 // GET /api/artists/:id/albums
 router.get(
   "/:id/albums",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const {
-        includeLikes,
-        includeRuntime,
-        includeSongCount,
-        orderByColumn,
-        orderByDirection,
-        limit,
-        offset,
-      } = req.query;
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
 
       if (!id) {
         res.status(400).json({ error: "Artist ID is required" });
@@ -246,7 +263,6 @@ router.get(
 
       let column = (orderByColumn as string) || "created_at";
       let direction = (orderByDirection as string) || "DESC";
-
       if (!validateOrderBy(column, direction, "album")) {
         console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
         column = "created_at";
@@ -254,11 +270,7 @@ router.get(
       }
 
       const accessContext = parseAccessContext(req.query);
-
       const albums = await ArtistRepository.getAlbums(id, accessContext, {
-        includeLikes: includeLikes === "true",
-        includeRuntime: includeRuntime === "true",
-        includeSongCount: includeSongCount === "true",
         orderByColumn: column as any,
         orderByDirection: direction as any,
         limit: limit ? parseInt(limit as string, 10) : undefined,
@@ -270,36 +282,37 @@ router.get(
       console.error("Error in GET /artists/:id/albums:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
 
+//done
 // GET /api/artists/:id/pinned-album
 router.get(
   "/:id/pinned-album",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { includeLikes, includeRuntime, includeSongCount } = req.query;
-
       if (!id) {
         res.status(400).json({ error: "Artist ID is required" });
         return;
       }
 
       const accessContext = parseAccessContext(req.query);
+      const album = await ArtistRepository.getPinnedAlbum(id, accessContext);
 
-      const album = await ArtistRepository.getPinnedAlbum(id, accessContext, {
-        includeLikes: includeLikes === "true",
-        includeRuntime: includeRuntime === "true",
-        includeSongCount: includeSongCount === "true",
-      });
+      if (!album) {
+        res.status(404).json({ error: "Album not found" });
+        return;
+      }
 
       res.status(200).json(album);
     } catch (error: any) {
       console.error("Error in GET /artists/:id/pinned-album:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -350,52 +363,14 @@ router.post(
   }
 );
 
+//done
 // GET /api/artists/:id/playlists
 router.get(
   "/:id/playlists",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { includeUser, limit, offset } = req.query;
-      if (!id) {
-        res.status(400).json({ error: "Artist ID is required" });
-        return;
-      }
-
-      const accessContext = parseAccessContext(req.query);
-
-      const playlists = await ArtistRepository.getPlaylists(id, accessContext, {
-        includeUser: includeUser === "true",
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(playlists);
-    } catch (error: any) {
-      console.error("Error in GET /artists/:id/playlists:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-// GET /api/artists/:id/artist-playlists
-router.get(
-  "/:id/artist-playlists",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const {
-        includeUser,
-        includeLikes,
-        includeSongCount,
-        includeRuntime,
-        orderByColumn,
-        orderByDirection,
-        limit,
-        offset,
-      } = req.query;
-
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "Artist ID is required" });
         return;
@@ -410,15 +385,55 @@ router.get(
       }
 
       const accessContext = parseAccessContext(req.query);
+      const playlists = await ArtistRepository.getFeaturedOnPlaylists(
+        id,
+        accessContext,
+        {
+          orderByColumn: column as any,
+          orderByDirection: direction as any,
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+          offset: offset ? parseInt(offset as string, 10) : undefined,
+        }
+      );
 
+      res.status(200).json(playlists);
+    } catch (error: any) {
+      console.error("Error in GET /artists/:id/playlists:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
+//done
+// GET /api/artists/:id/artist-playlists
+router.get(
+  "/:id/artist-playlists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "Artist ID is required" });
+        return;
+      }
+
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "playlist")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
+      const accessContext = parseAccessContext(req.query);
       const artistPlaylists = await ArtistRepository.getArtistPlaylists(
         id,
         accessContext,
         {
-          includeUser: includeUser === "true",
-          includeLikes: includeLikes === "true",
-          includeSongCount: includeSongCount === "true",
-          includeRuntime: includeRuntime === "true",
+          orderByColumn: column as any,
+          orderByDirection: direction as any,
           limit: limit ? parseInt(limit as string, 10) : undefined,
           offset: offset ? parseInt(offset as string, 10) : undefined,
         }
@@ -429,6 +444,7 @@ router.get(
       console.error("Error in GET /artists/:id/artist-playlists:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -437,9 +453,10 @@ router.get(
 /*                              Artist Stats                                  */
 /* ========================================================================== */
 
-// GET /api/artists/:id/number-songs
+//done
+// GET /api/artists/:id/count/songs
 router.get(
-  "/:id/number-songs",
+  "/:id/count/songs",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -451,58 +468,18 @@ router.get(
       const numberOfSongs = await ArtistRepository.getNumberOfSongs(id);
       res.status(200).json({ numberOfSongs });
     } catch (error: any) {
-      console.error("Error in GET /artists/:id/number-songs:", error);
+      console.error("Error in GET /artists/:id/count/songs:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
 
-// GET /api/artists/:id/number-albums
+//done
+// GET /api/artists/:id/count/streams
 router.get(
-  "/:id/number-albums",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      if (!id) {
-        res.status(400).json({ error: "Artist ID is required" });
-        return;
-      }
-
-      const numberOfAlbums = await ArtistRepository.getNumberOfAlbums(id);
-      res.status(200).json({ numberOfAlbums });
-    } catch (error: any) {
-      console.error("Error in GET /artists/:id/number-albums:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-// GET /api/artists/:id/number-singles
-router.get(
-  "/:id/number-singles",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      if (!id) {
-        res.status(400).json({ error: "Artist ID is required" });
-        return;
-      }
-
-      const numberOfSingles = await ArtistRepository.getNumberOfSingles(id);
-      res.status(200).json({ numberOfSingles });
-    } catch (error: any) {
-      console.error("Error in GET /artists/:id/number-singles:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-// GET /api/artists/:id/streams
-router.get(
-  "/:id/streams",
+  "/:id/count/streams",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -514,16 +491,18 @@ router.get(
       const streams = await ArtistRepository.getTotalStreams(id);
       res.status(200).json({ streams });
     } catch (error: any) {
-      console.error("Error in GET /artists/:id/streams:", error);
+      console.error("Error in GET /artists/:id/count/streams:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
 
-// GET /api/artists/:id/monthly-listeners
+//done
+// GET /api/artists/:id/count/monthly-listeners
 router.get(
-  "/:id/monthly-listeners",
+  "/:id/count/monthly-listeners",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -535,9 +514,13 @@ router.get(
       const monthlyListeners = await ArtistRepository.getMonthlyListeners(id);
       res.status(200).json({ monthlyListeners });
     } catch (error: any) {
-      console.error("Error in GET /artists/:id/monthly-listeners:", error);
+      console.error(
+        "Error in GET /artists/:id/count/monthly-listeners:",
+        error
+      );
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -546,53 +529,47 @@ router.get(
 /*                              Artist Related                                */
 /* ========================================================================== */
 
+//done
 // GET /api/artists/:id/related
 router.get(
   "/:id/related",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { includeUser, limit, offset } = req.query;
+      const { limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "Artist ID is required" });
         return;
       }
 
-      const accessContext = parseAccessContext(req.query);
-
-      const relatedArtists = await ArtistRepository.getRelatedArtists(
-        id,
-        accessContext,
-        {
-          includeUser: includeUser === "true",
-          limit: limit ? parseInt(limit as string, 10) : undefined,
-          offset: offset ? parseInt(offset as string, 10) : undefined,
-        }
-      );
+      const relatedArtists = await ArtistRepository.getRelatedArtists(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
 
       res.status(200).json(relatedArtists);
     } catch (error: any) {
       console.error("Error in GET /artists/:id/related:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
 
+//done
 // GET /api/artists/recommendations/:userId
 router.get("/recommendations/:userId", async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
+    const { limit, offset } = req.query;
     if (!userId) {
       res.status(400).json({ error: "User ID is required" });
       return;
     }
 
-    const { includeUser, limit, offset } = req.query;
-
     const artistRecommendations =
       await ArtistRepository.getArtistRecommendations(userId, {
-        includeUser: includeUser === "true",
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
@@ -605,31 +582,45 @@ router.get("/recommendations/:userId", async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/artists/recommendations/new/:userId
+// GET /api/artists/recommendations/:userId/followed/songs
 router.get(
-  "/recommendations/:userId/new/songs",
+  "/recommendations/:userId/followed/songs",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { userId } = req.params;
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
       if (!userId) {
         res.status(400).json({ error: "Missing userId parameter" });
         return;
       }
 
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "song")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
+
       const accessContext = parseAccessContext(req);
-
-      const limit = req.query.limit
-        ? parseInt(req.query.limit as string, 10)
-        : 10;
-
       const songs = await ArtistRepository.getNewFromFollowedArtists(
         userId,
         accessContext,
-        limit
+        {
+          orderByColumn: column as any,
+          orderByDirection: direction as any,
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+          offset: offset ? parseInt(offset as string, 10) : undefined,
+        }
       );
 
       res.status(200).json(songs);
-    } catch (error: any) {}
+    } catch (error: any) {
+      console.error("Error in GET /songs/", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
   }
 );
 
@@ -637,9 +628,10 @@ router.get(
 /*                              Artist Checks                                 */
 /* ========================================================================== */
 
+//done
 // GET /api/artists/:id/has-artist-playlists
 router.get(
-  "/:id/has-artist-playlists",
+  "/:id/has/artist-playlists",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -648,23 +640,26 @@ router.get(
         return;
       }
 
-      const hasPlaylists = await ArtistRepository.checkArtistHasPlaylists(id);
+      const hasPlaylists = await ArtistRepository.checkArtistHasArtistPlaylists(
+        id
+      );
       res.status(200).json({ hasPlaylists });
     } catch (error: any) {
       console.error("Error in GET /artists/:id/has-artist-playlists:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
 
+//done
 // GET /api/artists/:id/has-songs
 router.get(
-  "/:id/has-songs",
+  "/:id/has/songs",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-
       if (!id) {
         res.status(400).json({ error: "Artist ID is required" });
         return;
@@ -676,6 +671,7 @@ router.get(
       console.error("Error in GET /artists/:id/has-songs:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );

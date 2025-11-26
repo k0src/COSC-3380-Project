@@ -38,7 +38,7 @@ const ArtistDiscography: React.FC = () => {
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "single",
+    scope: "owner",
   };
 
   if (!id) {
@@ -50,20 +50,11 @@ const ArtistDiscography: React.FC = () => {
     );
   }
 
-  //! ADD LIMITS AND PAGINATION
   const { data, loading, error } = useAsyncData(
     {
-      artist: () =>
-        artistApi.getArtistById(id, accessContext, { includeUser: true }),
+      artist: () => artistApi.getArtistDetails(id, accessContext),
       albums: () => artistApi.getAlbums(id, accessContext),
-      singles: () =>
-        artistApi.getSongs(id, accessContext, {
-          includeArtists: true,
-          onlySingles: true,
-        }),
-      numberOfSongs: () => artistApi.getNumberOfSongs(id),
-      numberOfAlbums: () => artistApi.getNumberOfAlbums(id),
-      numberOfSingles: () => artistApi.getNumberOfSingles(id),
+      singles: () => artistApi.getSingles(id, accessContext),
     },
     [id],
     {
@@ -75,9 +66,12 @@ const ArtistDiscography: React.FC = () => {
   const artist = data?.artist;
   const albums = data?.albums ?? [];
   const singles = data?.singles ?? [];
-  const numberOfSongs = data?.numberOfSongs ?? 0;
-  const numberOfAlbums = data?.numberOfAlbums ?? 0;
-  const numberOfSingles = data?.numberOfSingles ?? 0;
+
+  const numberOfAlbums = albums.length;
+  const numberOfSingles = singles.length;
+  const numberOfSongs =
+    albums.reduce((sum, album) => sum + (Number(album.song_count) || 0), 0) +
+    singles.length;
 
   const artistImageUrl = useMemo(
     () => artist?.user?.profile_picture_url || artistPlaceholder,
@@ -161,7 +155,7 @@ const ArtistDiscography: React.FC = () => {
             <header className={styles.discoHeader}>
               <LazyImg
                 src={artistImageUrl || artistPlaceholder}
-                alt={`${artist.display_name} Image`}
+                alt={`${artist!.display_name} Image`}
                 imgClassNames={[
                   styles.artistImage,
                   artistImageUrl ? styles.artistImageClickable : "",
@@ -171,7 +165,7 @@ const ArtistDiscography: React.FC = () => {
               />
               <div className={styles.artistInfo}>
                 <h1 className={styles.discoTitle}>
-                  {artist.display_name}'s Discography
+                  {artist!.display_name}'s Discography
                 </h1>
 
                 <div className={styles.artistStats}>
@@ -250,7 +244,7 @@ const ArtistDiscography: React.FC = () => {
 
             {noDiscography && (
               <div className={styles.noDiscography}>
-                {artist.display_name} has not released any albums or singles
+                {artist!.display_name} has not released any albums or singles
                 yet.
               </div>
             )}
@@ -262,7 +256,7 @@ const ArtistDiscography: React.FC = () => {
             isOpen={isLightboxOpen}
             onClose={handleLightboxClose}
             imageUrl={artistImageUrl}
-            altText={`${artist.display_name} Image`}
+            altText={`${artist!.display_name} Image`}
           />
         )}
       </>

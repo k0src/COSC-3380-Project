@@ -7,7 +7,7 @@ import { validateOrderBy } from "@validators";
 import { authenticateToken } from "@middleware";
 
 const router = express.Router();
-
+//  EXISTS (SELECT 1 FROM artist_page_pinned_albums apa WHERE apa.album_id = a.id) AS is_pinned
 /* ========================================================================== */
 /*                                Main Routes                                 */
 /* ========================================================================== */
@@ -46,7 +46,6 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-
     if (!id) {
       res.status(400).json({ error: "Album ID is required" });
       return;
@@ -178,15 +177,24 @@ router.post(
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { limit, offset } = req.query;
-
+    const { orderByColumn, orderByDirection, limit, offset } = req.query;
     if (!id) {
       res.status(400).json({ error: "Album ID is required" });
       return;
     }
 
+    let column = (orderByColumn as string) || "created_at";
+    let direction = (orderByDirection as string) || "DESC";
+    if (!validateOrderBy(column, direction, "song")) {
+      console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+      column = "created_at";
+      direction = "DESC";
+    }
+
     const accessContext = parseAccessContext(req.query);
     const songs = await AlbumRepository.getSongs(id, accessContext, {
+      orderByColumn: column as any,
+      orderByDirection: direction as any,
       limit: limit ? parseInt(limit as string, 10) : undefined,
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });

@@ -186,15 +186,24 @@ router.post(
 router.get("/:id/songs", async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { limit, offset } = req.query;
-
+    const { orderByColumn, orderByDirection, limit, offset } = req.query;
     if (!id) {
       res.status(400).json({ error: "Playlist ID is required" });
       return;
     }
 
+    let column = (orderByColumn as string) || "created_at";
+    let direction = (orderByDirection as string) || "DESC";
+    if (!validateOrderBy(column, direction, "song")) {
+      console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+      column = "created_at";
+      direction = "DESC";
+    }
+
     const accessContext = parseAccessContext(req.query);
     const songs = await PlaylistRepository.getSongs(id, accessContext, {
+      orderByColumn: column as any,
+      orderByDirection: direction as any,
       limit: limit ? parseInt(limit as string, 10) : undefined,
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });

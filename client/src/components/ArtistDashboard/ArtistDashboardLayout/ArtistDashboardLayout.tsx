@@ -25,16 +25,11 @@ const ArtistDashboardLayout: React.FC<ArtistDashboardLayoutProps> = ({
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "single",
+    scope: "owner",
   };
 
   const { data, loading, error } = useAsyncData(
-    {
-      artist: () =>
-        artistApi.getArtistById(artistId!, accessContext, {
-          includeUser: true,
-        }),
-    },
+    { artist: () => artistApi.getArtistDetails(artistId!, accessContext) },
     [artistId!],
     {
       cacheKey: `artist_layout_${artistId}`,

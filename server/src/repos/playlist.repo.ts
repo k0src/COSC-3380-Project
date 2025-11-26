@@ -5,6 +5,7 @@ import {
   UUID,
   VisibilityStatus,
   PlaylistOrderByColumn,
+  SongOrderByColumn,
   OrderByDirection,
 } from "@types";
 import { query, withTransaction } from "@config/database";
@@ -249,6 +250,7 @@ export default class PlaylistRepository {
                 u.pfp_blurhash,
                 u.role,
                 u.is_private,
+                u.status,
                 u.artist_id,
                 u.created_at,
                 u.updated_at
@@ -377,6 +379,7 @@ export default class PlaylistRepository {
                 u.pfp_blurhash,
                 u.role,
                 u.is_private,
+                u.status,
                 u.artist_id,
                 u.created_at,
                 u.updated_at
@@ -463,6 +466,8 @@ export default class PlaylistRepository {
     playlistId: UUID,
     accessContext: AccessContext,
     options?: {
+      orderByColumn?: SongOrderByColumn;
+      orderByDirection?: OrderByDirection;
       limit?: number;
       offset?: number;
     }
@@ -482,8 +487,23 @@ export default class PlaylistRepository {
       );
       const userVisibility = getUserVisibilityCondition("u", accessContext);
 
+      const orderByColumn = options?.orderByColumn || "ps.position";
+      const orderByDirection = options?.orderByDirection || "ASC";
       const limit = options?.limit || 50;
       const offset = options?.offset || 0;
+
+      const orderByMap: Record<SongOrderByColumn | "ps.position", string> = {
+        title: "s.title",
+        created_at: "s.created_at",
+        streams: "s.streams",
+        release_date: "s.release_date",
+        likes: "likes",
+        comments: "comments",
+        duration: "s.duration",
+        "ps.position": "ps.position",
+      };
+
+      const orderBySQL = orderByMap[orderByColumn];
 
       const sql = `
         SELECT 
@@ -549,6 +569,7 @@ export default class PlaylistRepository {
                   'pfp_blurhash', u.pfp_blurhash,
                   'role', u.role,
                   'is_private', u.is_private,
+                  'status', u.status,
                   'artist_id', u.artist_id,
                   'created_at', u.created_at,
                   'updated_at', u.updated_at
@@ -584,7 +605,7 @@ export default class PlaylistRepository {
         WHERE ps.playlist_id = $1
           AND ${notDeletedCondition("song", "s")}
           AND ${songVisibility}
-        ORDER BY ps.position ASC
+        ORDER BY ${orderBySQL} ${orderByDirection}
         LIMIT $2 OFFSET $3
       `;
 

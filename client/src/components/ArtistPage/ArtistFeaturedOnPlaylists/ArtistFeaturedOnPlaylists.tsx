@@ -22,14 +22,13 @@ const ArtistFeaturedOnPlaylists: React.FC<ArtistFeaturedOnPlaylistsProps> = ({
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "globalList",
+    scope: "global",
   };
 
   const { data, loading, error } = useAsyncData(
     {
       playlists: () =>
-        artistApi.getPlaylists(artistId, accessContext, {
-          includeUser: true,
+        artistApi.getFeaturedOnPlaylists(artistId, accessContext, {
           limit: 10,
         }),
     },

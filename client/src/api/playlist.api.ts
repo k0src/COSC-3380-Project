@@ -7,6 +7,7 @@ import type {
   AccessContext,
   OrderByDirection,
   PlaylistOrderByColumn,
+  SongOrderByColumn,
 } from "@types";
 
 export const playlistApi = {
@@ -123,6 +124,8 @@ export const playlistApi = {
     playlistId: UUID,
     accessContext: AccessContext,
     options?: {
+      orderByColumn?: SongOrderByColumn;
+      orderByDirection?: OrderByDirection;
       limit?: number;
       offset?: number;
     }

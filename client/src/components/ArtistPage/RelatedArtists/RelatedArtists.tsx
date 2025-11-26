@@ -1,9 +1,8 @@
 import { memo } from "react";
 import { PuffLoader } from "react-spinners";
-import type { UUID, AccessContext } from "@types";
+import type { UUID } from "@types";
 import { artistApi } from "@api";
 import { useAsyncData } from "@hooks";
-import { useAuth } from "@contexts";
 import { ArtistItem } from "@components";
 import styles from "./RelatedArtists.module.css";
 
@@ -12,19 +11,10 @@ export interface RelatedArtistsProps {
 }
 
 const RelatedArtists: React.FC<RelatedArtistsProps> = ({ artistId }) => {
-  const { user } = useAuth();
-
-  const accessContext: AccessContext = {
-    role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
-    userId: user?.id,
-    scope: "globalList",
-  };
-
   const { data, loading, error } = useAsyncData(
     {
       relatedArtists: () =>
-        artistApi.getRelatedArtists(artistId, accessContext, {
-          includeUser: true,
+        artistApi.getRelatedArtists(artistId, {
           limit: 10,
         }),
     },

@@ -805,7 +805,6 @@ export function AudioQueueProvider({ children }: AudioQueueProviderProps) {
       try {
         const ctx = buildAccessContext(isAuthenticated, user);
         const songs = await artistApi.getSongs(artistId, ctx, {
-          includeArtists: true,
           orderByColumn: "streams",
           orderByDirection: "DESC",
         });

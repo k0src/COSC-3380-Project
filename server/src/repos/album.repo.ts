@@ -5,6 +5,7 @@ import {
   AccessContext,
   AlbumOrderByColumn,
   OrderByDirection,
+  SongOrderByColumn,
 } from "@types";
 import { query, withTransaction } from "@config/database.js";
 import { getBlobUrl } from "@config/blobStorage.js";
@@ -239,7 +240,6 @@ export default class AlbumRepository {
         "owner_id",
         accessContext
       );
-
       const userVisibility = getUserVisibilityCondition("u", accessContext);
 
       const sql = `
@@ -473,6 +473,8 @@ export default class AlbumRepository {
     albumId: UUID,
     accessContext: AccessContext,
     options?: {
+      orderByColumn?: SongOrderByColumn;
+      orderByDirection?: OrderByDirection;
       limit?: number;
       offset?: number;
     }
@@ -486,8 +488,24 @@ export default class AlbumRepository {
       );
       const userVisibility = getUserVisibilityCondition("u", accessContext);
 
+      const orderByColumn = options?.orderByColumn || "als.track_number";
+      const orderByDirection = options?.orderByDirection || "ASC";
       const limit = options?.limit || 50;
       const offset = options?.offset || 0;
+
+      const orderByMap: Record<SongOrderByColumn | "als.track_number", string> =
+        {
+          title: "s.title",
+          created_at: "s.created_at",
+          streams: "s.streams",
+          release_date: "s.release_date",
+          likes: "likes",
+          comments: "comments",
+          duration: "s.duration",
+          "als.track_number": "als.track_number",
+        };
+
+      const orderBySQL = orderByMap[orderByColumn];
 
       const sql = `
         SELECT 
@@ -516,6 +534,7 @@ export default class AlbumRepository {
                   'pfp_blurhash', u.pfp_blurhash,
                   'role', u.role,
                   'is_private', u.is_private,
+                  'status', u.status,
                   'artist_id', u.artist_id,
                   'created_at', u.created_at,
                   'updated_at', u.updated_at
@@ -551,7 +570,7 @@ export default class AlbumRepository {
         WHERE als.album_id = $1
           AND ${notDeletedCondition("song", "s")}
           AND ${songVisibility}
-        ORDER BY als.track_number ASC
+        ORDER BY ${orderBySQL} ${orderByDirection}
         LIMIT $2 OFFSET $3
       `;
 

@@ -32,8 +32,7 @@ const AdminManageContentArtists: React.FC<AdminManageContentArtistsProps> = ({
 
   const fetchArtists = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return artistApi.getMany(accessContext, {
-        includeUser: true,
+      return artistApi.getManyArtists(accessContext, {
         limit,
         offset,
       });

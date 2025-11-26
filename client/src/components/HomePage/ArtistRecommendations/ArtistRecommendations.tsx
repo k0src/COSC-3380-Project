@@ -16,10 +16,7 @@ const ArtistRecommendations: React.FC<ArtistRecommendationsProps> = ({
   const { data, loading, error } = useAsyncData(
     {
       recommendedArtists: () =>
-        artistApi.getArtistRecommendations(userId, {
-          includeUser: true,
-          limit: 10,
-        }),
+        artistApi.getArtistRecommendations(userId, { limit: 10 }),
     },
     [userId],
     {

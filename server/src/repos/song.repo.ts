@@ -473,6 +473,7 @@ export default class SongRepository {
                   'pfp_blurhash', u.pfp_blurhash,
                   'role', u.role,
                   'is_private', u.is_private,
+                  'status', u.status,
                   'artist_id', u.artist_id,
                   'created_at', u.created_at,
                   'updated_at', u.updated_at
@@ -665,6 +666,7 @@ export default class SongRepository {
                   'pfp_blurhash', u.pfp_blurhash,
                   'role', u.role,
                   'is_private', u.is_private,
+                  'status', u.status,
                   'artist_id', u.artist_id,
                   'created_at', u.created_at,
                   'updated_at', u.updated_at
@@ -944,6 +946,7 @@ export default class SongRepository {
                   'pfp_blurhash', u.pfp_blurhash,
                   'role', u.role,
                   'is_private', u.is_private,
+                  'status', u.status,
                   'artist_id', u.artist_id,
                   'created_at', u.created_at,
                   'updated_at', u.updated_at

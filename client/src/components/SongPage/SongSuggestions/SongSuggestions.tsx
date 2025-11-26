@@ -30,7 +30,7 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "globalList",
+    scope: "global",
   };
 
   const asyncConfig = useMemo(
@@ -38,14 +38,12 @@ const SongSuggestions: React.FC<SongSuggestionsProps> = ({
       ...(mainArtist && {
         moreSongsByArtist: async () =>
           artistApi.getSongs(mainArtist.id, accessContext, {
-            includeArtists: true,
             limit: 5,
           }),
       }),
       suggestedSongs: () =>
         songApi.getSuggestedSongs(songId, {
           userId: isAuthenticated && user ? user.id : undefined,
-          includeArtists: true,
           limit: 5,
         }),
     }),

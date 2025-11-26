@@ -1,15 +1,15 @@
 import { useState, memo, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import type { User } from "@types";
+import type { Artist, User } from "@types";
 import { SettingsInput, SettingsTextArea } from "@components";
-import { userApi } from "@api";
+import { artistApi } from "@api";
 import styles from "./ArtistSignupModal.module.css";
 import { LuX } from "react-icons/lu";
 
 export interface ArtistSignupModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSignupSuccess?: (user?: User) => void;
+  onSignupSuccess?: (artist?: Artist) => void;
   user: User;
 }
 
@@ -61,15 +61,14 @@ const ArtistSignupModal: React.FC<ArtistSignupModalProps> = ({
       setError("");
 
       try {
-        const updatedUser = await userApi.registerArtist(
-          user.id,
-          user.username,
-          formState.displayName || user.username,
-          formState.location || "",
-          formState.bio || ""
-        );
+        const artist = await artistApi.create({
+          user_id: user.id,
+          display_name: formState.displayName || user.username,
+          location: formState.location || "",
+          bio: formState.bio || "",
+        });
 
-        onSignupSuccess?.(updatedUser);
+        onSignupSuccess?.(artist);
         onClose();
       } catch (error: any) {
         console.error("Artist signup failed:", error);

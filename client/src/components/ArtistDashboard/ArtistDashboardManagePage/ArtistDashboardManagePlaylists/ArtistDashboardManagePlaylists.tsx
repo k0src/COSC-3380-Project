@@ -43,9 +43,6 @@ const ArtistDashboardManagePlaylists: React.FC<
       return artistApi.getArtistPlaylists(artistId, accessContext, {
         limit,
         offset,
-        includeUser: true,
-        includeLikes: true,
-        includeSongCount: true,
       });
     },
     [artistId, accessContext]

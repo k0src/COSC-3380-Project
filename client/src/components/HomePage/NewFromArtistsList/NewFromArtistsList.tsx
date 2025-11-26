@@ -19,7 +19,9 @@ const NewFromArtistsList: React.FC<NewFromArtistsListProps> = ({
   const { data, loading, error } = useAsyncData(
     {
       newFromArtists: () =>
-        artistApi.getNewFromFollowedArtists(userId, accessContext, 8),
+        artistApi.getNewFromFollowedArtists(userId, accessContext, {
+          limit: 8,
+        }),
     },
     [userId],
     {
