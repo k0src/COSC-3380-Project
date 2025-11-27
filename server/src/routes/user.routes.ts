@@ -19,7 +19,6 @@ const router = express.Router();
 /*                                 Main Routes                                */
 /* ========================================================================== */
 
-//done
 // GET /api/users/count
 router.get("/count", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -32,7 +31,7 @@ router.get("/count", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 });
-//done
+
 // GET /api/users
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -62,7 +61,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 });
-//done
+
 // GET /api/users/:id
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -88,7 +87,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 });
-//done
+
 // POST /api/users
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -133,7 +132,7 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 });
-//done
+
 // PUT /api/users/:id
 router.put(
   "/:id",
@@ -172,7 +171,7 @@ router.put(
     }
   }
 );
-//done
+
 // DELETE /api/users/:id
 router.delete(
   "/:id",
@@ -209,7 +208,7 @@ router.delete(
 /* ========================================================================== */
 /*                               User Playlists                               */
 /* ========================================================================== */
-//done
+
 // GET /api/users/:id/playlists
 router.get(
   "/:id/playlists",
@@ -255,11 +254,11 @@ router.get(
 // GET /api/users/:id/library?q=searchTerm
 router.get(
   "/:id/library",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { q } = req.query;
-
+      const { q, limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
@@ -270,9 +269,10 @@ router.get(
         return;
       }
 
-      const accessContext = parseAccessContext(req.query);
-      const searchResults = await LibraryService.search(id, accessContext, q);
-
+      const searchResults = await LibraryService.search(id, q, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
       res.status(200).json(searchResults);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library:", error);
@@ -286,35 +286,21 @@ router.get(
 // GET /api/users/:id/library/recent
 router.get(
   "/:id/library/recent",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { maxItems, array } = req.query;
-
+      const { limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
-      const accessContext = parseAccessContext(req.query);
-
-      if (array === "true") {
-        const recentHistory = await LibraryService.getRecentlyPlayedArray(
-          id,
-          accessContext,
-          maxItems ? parseInt(maxItems as string, 10) : 10
-        );
-        res.status(200).json(recentHistory);
-        return;
-      }
-
-      const recentHistory = await LibraryService.getRecentlyPlayed(
-        id,
-        accessContext,
-        maxItems ? parseInt(maxItems as string, 10) : 10
-      );
-
-      res.status(200).json(recentHistory);
+      const recentlyPlayed = await LibraryService.getRecentlyPlayed(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+      res.status(200).json(recentlyPlayed);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/recent:", error);
       const { message, statusCode } = handlePgError(error);
@@ -323,10 +309,11 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/library/songs
 router.get(
   "/:id/library/songs",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -349,10 +336,11 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/library/playlists
 router.get(
   "/:id/library/playlists",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -366,7 +354,6 @@ router.get(
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
-
       res.status(200).json(playlists);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/playlists:", error);
@@ -376,10 +363,11 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/library/artists
 router.get(
   "/:id/library/artists",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -402,10 +390,11 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/library/albums
 router.get(
   "/:id/library/albums",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -429,7 +418,6 @@ router.get(
   }
 );
 
-//done
 // POST /api/users/:id/library/playlists/pin
 router.post(
   "/:id/library/playlists/pin",
@@ -466,10 +454,11 @@ router.post(
 );
 
 /* ============================== User History ============================== */
-//done
+
 // GET /api/users/:id/library/history/songs
 router.get(
   "/:id/library/history/songs",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -493,10 +482,11 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/library/history/playlists
 router.get(
   "/:id/library/history/playlists",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -523,10 +513,11 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/library/history/artists
 router.get(
   "/:id/library/history/artists",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -550,10 +541,11 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/library/history/albums
 router.get(
   "/:id/library/history/albums",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -578,10 +570,10 @@ router.get(
   }
 );
 
-//done
 // PUT /api/users/:id/history
 router.put(
   "/:id/library/history",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -601,10 +593,11 @@ router.put(
     }
   }
 );
-//done
+
 // DELETE /api/users/:id/library/history/clear
 router.delete(
   "/:id/library/history/clear",
+  authenticateToken,
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     if (!id) {
@@ -623,7 +616,7 @@ router.delete(
     }
   }
 );
-//done
+
 // GET /api/users/:id/library/history/has-song-history
 router.get(
   "/:id/library/history/has-song-history",
@@ -652,7 +645,7 @@ router.get(
 /* ========================================================================== */
 /*                            User Likes & Comments                           */
 /* ========================================================================== */
-//done
+
 // GET /api/users/:id/likes/songs
 router.get(
   "/:id/likes/songs",
@@ -690,7 +683,7 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/likes/albums
 router.get(
   "/:id/likes/albums",
@@ -728,7 +721,7 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/likes/playlists
 router.get(
   "/:id/likes/playlists",
@@ -770,7 +763,7 @@ router.get(
     }
   }
 );
-//done
+
 // POST /api/users/:id/likes
 router.post(
   "/:id/likes",
@@ -803,7 +796,7 @@ router.post(
     }
   }
 );
-//done
+
 // GET /api/users/:id/likes/check
 router.get(
   "/:id/likes/check",
@@ -831,7 +824,7 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/likes/count
 router.get(
   "/:id/likes/count",
@@ -858,7 +851,7 @@ router.get(
 /* ========================================================================== */
 /*                               User Followers                               */
 /* ========================================================================== */
-//done
+
 // GET /api/users/:id/followers
 router.get(
   "/:id/followers",
@@ -894,7 +887,7 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/following
 router.get(
   "/:id/following",
@@ -930,7 +923,7 @@ router.get(
     }
   }
 );
-//done
+
 // POST /api/users/:id/following
 router.post(
   "/:id/following",
@@ -963,7 +956,7 @@ router.post(
     }
   }
 );
-//done
+
 // GET /api/users/:id/followers/count
 router.get(
   "/:id/followers/count",
@@ -985,7 +978,7 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/following/count
 router.get(
   "/:id/following/count",
@@ -1007,7 +1000,7 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/following/check
 router.get(
   "/:id/following/check",
@@ -1129,7 +1122,7 @@ router.put(
 /* ========================================================================== */
 /*                             User Notifications                             */
 /* ========================================================================== */
-//done
+
 // GET /api/users/:id/notifications
 router.get(
   "/:id/notifications",
@@ -1152,7 +1145,7 @@ router.get(
     }
   }
 );
-//done
+
 // GET /api/users/:id/notifications/check
 router.get(
   "/:id/notifications/check",
@@ -1175,7 +1168,7 @@ router.get(
     }
   }
 );
-//done
+
 // PUT /api/users/:id/notifications/:notificationId/read
 router.put(
   "/:id/notifications/:notificationId/read",
@@ -1210,7 +1203,7 @@ router.put(
     }
   }
 );
-//done
+
 // POST /api/users/:id/notifications/read-all
 router.post(
   "/:id/notifications/read-all",
@@ -1242,7 +1235,7 @@ router.post(
     }
   }
 );
-//done
+
 // PUT /api/users/:id/notifications/:notificationId/archive
 router.put(
   "/:id/notifications/:notificationId/archive",
@@ -1277,7 +1270,7 @@ router.put(
     }
   }
 );
-//done
+
 // POST /api/users/:id/notifications/archive-all
 router.post(
   "/:id/notifications/archive-all",

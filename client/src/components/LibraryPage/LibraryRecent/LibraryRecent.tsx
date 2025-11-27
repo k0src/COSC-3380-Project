@@ -1,6 +1,6 @@
 import { memo, useMemo, useEffect } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
-import type { UUID, AccessContext } from "@types";
+import type { UUID } from "@types";
 import { EntityItemCard, ArtistItem } from "@components";
 import { libraryApi } from "@api";
 import { formatDateString, getMainArtist } from "@util";
@@ -11,23 +11,16 @@ import { LuPin } from "react-icons/lu";
 
 const LibraryRecent: React.FC<{
   userId: UUID;
-  accessContext: AccessContext;
   maxItems: number;
   searchFilter?: string;
   onRefetchNeeded?: React.RefObject<(() => void) | null>;
-}> = ({
-  userId,
-  accessContext,
-  maxItems,
-  searchFilter = "",
-  onRefetchNeeded,
-}) => {
+}> = ({ userId, maxItems, searchFilter = "", onRefetchNeeded }) => {
   const { data, loading, error, refetch } = useAsyncData(
     {
       recentlyPlayed: () =>
-        libraryApi.getRecentlyPlayed(userId, accessContext, maxItems),
+        libraryApi.getRecentlyPlayed(userId, { limit: maxItems }),
     },
-    [userId, accessContext.userId, maxItems],
+    [userId, maxItems],
     {
       cacheKey: `library_recently_played_${userId}_${maxItems}`,
       hasBlobUrl: true,

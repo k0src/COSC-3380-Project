@@ -7,7 +7,7 @@ import type {
   ContextMenuEntity,
   ContextMenuEntityType,
 } from "@contexts";
-import type { LibraryPlaylist, AccessContext } from "@types";
+import type { LibraryPlaylist } from "@types";
 import {
   LibraryRecent,
   LibraryPlaylists,
@@ -280,12 +280,6 @@ const LibraryPage: React.FC = () => {
     return null;
   }
 
-  const accessContext: AccessContext = {
-    role: user.role === "ADMIN" ? "admin" : "user",
-    userId: user.id,
-    scope: "owner",
-  };
-
   return (
     <>
       <Helmet>
@@ -332,7 +326,6 @@ const LibraryPage: React.FC = () => {
         {activeTab === "recent" && (
           <LibraryRecent
             userId={user.id}
-            accessContext={accessContext}
             maxItems={20}
             searchFilter={searchText}
             onRefetchNeeded={recentRefetchRef}
