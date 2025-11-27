@@ -1,27 +1,23 @@
 import { memo, useMemo, useEffect } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
-import type { UUID, AccessContext } from "@types";
+import type { UUID } from "@types";
 import { EntityItemCard } from "@components";
 import { libraryApi } from "@api";
 import { useAsyncData } from "@hooks";
 import styles from "./HistoryPlaylists.module.css";
 import musicPlaceholder from "@assets/music-placeholder.webp";
-import { LuPin } from "react-icons/lu";
 
 const HistoryPlaylists: React.FC<{
   userId: UUID;
   searchFilter?: string;
   onRefetchNeeded?: React.RefObject<(() => void) | null>;
-  accessContext: AccessContext;
-}> = ({ userId, searchFilter = "", onRefetchNeeded, accessContext }) => {
+}> = ({ userId, searchFilter = "", onRefetchNeeded }) => {
   const { data, loading, error, refetch } = useAsyncData(
     {
       playlists: () =>
-        libraryApi.getPlaylistHistory(userId, accessContext, {
-          timeRange: "1 month",
-        }),
+        libraryApi.getPlaylistHistory(userId, { timeRange: "1 month" }),
     },
-    [userId, accessContext.userId],
+    [userId],
     {
       cacheKey: `history_playlists_${userId}`,
       hasBlobUrl: true,
@@ -86,11 +82,6 @@ const HistoryPlaylists: React.FC<{
                   imageUrl={playlist.image_url || musicPlaceholder}
                   blurHash={playlist.image_url_blurhash}
                 />
-                {playlist.is_pinned && (
-                  <div className={styles.pinnedIconContainer}>
-                    <LuPin className={styles.pinnedIcon} />
-                  </div>
-                )}
               </div>
             ))}
           </div>

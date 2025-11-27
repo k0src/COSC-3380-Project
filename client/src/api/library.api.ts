@@ -5,10 +5,12 @@ import type {
   Song,
   Album,
   LibraryPlaylist,
+  Playlist,
   LibrarySearchResults,
   Artist,
   RecentlyPlayedItemsArray,
   AccessContext,
+  EntityType,
 } from "@types";
 
 export const libraryApi = {
@@ -65,160 +67,173 @@ export const libraryApi = {
     );
     return response.data;
   },
-
-  async getLibraryPlaylists(
-    userId: UUID,
-    accessContext: AccessContext,
-    options?: { limit?: number; offset?: number; omitLikes?: boolean }
-  ) {
-    const response = await api.get<LibraryPlaylist[]>(
-      `/users/${userId}/library/playlists`,
-      {
-        params: {
-          ...options,
-          role: accessContext.role,
-          userId: accessContext.userId,
-          scope: accessContext.scope,
-        },
-      }
-    );
-    return response.data;
-  },
-
-  async getLibraryAlbums(
-    userId: UUID,
-    accessContext: AccessContext,
-    options?: { limit?: number; offset?: number }
-  ) {
-    const response = await api.get<Album[]>(`/users/${userId}/library/albums`, {
-      params: {
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
-  },
-
+  //done
   async getLibrarySongs(
     userId: UUID,
-    accessContext: AccessContext,
     options?: { limit?: number; offset?: number }
   ) {
-    const response = await api.get<Song[]>(`/users/${userId}/library/songs`, {
-      params: {
-        ...options,
-        role: accessContext.role,
-        userId: accessContext.userId,
-        scope: accessContext.scope,
-      },
-    });
-    return response.data;
+    try {
+      const response = await api.get<Song[]>(`/users/${userId}/library/songs`, {
+        params: options,
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
   },
-
+  //done
+  async getLibraryPlaylists(
+    userId: UUID,
+    options?: { limit?: number; offset?: number }
+  ) {
+    try {
+      const response = await api.get<LibraryPlaylist[]>(
+        `/users/${userId}/library/playlists`,
+        { params: options }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
+  //done
   async getLibraryArtists(
     userId: UUID,
     options?: { limit?: number; offset?: number }
   ) {
-    const response = await api.get<Artist[]>(
-      `/users/${userId}/library/artists`,
-      {
-        params: options,
+    try {
+      const response = await api.get<Artist[]>(
+        `/users/${userId}/library/artists`,
+        {
+          params: options,
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
       }
-    );
-    return response.data;
+      throw error;
+    }
   },
-
+  //done
+  async getLibraryAlbums(
+    userId: UUID,
+    options?: { limit?: number; offset?: number }
+  ) {
+    try {
+      const response = await api.get<Album[]>(
+        `/users/${userId}/library/albums`,
+        { params: options }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
+  },
+  //done
   async getSongHistory(
     userId: UUID,
-    accessContext: AccessContext,
     options?: { timeRange?: string; limit?: number; offset?: number }
   ) {
-    const response = await api.get<Song[]>(
-      `/users/${userId}/library/history/songs`,
-      {
-        params: {
-          ...options,
-          role: accessContext.role,
-          userId: accessContext.userId,
-          scope: accessContext.scope,
-        },
+    try {
+      const response = await api.get<Song[]>(
+        `/users/${userId}/library/history/songs`,
+        { params: options }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
       }
-    );
-    return response.data;
+      throw error;
+    }
   },
-
-  async getAlbumHistory(
-    userId: UUID,
-    accessContext: AccessContext,
-    options?: { timeRange?: string; limit?: number; offset?: number }
-  ) {
-    const response = await api.get<Album[]>(
-      `/users/${userId}/library/history/albums`,
-      {
-        params: {
-          ...options,
-          role: accessContext.role,
-          userId: accessContext.userId,
-          scope: accessContext.scope,
-        },
-      }
-    );
-    return response.data;
-  },
-
+  //done
   async getPlaylistHistory(
     userId: UUID,
-    accessContext: AccessContext,
     options?: { timeRange?: string; limit?: number; offset?: number }
   ) {
-    const response = await api.get<LibraryPlaylist[]>(
-      `/users/${userId}/library/history/playlists`,
-      {
-        params: {
-          ...options,
-          role: accessContext.role,
-          userId: accessContext.userId,
-          scope: accessContext.scope,
-        },
+    try {
+      const response = await api.get<Playlist[]>(
+        `/users/${userId}/library/history/playlists`,
+        { params: options }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
       }
-    );
-    return response.data;
+      throw error;
+    }
   },
-
+  //done
   async getArtistHistory(
     userId: UUID,
     options?: { timeRange?: string; limit?: number; offset?: number }
   ) {
-    const response = await api.get<Artist[]>(
-      `/users/${userId}/library/history/artists`,
-      {
-        params: options,
+    try {
+      const response = await api.get<Artist[]>(
+        `/users/${userId}/library/history/artists`,
+        { params: options }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
       }
-    );
-    return response.data;
+      throw error;
+    }
+  },
+  //done
+  async getAlbumHistory(
+    userId: UUID,
+    options?: { timeRange?: string; limit?: number; offset?: number }
+  ) {
+    try {
+      const response = await api.get<Album[]>(
+        `/users/${userId}/library/history/albums`,
+        { params: options }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
   },
 
+  //done
   async togglePinPlaylist(userId: UUID, playlistId: UUID) {
     const response = await api.post(`/users/${userId}/library/playlists/pin`, {
       playlistId,
     });
     return response.data;
   },
+  //done
+  async addToHistory(userId: UUID, entityId: UUID, entityType: EntityType) {
+    await api.put(`/users/${userId}/library/history`, {
+      entityId,
+      entityType,
+    });
+  },
 
+  //done
   async clearHistory(userId: UUID) {
     const response = await api.delete(`/users/${userId}/library/history/clear`);
     return response.data;
   },
-
-  async checkUserHasHistory(userId: UUID) {
-    const response = await api.get<{ hasHistory: boolean }>(
-      `/users/${userId}/library/history/has-history`
-    );
-    return response.data.hasHistory;
-  },
-
+  //done
   async checkUserHasSongHistory(userId: UUID) {
     const response = await api.get<{ hasSongHistory: boolean }>(
       `/users/${userId}/library/history/has-song-history`

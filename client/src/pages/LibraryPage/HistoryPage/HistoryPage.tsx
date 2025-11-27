@@ -7,7 +7,7 @@ import type {
   ContextMenuEntity,
   ContextMenuEntityType,
 } from "@contexts";
-import type { LibraryPlaylist, AccessContext } from "@types";
+import type { Playlist } from "@types";
 import {
   HistoryPlaylists,
   HistorySongs,
@@ -31,7 +31,6 @@ import {
   LuX,
   LuPencil,
   LuTrash,
-  LuBrush,
 } from "react-icons/lu";
 
 type TabType = "playlists" | "songs" | "albums" | "artists";
@@ -68,12 +67,11 @@ const HistoryPage: React.FC = () => {
   const [playlistModalMode, setPlaylistModalMode] = useState<"create" | "edit">(
     "edit"
   );
-  const [playlistToEdit, setPlaylistToEdit] = useState<LibraryPlaylist | null>(
+  const [playlistToEdit, setPlaylistToEdit] = useState<Playlist | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [playlistToDelete, setPlaylistToDelete] = useState<Playlist | null>(
     null
   );
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [playlistToDelete, setPlaylistToDelete] =
-    useState<LibraryPlaylist | null>(null);
 
   const [isClearHistoryModalOpen, setIsClearHistoryModalOpen] = useState(false);
 
@@ -124,7 +122,7 @@ const HistoryPage: React.FC = () => {
     []
   );
 
-  const handleEditPlaylist = useCallback((playlist: LibraryPlaylist) => {
+  const handleEditPlaylist = useCallback((playlist: Playlist) => {
     setPlaylistToEdit(playlist);
     setPlaylistModalMode("edit");
     setIsPlaylistModalOpen(true);
@@ -145,7 +143,7 @@ const HistoryPage: React.FC = () => {
   }, []);
 
   const handleDeletePlaylist = useCallback(
-    (playlist: LibraryPlaylist) => {
+    (playlist: Playlist) => {
       if (!user?.id || playlist.owner_id !== user.id) return;
 
       setPlaylistToDelete(playlist);
@@ -168,7 +166,7 @@ const HistoryPage: React.FC = () => {
   }, [playlistToDelete]);
 
   const handleTogglePrivacy = useCallback(
-    async (playlist: LibraryPlaylist) => {
+    async (playlist: Playlist) => {
       if (!user?.id || playlist.owner_id !== user.id) return;
 
       try {
@@ -191,7 +189,7 @@ const HistoryPage: React.FC = () => {
       entity: ContextMenuEntity | null,
       entityType: ContextMenuEntityType | null
     ): ContextMenuAction[] => {
-      const playlist = entity as LibraryPlaylist;
+      const playlist = entity as Playlist;
       const isOwner = user?.id === playlist.owner_id;
 
       return [
@@ -236,12 +234,6 @@ const HistoryPage: React.FC = () => {
     return null;
   }
 
-  const accessContext: AccessContext = {
-    role: user.role === "ADMIN" ? "admin" : "user",
-    userId: user.id,
-    scope: "owner",
-  };
-
   return (
     <>
       <Helmet>
@@ -280,7 +272,7 @@ const HistoryPage: React.FC = () => {
               className={styles.clearHistoryButton}
               onClick={handleClearHistory}
             >
-              <LuBrush /> Clear History
+              <LuTrash /> Clear History
             </button>
           </div>
         </div>
@@ -290,22 +282,13 @@ const HistoryPage: React.FC = () => {
             userId={user.id}
             searchFilter={searchText}
             onRefetchNeeded={playlistsRefetchRef}
-            accessContext={accessContext}
           />
         )}
         {activeTab === "songs" && (
-          <HistorySongs
-            userId={user.id}
-            searchFilter={searchText}
-            accessContext={accessContext}
-          />
+          <HistorySongs userId={user.id} searchFilter={searchText} />
         )}
         {activeTab === "albums" && (
-          <HistoryAlbums
-            userId={user.id}
-            searchFilter={searchText}
-            accessContext={accessContext}
-          />
+          <HistoryAlbums userId={user.id} searchFilter={searchText} />
         )}
         {activeTab === "artists" && (
           <HistoryArtists userId={user.id} searchFilter={searchText} />
@@ -327,17 +310,19 @@ const HistoryPage: React.FC = () => {
           }}
         />
       ) : (
-        <EditPlaylistModal
-          isOpen={isPlaylistModalOpen}
-          onClose={() => {
-            setIsPlaylistModalOpen(false);
-            setPlaylistToEdit(null);
-          }}
-          onPlaylistUpdated={() => {
-            playlistsRefetchRef.current?.();
-          }}
-          playlist={playlistToEdit!}
-        />
+        playlistToEdit && (
+          <EditPlaylistModal
+            isOpen={isPlaylistModalOpen}
+            onClose={() => {
+              setIsPlaylistModalOpen(false);
+              setPlaylistToEdit(null);
+            }}
+            onPlaylistUpdated={() => {
+              playlistsRefetchRef.current?.();
+            }}
+            playlist={playlistToEdit}
+          />
+        )
       )}
 
       <ConfirmationModal

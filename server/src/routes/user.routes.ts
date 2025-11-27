@@ -252,6 +252,37 @@ router.get(
 /*                                User Library                                */
 /* ========================================================================== */
 
+// GET /api/users/:id/library?q=searchTerm
+router.get(
+  "/:id/library",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { q } = req.query;
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      if (!q || typeof q !== "string") {
+        res.status(400).json({ error: "Search query is required" });
+        return;
+      }
+
+      const accessContext = parseAccessContext(req.query);
+      const searchResults = await LibraryService.search(id, accessContext, q);
+
+      res.status(200).json(searchResults);
+    } catch (error: any) {
+      console.error("Error in GET /users/:id/library:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
 // GET /api/users/:id/library/recent
 router.get(
   "/:id/library/recent",
@@ -292,31 +323,49 @@ router.get(
     }
   }
 );
+//done
+// GET /api/users/:id/library/songs
+router.get(
+  "/:id/library/songs",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { limit, offset } = req.query;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
 
+      const songs = await LibraryService.getLibrarySongs(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+      res.status(200).json(songs);
+    } catch (error: any) {
+      console.error("Error in GET /users/:id/library/songs:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+//done
 // GET /api/users/:id/library/playlists
 router.get(
   "/:id/library/playlists",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { limit, offset, omitLikes } = req.query;
-
+      const { limit, offset } = req.query;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
-      const accessContext = parseAccessContext(req.query);
-
-      const playlists = await LibraryService.getLibraryPlaylists(
-        id,
-        accessContext,
-        {
-          limit: limit ? parseInt(limit as string, 10) : undefined,
-          offset: offset ? parseInt(offset as string, 10) : undefined,
-          omitLikes: omitLikes === "true",
-        }
-      );
+      const playlists = await LibraryService.getLibraryPlaylists(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
 
       res.status(200).json(playlists);
     } catch (error: any) {
@@ -327,7 +376,60 @@ router.get(
     }
   }
 );
+//done
+// GET /api/users/:id/library/artists
+router.get(
+  "/:id/library/artists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { limit, offset } = req.query;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
 
+      const artists = await LibraryService.getLibraryArtists(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+      res.status(200).json(artists);
+    } catch (error: any) {
+      console.error("Error in GET /users/:id/library/artists:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+//done
+// GET /api/users/:id/library/albums
+router.get(
+  "/:id/library/albums",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { limit, offset } = req.query;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const albums = await LibraryService.getLibraryAlbums(id, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+      res.status(200).json(albums);
+    } catch (error: any) {
+      console.error("Error in GET /users/:id/library/albums:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
+//done
 // POST /api/users/:id/library/playlists/pin
 router.post(
   "/:id/library/playlists/pin",
@@ -363,127 +465,8 @@ router.post(
   }
 );
 
-// GET /api/users/:id/library/songs
-router.get(
-  "/:id/library/songs",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const accessContext = parseAccessContext(req.query);
-
-      const songs = await LibraryService.getLibrarySongs(id, accessContext, {
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(songs);
-    } catch (error: any) {
-      console.error("Error in GET /users/:id/library/songs:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-      return;
-    }
-  }
-);
-
-// GET /api/users/:id/library/albums
-router.get(
-  "/:id/library/albums",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const accessContext = parseAccessContext(req.query);
-
-      const albums = await LibraryService.getLibraryAlbums(id, accessContext, {
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(albums);
-    } catch (error: any) {
-      console.error("Error in GET /users/:id/library/albums:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-      return;
-    }
-  }
-);
-
-// GET /api/users/:id/library/artists
-router.get(
-  "/:id/library/artists",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const artists = await LibraryService.getLibraryArtists(id, {
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(artists);
-    } catch (error: any) {
-      console.error("Error in GET /users/:id/library/artists:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-      return;
-    }
-  }
-);
-
-// GET /api/users/:id/library?q=searchTerm
-router.get(
-  "/:id/library",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { q } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      if (!q || typeof q !== "string") {
-        res.status(400).json({ error: "Search query is required" });
-        return;
-      }
-
-      const accessContext = parseAccessContext(req.query);
-      const searchResults = await LibraryService.search(id, accessContext, q);
-
-      res.status(200).json(searchResults);
-    } catch (error: any) {
-      console.error("Error in GET /users/:id/library:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-      return;
-    }
-  }
-);
-
 /* ============================== User History ============================== */
-
+//done
 // GET /api/users/:id/library/history/songs
 router.get(
   "/:id/library/history/songs",
@@ -491,20 +474,16 @@ router.get(
     try {
       const { id } = req.params;
       const { timeRange, limit, offset } = req.query;
-
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
-      const accessContext = parseAccessContext(req.query);
-
-      const songs = await LibraryService.getSongHistory(id, accessContext, {
+      const songs = await HistoryService.getSongHistory(id, {
         timeRange: timeRange as string,
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
-
       res.status(200).json(songs);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/history/songs:", error);
@@ -514,7 +493,7 @@ router.get(
     }
   }
 );
-
+//done
 // GET /api/users/:id/library/history/playlists
 router.get(
   "/:id/library/history/playlists",
@@ -522,24 +501,16 @@ router.get(
     try {
       const { id } = req.params;
       const { timeRange, limit, offset } = req.query;
-
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
-      const accessContext = parseAccessContext(req.query);
-
-      const playlists = await LibraryService.getPlaylistHistory(
-        id,
-        accessContext,
-        {
-          timeRange: timeRange as string,
-          limit: limit ? parseInt(limit as string, 10) : undefined,
-          offset: offset ? parseInt(offset as string, 10) : undefined,
-        }
-      );
-
+      const playlists = await HistoryService.getPlaylistHistory(id, {
+        timeRange: timeRange as string,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
       res.status(200).json(playlists);
     } catch (error: any) {
       console.error(
@@ -552,7 +523,34 @@ router.get(
     }
   }
 );
+//done
+// GET /api/users/:id/library/history/artists
+router.get(
+  "/:id/library/history/artists",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { timeRange, limit, offset } = req.query;
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
 
+      const artists = await HistoryService.getArtistHistory(id, {
+        timeRange: timeRange as string,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+      res.status(200).json(artists);
+    } catch (error: any) {
+      console.error("Error in GET /users/:id/library/history/artists:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+//done
 // GET /api/users/:id/library/history/albums
 router.get(
   "/:id/library/history/albums",
@@ -560,20 +558,16 @@ router.get(
     try {
       const { id } = req.params;
       const { timeRange, limit, offset } = req.query;
-
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
       }
 
-      const accessContext = parseAccessContext(req.query);
-
-      const albums = await LibraryService.getAlbumHistory(id, accessContext, {
+      const albums = await HistoryService.getAlbumHistory(id, {
         timeRange: timeRange as string,
         limit: limit ? parseInt(limit as string, 10) : undefined,
         offset: offset ? parseInt(offset as string, 10) : undefined,
       });
-
       res.status(200).json(albums);
     } catch (error: any) {
       console.error("Error in GET /users/:id/library/history/albums:", error);
@@ -584,34 +578,6 @@ router.get(
   }
 );
 
-// GET /api/users/:id/library/history/artists
-router.get(
-  "/:id/library/history/artists",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const { timeRange, limit, offset } = req.query;
-
-      if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const artists = await LibraryService.getArtistHistory(id, {
-        timeRange: timeRange as string,
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-      res.status(200).json(artists);
-    } catch (error: any) {
-      console.error("Error in GET /users/:id/library/history/artists:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-      return;
-    }
-  }
-);
 //done
 // PUT /api/users/:id/history
 router.put(
@@ -635,7 +601,7 @@ router.put(
     }
   }
 );
-
+//done
 // DELETE /api/users/:id/library/history/clear
 router.delete(
   "/:id/library/history/clear",
@@ -657,32 +623,7 @@ router.delete(
     }
   }
 );
-
-// GET /api/users/:id/library/history/has-history
-router.get(
-  "/:id/library/history/has-history",
-  async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).json({ error: "User ID is required" });
-      return;
-    }
-
-    try {
-      const hasHistory = await HistoryService.checkUserHasHistory(id);
-      res.status(200).json({ hasHistory });
-    } catch (error: any) {
-      console.error(
-        "Error in GET /users/:id/library/history/has-history:",
-        error
-      );
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-      return;
-    }
-  }
-);
-
+//done
 // GET /api/users/:id/library/history/has-song-history
 router.get(
   "/:id/library/history/has-song-history",
@@ -1211,7 +1152,7 @@ router.get(
     }
   }
 );
-
+//done
 // GET /api/users/:id/notifications/check
 router.get(
   "/:id/notifications/check",
@@ -1234,7 +1175,7 @@ router.get(
     }
   }
 );
-
+//done
 // PUT /api/users/:id/notifications/:notificationId/read
 router.put(
   "/:id/notifications/:notificationId/read",
@@ -1269,7 +1210,7 @@ router.put(
     }
   }
 );
-
+//done
 // POST /api/users/:id/notifications/read-all
 router.post(
   "/:id/notifications/read-all",
@@ -1301,7 +1242,7 @@ router.post(
     }
   }
 );
-
+//done
 // PUT /api/users/:id/notifications/:notificationId/archive
 router.put(
   "/:id/notifications/:notificationId/archive",
@@ -1336,7 +1277,7 @@ router.put(
     }
   }
 );
-
+//done
 // POST /api/users/:id/notifications/archive-all
 router.post(
   "/:id/notifications/archive-all",

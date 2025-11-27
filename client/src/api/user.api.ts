@@ -286,13 +286,6 @@ export const userApi = {
     return response.data.followingCount;
   },
 
-  async addToHistory(userId: UUID, entityId: UUID, entityType: EntityType) {
-    await api.put(`/users/${userId}/library/history`, {
-      entityId,
-      entityType,
-    });
-  },
-
   async toggleLike(id: UUID, entityId: UUID, entityType: EntityType) {
     const response = await api.post(`/users/${id}/likes`, {
       entityId,

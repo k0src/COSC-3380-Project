@@ -76,7 +76,7 @@ const HomePage: React.FC = () => {
           <FeaturedPlaylist featuredPlaylist={featuredPlaylist} />
         )}
         {userId && userHasHistory ? (
-          <RecentlyPlayedList userId={userId} accessContext={accessContext} />
+          <RecentlyPlayedList userId={userId} />
         ) : (
           <PopularList accessContext={accessContext} />
         )}

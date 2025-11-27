@@ -3,27 +3,20 @@ import { PuffLoader } from "react-spinners";
 import { useAsyncData } from "@hooks";
 import { getMainArtist } from "@util";
 import styles from "./RecentlyPlayedList.module.css";
-import type { AccessContext, Song, UUID } from "@types";
+import type { Song, UUID } from "@types";
 import { libraryApi } from "@api";
 import { Link } from "react-router-dom";
 import EntityItem from "@components/EntityItem/EntityItem";
 
 export interface RecentlyPlayedListProps {
   userId: UUID;
-  accessContext: AccessContext;
 }
 
-const RecentlyPlayedList: React.FC<RecentlyPlayedListProps> = ({
-  userId,
-  accessContext,
-}) => {
+const RecentlyPlayedList: React.FC<RecentlyPlayedListProps> = ({ userId }) => {
   const { data, loading, error } = useAsyncData(
     {
       recentlyPlayed: () =>
-        libraryApi.getSongHistory(userId, accessContext, {
-          timeRange: "1 month",
-          limit: 5,
-        }),
+        libraryApi.getSongHistory(userId, { timeRange: "1 month", limit: 5 }),
     },
     [userId],
     {

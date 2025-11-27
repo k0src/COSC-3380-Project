@@ -1,6 +1,6 @@
 import { memo, useMemo, useEffect } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
-import type { AccessContext, UUID } from "@types";
+import type { UUID } from "@types";
 import { EntityItemCard } from "@components";
 import { libraryApi } from "@api";
 import { useAsyncData } from "@hooks";
@@ -10,13 +10,12 @@ import { LuPin } from "react-icons/lu";
 
 const LibraryPlaylists: React.FC<{
   userId: UUID;
-  accessContext: AccessContext;
   searchFilter?: string;
   onRefetchNeeded?: React.RefObject<(() => void) | null>;
-}> = ({ userId, accessContext, searchFilter = "", onRefetchNeeded }) => {
+}> = ({ userId, searchFilter = "", onRefetchNeeded }) => {
   const { data, loading, error, refetch } = useAsyncData(
     {
-      playlists: () => libraryApi.getLibraryPlaylists(userId, accessContext),
+      playlists: () => libraryApi.getLibraryPlaylists(userId),
     },
     [userId],
     {

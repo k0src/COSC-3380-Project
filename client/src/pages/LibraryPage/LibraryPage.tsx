@@ -341,24 +341,15 @@ const LibraryPage: React.FC = () => {
         {activeTab === "playlists" && (
           <LibraryPlaylists
             userId={user.id}
-            accessContext={accessContext}
             searchFilter={searchText}
             onRefetchNeeded={playlistsRefetchRef}
           />
         )}
         {activeTab === "songs" && (
-          <LibrarySongs
-            userId={user.id}
-            accessContext={accessContext}
-            searchFilter={searchText}
-          />
+          <LibrarySongs userId={user.id} searchFilter={searchText} />
         )}
         {activeTab === "albums" && (
-          <LibraryAlbums
-            userId={user.id}
-            accessContext={accessContext}
-            searchFilter={searchText}
-          />
+          <LibraryAlbums userId={user.id} searchFilter={searchText} />
         )}
         {activeTab === "artists" && (
           <LibraryArtists userId={user.id} searchFilter={searchText} />

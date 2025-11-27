@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { PuffLoader } from "react-spinners";
-import { libraryApi } from "@api";
+import { userApi } from "@api";
 import type { AccessContext, Song, UUID } from "@types";
 import { useAsyncData } from "@hooks";
 import { getMainArtist } from "@util";
@@ -20,7 +20,7 @@ const UserLikesList: React.FC<UserLikesListProps> = ({
   const { data, loading, error } = useAsyncData(
     {
       likes: () =>
-        libraryApi.getLibrarySongs(userId, accessContext, {
+        userApi.getLikedSongs(userId, accessContext, {
           limit: 4,
         }),
     },

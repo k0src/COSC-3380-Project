@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useCallback } from "react";
 import type { UUID, AccessContext } from "@types";
-import { libraryApi, playlistApi } from "@api";
+import { userApi, playlistApi } from "@api";
 import { useAsyncData } from "@hooks";
 import { useAuth } from "@contexts";
 import styles from "./PlaylistAddMenuDCM.module.css";
@@ -24,15 +24,12 @@ const PlaylistAddMenuDCM: React.FC<PlaylistAddMenuDCMProps> = ({
   const accessContext: AccessContext = {
     role: user ? (user.role === "ADMIN" ? "admin" : "user") : "anonymous",
     userId: user?.id,
-    scope: "ownerList",
+    scope: "owner",
   };
 
   const { data, loading, error } = useAsyncData(
     {
-      playlists: () =>
-        libraryApi.getLibraryPlaylists(user?.id || "", accessContext, {
-          omitLikes: true,
-        }),
+      playlists: () => userApi.getPlaylists(user?.id || "", accessContext),
     },
     [user?.id],
     {
