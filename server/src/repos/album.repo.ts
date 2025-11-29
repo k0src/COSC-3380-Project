@@ -330,7 +330,6 @@ export default class AlbumRepository {
       }
 
       album.type = "album";
-
       return album;
     } catch (error) {
       console.error("Error fetching album details:", error);

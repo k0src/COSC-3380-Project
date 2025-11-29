@@ -8,60 +8,6 @@ import { authenticateToken, requireAdmin } from "@middleware";
 
 const router = express.Router();
 
-// GET /api/admin/dashboard/stats
-router.get("/dashboard/stats", async (req: Request, res: Response) => {
-  try {
-    const stats = await AdminService.getDashboardStats();
-    res.json(stats);
-  } catch (error: any) {
-    console.error("Error in GET /admin/dashboard/stats:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// GET /api/admin/dashboard/user-growth
-router.get("/dashboard/user-growth", async (req: Request, res: Response) => {
-  try {
-    const days = parseInt(req.query.days as string) || 30;
-    const userGrowth = await AdminService.getUserGrowth(days);
-    res.json(userGrowth);
-  } catch (error: any) {
-    console.error("Error in GET /admin/dashboard/user-growth:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// GET /api/admin/dashboard/top-artists
-router.get("/dashboard/top-artists", async (req: Request, res: Response) => {
-  try {
-    const limit = parseInt(req.query.limit as string) || 10;
-    const topArtists = await AdminService.getTopArtists(limit);
-    res.json(topArtists);
-  } catch (error: any) {
-    console.error("Error in GET /admin/dashboard/top-artists:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// GET /api/admin/dashboard/platform-activity
-router.get(
-  "/dashboard/platform-activity",
-  async (req: Request, res: Response) => {
-    try {
-      const days = parseInt(req.query.days as string) || 30;
-      const platformActivity = await AdminService.getPlatformActivity(days);
-      res.json(platformActivity);
-    } catch (error: any) {
-      console.error("Error in GET /admin/dashboard/platform-activity:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
 // GET /api/admin/users
 router.get(
   "/users",

@@ -7,6 +7,7 @@ import type {
   AccessContext,
   AlbumOrderByColumn,
   OrderByDirection,
+  SongOrderByColumn,
 } from "@types";
 
 export const albumApi = {
@@ -121,6 +122,8 @@ export const albumApi = {
     albumId: UUID,
     accessContext: AccessContext,
     options?: {
+      orderByColumn?: SongOrderByColumn;
+      orderByDirection?: OrderByDirection;
       limit?: number;
       offset?: number;
     }
