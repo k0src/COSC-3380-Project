@@ -1,7 +1,12 @@
 import express, { Request, Response } from "express";
 import { StatsService } from "@services";
 import { handlePgError } from "@util";
-import { authenticateToken, requireAdmin } from "@middleware";
+import {
+  authenticateToken,
+  requireAdmin,
+  requireArtist,
+  requireRole,
+} from "@middleware";
 
 const router = express.Router();
 
@@ -87,6 +92,8 @@ router.get(
 // GET /api/stats/artists/:artistId/quick
 router.get(
   "/artists/:artistId/quick",
+  authenticateToken,
+  requireArtist,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
@@ -112,6 +119,8 @@ router.get(
 // GET /api/stats/artists/:artistId/top-song
 router.get(
   "/artists/:artistId/top-song",
+  authenticateToken,
+  requireArtist,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
@@ -141,6 +150,8 @@ router.get(
 // GET /api/stats/artists/:artistId/daily-streams
 router.get(
   "/artists/:artistId/daily-streams",
+  authenticateToken,
+  requireArtist,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
@@ -172,6 +183,8 @@ router.get(
 // GET /api/stats/artists/:artistId/top-songs
 router.get(
   "/artists/:artistId/top-songs",
+  authenticateToken,
+  requireArtist,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
@@ -202,6 +215,8 @@ router.get(
 // GET /api/stats/artists/:artistId/top-playlists
 router.get(
   "/artists/:artistId/top-playlists",
+  authenticateToken,
+  requireArtist,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
@@ -235,6 +250,8 @@ router.get(
 // GET /api/stats/artists/:artistId/top-listeners
 router.get(
   "/artists/:artistId/top-listeners",
+  authenticateToken,
+  requireArtist,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
@@ -268,6 +285,8 @@ router.get(
 // GET /stats/artists/:artistId/recent-release
 router.get(
   "/artists/:artistId/recent-release",
+  authenticateToken,
+  requireArtist,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
@@ -297,6 +316,8 @@ router.get(
 // GET /api/stats/artists/:artistId/all-time
 router.get(
   "/artists/:artistId/all-time",
+  authenticateToken,
+  requireArtist,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
@@ -323,6 +344,8 @@ router.get(
 // GET /api/stats/artists/:artistId/streams-bar-chart
 router.get(
   "/artists/:artistId/streams-bar-chart",
+  authenticateToken,
+  requireArtist,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
@@ -354,6 +377,8 @@ router.get(
 // GET /api/stats/artists/:artistId/listeners-pie-chart
 router.get(
   "/artists/:artistId/listeners-pie-chart",
+  authenticateToken,
+  requireArtist,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
@@ -382,6 +407,8 @@ router.get(
 // GET /api/stats/artists/:artistId/followers-data
 router.get(
   "/artists/:artistId/followers-data",
+  authenticateToken,
+  requireArtist,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
