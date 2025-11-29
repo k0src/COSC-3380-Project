@@ -130,7 +130,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
           description: reportForm.description.trim(),
         };
 
-        await reportApi.submit(reportedType, reportData);
+        await reportApi.submitReport(reportedType, reportData);
 
         onSubmit?.();
         onClose();

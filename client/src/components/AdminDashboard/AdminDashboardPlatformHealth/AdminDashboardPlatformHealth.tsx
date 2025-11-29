@@ -1,13 +1,13 @@
 import { memo, useMemo } from "react";
 import { useAsyncData } from "@hooks";
-import { adminApi } from "@api";
+import { statsApi } from "@api";
 import { formatNumber } from "@util";
 import styles from "./AdminDashboardPlatformHealth.module.css";
 
 const AdminDashboardPlatformHealth: React.FC = () => {
   const { data, loading, error } = useAsyncData(
     {
-      stats: () => adminApi.getDashboardStats(),
+      stats: () => statsApi.getDashboardStats(),
     },
     [],
     {

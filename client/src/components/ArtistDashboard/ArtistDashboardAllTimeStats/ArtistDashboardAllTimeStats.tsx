@@ -7,18 +7,19 @@ import styles from "./ArtistDashboardAllTimeStats.module.css";
 
 export interface ArtistDashboardAllTimeStatsProps {
   artistId: UUID;
+  userId: UUID;
 }
 
 const ArtistDashboardAllTimeStats: React.FC<
   ArtistDashboardAllTimeStatsProps
-> = ({ artistId }) => {
+> = ({ artistId, userId }) => {
   const { data, loading, error } = useAsyncData(
     {
-      stats: () => statsApi.getArtistAllTimeStats(artistId),
+      stats: () => statsApi.getArtistAllTimeStats(artistId, userId),
     },
-    [artistId],
+    [artistId, userId],
     {
-      cacheKey: `artist_all_time_stats_${artistId}`,
+      cacheKey: `artist_all_time_stats_${artistId}_${userId}`,
     }
   );
 

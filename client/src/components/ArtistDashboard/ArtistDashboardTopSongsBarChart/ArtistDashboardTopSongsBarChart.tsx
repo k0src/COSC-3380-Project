@@ -9,18 +9,20 @@ import styles from "./ArtistDashboardTopSongsBarChart.module.css";
 
 export interface ArtistDashboardTopSongsBarChartProps {
   artistId: string;
+  userId: string;
 }
 
 const ArtistDashboardTopSongsBarChart: React.FC<
   ArtistDashboardTopSongsBarChartProps
-> = ({ artistId }) => {
+> = ({ artistId, userId }) => {
   const { data, loading, error } = useAsyncData(
     {
-      topSongs: () => statsApi.getArtistTopSongs(artistId, { limit: 5 }),
+      topSongs: () =>
+        statsApi.getArtistTopSongs(artistId, userId, { limit: 5 }),
     },
-    [artistId],
+    [artistId, userId],
     {
-      cacheKey: `artist_top_songs_bar_chart_${artistId}`,
+      cacheKey: `artist_top_songs_bar_chart_${artistId}_${userId}`,
     }
   );
 

@@ -62,11 +62,7 @@ const NewFromArtistsList: React.FC<NewFromArtistsListProps> = ({
   }
 
   if (!newFromArtists || newFromArtists.length === 0) {
-    return (
-      <div className={styles.error}>
-        No new songs from followed artists available.
-      </div>
-    );
+    return null;
   }
 
   return (

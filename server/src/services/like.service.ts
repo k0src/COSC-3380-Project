@@ -168,7 +168,7 @@ export default class LikeService {
     userId: UUID,
     accessContext: AccessContext,
     options?: {
-      orderByColumn?: SongOrderByColumn;
+      orderByColumn?: SongOrderByColumn | "liked_at";
       orderByDirection?: OrderByDirection;
       limit?: number;
       offset?: number;
@@ -194,7 +194,7 @@ export default class LikeService {
       const limit = options?.limit || 50;
       const offset = options?.offset || 0;
 
-      const orderByMap: Record<SongOrderByColumn, string> = {
+      const orderByMap: Record<SongOrderByColumn | "liked_at", string> = {
         title: "s.title",
         created_at: "s.created_at",
         streams: "s.streams",
@@ -202,6 +202,7 @@ export default class LikeService {
         likes: "likes",
         comments: "comments",
         duration: "s.duration",
+        liked_at: "sl.liked_at",
       };
 
       const orderBySQL = orderByMap[orderByColumn];
@@ -366,7 +367,7 @@ export default class LikeService {
     userId: UUID,
     accessContext: AccessContext,
     options?: {
-      orderByColumn?: AlbumOrderByColumn;
+      orderByColumn?: AlbumOrderByColumn | "liked_at";
       orderByDirection?: OrderByDirection;
       limit?: number;
       offset?: number;
@@ -386,13 +387,14 @@ export default class LikeService {
       const limit = options?.limit || 50;
       const offset = options?.offset || 0;
 
-      const orderByMap: Record<AlbumOrderByColumn, string> = {
+      const orderByMap: Record<AlbumOrderByColumn | "liked_at", string> = {
         title: "a.title",
         created_at: "a.created_at",
         release_date: "a.release_date",
         likes: "likes",
         song_count: "song_count",
         runtime: "runtime",
+        liked_at: "al.liked_at",
       };
 
       const orderBySQL = orderByMap[orderByColumn];
@@ -500,7 +502,7 @@ export default class LikeService {
     userId: UUID,
     accessContext: AccessContext,
     options?: {
-      orderByColumn?: PlaylistOrderByColumn;
+      orderByColumn?: PlaylistOrderByColumn | "liked_at";
       orderByDirection?: OrderByDirection;
       limit?: number;
       offset?: number;
@@ -521,12 +523,13 @@ export default class LikeService {
       const limit = options?.limit || 50;
       const offset = options?.offset || 0;
 
-      const orderByMap: Record<PlaylistOrderByColumn, string> = {
+      const orderByMap: Record<PlaylistOrderByColumn | "liked_at", string> = {
         title: "p.title",
         created_at: "p.created_at",
         likes: "likes",
         runtime: "runtime",
         song_count: "song_count",
+        liked_at: "pl.liked_at",
       };
 
       const orderBySQL = orderByMap[orderByColumn];

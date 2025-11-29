@@ -41,6 +41,72 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// GET /api/artists/recommendations/:userId
+router.get("/recommendations/:userId", async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const { limit, offset } = req.query;
+    if (!userId) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    const artistRecommendations =
+      await ArtistRepository.getArtistRecommendations(userId, {
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+
+    res.status(200).json(artistRecommendations);
+  } catch (error) {
+    console.error("Error in GET /artists/recommendations/:userId:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
+// GET /api/artists/recommendations/:userId/followed/songs
+router.get(
+  "/recommendations/:userId/followed/songs",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { userId } = req.params;
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
+      if (!userId) {
+        res.status(400).json({ error: "Missing userId parameter" });
+        return;
+      }
+
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "song")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
+
+      const accessContext = parseAccessContext(req);
+      const songs = await ArtistRepository.getNewFromFollowedArtists(
+        userId,
+        accessContext,
+        {
+          orderByColumn: column as any,
+          orderByDirection: direction as any,
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+          offset: offset ? parseInt(offset as string, 10) : undefined,
+        }
+      );
+
+      res.status(200).json(songs);
+    } catch (error: any) {
+      console.error("Error in GET /songs/", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
 // GET /api/artists/top-artist
 router.get("/top-artist", async (req: Request, res: Response) => {
   try {
@@ -534,72 +600,6 @@ router.get(
       res.status(200).json(relatedArtists);
     } catch (error: any) {
       console.error("Error in GET /artists/:id/related:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-      return;
-    }
-  }
-);
-
-// GET /api/artists/recommendations/:userId
-router.get("/recommendations/:userId", async (req: Request, res: Response) => {
-  try {
-    const { userId } = req.params;
-    const { limit, offset } = req.query;
-    if (!userId) {
-      res.status(400).json({ error: "User ID is required" });
-      return;
-    }
-
-    const artistRecommendations =
-      await ArtistRepository.getArtistRecommendations(userId, {
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-        offset: offset ? parseInt(offset as string, 10) : undefined,
-      });
-
-    res.status(200).json(artistRecommendations);
-  } catch (error) {
-    console.error("Error in GET /artists/recommendations/:userId:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// GET /api/artists/recommendations/:userId/followed/songs
-router.get(
-  "/recommendations/:userId/followed/songs",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { userId } = req.params;
-      const { orderByColumn, orderByDirection, limit, offset } = req.query;
-      if (!userId) {
-        res.status(400).json({ error: "Missing userId parameter" });
-        return;
-      }
-
-      let column = (orderByColumn as string) || "created_at";
-      let direction = (orderByDirection as string) || "DESC";
-      if (!validateOrderBy(column, direction, "song")) {
-        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
-        column = "created_at";
-        direction = "DESC";
-      }
-
-      const accessContext = parseAccessContext(req);
-      const songs = await ArtistRepository.getNewFromFollowedArtists(
-        userId,
-        accessContext,
-        {
-          orderByColumn: column as any,
-          orderByDirection: direction as any,
-          limit: limit ? parseInt(limit as string, 10) : undefined,
-          offset: offset ? parseInt(offset as string, 10) : undefined,
-        }
-      );
-
-      res.status(200).json(songs);
-    } catch (error: any) {
-      console.error("Error in GET /songs/", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
       return;

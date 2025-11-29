@@ -3,13 +3,13 @@ import { PuffLoader } from "react-spinners";
 import { chartsTooltipClasses } from "@mui/x-charts";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { useAsyncData } from "@hooks";
-import { adminApi } from "@api";
+import { statsApi } from "@api";
 import styles from "./AdminDashboardUserGrowthChart.module.css";
 
 const AdminDashboardUserGrowthChart: React.FC = () => {
   const { data, loading, error } = useAsyncData(
     {
-      userGrowth: () => adminApi.getUserGrowth(30),
+      userGrowth: () => statsApi.getUserGrowth(30),
     },
     [],
     {

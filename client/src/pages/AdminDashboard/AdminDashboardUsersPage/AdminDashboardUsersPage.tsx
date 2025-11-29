@@ -39,7 +39,7 @@ const AdminDashboardUsersPage: React.FC = () => {
 
   const fetchUsers = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return adminApi.getAllUsers(limit, offset);
+      return adminApi.getUsersInfo({ limit, offset });
     },
     []
   );

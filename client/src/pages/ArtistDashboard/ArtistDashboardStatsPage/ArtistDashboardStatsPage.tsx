@@ -1,4 +1,5 @@
 import { memo, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import type { Artist } from "@types";
@@ -23,6 +24,7 @@ const ArtistDashboardStatsPage: React.FC<ArtistDashboardStatsPageProps> = ({
   artist,
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const artistId = user?.artist_id;
 
@@ -30,6 +32,11 @@ const ArtistDashboardStatsPage: React.FC<ArtistDashboardStatsPageProps> = ({
     if (!artist) return "";
     return artist.display_name;
   }, [artist]);
+
+  if (!artistId || !user) {
+    navigate("/login");
+    return;
+  }
 
   return (
     <>
@@ -40,8 +47,8 @@ const ArtistDashboardStatsPage: React.FC<ArtistDashboardStatsPageProps> = ({
       <div className={styles.statsLayout}>
         <span className={styles.statsTitle}>{artistName}'s Stats</span>
         <div className={styles.statsTop}>
-          <ArtistDashboardAllTimeStats artistId={artistId!} />
-          <ArtistDashboardRecentRelease artistId={artistId!} />
+          <ArtistDashboardAllTimeStats artistId={artistId!} userId={user.id} />
+          <ArtistDashboardRecentRelease artistId={artistId!} userId={user.id} />
         </div>
         <ArtistDashboardBarChart artistId={artistId!} />
         <div className={styles.sectionContainer}>
@@ -49,15 +56,24 @@ const ArtistDashboardStatsPage: React.FC<ArtistDashboardStatsPageProps> = ({
             Your Top Songs & Playlists
           </span>
           <div className={styles.topItemsContainer}>
-            <ArtistDashboardTopSongs artistId={artistId!} />
-            <ArtistDashboardTopPlaylists artistId={artistId!} />
-            <ArtistDashboardTopSongsBarChart artistId={artistId!} />
+            <ArtistDashboardTopSongs artistId={artistId!} userId={user.id} />
+            <ArtistDashboardTopPlaylists
+              artistId={artistId!}
+              userId={user.id}
+            />
+            <ArtistDashboardTopSongsBarChart
+              artistId={artistId!}
+              userId={user.id}
+            />
           </div>
         </div>
         <div className={styles.sectionContainer}>
           <span className={styles.sectionTitle}>Your Top Listeners</span>
           <div className={styles.listenersContainer}>
-            <ArtistDashboardTopListeners artistId={artistId!} />
+            <ArtistDashboardTopListeners
+              artistId={artistId!}
+              userId={user.id}
+            />
             <ArtistDashboardPieChart artistId={artistId!} />
           </div>
         </div>

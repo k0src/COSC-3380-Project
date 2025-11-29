@@ -1,10 +1,10 @@
 import express, { Request, Response } from "express";
 import { AdminService } from "@services";
-import { UserRepository } from "@repositories";
+import { ArtistRepository, UserRepository } from "@repositories";
 import { parseForm } from "@infra/form-parser";
 import { validateOrderBy } from "@validators";
-import type { ReportableEntityType } from "@types";
-import { handlePgError, parseAccessContext, getCoverGradient } from "@util";
+import { handlePgError, getCoverGradient } from "@util";
+import { authenticateToken, requireAdmin } from "@middleware";
 
 const router = express.Router();
 
@@ -62,37 +62,44 @@ router.get(
   }
 );
 
-// GET /api/admin/dashboard/recent-reports
-router.get("/dashboard/recent-reports", async (req: Request, res: Response) => {
-  try {
-    const limit = parseInt(req.query.limit as string) || 10;
-    const offset = parseInt(req.query.offset as string) || 0;
-    const recentReports = await AdminService.getRecentReports(limit, offset);
-    res.json(recentReports);
-  } catch (error: any) {
-    console.error("Error in GET /admin/dashboard/recent-reports:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
 // GET /api/admin/users
-router.get("/users", async (req: Request, res: Response) => {
-  try {
-    const limit = parseInt(req.query.limit as string) || 50;
-    const offset = parseInt(req.query.offset as string) || 0;
-    const users = await AdminService.getAllUsers(limit, offset);
-    res.json(users);
-  } catch (error: any) {
-    console.error("Error in GET /admin/users:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
+router.get(
+  "/users",
+  authenticateToken,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const { orderByColumn, orderByDirection, limit, offset } = req.query;
+
+      let column = (orderByColumn as string) || "created_at";
+      let direction = (orderByDirection as string) || "DESC";
+      if (!validateOrderBy(column, direction, "user")) {
+        console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
+        column = "created_at";
+        direction = "DESC";
+      }
+
+      const users = await AdminService.getUsersInfo({
+        orderByColumn: column as any,
+        orderByDirection: direction as any,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+        offset: offset ? parseInt(offset as string, 10) : undefined,
+      });
+      res.json(users);
+    } catch (error: any) {
+      console.error("Error in GET /admin/users:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
   }
-});
+);
 
 // PUT /api/admin/users/:userId/update
 router.put(
   "/users/:userId/update",
+  authenticateToken,
+  requireAdmin,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { userId } = req.params;
@@ -114,35 +121,16 @@ router.put(
       console.error("Error in PUT /users/:id:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
 
 // POST /api/admin/users/:userId/suspend
-router.post("/users/:userId/suspend", async (req: Request, res: Response) => {
-  try {
-    const { userId } = req.params;
-    if (!userId) {
-      res.status(400).json({ error: "User ID is required" });
-      return;
-    }
-
-    const user = await AdminService.suspendUser(userId);
-    if (!user) {
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-    res.json(user);
-  } catch (error: any) {
-    console.error("Error in POST /admin/users/:userId/suspend:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// POST /api/admin/users/:userId/deactivate
 router.post(
-  "/users/:userId/deactivate",
+  "/users/:userId/suspend",
+  authenticateToken,
+  requireAdmin,
   async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
@@ -151,7 +139,36 @@ router.post(
         return;
       }
 
-      const user = await AdminService.deactivateUser(userId);
+      const user = await UserRepository.update(userId, { status: "SUSPENDED" });
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      res.json(user);
+    } catch (error: any) {
+      console.error("Error in POST /admin/users/:userId/suspend:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+    }
+  }
+);
+
+// POST /api/admin/users/:userId/deactivate
+router.post(
+  "/users/:userId/deactivate",
+  authenticateToken,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      if (!userId) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      const user = await UserRepository.update(userId, {
+        status: "DEACTIVATED",
+      });
       if (!user) {
         res.status(404).json({ error: "User not found" });
         return;
@@ -165,43 +182,24 @@ router.post(
   }
 );
 
-// POST /api/admin/users/:userId/reactivate
-router.post(
-  "/users/:userId/reactivate",
-  async (req: Request, res: Response) => {
-    try {
-      const { userId } = req.params;
-      if (!userId) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-      }
-
-      const user = await AdminService.reactivateUser(userId);
-      if (!user) {
-        res.status(404).json({ error: "User not found" });
-        return;
-      }
-      res.json(user);
-    } catch (error: any) {
-      console.error("Error in POST /admin/users/:userId/reactivate:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
 // POST /api/admin/artists/:artistId/verify
 router.post(
   "/artists/:artistId/verify",
+  authenticateToken,
+  requireAdmin,
   async (req: Request, res: Response) => {
     try {
       const { artistId } = req.params;
-      if (!artistId) {
-        res.status(400).json({ error: "Artist ID is required" });
+      const { userId } = req.body;
+      if (!artistId || !userId) {
+        res.status(400).json({ error: "Missing required parameters" });
         return;
       }
 
-      const artist = await AdminService.verifyArtist(artistId);
+      const artist = await ArtistRepository.update(artistId, {
+        user_id: userId,
+        verified: true,
+      });
       if (!artist) {
         res.status(404).json({ error: "Artist not found" });
         return;
@@ -211,6 +209,7 @@ router.post(
       console.error("Error in POST /admin/artists/:artistId/verify:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -218,15 +217,21 @@ router.post(
 // POST /api/admin/artists/:artistId/unverify
 router.post(
   "/artists/:artistId/unverify",
+  authenticateToken,
+  requireAdmin,
   async (req: Request, res: Response) => {
     try {
       const { artistId } = req.params;
-      if (!artistId) {
-        res.status(400).json({ error: "Artist ID is required" });
+      const { userId } = req.body;
+      if (!artistId || !userId) {
+        res.status(400).json({ error: "Missing required parameters" });
         return;
       }
 
-      const artist = await AdminService.unverifyArtist(artistId);
+      const artist = await ArtistRepository.update(artistId, {
+        user_id: userId,
+        verified: false,
+      });
       if (!artist) {
         res.status(404).json({ error: "Artist not found" });
         return;
@@ -236,16 +241,41 @@ router.post(
       console.error("Error in POST /admin/artists/:artistId/unverify:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
 
-// POST /api/admin/playlists/:playlistId/set-featured
-router.post(
-  "/playlists/:playlistId/set-featured",
+// GET /api/admin/featured-playlist
+router.get(
+  "/featured-playlist",
+  authenticateToken,
   async (req: Request, res: Response) => {
     try {
-      const { playlistId } = req.params;
+      const featuredPlaylist = await AdminService.getFeaturedPlaylist();
+      if (!featuredPlaylist) {
+        res.status(404).json({ message: "Featured playlist not found" });
+        return;
+      }
+
+      res.json(featuredPlaylist);
+    } catch (error: any) {
+      console.error("Error in GET /admin/featured-playlist:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
+// POST /api/admin/featured-playlist
+router.post(
+  "/featured-playlist",
+  authenticateToken,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const { playlistId } = req.body;
       if (!playlistId) {
         res.status(400).json({ error: "Playlist ID is required" });
         return;
@@ -254,277 +284,15 @@ router.post(
       const result = await AdminService.setFeaturedPlaylist(playlistId);
       res.json(result);
     } catch (error: any) {
-      console.error(
-        "Error in POST /admin/playlists/:playlistId/set-featured:",
-        error
-      );
+      console.error("Error in POST /admin/featured-playlist:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
 
-// GET /api/admin/appeals/:entityType/:entityId/check
-router.get(
-  "/appeals/:entityType/:entityId/check",
-  async (req: Request, res: Response) => {
-    try {
-      const { entityType, entityId } = req.params;
-      const { userId } = req.query;
-
-      if (!userId || !entityType || !entityId) {
-        res.status(400).json({ error: "Missing required parameters" });
-        return;
-      }
-
-      if (!["song", "album", "playlist", "user"].includes(entityType)) {
-        res.status(400).json({ error: "Invalid entity type" });
-        return;
-      }
-
-      const hasPendingAppeal = await AdminService.checkPendingAppeal(
-        entityType as ReportableEntityType,
-        entityId,
-        userId as string
-      );
-
-      res.json({ hasPendingAppeal });
-    } catch (error: any) {
-      console.error("Error in GET /admin/appeals/check:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-// GET /api/admin/reports
-router.get("/reports", async (req: Request, res: Response) => {
-  try {
-    const limit = parseInt(req.query.limit as string) || 50;
-    const offset = parseInt(req.query.offset as string) || 0;
-    const reports = await AdminService.getAllReports(limit, offset);
-    res.json(reports);
-  } catch (error: any) {
-    console.error("Error in GET /admin/reports:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// GET /api/admin/dashboard/recent-appeals
-router.get("/dashboard/recent-appeals", async (req: Request, res: Response) => {
-  try {
-    const limit = parseInt(req.query.limit as string) || 10;
-    const offset = parseInt(req.query.offset as string) || 0;
-    const recentAppeals = await AdminService.getRecentAppeals(limit, offset);
-    res.json(recentAppeals);
-  } catch (error: any) {
-    console.error("Error in GET /admin/dashboard/recent-appeals:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// GET /api/admin/appeals
-router.get("/appeals", async (req: Request, res: Response) => {
-  try {
-    const limit = parseInt(req.query.limit as string) || 50;
-    const offset = parseInt(req.query.offset as string) || 0;
-    const appeals = await AdminService.getAllAppeals(limit, offset);
-    res.json(appeals);
-  } catch (error: any) {
-    console.error("Error in GET /admin/appeals:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// GET /api/admin/appeals/:entityType/:entityId
-router.get(
-  "/appeals/:entityType/:entityId",
-  async (req: Request, res: Response) => {
-    try {
-      const { entityType, entityId } = req.params;
-
-      if (!entityType || !entityId) {
-        res.status(400).json({ error: "Missing required parameters" });
-        return;
-      }
-
-      if (!["song", "album", "playlist", "user"].includes(entityType)) {
-        res.status(400).json({ error: "Invalid entity type" });
-        return;
-      }
-
-      const appeals = await AdminService.getAppealsForEntity(
-        entityType as ReportableEntityType,
-        entityId
-      );
-      res.json(appeals);
-    } catch (error: any) {
-      console.error(
-        "Error in GET /admin/appeals/:entityType/:entityId:",
-        error
-      );
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-// POST /api/admin/reports/:id/resolve
-router.post("/reports/:id/resolve", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { entityType, entityId, reviewerId } = req.body;
-
-    if (!id || !entityType || !entityId || !reviewerId) {
-      res.status(400).json({ error: "Missing required fields" });
-      return;
-    }
-
-    const result = await AdminService.resolveReport(
-      id,
-      entityType,
-      entityId,
-      reviewerId
-    );
-    res.json(result);
-  } catch (error: any) {
-    console.error("Error in POST /admin/reports/:id/resolve:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// POST /api/admin/reports/:id/dismiss
-router.post("/reports/:id/dismiss", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { entityType, entityId, reviewerId } = req.body;
-
-    if (!id || !entityType || !entityId || !reviewerId) {
-      res.status(400).json({ error: "Missing required fields" });
-      return;
-    }
-
-    const result = await AdminService.dismissReport(
-      id,
-      entityType,
-      entityId,
-      reviewerId
-    );
-    res.json(result);
-  } catch (error: any) {
-    console.error("Error in POST /admin/reports/:id/dismiss:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// POST /api/admin/appeals/:id/resolve
-router.post("/appeals/:id/resolve", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { entityType, entityId, reviewerId } = req.body;
-
-    if (!id || !entityType || !entityId || !reviewerId) {
-      res.status(400).json({ error: "Missing required fields" });
-      return;
-    }
-
-    const result = await AdminService.resolveAppeal(
-      entityType,
-      entityId,
-      reviewerId
-    );
-    res.json(result);
-  } catch (error: any) {
-    console.error("Error in POST /admin/appeals/:id/resolve:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// POST /api/admin/appeals/:id/dismiss
-router.post("/appeals/:id/dismiss", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { entityType, entityId, reviewerId } = req.body;
-
-    if (!id || !entityType || !entityId || !reviewerId) {
-      res.status(400).json({ error: "Missing required fields" });
-      return;
-    }
-
-    const result = await AdminService.dismissAppeal(
-      id,
-      entityType,
-      entityId,
-      reviewerId
-    );
-    res.json(result);
-  } catch (error: any) {
-    console.error("Error in POST /admin/appeals/:id/dismiss:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
-// POST /api/admin/appeals/:entityType/:entityId
-router.post(
-  "/appeals/:entityType/:entityId",
-  async (req: Request, res: Response) => {
-    try {
-      const { entityType, entityId } = req.params;
-      const { userId, reason } = req.body;
-
-      if (!userId || !entityType || !entityId || !reason) {
-        res.status(400).json({ error: "Missing required fields" });
-        return;
-      }
-
-      if (!["song", "album", "playlist", "user"].includes(entityType)) {
-        res.status(400).json({ error: "Invalid entity type" });
-        return;
-      }
-
-      await AdminService.submitAppeal(
-        entityType as ReportableEntityType,
-        entityId,
-        userId,
-        reason
-      );
-      res.json({ message: "Appeal submitted successfully" });
-    } catch (error: any) {
-      console.error("Error in POST /admin/appeals:", error);
-      const { message, statusCode } = handlePgError(error);
-      res.status(statusCode).json({ error: message });
-    }
-  }
-);
-
-// GET /api/admin/featured-playlist
-router.get("/featured-playlist", async (req: Request, res: Response) => {
-  try {
-    const accessContext = parseAccessContext(req);
-    const featuredPlaylist = await AdminService.getFeaturedPlaylist(
-      accessContext
-    );
-
-    if (!featuredPlaylist) {
-      res.status(404).json({ message: "Featured playlist not found" });
-      return;
-    }
-
-    res.json(featuredPlaylist);
-  } catch (error: any) {
-    console.error("Error in GET /admin/featured-playlist:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
+//indivudual routes
 // GET /api/admin/:entityType/:entityId/cover-gradient
 router.get(
   "/:entityType/:entityId/cover-gradient",
@@ -568,6 +336,7 @@ router.get(
       );
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );

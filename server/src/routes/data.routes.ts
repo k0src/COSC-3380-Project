@@ -191,35 +191,6 @@ router.get("/activity-timeline", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/artist-performance", async (req: Request, res: Response) => {
-  try {
-    const params: DataReportParams = {
-      timeRange: {
-        startDate:
-          (req.query["timeRange[startDate]"] as string) ||
-          (req.query.startDate as string) ||
-          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate:
-          (req.query["timeRange[endDate]"] as string) ||
-          (req.query.endDate as string) ||
-          new Date().toISOString(),
-      },
-      limit: parseInt(req.query.limit as string) || 20,
-      offset: parseInt(req.query.offset as string) || 0,
-      minStreams: parseInt(req.query.minStreams as string) || 10,
-      sortBy: (req.query.sortBy as string) || "totalStreams",
-      sortDirection: (req.query.sortDirection as "ASC" | "DESC") || "DESC",
-    };
-
-    const data = await DataService.getArtistPerformanceMetrics(params);
-    res.json(data);
-  } catch (error: any) {
-    console.error("Error in GET /data/artist-performance:", error);
-    const { message, statusCode } = handlePgError(error);
-    res.status(statusCode).json({ error: message });
-  }
-});
-
 router.get("/churn-metrics", async (req: Request, res: Response) => {
   try {
     const params: DataReportParams = {
@@ -280,6 +251,74 @@ router.get("/detailed-periods", async (req: Request, res: Response) => {
   }
 });
 
+router.get("/artist-performance", async (req: Request, res: Response) => {
+  try {
+    const parseArrayParam = (param: any): string[] | undefined => {
+      if (!param) return undefined;
+      if (Array.isArray(param)) return param;
+      if (typeof param === "string") {
+        try {
+          const parsed = JSON.parse(param);
+          return Array.isArray(parsed) ? parsed : [param];
+        } catch {
+          return param.split(",").filter(Boolean);
+        }
+      }
+      return undefined;
+    };
+
+    const params: DataReportParams = {
+      timeRange: {
+        startDate:
+          (req.query["timeRange[startDate]"] as string) ||
+          (req.query.startDate as string) ||
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        endDate:
+          (req.query["timeRange[endDate]"] as string) ||
+          (req.query.endDate as string) ||
+          new Date().toISOString(),
+      },
+      limit: parseInt(req.query.limit as string) || 1000,
+      offset: parseInt(req.query.offset as string) || 0,
+      minStreams: req.query.minStreams
+        ? parseInt(req.query.minStreams as string)
+        : undefined,
+      minEngagementRate: req.query.minEngagementRate
+        ? parseFloat(req.query.minEngagementRate as string)
+        : undefined,
+      minGrowthPercent: req.query.minGrowthPercent
+        ? parseFloat(req.query.minGrowthPercent as string)
+        : undefined,
+      searchTerm: req.query.searchTerm as string,
+      artistIds: parseArrayParam(req.query.artistIds),
+      genres: parseArrayParam(req.query.genres),
+      albumIds: parseArrayParam(req.query.albumIds),
+      sortBy: (req.query.sortBy as string) || "totalStreams",
+      sortDirection:
+        (req.query.sortDirection as string)?.toUpperCase() === "ASC"
+          ? "ASC"
+          : "DESC",
+      showOnlyNew: req.query.showOnlyNew === "true",
+      showOnlyTrending: req.query.showOnlyTrending === "true",
+      dateRangeFilter:
+        req.query["dateRangeFilter[startDate]"] &&
+        req.query["dateRangeFilter[endDate]"]
+          ? {
+              startDate: req.query["dateRangeFilter[startDate]"] as string,
+              endDate: req.query["dateRangeFilter[endDate]"] as string,
+            }
+          : undefined,
+    };
+
+    const data = await DataService.getArtistPerformanceMetrics(params);
+    res.json(data);
+  } catch (error: any) {
+    console.error("Error in GET /data/artist-performance:", error);
+    const { message, statusCode } = handlePgError(error);
+    res.status(statusCode).json({ error: message });
+  }
+});
+
 router.get("/enhanced-tracks", async (req: Request, res: Response) => {
   try {
     const parseArrayParam = (param: any): string[] | undefined => {
@@ -307,9 +346,11 @@ router.get("/enhanced-tracks", async (req: Request, res: Response) => {
           (req.query.endDate as string) ||
           new Date().toISOString(),
       },
-      limit: parseInt(req.query.limit as string) || 50,
+      limit: parseInt(req.query.limit as string) || 1000,
       offset: parseInt(req.query.offset as string) || 0,
-      minStreams: parseInt(req.query.minStreams as string) || 10,
+      minStreams: req.query.minStreams
+        ? parseInt(req.query.minStreams as string)
+        : undefined,
       minEngagementRate: req.query.minEngagementRate
         ? parseFloat(req.query.minEngagementRate as string)
         : undefined,
@@ -328,10 +369,11 @@ router.get("/enhanced-tracks", async (req: Request, res: Response) => {
       showOnlyNew: req.query.showOnlyNew === "true",
       showOnlyTrending: req.query.showOnlyTrending === "true",
       dateRangeFilter:
-        req.query.dateRangeStart && req.query.dateRangeEnd
+        req.query["dateRangeFilter[startDate]"] &&
+        req.query["dateRangeFilter[endDate]"]
           ? {
-              startDate: req.query.dateRangeStart as string,
-              endDate: req.query.dateRangeEnd as string,
+              startDate: req.query["dateRangeFilter[startDate]"] as string,
+              endDate: req.query["dateRangeFilter[endDate]"] as string,
             }
           : undefined,
     };

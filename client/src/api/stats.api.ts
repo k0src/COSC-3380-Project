@@ -1,7 +1,55 @@
 import api from "./api";
-import type { Comment, Playlist, Song, UUID, TopListener } from "@types";
+import type {
+  Playlist,
+  Song,
+  UUID,
+  TopListener,
+  AdminDashboardStats,
+  AdminUserGrowthData,
+  Artist,
+  PlatformActivity,
+} from "@types";
 
 export const statsApi = {
+  // Admin Dashboard Stats
+  async getDashboardStats() {
+    const response = await api.get<AdminDashboardStats>(
+      `/stats/admin/dashboard/stats`
+    );
+    return response.data;
+  },
+
+  async getUserGrowth(days: number = 30) {
+    const response = await api.get<AdminUserGrowthData[]>(
+      `/stats/admin/dashboard/user-growth`,
+      {
+        params: { days },
+      }
+    );
+    return response.data;
+  },
+
+  async getTopArtists(limit: number = 10) {
+    const response = await api.get<Artist[]>(
+      `/stats/admin/dashboard/top-artists`,
+      {
+        params: { limit },
+      }
+    );
+    return response.data;
+  },
+
+  async getPlatformActivity(days: number = 30) {
+    const response = await api.get<PlatformActivity[]>(
+      `/stats/admin/dashboard/platform-activity`,
+      {
+        params: { days },
+      }
+    );
+    return response.data;
+  },
+
+  // Artist Dashboard Stats
   async getArtistQuickStats(artistId: UUID, days: number = 30) {
     const response = await api.get(`/stats/artists/${artistId}/quick`, {
       params: { days },
@@ -9,11 +57,11 @@ export const statsApi = {
     return response.data;
   },
 
-  async getArtistTopSong(artistId: UUID, days: number = 30) {
+  async getArtistTopSong(artistId: UUID, userId: UUID, days: number = 30) {
     const response = await api.get<Song>(
       `/stats/artists/${artistId}/top-song`,
       {
-        params: { days },
+        params: { userId, days },
       }
     );
     return response.data;
@@ -29,23 +77,9 @@ export const statsApi = {
     return response.data;
   },
 
-  async getArtistComments(
-    artistId: UUID,
-    limit: number = 10,
-    orderBy: string = "commented_at",
-    orderDirection: "ASC" | "DESC" = "DESC"
-  ) {
-    const response = await api.get<Comment[]>(
-      `/stats/artists/${artistId}/comments`,
-      {
-        params: { limit, orderBy, orderDirection },
-      }
-    );
-    return response.data;
-  },
-
   async getArtistTopSongs(
     artistId: UUID,
+    userId: UUID,
     options: { timeRange?: string; limit?: number } = {}
   ) {
     const { timeRange = "30d", limit = 5 } = options;
@@ -53,7 +87,7 @@ export const statsApi = {
     const response = await api.get<Song[]>(
       `/stats/artists/${artistId}/top-songs`,
       {
-        params: { days, limit },
+        params: { userId, days, limit },
       }
     );
     return response.data;
@@ -61,6 +95,7 @@ export const statsApi = {
 
   async getArtistTopPlaylists(
     artistId: UUID,
+    userId: UUID,
     options: { timeRange?: string; limit?: number } = {}
   ) {
     const { timeRange = "30d", limit = 5 } = options;
@@ -68,7 +103,7 @@ export const statsApi = {
     const response = await api.get<Playlist[]>(
       `/stats/artists/${artistId}/top-playlists`,
       {
-        params: { days, limit },
+        params: { userId, days, limit },
       }
     );
     return response.data;
@@ -76,6 +111,7 @@ export const statsApi = {
 
   async getArtistTopListeners(
     artistId: UUID,
+    userId: UUID,
     options: { timeRange?: string; limit?: number } = {}
   ) {
     const { timeRange = "30d", limit = 5 } = options;
@@ -83,21 +119,24 @@ export const statsApi = {
     const response = await api.get<TopListener[]>(
       `/stats/artists/${artistId}/top-listeners`,
       {
-        params: { days, limit },
+        params: { userId, days, limit },
       }
     );
     return response.data;
   },
 
-  async getArtistRecentRelease(artistId: UUID) {
+  async getArtistRecentRelease(artistId: UUID, userId: UUID) {
     const response = await api.get<Song>(
-      `/stats/artists/${artistId}/recent-release`
+      `/stats/artists/${artistId}/recent-release`,
+      { params: { userId } }
     );
     return response.data;
   },
 
-  async getArtistAllTimeStats(artistId: UUID) {
-    const response = await api.get(`/stats/artists/${artistId}/all-time`);
+  async getArtistAllTimeStats(artistId: UUID, userId: UUID) {
+    const response = await api.get(`/stats/artists/${artistId}/all-time`, {
+      params: { userId },
+    });
     return response.data;
   },
 

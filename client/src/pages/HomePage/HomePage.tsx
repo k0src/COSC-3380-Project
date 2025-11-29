@@ -24,7 +24,7 @@ const HomePage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
 
   const userIsArtist = useMemo(() => {
-    return isAuthenticated && user && user.role !== "USER";
+    return isAuthenticated && user && user.role === "ARTIST";
   }, [isAuthenticated, user]);
 
   const userId = useMemo(() => {
@@ -39,7 +39,7 @@ const HomePage: React.FC = () => {
 
   const { data, loading, error } = useAsyncData(
     {
-      featuredPlaylist: () => adminApi.getFeaturedPlaylist(accessContext),
+      featuredPlaylist: () => adminApi.getFeaturedPlaylist(),
       userHasHistory: () => libraryApi.checkUserHasSongHistory(user!.id),
     },
     [],

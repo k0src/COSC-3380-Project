@@ -190,3 +190,29 @@ export function requireOwnership(userIdParam: string = "userId") {
     next();
   };
 }
+
+export function requireAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  if (!req.user) {
+    res.status(401).json({
+      error: "Unauthorized",
+      message: "Authentication required",
+      statusCode: 401,
+    });
+    return;
+  }
+
+  if (req.user.role !== "ADMIN") {
+    res.status(403).json({
+      error: "Forbidden",
+      message: "Admin access required",
+      statusCode: 403,
+    });
+    return;
+  }
+
+  next();
+}

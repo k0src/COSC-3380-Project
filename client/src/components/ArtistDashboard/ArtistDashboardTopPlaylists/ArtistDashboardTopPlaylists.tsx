@@ -15,6 +15,7 @@ interface PlaylistWithStreams extends Playlist {
 
 export interface ArtistDashboardTopPlaylistsProps {
   artistId: UUID;
+  userId: UUID;
 }
 
 interface TopPlaylistItemProps {
@@ -59,11 +60,11 @@ const TopPlaylistItem: React.FC<TopPlaylistItemProps> = ({
 
 const ArtistDashboardTopPlaylists: React.FC<
   ArtistDashboardTopPlaylistsProps
-> = ({ artistId }) => {
+> = ({ artistId, userId }) => {
   const { data, loading, error } = useAsyncData(
     {
       topPlaylists: () =>
-        statsApi.getArtistTopPlaylists(artistId, {
+        statsApi.getArtistTopPlaylists(artistId, userId, {
           timeRange: "30d",
           limit: 5,
         }),

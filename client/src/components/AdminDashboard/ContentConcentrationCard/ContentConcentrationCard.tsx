@@ -38,8 +38,17 @@ const ContentConcentrationCard: React.FC<ContentConcentrationCardProps> = ({
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
-        <LuChartNoAxesColumn className={styles.icon} />
-        <span className={styles.title}>Content Concentration</span>
+        <div className={styles.titleContainer}>
+          <LuChartNoAxesColumn className={styles.icon} />
+          <span className={styles.title}>Content Concentration</span>
+        </div>
+        <div className={styles.subtitle}>
+          {concentration.top1Percent > 50
+            ? "High concentration - a small number of songs dominate streams"
+            : concentration.top1Percent > 30
+            ? "Moderate concentration - popular songs have significant share"
+            : "Low concentration - streams are well distributed across content"}
+        </div>
       </div>
       <div className={styles.content}>
         <div className={styles.concentrationGrid}>
@@ -65,13 +74,6 @@ const ContentConcentrationCard: React.FC<ContentConcentrationCardProps> = ({
             <span className={styles.concentrationSubtext}>of streams</span>
           </div>
         </div>
-      </div>
-      <div className={styles.subtitle}>
-        {concentration.top1Percent > 50
-          ? "High concentration - a small number of songs dominate streams"
-          : concentration.top1Percent > 30
-          ? "Moderate concentration - popular songs have significant share"
-          : "Low concentration - streams are well distributed across content"}
       </div>
     </div>
   );

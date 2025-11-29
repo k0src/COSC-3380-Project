@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import { PuffLoader } from "react-spinners";
 import { useAsyncData } from "@hooks";
-import { adminApi } from "@api";
+import { statsApi } from "@api";
 import styles from "./AdminDashboardPlatformActivityChart.module.css";
 import { chartsTooltipClasses } from "@mui/x-charts";
 import { BarChart } from "@mui/x-charts/BarChart";
@@ -9,7 +9,7 @@ import { BarChart } from "@mui/x-charts/BarChart";
 const AdminDashboardPlatformActivityChart: React.FC = () => {
   const { data, loading, error } = useAsyncData(
     {
-      platformActivity: () => adminApi.getPlatformActivity(30),
+      platformActivity: () => statsApi.getPlatformActivity(30),
     },
     [],
     {

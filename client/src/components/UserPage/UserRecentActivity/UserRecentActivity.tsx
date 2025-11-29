@@ -12,7 +12,7 @@ import type {
   AccessContext,
 } from "@types";
 import { EntityItemCard } from "@components";
-import { libraryApi } from "@api";
+import { userApi } from "@api";
 import { formatRelativeDate, getMainArtist } from "@util";
 import { useAsyncData } from "@hooks";
 import styles from "./UserRecentActivity.module.css";
@@ -37,7 +37,11 @@ const UserRecentActivity: React.FC<{
   const { data, loading, error } = useAsyncData(
     {
       recentActivity: () =>
-        libraryApi.getRecentlyPlayedArray(userId, accessContext, maxItems),
+        userApi.getLikedSongs(userId, accessContext, {
+          orderByColumn: "liked_at",
+          orderByDirection: "ASC",
+          limit: maxItems,
+        }),
     },
     [userId, maxItems, accessContext.userId],
     {

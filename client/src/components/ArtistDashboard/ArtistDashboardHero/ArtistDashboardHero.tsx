@@ -122,6 +122,7 @@ const HeroRight: React.FC<HeroRightProps> = memo(
 
 export interface ArtistDashboardHeroProps {
   artistId: UUID;
+  userId: UUID;
   artistName: string;
   artistImageUrl: string;
   artistImageUrlBlurhash?: string;
@@ -129,6 +130,7 @@ export interface ArtistDashboardHeroProps {
 
 const ArtistDashboardHero: React.FC<ArtistDashboardHeroProps> = ({
   artistId,
+  userId,
   artistName,
   artistImageUrl,
   artistImageUrlBlurhash,
@@ -136,12 +138,12 @@ const ArtistDashboardHero: React.FC<ArtistDashboardHeroProps> = ({
   const { data, loading, error } = useAsyncData(
     {
       artist: () => statsApi.getArtistQuickStats(artistId, 30),
-      topSong: () => statsApi.getArtistTopSong(artistId, 30),
+      topSong: () => statsApi.getArtistTopSong(artistId, userId, 30),
     },
-    [artistId],
+    [artistId, userId],
     {
-      cacheKey: `artist_dashboard_hero_stats_${artistId}`,
-      enabled: !!artistId,
+      cacheKey: `artist_dashboard_hero_stats_${artistId}_${userId}`,
+      enabled: !!artistId && !!userId,
     }
   );
 

@@ -9,7 +9,7 @@ import {
   AdminDashboardPlatformHealth,
   DataTable,
 } from "@components";
-import { adminApi } from "@api";
+import { reportApi } from "@api";
 import { reportsColumns } from "@components/DataTable/columnDefinitions/reportColumns.js";
 import styles from "./AdminDashboard.module.css";
 import { LuShield } from "react-icons/lu";
@@ -17,7 +17,7 @@ import { LuShield } from "react-icons/lu";
 const AdminDashboard: React.FC = () => {
   const fetchReports = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return adminApi.getRecentReports(limit, offset);
+      return reportApi.getReports({ limit, offset });
     },
     []
   );
@@ -53,10 +53,7 @@ const AdminDashboard: React.FC = () => {
           <div className={styles.sectionContainer}>
             <div className={styles.sectionHeader}>
               <span className={styles.sectionTitle}>Recent Reports</span>
-              <Link
-                to="/admin/reports-appeals"
-                className={styles.viewMoreLink}
-              >
+              <Link to="/admin/reports-appeals" className={styles.viewMoreLink}>
                 View All
               </Link>
             </div>

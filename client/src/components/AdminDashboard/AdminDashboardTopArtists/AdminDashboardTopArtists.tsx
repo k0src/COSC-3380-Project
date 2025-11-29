@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Link } from "react-router-dom";
 import { PuffLoader } from "react-spinners";
 import { useAsyncData } from "@hooks";
-import { adminApi } from "@api";
+import { statsApi } from "@api";
 import { formatNumber, pluralize } from "@util";
 import { LazyImg } from "@components";
 import styles from "./AdminDashboardTopArtists.module.css";
@@ -12,7 +12,7 @@ import artistPlaceholder from "@assets/artist-placeholder.webp";
 const AdminDashboardTopArtists: React.FC = () => {
   const { data, loading, error } = useAsyncData(
     {
-      topArtists: () => adminApi.getTopArtists(10),
+      topArtists: () => statsApi.getTopArtists(10),
     },
     [],
     {

@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
 import { capitalize } from "@util";
-import { songApi, albumApi, playlistApi, userApi, adminApi } from "@api";
+import { songApi, albumApi, playlistApi, userApi, reportApi } from "@api";
 import { SettingsTextArea, ErrorPage, PageLoader } from "@components";
 import styles from "./AppealsPage.module.css";
 import type {
@@ -73,7 +73,7 @@ const AppealsPage: React.FC = () => {
         }
       },
       pendingAppeal: () =>
-        adminApi.checkPendingAppeal(user.id, entityType, entityId),
+        reportApi.checkPendingAppeal(entityType, user.id, entityId),
     },
     [entityType, entityId, user.id],
     {
@@ -104,7 +104,7 @@ const AppealsPage: React.FC = () => {
       setIsSubmitting(true);
 
       try {
-        await adminApi.submitAppeal(user.id, entityType, entityId, reason);
+        await reportApi.submitAppeal(entityType, user.id, reason, entityId);
         setSuccessMessage(
           "Your appeal has been submitted successfully. You will be notified of the decision."
         );
@@ -157,10 +157,7 @@ const AppealsPage: React.FC = () => {
     return (
       <ErrorPage
         title="Cannot Appeal"
-        message={`This ${entityType.slice(
-          0,
-          -1
-        )} is not unlisted or suspended. Appeals can only be submitted for unlisted or suspended content.`}
+        message={`This ${entityType} is not unlisted or suspended. Appeals can only be submitted for unlisted or suspended content.`}
       />
     );
   }

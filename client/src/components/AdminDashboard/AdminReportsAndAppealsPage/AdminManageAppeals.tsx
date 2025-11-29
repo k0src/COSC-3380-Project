@@ -2,7 +2,7 @@ import { memo, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Appeal, DataTableAction, DataTableBulkAction } from "@types";
 import { DataTable, ConfirmationModal } from "@components";
-import { adminApi } from "@api";
+import { reportApi } from "@api";
 import {
   appealsColumns,
   appealFilterKeys,
@@ -31,7 +31,7 @@ const AdminManageAppeals: React.FC = () => {
 
   const fetchAppeals = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return adminApi.getAllAppeals(limit, offset);
+      return reportApi.getAppeals({ limit, offset });
     },
     []
   );
@@ -64,11 +64,11 @@ const AdminManageAppeals: React.FC = () => {
   const handleConfirmResolve = useCallback(async () => {
     if (!appealToResolve || !user) return;
     try {
-      await adminApi.resolveAppeal(
+      await reportApi.resolveAppeal(
         appealToResolve.id,
         appealToResolve.entity_type,
-        appealToResolve.entity_id,
-        user.id
+        user.id,
+        appealToResolve.entity_id
       );
       setIsResolveModalOpen(false);
       setAppealToResolve(null);
@@ -85,10 +85,9 @@ const AdminManageAppeals: React.FC = () => {
     if (!appealToDismiss || !user) return;
 
     try {
-      await adminApi.dismissAppeal(
+      await reportApi.dismissAppeal(
         appealToDismiss.id,
         appealToDismiss.entity_type,
-        appealToDismiss.entity_id,
         user.id
       );
       setIsDismissModalOpen(false);
@@ -126,11 +125,11 @@ const AdminManageAppeals: React.FC = () => {
     try {
       await Promise.all(
         appealsToBulkResolve.map((appeal) =>
-          adminApi.resolveAppeal(
+          reportApi.resolveAppeal(
             appeal.id,
             appeal.entity_type,
-            appeal.entity_id,
-            user.id
+            user.id,
+            appeal.entity_id
           )
         )
       );
@@ -151,12 +150,7 @@ const AdminManageAppeals: React.FC = () => {
     try {
       await Promise.all(
         appealsToBulkDismiss.map((appeal) =>
-          adminApi.dismissAppeal(
-            appeal.id,
-            appeal.entity_type,
-            appeal.entity_id,
-            user.id
-          )
+          reportApi.dismissAppeal(appeal.id, appeal.entity_type, user.id)
         )
       );
       setIsBulkDismissModalOpen(false);

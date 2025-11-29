@@ -42,3 +42,33 @@ export interface FollowerData {
   followers: number[];
   dates: string[];
 }
+
+export interface AdminDashboardStats {
+  totalUsers: number;
+  totalSongs: number;
+  totalAlbums: number;
+  totalPlaylists: number;
+  totalStreams: number;
+  totalArtists: number;
+  activeUsers: number;
+  pendingReports: number;
+}
+
+export interface AdminUserGrowthData {
+  date: string;
+  count: number;
+}
+
+export interface PlatformActivity {
+  date: string;
+  songs: number;
+  albums: number;
+  playlists: number;
+}
+
+export interface ArtistQuickStats {
+  listeners: number;
+  streams: number;
+  newFollowers: number;
+  playlistAdds: number;
+}

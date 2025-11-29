@@ -1,8 +1,86 @@
 import express, { Request, Response } from "express";
 import { StatsService } from "@services";
 import { handlePgError } from "@util";
+import { authenticateToken, requireAdmin } from "@middleware";
 
 const router = express.Router();
+
+/* ============================= Admin Dashboard ============================ */
+
+// GET /api/stats/admin/dashboard/stats
+router.get(
+  "/admin/dashboard/stats",
+  authenticateToken,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const stats = await StatsService.getDashboardStats();
+      res.json(stats);
+    } catch (error: any) {
+      console.error("Error in GET /admin/dashboard/stats:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
+// GET /api/stats/admin/dashboard/user-growth
+router.get(
+  "/admin/dashboard/user-growth",
+  authenticateToken,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const days = parseInt(req.query.days as string) || 30;
+      const userGrowth = await StatsService.getUserGrowth(days);
+      res.json(userGrowth);
+    } catch (error: any) {
+      console.error("Error in GET /admin/dashboard/user-growth:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
+// GET /api/stats/admin/dashboard/top-artists
+router.get(
+  "/admin/dashboard/top-artists",
+  authenticateToken,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const topArtists = await StatsService.getTopArtists(limit);
+      res.json(topArtists);
+    } catch (error: any) {
+      console.error("Error in GET /admin/dashboard/top-artists:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
+
+// GET /api/stats/admin/dashboard/platform-activity
+router.get(
+  "/admin/dashboard/platform-activity",
+  authenticateToken,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const days = parseInt(req.query.days as string) || 30;
+      const platformActivity = await StatsService.getPlatformActivity(days);
+      res.json(platformActivity);
+    } catch (error: any) {
+      console.error("Error in GET /admin/dashboard/platform-activity:", error);
+      const { message, statusCode } = handlePgError(error);
+      res.status(statusCode).json({ error: message });
+      return;
+    }
+  }
+);
 
 /* ============================== Artist Stats ============================== */
 
@@ -26,6 +104,7 @@ router.get(
       console.error("Error in GET /stats/artists/:artistId/quick:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -36,20 +115,25 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
-      const { days } = req.query;
+      const { userId, days } = req.query;
 
-      if (!artistId) {
-        res.status(400).json({ error: "Artist ID is required" });
+      if (!artistId || !userId) {
+        res.status(400).json({ error: "Missing required parameters" });
         return;
       }
 
       const daysNum = days ? parseInt(days as string, 10) : 30;
-      const topSong = await StatsService.getArtistTopSong(artistId, daysNum);
+      const topSong = await StatsService.getArtistTopSong(
+        artistId,
+        userId as string,
+        daysNum
+      );
       res.status(200).json(topSong);
     } catch (error: any) {
       console.error("Error in GET /stats/artists/:artistId/top-song:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -80,6 +164,7 @@ router.get(
       );
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -90,10 +175,9 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
-      const { days, limit } = req.query;
-
-      if (!artistId) {
-        res.status(400).json({ error: "Artist ID is required" });
+      const { userId, days, limit } = req.query;
+      if (!artistId || !userId) {
+        res.status(400).json({ error: "Missing required parameters" });
         return;
       }
 
@@ -101,6 +185,7 @@ router.get(
       const limitNum = limit ? parseInt(limit as string, 10) : 5;
       const topSongs = await StatsService.getArtistTopSongs(
         artistId,
+        userId as string,
         daysNum,
         limitNum
       );
@@ -109,6 +194,7 @@ router.get(
       console.error("Error in GET /stats/artists/:artistId/top-songs:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -119,9 +205,8 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
-      const { days, limit } = req.query;
-
-      if (!artistId) {
+      const { userId, days, limit } = req.query;
+      if (!artistId || !userId) {
         res.status(400).json({ error: "Artist ID is required" });
         return;
       }
@@ -130,6 +215,7 @@ router.get(
       const limitNum = limit ? parseInt(limit as string, 10) : 5;
       const topPlaylists = await StatsService.getArtistTopPlaylists(
         artistId,
+        userId as string,
         daysNum,
         limitNum
       );
@@ -141,6 +227,7 @@ router.get(
       );
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -151,10 +238,9 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
-      const { days, limit } = req.query;
-
-      if (!artistId) {
-        res.status(400).json({ error: "Artist ID is required" });
+      const { userId, days, limit } = req.query;
+      if (!artistId || !userId) {
+        res.status(400).json({ error: "Missing required parameters" });
         return;
       }
 
@@ -162,6 +248,7 @@ router.get(
       const limitNum = limit ? parseInt(limit as string, 10) : 5;
       const topListeners = await StatsService.getArtistTopListeners(
         artistId,
+        userId as string,
         daysNum,
         limitNum
       );
@@ -173,6 +260,7 @@ router.get(
       );
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -183,12 +271,16 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
-      if (!artistId) {
-        res.status(400).json({ error: "Artist ID is required" });
+      const { userId } = req.query;
+      if (!artistId || !userId) {
+        res.status(400).json({ error: "Missing required parameters" });
         return;
       }
 
-      const recentRelease = await StatsService.getArtistRecentRelease(artistId);
+      const recentRelease = await StatsService.getArtistRecentRelease(
+        artistId,
+        userId as string
+      );
       res.status(200).json(recentRelease);
     } catch (error: any) {
       console.error(
@@ -197,6 +289,7 @@ router.get(
       );
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -207,18 +300,22 @@ router.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { artistId } = req.params;
-
-      if (!artistId) {
-        res.status(400).json({ error: "Artist ID is required" });
+      const { userId } = req.query;
+      if (!artistId || !userId) {
+        res.status(400).json({ error: "Missing required parameters" });
         return;
       }
 
-      const stats = await StatsService.getArtistAllTimeStats(artistId);
+      const stats = await StatsService.getArtistAllTimeStats(
+        artistId,
+        userId as string
+      );
       res.status(200).json(stats);
     } catch (error: any) {
       console.error("Error in GET /stats/artists/:artistId/all-time:", error);
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -249,6 +346,7 @@ router.get(
       );
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -276,6 +374,7 @@ router.get(
       );
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );
@@ -300,6 +399,7 @@ router.get(
       );
       const { message, statusCode } = handlePgError(error);
       res.status(statusCode).json({ error: message });
+      return;
     }
   }
 );

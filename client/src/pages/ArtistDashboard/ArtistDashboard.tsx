@@ -1,5 +1,5 @@
 import { memo, useMemo, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
@@ -14,6 +14,7 @@ import {
   ArtistDashboardTopSongs,
   ArtistDashboardTopPlaylists,
   DataTable,
+  ErrorPage,
 } from "@components";
 import { commentColumns } from "@components/DataTable/columnDefinitions/commentColumns";
 import styles from "./ArtistDashboard.module.css";
@@ -32,6 +33,7 @@ interface ArtistDashboardProps {
 
 const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const artistId = user?.artist_id;
 
   const commentCtx: AccessContext = {
@@ -40,7 +42,12 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
     scope: "global",
   };
 
-  const { data, loading } = useAsyncData(
+  if (!artistId || !user) {
+    navigate("/login");
+    return;
+  }
+
+  const { data, loading, error } = useAsyncData(
     {
       hasSongs: () => artistApi.checkArtistHasSongs(artistId!),
       hasArtistPlaylists: () =>
@@ -127,6 +134,15 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
     return <PageLoader />;
   }
 
+  if (error) {
+    return (
+      <ErrorPage
+        title="Failed to Load Artist Dashboard"
+        message="An error occurred while loading your artist dashboard. Please try again later."
+      />
+    );
+  }
+
   return (
     <>
       <Helmet>
@@ -142,6 +158,7 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
         </header>
         <ArtistDashboardHero
           artistId={artistId!}
+          userId={user.id}
           artistName={artistName}
           artistImageUrl={artistImageUrl}
           artistImageUrlBlurhash={artist.user?.pfp_blurhash}
@@ -150,7 +167,7 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
         <div className={styles.contentAreaBottom}>
           <ArtistDashboardStreamsChart artistId={artistId!} />
           {checklistComplete ? (
-            <ArtistDashboardTopSongs artistId={artistId!} />
+            <ArtistDashboardTopSongs artistId={artistId!} userId={user.id} />
           ) : (
             <ArtistDashboardChecklist items={artistChecklistItems} />
           )}
@@ -176,9 +193,12 @@ const ArtistDashboard: React.FC<ArtistDashboardProps> = ({ artist }) => {
             />
           </div>
           {checklistComplete ? (
-            <ArtistDashboardTopPlaylists artistId={artistId!} />
+            <ArtistDashboardTopPlaylists
+              artistId={artistId!}
+              userId={user.id}
+            />
           ) : (
-            <ArtistDashboardTopSongs artistId={artistId!} />
+            <ArtistDashboardTopSongs artistId={artistId!} userId={user.id} />
           )}
         </div>
       </div>

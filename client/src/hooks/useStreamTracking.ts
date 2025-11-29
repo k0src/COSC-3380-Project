@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@contexts";
 import { useAudioQueue } from "@contexts/AudioQueueContext";
-import { songApi, userApi } from "@api";
+import { libraryApi, songApi } from "@api";
 
 const STREAM_TTL = 24 * 60 * 60 * 1000; // 24 hours
 const MIN_PLAY_TIME = 10; // 10 seconds
@@ -57,7 +57,7 @@ export const useStreamTracking = () => {
       const trackStream = async () => {
         try {
           await Promise.all([
-            userApi.addToHistory(user.id, currentSongId, "song"),
+            libraryApi.addToHistory(user.id, currentSongId, "song"),
             songApi.incrementSongStreams(currentSongId),
           ]);
 
@@ -93,7 +93,7 @@ export const useStreamTracking = () => {
     }
 
     try {
-      await userApi.addToHistory(user.id, playlistId, "playlist");
+      await libraryApi.addToHistory(user.id, playlistId, "playlist");
       const streamKey = `streamed_${user.id}_playlist_${playlistId}`;
       localStorage.setItem(
         streamKey,

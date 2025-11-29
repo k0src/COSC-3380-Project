@@ -118,7 +118,6 @@ export interface EngagementMetrics {
     top50Percent: number;
   };
   averageSessionLength: number;
-  story: string;
 }
 
 export interface ChurnMetrics {
@@ -143,6 +142,7 @@ export interface ArtistPerformance {
   avgStreamsPerListener: number;
   growthPercent: number;
   trend: number[];
+  engagementRate: number;
 }
 
 export interface ActivityTimelineData {

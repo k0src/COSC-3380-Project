@@ -119,6 +119,7 @@ export default class ArtistRepository {
       location,
       banner_image_url,
       banner_image_url_blurhash,
+      verified,
     }: {
       user_id: UUID;
       display_name?: string;
@@ -126,6 +127,7 @@ export default class ArtistRepository {
       location?: string;
       banner_image_url?: string;
       banner_image_url_blurhash?: string;
+      verified?: boolean;
     }
   ): Promise<Artist | null> {
     try {
@@ -176,6 +178,10 @@ export default class ArtistRepository {
         if (banner_image_url_blurhash !== undefined) {
           fields.push(`banner_image_url_blurhash = $${values.length + 1}`);
           values.push(banner_image_url_blurhash);
+        }
+        if (verified !== undefined) {
+          fields.push(`verified = $${values.length + 1}`);
+          values.push(verified);
         }
         if (fields.length === 0) {
           throw new Error("No fields to update");

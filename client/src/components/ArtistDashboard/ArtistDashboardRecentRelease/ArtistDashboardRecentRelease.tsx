@@ -12,14 +12,15 @@ import { LuClock, LuSettings2 } from "react-icons/lu";
 
 export interface ArtistDashboardRecentReleaseProps {
   artistId: UUID;
+  userId: UUID;
 }
 
 const ArtistDashboardRecentRelease: React.FC<
   ArtistDashboardRecentReleaseProps
-> = ({ artistId }) => {
+> = ({ artistId, userId }) => {
   const { data, loading, error } = useAsyncData(
     {
-      recentRelease: () => statsApi.getArtistRecentRelease(artistId),
+      recentRelease: () => statsApi.getArtistRecentRelease(artistId, userId),
     },
     [artistId],
     {

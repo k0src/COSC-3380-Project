@@ -11,6 +11,7 @@ import musicPlaceholder from "@assets/music-placeholder.webp";
 
 export interface ArtistDashboardTopSongsProps {
   artistId: UUID;
+  userId: UUID;
 }
 
 interface TopSongItemProps {
@@ -55,11 +56,12 @@ const TopSongItem: React.FC<TopSongItemProps> = ({
 
 const ArtistDashboardTopSongs: React.FC<ArtistDashboardTopSongsProps> = ({
   artistId,
+  userId,
 }) => {
   const { data, loading, error } = useAsyncData(
     {
       topSongs: () =>
-        statsApi.getArtistTopSongs(artistId, {
+        statsApi.getArtistTopSongs(artistId, userId, {
           timeRange: "30d",
           limit: 5,
         }),

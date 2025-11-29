@@ -11,6 +11,7 @@ import userPlaceholder from "@assets/user-placeholder.webp";
 
 export interface ArtistDashboardTopListenersProps {
   artistId: UUID;
+  userId: UUID;
 }
 
 interface TopListenerItemProps {
@@ -55,18 +56,18 @@ const TopListenerItem: React.FC<TopListenerItemProps> = ({
 
 const ArtistDashboardTopListeners: React.FC<
   ArtistDashboardTopListenersProps
-> = ({ artistId }) => {
+> = ({ artistId, userId }) => {
   const { data, loading, error } = useAsyncData(
     {
       topListeners: () =>
-        statsApi.getArtistTopListeners(artistId, {
+        statsApi.getArtistTopListeners(artistId, userId, {
           timeRange: "30d",
           limit: 5,
         }),
     },
-    [artistId],
+    [artistId, userId],
     {
-      cacheKey: `artist_top_listeners_${artistId}`,
+      cacheKey: `artist_top_listeners_${artistId}_${userId}`,
       hasBlobUrl: true,
     }
   );

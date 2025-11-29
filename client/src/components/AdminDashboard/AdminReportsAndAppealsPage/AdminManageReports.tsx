@@ -7,7 +7,7 @@ import type {
   ReportableEntityType,
 } from "@types";
 import { DataTable, ConfirmationModal } from "@components";
-import { adminApi } from "@api";
+import { reportApi } from "@api";
 import {
   reportsColumns,
   reportFilterKeys,
@@ -36,7 +36,7 @@ const AdminManageReports: React.FC = () => {
 
   const fetchReports = useCallback(
     ({ limit, offset }: { limit: number; offset: number }) => {
-      return adminApi.getAllReports(limit, offset);
+      return reportApi.getReports({ limit, offset });
     },
     []
   );
@@ -70,11 +70,11 @@ const AdminManageReports: React.FC = () => {
     if (!reportToResolve || !user) return;
 
     try {
-      await adminApi.resolveReport(
+      await reportApi.resolveReport(
         reportToResolve.id,
         reportToResolve.entity_type as ReportableEntityType,
-        reportToResolve.reported_id,
-        user.id
+        user.id,
+        reportToResolve.reported_id
       );
       setIsResolveModalOpen(false);
       setReportToResolve(null);
@@ -91,11 +91,11 @@ const AdminManageReports: React.FC = () => {
     if (!reportToDismiss || !user) return;
 
     try {
-      await adminApi.dismissReport(
+      await reportApi.dismissReport(
         reportToDismiss.id,
         reportToDismiss.entity_type as ReportableEntityType,
-        reportToDismiss.reported_id,
-        user.id
+        user.id,
+        reportToDismiss.reported_id
       );
       setIsDismissModalOpen(false);
       setReportToDismiss(null);
@@ -132,11 +132,11 @@ const AdminManageReports: React.FC = () => {
     try {
       await Promise.all(
         reportsToBulkResolve.map((report) =>
-          adminApi.resolveReport(
+          reportApi.resolveReport(
             report.id,
             report.entity_type as ReportableEntityType,
-            report.reported_id,
-            user.id
+            user.id,
+            report.reported_id
           )
         )
       );
@@ -157,11 +157,11 @@ const AdminManageReports: React.FC = () => {
     try {
       await Promise.all(
         reportsToBulkDismiss.map((report) =>
-          adminApi.dismissReport(
+          reportApi.dismissReport(
             report.id,
             report.entity_type as ReportableEntityType,
-            report.reported_id,
-            user.id
+            user.id,
+            report.reported_id
           )
         )
       );

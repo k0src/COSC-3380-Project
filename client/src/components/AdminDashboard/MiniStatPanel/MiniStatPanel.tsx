@@ -1,6 +1,7 @@
 import { memo } from "react";
-import { formatNumber, formatPercentage } from "@util";
 import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
+import { chartsTooltipClasses } from "@mui/x-charts";
+import { formatNumber, formatPercentage } from "@util";
 import {
   areaElementClasses,
   lineElementClasses,
@@ -72,6 +73,37 @@ const MiniStatPanel = memo(
                 },
                 [`& .${lineElementClasses.root}`]: {
                   strokeWidth: 2,
+                },
+              }}
+              slotProps={{
+                tooltip: {
+                  sx: {
+                    [`& .${chartsTooltipClasses.paper}`]: {
+                      backgroundColor:
+                        "var(--color-panel-gray-dark) !important",
+                      border:
+                        "var(--border-size-sm) solid var(--color-panel-border) !important",
+                      borderRadius: "var(--border-radius-md) !important",
+                      padding: "var(--spacing-xs) !important",
+                      boxShadow: "var(--shadow-sm) !important",
+                      color: "var(--color-white-alt) !important",
+                      fontSize: "var(--font-size-sm) !important",
+                    },
+                    [`& .${chartsTooltipClasses.labelCell}`]: {
+                      color: "var(--color-white-alt) !important",
+                      fontSize: "var(--font-size-sm) !important",
+                    },
+                    [`& .${chartsTooltipClasses.valueCell}`]: {
+                      color: "var(--color-text-gray) !important",
+                      fontSize: "var(--font-size-xs) !important",
+                      fontWeight: "500 !important",
+                    },
+                    [`& .${chartsTooltipClasses.mark}`]: {
+                      borderRadius: "50% !important",
+                      width: 10,
+                      height: 10,
+                    },
+                  },
                 },
               }}
             />

@@ -660,7 +660,7 @@ router.get(
 
       let column = (orderByColumn as string) || "created_at";
       let direction = (orderByDirection as string) || "DESC";
-      if (!validateOrderBy(column, direction, "song")) {
+      if (!validateOrderBy(column, direction, "song", ["liked_at"])) {
         console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
         column = "created_at";
         direction = "DESC";
@@ -698,7 +698,7 @@ router.get(
 
       let column = (orderByColumn as string) || "created_at";
       let direction = (orderByDirection as string) || "DESC";
-      if (!validateOrderBy(column, direction, "album")) {
+      if (!validateOrderBy(column, direction, "album", ["liked_at"])) {
         console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
         column = "created_at";
         direction = "DESC";
@@ -736,7 +736,7 @@ router.get(
 
       let column = (orderByColumn as string) || "created_at";
       let direction = (orderByDirection as string) || "DESC";
-      if (!validateOrderBy(column, direction, "playlist")) {
+      if (!validateOrderBy(column, direction, "playlist", ["liked_at"])) {
         console.warn(`Invalid orderBy parameters: ${column} ${direction}`);
         column = "created_at";
         direction = "DESC";

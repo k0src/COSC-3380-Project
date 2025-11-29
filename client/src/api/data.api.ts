@@ -88,16 +88,6 @@ export const dataApi = {
     return response.data;
   },
 
-  async getArtistPerformance(params: DataReportParams) {
-    const response = await api.get<ArtistPerformance[]>(
-      `/data/artist-performance`,
-      {
-        params,
-      }
-    );
-    return response.data;
-  },
-
   async getChurnMetrics(params: DataReportParams) {
     const response = await api.get<ChurnMetrics>(`/data/churn-metrics`, {
       params,
@@ -130,7 +120,6 @@ export const dataApi = {
       showOnlyNew: params.showOnlyNew,
       showOnlyTrending: params.showOnlyTrending,
     };
-
     if (params.artistIds && params.artistIds.length > 0) {
       queryParams.artistIds = JSON.stringify(params.artistIds);
     }
@@ -140,14 +129,55 @@ export const dataApi = {
     if (params.albumIds && params.albumIds.length > 0) {
       queryParams.albumIds = JSON.stringify(params.albumIds);
     }
-
+    if (params.dateRangeFilter) {
+      queryParams["dateRangeFilter[startDate]"] =
+        params.dateRangeFilter.startDate;
+      queryParams["dateRangeFilter[endDate]"] = params.dateRangeFilter.endDate;
+    }
     const response = await api.get<EnhancedTrackData[]>(
       `/data/enhanced-tracks`,
       {
         params: queryParams,
       }
     );
+    return response.data;
+  },
 
+  async getArtistPerformance(params: DataReportParams) {
+    const queryParams: any = {
+      "timeRange[startDate]": params.timeRange.startDate,
+      "timeRange[endDate]": params.timeRange.endDate,
+      limit: params.limit,
+      offset: params.offset,
+      minStreams: params.minStreams,
+      minEngagementRate: params.minEngagementRate,
+      minGrowthPercent: params.minGrowthPercent,
+      searchTerm: params.searchTerm,
+      sortBy: params.sortBy,
+      sortDirection: params.sortDirection,
+      showOnlyNew: params.showOnlyNew,
+      showOnlyTrending: params.showOnlyTrending,
+    };
+    if (params.artistIds && params.artistIds.length > 0) {
+      queryParams.artistIds = JSON.stringify(params.artistIds);
+    }
+    if (params.genres && params.genres.length > 0) {
+      queryParams.genres = JSON.stringify(params.genres);
+    }
+    if (params.albumIds && params.albumIds.length > 0) {
+      queryParams.albumIds = JSON.stringify(params.albumIds);
+    }
+    if (params.dateRangeFilter) {
+      queryParams["dateRangeFilter[startDate]"] =
+        params.dateRangeFilter.startDate;
+      queryParams["dateRangeFilter[endDate]"] = params.dateRangeFilter.endDate;
+    }
+    const response = await api.get<ArtistPerformance[]>(
+      `/data/artist-performance`,
+      {
+        params: queryParams,
+      }
+    );
     return response.data;
   },
 

@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@contexts";
 import { useAsyncData } from "@hooks";
-import { songApi, albumApi, playlistApi, userApi, adminApi } from "@api";
+import { songApi, albumApi, playlistApi, userApi, reportApi } from "@api";
 import { ErrorPage, PageLoader, SettingsTextArea } from "@components";
 import { capitalize } from "@util";
 import styles from "./AdminAppealDetailPage.module.css";
@@ -71,7 +71,7 @@ const AdminAppealDetailPage: React.FC = () => {
             return null;
         }
       },
-      appeals: () => adminApi.getAppealsForEntity(entityType, entityId),
+      appeals: () => reportApi.getAppealsForEntity(entityType, entityId),
     },
     [entityType, entityId],
     {
@@ -87,7 +87,7 @@ const AdminAppealDetailPage: React.FC = () => {
     async (id: UUID) => {
       setIsProcessing(true);
       try {
-        await adminApi.resolveAppeal(id, entityType, entityId, user.id);
+        await reportApi.resolveAppeal(id, entityType, user.id, entityId);
         navigate("/admin/reports-appeals");
       } catch (error: any) {
         console.error("Failed to resolve appeal:", error);
@@ -102,7 +102,7 @@ const AdminAppealDetailPage: React.FC = () => {
     async (id: UUID) => {
       setIsProcessing(true);
       try {
-        await adminApi.dismissAppeal(id, entityType, entityId, user.id);
+        await reportApi.dismissAppeal(id, entityType, user.id);
         navigate("/admin/reports-appeals");
       } catch (error: any) {
         console.error("Failed to dismiss appeal:", error);
@@ -110,7 +110,7 @@ const AdminAppealDetailPage: React.FC = () => {
         setIsProcessing(false);
       }
     },
-    [entityType, entityId, user.id, navigate]
+    [entityType, user.id, navigate]
   );
 
   if (loading) {

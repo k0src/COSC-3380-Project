@@ -5,6 +5,7 @@ import { useAsyncData } from "@hooks";
 import { dataApi } from "@api";
 import type { DataReportParams, UserGrowthData, RetentionCohort } from "@types";
 import styles from "./DataReportStoryPanel.module.css";
+import { formatNumber } from "@util";
 
 export interface DataReportStoryPanelProps {
   params: DataReportParams;
@@ -44,8 +45,8 @@ const generateUserGrowthStory = (
           .{" "}
         </>
       )}
-      On average, new users take <strong>{(avgTime / 3600).toFixed(1)}</strong>{" "}
-      hours to play their first song.
+      On average, new users take <strong>{formatNumber(avgTime)}</strong> hours
+      to play their first song.
       {usersWithoutStreams > 0 && (
         <>
           {" "}

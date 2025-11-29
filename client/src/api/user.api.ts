@@ -152,7 +152,7 @@ export const userApi = {
     userId: UUID,
     accessContext: AccessContext,
     options?: {
-      orderByColumn?: SongOrderByColumn;
+      orderByColumn?: SongOrderByColumn | "liked_at";
       orderByDirection?: OrderByDirection;
       limit?: number;
       offset?: number;
@@ -180,7 +180,7 @@ export const userApi = {
     userId: UUID,
     accessContext: AccessContext,
     options?: {
-      orderByColumn?: AlbumOrderByColumn;
+      orderByColumn?: AlbumOrderByColumn | "liked_at";
       orderByDirection?: OrderByDirection;
       limit?: number;
       offset?: number;
@@ -208,7 +208,7 @@ export const userApi = {
     userId: UUID,
     accessContext: AccessContext,
     options?: {
-      orderByColumn?: PlaylistOrderByColumn;
+      orderByColumn?: PlaylistOrderByColumn | "liked_at";
       orderByDirection?: OrderByDirection;
       limit?: number;
       offset?: number;

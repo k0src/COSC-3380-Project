@@ -65,9 +65,9 @@ const AdminManageContentArtists: React.FC<AdminManageContentArtistsProps> = ({
     async (artist: Artist, refetch: () => void) => {
       try {
         if (artist.verified) {
-          await adminApi.unverifyArtist(artist.id);
+          await adminApi.unverifyArtist(artist.id, artist.user_id);
         } else {
-          await adminApi.verifyArtist(artist.id);
+          await adminApi.verifyArtist(artist.id, artist.user_id);
         }
         refetch();
       } catch (error) {
@@ -81,7 +81,9 @@ const AdminManageContentArtists: React.FC<AdminManageContentArtistsProps> = ({
   const handleBulkVerifyClick = useCallback(
     async (artists: Artist[], refetch: () => void) => {
       try {
-        await Promise.all(artists.map((a) => adminApi.verifyArtist(a.id)));
+        await Promise.all(
+          artists.map((a) => adminApi.verifyArtist(a.id, a.user_id))
+        );
         refetch();
       } catch (error) {
         console.error("Failed to bulk verify artists:", error);
